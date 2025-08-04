@@ -481,6 +481,7 @@ function App() {
               { id: "stocks", label: "📦 Stocks" },
               { id: "produits", label: "🥘 Produits" },
               { id: "fournisseurs", label: "🏪 Fournisseurs" },
+              { id: "recettes", label: "👨‍🍳 Recettes" },
               { id: "mouvements", label: "📋 Mouvements" }
             ].map(tab => (
               <button
