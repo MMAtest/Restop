@@ -311,6 +311,9 @@ function App() {
       } else if (type === "fournisseur") {
         await axios.delete(`${API}/fournisseurs/${id}`);
         fetchFournisseurs();
+      } else if (type === "recette") {
+        await axios.delete(`${API}/recettes/${id}`);
+        fetchRecettes();
       }
       fetchDashboardStats();
     } catch (error) {
