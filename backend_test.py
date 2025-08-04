@@ -21,6 +21,8 @@ class StockTestSuite:
         self.test_results = []
         self.created_fournisseur_id = None
         self.created_produit_id = None
+        self.created_recette_id = None
+        self.demo_produits_ids = []
         
     def log_result(self, test_name, success, message="", details=None):
         """Enregistre le résultat d'un test"""
