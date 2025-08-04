@@ -1,52 +1,978 @@
-import { useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import "./App.css";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
 import axios from "axios";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
 
-const Home = () => {
-  const helloWorldApi = async () => {
+function App() {
+  const [activeTab, setActiveTab] = useState("dashboard");
+  const [dashboardStats, setDashboardStats] = useState({});
+  const [produits, setProduits] = useState([]);
+  const [fournisseurs, setFournisseurs] = useState([]);
+  const [stocks, setStocks] = useState([]);
+  const [mouvements, setMouvements] = useState([]);
+  const [loading, setLoading] = useState(false);
+
+  // États pour les modals
+  const [showProduitModal, setShowProduitModal] = useState(false);
+  const [showFournisseurModal, setShowFournisseurModal] = useState(false);
+  const [showMouvementModal, setShowMouvementModal] = useState(false);
+  const [editingItem, setEditingItem] = useState(null);
+
+  // Formulaires
+  const [produitForm, setProduitForm] = useState({
+    nom: "", description: "", categorie: "", unite: "", prix_achat: "", fournisseur_id: ""
+  });
+  const [fournisseurForm, setFournisseurForm] = useState({
+    nom: "", contact: "", email: "", telephone: "", adresse: ""
+  });
+  const [mouvementForm, setMouvementForm] = useState({
+    produit_id: "", type: "entree", quantite: "", reference: "", commentaire: ""
+  });
+
+  // Charger les données initiales
+  useEffect(() => {
+    fetchDashboardStats();
+    fetchProduits();
+    fetchFournisseurs();
+    fetchStocks();
+    fetchMouvements();
+  }, []);
+
+  const fetchDashboardStats = async () => {
     try {
-      const response = await axios.get(`${API}/`);
-      console.log(response.data.message);
-    } catch (e) {
-      console.error(e, `errored out requesting / api`);
+      const response = await axios.get(`${API}/dashboard/stats`);
+      setDashboardStats(response.data);
+    } catch (error) {
+      console.error("Erreur lors du chargement des statistiques:", error);
     }
   };
 
-  useEffect(() => {
-    helloWorldApi();
-  }, []);
+  const fetchProduits = async () => {
+    try {
+      const response = await axios.get(`${API}/produits`);
+      setProduits(response.data);
+    } catch (error) {
+      console.error("Erreur lors du chargement des produits:", error);
+    }
+  };
+
+  const fetchFournisseurs = async () => {
+    try {
+      const response = await axios.get(`${API}/fournisseurs`);
+      setFournisseurs(response.data);
+    } catch (error) {
+      console.error("Erreur lors du chargement des fournisseurs:", error);
+    }
+  };
+
+  const fetchStocks = async () => {
+    try {
+      const response = await axios.get(`${API}/stocks`);
+      setStocks(response.data);
+    } catch (error) {
+      console.error("Erreur lors du chargement des stocks:", error);
+    }
+  };
+
+  const fetchMouvements = async () => {
+    try {
+      const response = await axios.get(`${API}/mouvements`);
+      setMouvements(response.data.slice(0, 10)); // Derniers 10 mouvements
+    } catch (error) {
+      console.error("Erreur lors du chargement des mouvements:", error);
+    }
+  };
+
+  // Gestion des produits
+  const handleProduitSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      const formData = {
+        ...produitForm,
+        prix_achat: produitForm.prix_achat ? parseFloat(produitForm.prix_achat) : null
+      };
+
+      if (editingItem) {
+        await axios.put(`${API}/produits/${editingItem.id}`, formData);
+      } else {
+        await axios.post(`${API}/produits`, formData);
+      }
+
+      setShowProduitModal(false);
+      setProduitForm({ nom: "", description: "", categorie: "", unite: "", prix_achat: "", fournisseur_id: "" });
+      setEditingItem(null);
+      fetchProduits();
+      fetchStocks();
+      fetchDashboardStats();
+    } catch (error) {
+      console.error("Erreur lors de la sauvegarde du produit:", error);
+      alert("Erreur lors de la sauvegarde");
+    }
+    setLoading(false);
+  };
+
+  // Gestion des fournisseurs
+  const handleFournisseurSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      if (editingItem) {
+        await axios.put(`${API}/fournisseurs/${editingItem.id}`, fournisseurForm);
+      } else {
+        await axios.post(`${API}/fournisseurs`, fournisseurForm);
+      }
+
+      setShowFournisseurModal(false);
+      setFournisseurForm({ nom: "", contact: "", email: "", telephone: "", adresse: "" });
+      setEditingItem(null);
+      fetchFournisseurs();
+      fetchDashboardStats();
+    } catch (error) {
+      console.error("Erreur lors de la sauvegarde du fournisseur:", error);
+      alert("Erreur lors de la sauvegarde");
+    }
+    setLoading(false);
+  };
+
+  // Gestion des mouvements
+  const handleMouvementSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      const formData = {
+        ...mouvementForm,
+        quantite: parseFloat(mouvementForm.quantite)
+      };
+
+      await axios.post(`${API}/mouvements`, formData);
+      setShowMouvementModal(false);
+      setMouvementForm({ produit_id: "", type: "entree", quantite: "", reference: "", commentaire: "" });
+      fetchMouvements();
+      fetchStocks();
+      fetchDashboardStats();
+    } catch (error) {
+      console.error("Erreur lors de la création du mouvement:", error);
+      alert("Erreur lors de la sauvegarde");
+    }
+    setLoading(false);
+  };
+
+  // Fonction d'édition
+  const handleEdit = (item, type) => {
+    setEditingItem(item);
+    if (type === "produit") {
+      setProduitForm({
+        nom: item.nom,
+        description: item.description || "",
+        categorie: item.categorie || "",
+        unite: item.unite,
+        prix_achat: item.prix_achat || "",
+        fournisseur_id: item.fournisseur_id || ""
+      });
+      setShowProduitModal(true);
+    } else if (type === "fournisseur") {
+      setFournisseurForm({
+        nom: item.nom,
+        contact: item.contact || "",
+        email: item.email || "",
+        telephone: item.telephone || "",
+        adresse: item.adresse || ""
+      });
+      setShowFournisseurModal(true);
+    }
+  };
+
+  // Fonction de suppression
+  const handleDelete = async (id, type) => {
+    if (!window.confirm("Êtes-vous sûr de vouloir supprimer cet élément ?")) return;
+
+    try {
+      if (type === "produit") {
+        await axios.delete(`${API}/produits/${id}`);
+        fetchProduits();
+        fetchStocks();
+      } else if (type === "fournisseur") {
+        await axios.delete(`${API}/fournisseurs/${id}`);
+        fetchFournisseurs();
+      }
+      fetchDashboardStats();
+    } catch (error) {
+      console.error(`Erreur lors de la suppression du ${type}:`, error);
+      alert("Erreur lors de la suppression");
+    }
+  };
+
+  // Export Excel
+  const handleExport = async () => {
+    try {
+      const response = await axios.get(`${API}/export/stocks`, {
+        responseType: 'blob'
+      });
+      
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', 'stocks_export.xlsx');
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+    } catch (error) {
+      console.error("Erreur lors de l'export:", error);
+      alert("Erreur lors de l'export");
+    }
+  };
+
+  // Import Excel
+  const handleImport = async (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const formData = new FormData();
+    formData.append('file', file);
+
+    try {
+      const response = await axios.post(`${API}/import/stocks`, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+      
+      alert(response.data.message);
+      if (response.data.errors.length > 0) {
+        console.warn("Erreurs d'import:", response.data.errors);
+      }
+      
+      fetchStocks();
+      fetchDashboardStats();
+    } catch (error) {
+      console.error("Erreur lors de l'import:", error);
+      alert("Erreur lors de l'import");
+    }
+    
+    event.target.value = '';
+  };
 
   return (
-    <div>
-      <header className="App-header">
-        <a
-          className="App-link"
-          href="https://emergent.sh"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <img src="https://avatars.githubusercontent.com/in/1201222?s=120&u=2686cf91179bbafbc7a71bfbc43004cf9ae1acea&v=4" />
-        </a>
-        <p className="mt-5">Building something incredible ~!</p>
+    <div className="min-h-screen bg-gray-100">
+      {/* Header */}
+      <header className="bg-white shadow-sm border-b">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center py-4">
+            <div className="flex items-center">
+              <h1 className="text-2xl font-bold text-gray-900">🍽️ Gestion des Stocks Restaurant</h1>
+            </div>
+            <div className="flex space-x-2">
+              <button
+                onClick={handleExport}
+                className="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 transition-colors"
+              >
+                📊 Exporter Excel
+              </button>
+              <label className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors cursor-pointer">
+                📁 Importer Excel
+                <input type="file" accept=".xlsx,.xls" onChange={handleImport} className="hidden" />
+              </label>
+            </div>
+          </div>
+        </div>
       </header>
-    </div>
-  );
-};
 
-function App() {
-  return (
-    <div className="App">
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Home />}>
-            <Route index element={<Home />} />
-          </Route>
-        </Routes>
-      </BrowserRouter>
+      {/* Navigation */}
+      <nav className="bg-white shadow-sm">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex space-x-8">
+            {[
+              { id: "dashboard", label: "📊 Tableau de bord" },
+              { id: "stocks", label: "📦 Stocks" },
+              { id: "produits", label: "🥘 Produits" },
+              { id: "fournisseurs", label: "🏪 Fournisseurs" },
+              { id: "mouvements", label: "📋 Mouvements" }
+            ].map(tab => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`py-3 px-1 border-b-2 font-medium text-sm ${
+                  activeTab === tab.id
+                    ? "border-blue-500 text-blue-600"
+                    : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                }`}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
+        </div>
+      </nav>
+
+      {/* Contenu principal */}
+      <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+        
+        {/* Dashboard */}
+        {activeTab === "dashboard" && (
+          <div className="px-4 py-6 sm:px-0">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+              <div className="bg-white overflow-hidden shadow rounded-lg">
+                <div className="p-5">
+                  <div className="flex items-center">
+                    <div className="flex-shrink-0">
+                      <span className="text-2xl">🥘</span>
+                    </div>
+                    <div className="ml-5 w-0 flex-1">
+                      <dl>
+                        <dt className="text-sm font-medium text-gray-500 truncate">Total Produits</dt>
+                        <dd className="text-lg font-medium text-gray-900">{dashboardStats.total_produits || 0}</dd>
+                      </dl>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-white overflow-hidden shadow rounded-lg">
+                <div className="p-5">
+                  <div className="flex items-center">
+                    <div className="flex-shrink-0">
+                      <span className="text-2xl">🏪</span>
+                    </div>
+                    <div className="ml-5 w-0 flex-1">
+                      <dl>
+                        <dt className="text-sm font-medium text-gray-500 truncate">Fournisseurs</dt>
+                        <dd className="text-lg font-medium text-gray-900">{dashboardStats.total_fournisseurs || 0}</dd>
+                      </dl>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-white overflow-hidden shadow rounded-lg">
+                <div className="p-5">
+                  <div className="flex items-center">
+                    <div className="flex-shrink-0">
+                      <span className="text-2xl">⚠️</span>
+                    </div>
+                    <div className="ml-5 w-0 flex-1">
+                      <dl>
+                        <dt className="text-sm font-medium text-gray-500 truncate">Stocks Faibles</dt>
+                        <dd className="text-lg font-medium text-red-600">{dashboardStats.stocks_faibles || 0}</dd>
+                      </dl>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-white overflow-hidden shadow rounded-lg">
+                <div className="p-5">
+                  <div className="flex items-center">
+                    <div className="flex-shrink-0">
+                      <span className="text-2xl">🔄</span>
+                    </div>
+                    <div className="ml-5 w-0 flex-1">
+                      <dl>
+                        <dt className="text-sm font-medium text-gray-500 truncate">Stocks Récents</dt>
+                        <dd className="text-lg font-medium text-green-600">{dashboardStats.stocks_recents || 0}</dd>
+                      </dl>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Derniers mouvements */}
+            <div className="bg-white shadow rounded-lg">
+              <div className="px-4 py-5 sm:p-6">
+                <h3 className="text-lg leading-6 font-medium text-gray-900 mb-4">Derniers Mouvements</h3>
+                <div className="overflow-x-auto">
+                  <table className="min-w-full divide-y divide-gray-200">
+                    <thead className="bg-gray-50">
+                      <tr>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Produit</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Quantité</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                      </tr>
+                    </thead>
+                    <tbody className="bg-white divide-y divide-gray-200">
+                      {mouvements.map((mouvement) => (
+                        <tr key={mouvement.id}>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                            {mouvement.produit_nom || "Produit inconnu"}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                              mouvement.type === 'entree' ? 'bg-green-100 text-green-800' :
+                              mouvement.type === 'sortie' ? 'bg-red-100 text-red-800' :
+                              'bg-blue-100 text-blue-800'
+                            }`}>
+                              {mouvement.type}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            {mouvement.quantite}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {new Date(mouvement.date).toLocaleDateString('fr-FR')}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Stocks */}
+        {activeTab === "stocks" && (
+          <div className="px-4 py-6 sm:px-0">
+            <div className="sm:flex sm:items-center mb-6">
+              <div className="sm:flex-auto">
+                <h1 className="text-xl font-semibold text-gray-900">Gestion des Stocks</h1>
+                <p className="mt-2 text-sm text-gray-700">
+                  Vue d'ensemble des niveaux de stock actuels
+                </p>
+              </div>
+              <div className="mt-4 sm:mt-0 sm:ml-16 sm:flex-none">
+                <button
+                  onClick={() => setShowMouvementModal(true)}
+                  className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors"
+                >
+                  + Nouveau Mouvement
+                </button>
+              </div>
+            </div>
+
+            <div className="bg-white shadow rounded-lg overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="min-w-full divide-y divide-gray-200">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Produit</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Quantité Actuelle</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Quantité Min</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Quantité Max</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Statut</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Dernière MAJ</th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-200">
+                    {stocks.map((stock) => {
+                      const isLowStock = stock.quantite_actuelle <= stock.quantite_min;
+                      return (
+                        <tr key={stock.id}>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                            {stock.produit_nom || "Produit inconnu"}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            {stock.quantite_actuelle}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            {stock.quantite_min}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            {stock.quantite_max || "-"}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                              isLowStock ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'
+                            }`}>
+                              {isLowStock ? "Stock faible" : "Normal"}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {new Date(stock.derniere_maj).toLocaleDateString('fr-FR')}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Produits */}
+        {activeTab === "produits" && (
+          <div className="px-4 py-6 sm:px-0">
+            <div className="sm:flex sm:items-center mb-6">
+              <div className="sm:flex-auto">
+                <h1 className="text-xl font-semibold text-gray-900">Gestion des Produits</h1>
+                <p className="mt-2 text-sm text-gray-700">
+                  Gérez votre catalogue de produits
+                </p>
+              </div>
+              <div className="mt-4 sm:mt-0 sm:ml-16 sm:flex-none">
+                <button
+                  onClick={() => setShowProduitModal(true)}
+                  className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors"
+                >
+                  + Nouveau Produit
+                </button>
+              </div>
+            </div>
+
+            <div className="bg-white shadow rounded-lg overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="min-w-full divide-y divide-gray-200">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nom</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Catégorie</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Unité</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Prix Achat</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fournisseur</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-200">
+                    {produits.map((produit) => (
+                      <tr key={produit.id}>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div>
+                            <div className="text-sm font-medium text-gray-900">{produit.nom}</div>
+                            <div className="text-sm text-gray-500">{produit.description}</div>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          {produit.categorie || "-"}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          {produit.unite}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          {produit.prix_achat ? `${produit.prix_achat}€` : "-"}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          {produit.fournisseur_nom || "-"}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                          <button 
+                            onClick={() => handleEdit(produit, 'produit')}
+                            className="text-blue-600 hover:text-blue-900 mr-3"
+                          >
+                            Modifier
+                          </button>
+                          <button 
+                            onClick={() => handleDelete(produit.id, 'produit')}
+                            className="text-red-600 hover:text-red-900"
+                          >
+                            Supprimer
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Fournisseurs */}
+        {activeTab === "fournisseurs" && (
+          <div className="px-4 py-6 sm:px-0">
+            <div className="sm:flex sm:items-center mb-6">
+              <div className="sm:flex-auto">
+                <h1 className="text-xl font-semibold text-gray-900">Gestion des Fournisseurs</h1>
+                <p className="mt-2 text-sm text-gray-700">
+                  Gérez vos contacts fournisseurs
+                </p>
+              </div>
+              <div className="mt-4 sm:mt-0 sm:ml-16 sm:flex-none">
+                <button
+                  onClick={() => setShowFournisseurModal(true)}
+                  className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors"
+                >
+                  + Nouveau Fournisseur
+                </button>
+              </div>
+            </div>
+
+            <div className="bg-white shadow rounded-lg overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="min-w-full divide-y divide-gray-200">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nom</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Contact</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Téléphone</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-200">
+                    {fournisseurs.map((fournisseur) => (
+                      <tr key={fournisseur.id}>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="text-sm font-medium text-gray-900">{fournisseur.nom}</div>
+                          <div className="text-sm text-gray-500">{fournisseur.adresse}</div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          {fournisseur.contact || "-"}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          {fournisseur.email || "-"}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          {fournisseur.telephone || "-"}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                          <button 
+                            onClick={() => handleEdit(fournisseur, 'fournisseur')}
+                            className="text-blue-600 hover:text-blue-900 mr-3"
+                          >
+                            Modifier
+                          </button>
+                          <button 
+                            onClick={() => handleDelete(fournisseur.id, 'fournisseur')}
+                            className="text-red-600 hover:text-red-900"
+                          >
+                            Supprimer
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Mouvements */}
+        {activeTab === "mouvements" && (
+          <div className="px-4 py-6 sm:px-0">
+            <div className="sm:flex sm:items-center mb-6">
+              <div className="sm:flex-auto">
+                <h1 className="text-xl font-semibold text-gray-900">Historique des Mouvements</h1>
+                <p className="mt-2 text-sm text-gray-700">
+                  Suivi complet des entrées et sorties de stock
+                </p>
+              </div>
+            </div>
+
+            <div className="bg-white shadow rounded-lg overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="min-w-full divide-y divide-gray-200">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Produit</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Quantité</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Référence</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Commentaire</th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-200">
+                    {mouvements.map((mouvement) => (
+                      <tr key={mouvement.id}>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          {new Date(mouvement.date).toLocaleString('fr-FR')}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                          {mouvement.produit_nom || "Produit inconnu"}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                            mouvement.type === 'entree' ? 'bg-green-100 text-green-800' :
+                            mouvement.type === 'sortie' ? 'bg-red-100 text-red-800' :
+                            'bg-blue-100 text-blue-800'
+                          }`}>
+                            {mouvement.type}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          {mouvement.quantite}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          {mouvement.reference || "-"}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          {mouvement.commentaire || "-"}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        )}
+      </main>
+
+      {/* Modal Produit */}
+      {showProduitModal && (
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+          <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+            <div className="mt-3">
+              <h3 className="text-lg font-medium text-gray-900 mb-4">
+                {editingItem ? "Modifier le produit" : "Nouveau produit"}
+              </h3>
+              <form onSubmit={handleProduitSubmit} className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Nom *</label>
+                  <input
+                    type="text"
+                    required
+                    value={produitForm.nom}
+                    onChange={(e) => setProduitForm({...produitForm, nom: e.target.value})}
+                    className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Description</label>
+                  <textarea
+                    value={produitForm.description}
+                    onChange={(e) => setProduitForm({...produitForm, description: e.target.value})}
+                    className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Catégorie</label>
+                  <input
+                    type="text"
+                    value={produitForm.categorie}
+                    onChange={(e) => setProduitForm({...produitForm, categorie: e.target.value})}
+                    className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Unité *</label>
+                  <select
+                    required
+                    value={produitForm.unite}
+                    onChange={(e) => setProduitForm({...produitForm, unite: e.target.value})}
+                    className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                  >
+                    <option value="">Sélectionner</option>
+                    <option value="kg">kg</option>
+                    <option value="g">g</option>
+                    <option value="L">L</option>
+                    <option value="mL">mL</option>
+                    <option value="pièce">pièce</option>
+                    <option value="boîte">boîte</option>
+                    <option value="paquet">paquet</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Prix d'achat (€)</label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    value={produitForm.prix_achat}
+                    onChange={(e) => setProduitForm({...produitForm, prix_achat: e.target.value})}
+                    className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Fournisseur</label>
+                  <select
+                    value={produitForm.fournisseur_id}
+                    onChange={(e) => setProduitForm({...produitForm, fournisseur_id: e.target.value})}
+                    className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                  >
+                    <option value="">Aucun fournisseur</option>
+                    {fournisseurs.map(f => (
+                      <option key={f.id} value={f.id}>{f.nom}</option>
+                    ))}
+                  </select>
+                </div>
+                <div className="flex justify-end space-x-3 pt-4">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowProduitModal(false);
+                      setEditingItem(null);
+                      setProduitForm({ nom: "", description: "", categorie: "", unite: "", prix_achat: "", fournisseur_id: "" });
+                    }}
+                    className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50"
+                  >
+                    Annuler
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={loading}
+                    className="px-4 py-2 bg-blue-600 border border-transparent rounded-md text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
+                  >
+                    {loading ? "Sauvegarde..." : "Sauvegarder"}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Fournisseur */}
+      {showFournisseurModal && (
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+          <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+            <div className="mt-3">
+              <h3 className="text-lg font-medium text-gray-900 mb-4">
+                {editingItem ? "Modifier le fournisseur" : "Nouveau fournisseur"}
+              </h3>
+              <form onSubmit={handleFournisseurSubmit} className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Nom *</label>
+                  <input
+                    type="text"
+                    required
+                    value={fournisseurForm.nom}
+                    onChange={(e) => setFournisseurForm({...fournisseurForm, nom: e.target.value})}
+                    className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Contact</label>
+                  <input
+                    type="text"
+                    value={fournisseurForm.contact}
+                    onChange={(e) => setFournisseurForm({...fournisseurForm, contact: e.target.value})}
+                    className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Email</label>
+                  <input
+                    type="email"
+                    value={fournisseurForm.email}
+                    onChange={(e) => setFournisseurForm({...fournisseurForm, email: e.target.value})}
+                    className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Téléphone</label>
+                  <input
+                    type="tel"
+                    value={fournisseurForm.telephone}
+                    onChange={(e) => setFournisseurForm({...fournisseurForm, telephone: e.target.value})}
+                    className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Adresse</label>
+                  <textarea
+                    value={fournisseurForm.adresse}
+                    onChange={(e) => setFournisseurForm({...fournisseurForm, adresse: e.target.value})}
+                    className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                  />
+                </div>
+                <div className="flex justify-end space-x-3 pt-4">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowFournisseurModal(false);
+                      setEditingItem(null);
+                      setFournisseurForm({ nom: "", contact: "", email: "", telephone: "", adresse: "" });
+                    }}
+                    className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50"
+                  >
+                    Annuler
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={loading}
+                    className="px-4 py-2 bg-blue-600 border border-transparent rounded-md text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
+                  >
+                    {loading ? "Sauvegarde..." : "Sauvegarder"}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Mouvement */}
+      {showMouvementModal && (
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+          <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+            <div className="mt-3">
+              <h3 className="text-lg font-medium text-gray-900 mb-4">Nouveau mouvement de stock</h3>
+              <form onSubmit={handleMouvementSubmit} className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Produit *</label>
+                  <select
+                    required
+                    value={mouvementForm.produit_id}
+                    onChange={(e) => setMouvementForm({...mouvementForm, produit_id: e.target.value})}
+                    className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                  >
+                    <option value="">Sélectionner un produit</option>
+                    {produits.map(p => (
+                      <option key={p.id} value={p.id}>{p.nom}</option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Type *</label>
+                  <select
+                    required
+                    value={mouvementForm.type}
+                    onChange={(e) => setMouvementForm({...mouvementForm, type: e.target.value})}
+                    className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                  >
+                    <option value="entree">Entrée</option>
+                    <option value="sortie">Sortie</option>
+                    <option value="ajustement">Ajustement</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Quantité *</label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    required
+                    value={mouvementForm.quantite}
+                    onChange={(e) => setMouvementForm({...mouvementForm, quantite: e.target.value})}
+                    className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Référence</label>
+                  <input
+                    type="text"
+                    value={mouvementForm.reference}
+                    onChange={(e) => setMouvementForm({...mouvementForm, reference: e.target.value})}
+                    className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                    placeholder="Numéro de facture, bon de livraison..."
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Commentaire</label>
+                  <textarea
+                    value={mouvementForm.commentaire}
+                    onChange={(e) => setMouvementForm({...mouvementForm, commentaire: e.target.value})}
+                    className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                    placeholder="Commentaire optionnel..."
+                  />
+                </div>
+                <div className="flex justify-end space-x-3 pt-4">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowMouvementModal(false);
+                      setMouvementForm({ produit_id: "", type: "entree", quantite: "", reference: "", commentaire: "" });
+                    }}
+                    className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50"
+                  >
+                    Annuler
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={loading}
+                    className="px-4 py-2 bg-blue-600 border border-transparent rounded-md text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
+                  >
+                    {loading ? "Sauvegarde..." : "Sauvegarder"}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
