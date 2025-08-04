@@ -49,6 +49,7 @@ function App() {
     fetchFournisseurs();
     fetchStocks();
     fetchMouvements();
+    fetchRecettes();
   }, []);
 
   const fetchDashboardStats = async () => {
@@ -93,6 +94,15 @@ function App() {
       setMouvements(response.data.slice(0, 10)); // Derniers 10 mouvements
     } catch (error) {
       console.error("Erreur lors du chargement des mouvements:", error);
+    }
+  };
+
+  const fetchRecettes = async () => {
+    try {
+      const response = await axios.get(`${API}/recettes`);
+      setRecettes(response.data);
+    } catch (error) {
+      console.error("Erreur lors du chargement des recettes:", error);
     }
   };
 
