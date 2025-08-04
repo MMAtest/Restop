@@ -13,7 +13,7 @@ import time
 import os
 
 # Configuration
-BASE_URL = "https://b552651d-5438-481e-8ea8-025e795cf233.preview.emergentagent.com/api"
+BASE_URL = "https://7dcd9914-c4fe-4243-9f17-efffeffdde7b.preview.emergentagent.com/api"
 HEADERS = {"Content-Type": "application/json"}
 
 class StockTestSuite:
