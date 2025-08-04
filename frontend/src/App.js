@@ -451,6 +451,13 @@ function App() {
             </div>
             <div className="flex space-x-2">
               <button
+                onClick={handleInitDemo}
+                disabled={loading}
+                className="bg-purple-600 text-white px-4 py-2 rounded-md hover:bg-purple-700 transition-colors disabled:opacity-50"
+              >
+                🎯 Données Démo
+              </button>
+              <button
                 onClick={handleExport}
                 className="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 transition-colors"
               >
