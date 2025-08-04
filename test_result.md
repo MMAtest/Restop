@@ -375,12 +375,12 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Interface Dashboard"
-    - "Gestion Produits UI"
-    - "Gestion Fournisseurs UI"
-    - "Gestion Stocks UI"
-    - "Interface Mouvements"
-    - "Export/Import Excel UI"
+    - "API Gestion Recettes"
+    - "API Import/Export Recettes Excel"
+    - "Données Démonstration Restaurant Franco-Italien"
+    - "Interface Gestion Recettes"
+    - "Import/Export Excel Recettes UI"
+    - "Calculateur Production Temps Réel"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
