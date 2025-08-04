@@ -835,6 +835,146 @@ function App() {
           </div>
         )}
 
+        {/* Recettes */}
+        {activeTab === "recettes" && (
+          <div className="px-4 py-6 sm:px-0">
+            <div className="sm:flex sm:items-center mb-6">
+              <div className="sm:flex-auto">
+                <h1 className="text-xl font-semibold text-gray-900">Gestion des Recettes</h1>
+                <p className="mt-2 text-sm text-gray-700">
+                  Gérez vos recettes et calculez la production possible
+                </p>
+              </div>
+              <div className="mt-4 sm:mt-0 sm:ml-16 sm:flex-none space-x-2">
+                <button
+                  onClick={handleExportRecettes}
+                  className="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 transition-colors"
+                >
+                  📊 Export Excel
+                </button>
+                <label className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors cursor-pointer">
+                  📁 Import Excel
+                  <input type="file" accept=".xlsx,.xls" onChange={handleImportRecettes} className="hidden" />
+                </label>
+                <button
+                  onClick={() => setShowRecetteModal(true)}
+                  className="bg-orange-600 text-white px-4 py-2 rounded-md hover:bg-orange-700 transition-colors"
+                >
+                  + Nouvelle Recette
+                </button>
+              </div>
+            </div>
+
+            <div className="bg-white shadow rounded-lg overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="min-w-full divide-y divide-gray-200">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nom</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Catégorie</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Portions</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Temps</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Prix Vente</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Production Max</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-200">
+                    {recettes.map((recette) => (
+                      <tr key={recette.id}>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div>
+                            <div className="text-sm font-medium text-gray-900">{recette.nom}</div>
+                            <div className="text-sm text-gray-500">{recette.description}</div>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                            recette.categorie === 'entrée' ? 'bg-blue-100 text-blue-800' :
+                            recette.categorie === 'plat' ? 'bg-green-100 text-green-800' :
+                            recette.categorie === 'dessert' ? 'bg-pink-100 text-pink-800' :
+                            'bg-gray-100 text-gray-800'
+                          }`}>
+                            {recette.categorie || 'Non défini'}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          {recette.portions}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          {recette.temps_preparation ? `${recette.temps_preparation} min` : '-'}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          {recette.prix_vente ? `${recette.prix_vente}€` : '-'}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm">
+                          <button
+                            onClick={() => calculateProductionCapacity(recette.id)}
+                            className="bg-indigo-600 text-white px-3 py-1 rounded text-xs hover:bg-indigo-700"
+                          >
+                            Calculer
+                          </button>
+                          {selectedRecette === recette.id && productionCapacity && (
+                            <div className="mt-1 text-xs text-indigo-600 font-medium">
+                              {productionCapacity.portions_max} portions
+                            </div>
+                          )}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                          <button 
+                            onClick={() => handleEdit(recette, 'recette')}
+                            className="text-blue-600 hover:text-blue-900 mr-3"
+                          >
+                            Modifier
+                          </button>
+                          <button 
+                            onClick={() => handleDelete(recette.id, 'recette')}
+                            className="text-red-600 hover:text-red-900"
+                          >
+                            Supprimer
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            {/* Détails de production capacity */}
+            {productionCapacity && (
+              <div className="mt-6 bg-indigo-50 border border-indigo-200 rounded-lg p-6">
+                <h3 className="text-lg font-medium text-indigo-900 mb-4">
+                  Capacité de production: {productionCapacity.recette_nom}
+                </h3>
+                <div className="bg-white rounded-md p-4 mb-4">
+                  <div className="text-2xl font-bold text-indigo-600 text-center">
+                    Vous pouvez préparer <span className="text-3xl">{productionCapacity.portions_max}</span> portions
+                  </div>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {productionCapacity.ingredients_status.map((ingredient, index) => (
+                    <div key={index} className={`p-4 rounded-lg border ${
+                      ingredient.portions_possibles === 0 ? 'bg-red-50 border-red-200' :
+                      ingredient.portions_possibles < productionCapacity.portions_max + 1 ? 'bg-yellow-50 border-yellow-200' :
+                      'bg-green-50 border-green-200'
+                    }`}>
+                      <h4 className="font-medium text-gray-900">{ingredient.produit_nom}</h4>
+                      <div className="mt-2 text-sm text-gray-600">
+                        <div>Disponible: {ingredient.quantite_disponible} {ingredient.unite}</div>
+                        <div>Requis/portion: {ingredient.quantite_requise_par_portion} {ingredient.unite}</div>
+                        <div className="font-medium">
+                          Max portions: {ingredient.portions_possibles === Infinity ? '∞' : ingredient.portions_possibles}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
         {/* Mouvements */}
         {activeTab === "mouvements" && (
           <div className="px-4 py-6 sm:px-0">
