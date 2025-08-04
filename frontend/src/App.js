@@ -12,13 +12,17 @@ function App() {
   const [fournisseurs, setFournisseurs] = useState([]);
   const [stocks, setStocks] = useState([]);
   const [mouvements, setMouvements] = useState([]);
+  const [recettes, setRecettes] = useState([]);
   const [loading, setLoading] = useState(false);
 
   // États pour les modals
   const [showProduitModal, setShowProduitModal] = useState(false);
   const [showFournisseurModal, setShowFournisseurModal] = useState(false);
   const [showMouvementModal, setShowMouvementModal] = useState(false);
+  const [showRecetteModal, setShowRecetteModal] = useState(false);
   const [editingItem, setEditingItem] = useState(null);
+  const [selectedRecette, setSelectedRecette] = useState(null);
+  const [productionCapacity, setProductionCapacity] = useState(null);
 
   // Formulaires
   const [produitForm, setProduitForm] = useState({
@@ -29,6 +33,13 @@ function App() {
   });
   const [mouvementForm, setMouvementForm] = useState({
     produit_id: "", type: "entree", quantite: "", reference: "", commentaire: ""
+  });
+  const [recetteForm, setRecetteForm] = useState({
+    nom: "", description: "", categorie: "", portions: "", temps_preparation: "", 
+    prix_vente: "", instructions: "", ingredients: []
+  });
+  const [ingredientForm, setIngredientForm] = useState({
+    produit_id: "", quantite: "", unite: ""
   });
 
   // Charger les données initiales
