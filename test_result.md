@@ -294,17 +294,6 @@ frontend:
       - working: "NA"
         agent: "main"
         comment: "Interface calculateur avec affichage capacité production maximale, détails par ingrédient avec statut visuel (rouge=rupture, jaune=stock faible, vert=suffisant), quantités requises vs disponibles"
-  - task: "Interface Dashboard"
-    implemented: true
-    working: "NA"
-    file: "/app/frontend/src/App.js"
-    stuck_count: 0
-    priority: "high"
-    needs_retesting: true
-    status_history:
-      - working: "NA"
-        agent: "main"
-        comment: "Dashboard avec cartes statistiques et historique des derniers mouvements"
 
   - task: "Gestion Produits UI"
     implemented: true
