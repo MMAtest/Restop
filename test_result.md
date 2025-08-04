@@ -210,7 +210,90 @@ backend:
         agent: "testing"
         comment: "✅ DASHBOARD STATS VALIDÉ - Toutes statistiques présentes (total_produits, total_fournisseurs, stocks_faibles, stocks_recents). Valeurs cohérentes et types corrects. Calculs de stocks faibles et récents fonctionnels"
 
+  - task: "API Gestion Recettes"
+    implemented: true
+    working: "NA"
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Implémenté endpoints CRUD complets pour recettes avec modèle RecetteIngredient, calculateur de production capacity basé sur stock actuel, enrichissement automatique des noms de produits pour ingrédients"
+
+  - task: "API Import/Export Recettes Excel"
+    implemented: true
+    working: "NA"
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Import Excel recettes avec format Nom Recette|Description|Catégorie|Portions|Temps|Prix|Produit ID|Quantité|Unité. Export vers Excel avec toutes données recettes et ingrédients"
+
+  - task: "Données Démonstration Restaurant Franco-Italien"
+    implemented: true
+    working: "NA"
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Endpoint /demo/init-french-italian-data avec fournisseurs authentiques (Fromagerie Laurent, Boucherie Artisanale, Pasta & Co), produits italiens/français (Mozzarella Bufala, Parmesan 24 mois, Spaghetti artisanaux) et recettes classiques (Carbonara, Risotto champignons, Escalope milanaise, Salade Caprese)"
+
 frontend:
+  - task: "Interface Dashboard"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/App.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Dashboard avec cartes statistiques et historique des derniers mouvements"
+
+  - task: "Interface Gestion Recettes"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/App.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Onglet Recettes complet avec tableau recettes, modal de création/édition avec gestion ingrédients dynamique, calculateur production capacity temps réel, badges visuels par catégories (entrée/plat/dessert)"
+
+  - task: "Import/Export Excel Recettes UI"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/App.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Boutons import/export dédiés recettes dans interface, bouton initialisation données démo restaurant franco-italien"
+
+  - task: "Calculateur Production Temps Réel"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/App.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Interface calculateur avec affichage capacité production maximale, détails par ingrédient avec statut visuel (rouge=rupture, jaune=stock faible, vert=suffisant), quantités requises vs disponibles"
   - task: "Interface Dashboard"
     implemented: true
     working: "NA"
