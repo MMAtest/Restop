@@ -543,6 +543,147 @@ async def import_stocks(file: UploadFile = File(...)):
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Erreur lors de la lecture du fichier: {str(e)}")
 
+@api_router.post("/import/recettes")
+async def import_recettes(file: UploadFile = File(...)):
+    """Import de recettes depuis Excel
+    Format attendu: Nom Recette | Description | Catégorie | Portions | Temps Préparation | Prix Vente | Produit ID | Quantité | Unité
+    """
+    if not file.filename.endswith(('.xlsx', '.xls')):
+        raise HTTPException(status_code=400, detail="Format de fichier non supporté. Utilisez .xlsx ou .xls")
+    
+    try:
+        # Lire le fichier Excel
+        contents = await file.read()
+        df = pd.read_excel(io.BytesIO(contents))
+        
+        imported_count = 0
+        errors = []
+        recettes_dict = {}
+        
+        for index, row in df.iterrows():
+            try:
+                nom_recette = str(row.get("Nom Recette", "")).strip()
+                if not nom_recette:
+                    continue
+                
+                # Créer ou mettre à jour la recette
+                if nom_recette not in recettes_dict:
+                    recettes_dict[nom_recette] = {
+                        "nom": nom_recette,
+                        "description": str(row.get("Description", "")) or None,
+                        "categorie": str(row.get("Catégorie", "")) or None,
+                        "portions": int(row.get("Portions", 1)),
+                        "temps_preparation": int(row.get("Temps Préparation", 0)) if row.get("Temps Préparation") else None,
+                        "prix_vente": float(row.get("Prix Vente", 0)) if row.get("Prix Vente") else None,
+                        "ingredients": []
+                    }
+                
+                # Ajouter l'ingrédient
+                produit_id = str(row.get("Produit ID", "")).strip()
+                quantite = float(row.get("Quantité", 0))
+                unite = str(row.get("Unité", "")).strip()
+                
+                if produit_id and quantite > 0:
+                    # Vérifier que le produit existe
+                    produit = await db.produits.find_one({"id": produit_id})
+                    if produit:
+                        recettes_dict[nom_recette]["ingredients"].append({
+                            "produit_id": produit_id,
+                            "produit_nom": produit["nom"],
+                            "quantite": quantite,
+                            "unite": unite
+                        })
+                    else:
+                        errors.append(f"Ligne {index + 2}: Produit ID {produit_id} non trouvé pour la recette {nom_recette}")
+                
+            except Exception as e:
+                errors.append(f"Ligne {index + 2}: {str(e)}")
+        
+        # Sauvegarder les recettes
+        for nom_recette, recette_data in recettes_dict.items():
+            try:
+                # Vérifier si la recette existe déjà
+                existing_recette = await db.recettes.find_one({"nom": nom_recette})
+                if existing_recette:
+                    # Mettre à jour la recette existante
+                    await db.recettes.update_one(
+                        {"nom": nom_recette},
+                        {"$set": recette_data}
+                    )
+                else:
+                    # Créer une nouvelle recette
+                    recette_obj = Recette(**recette_data)
+                    await db.recettes.insert_one(recette_obj.dict())
+                
+                imported_count += 1
+                
+            except Exception as e:
+                errors.append(f"Erreur lors de la sauvegarde de la recette {nom_recette}: {str(e)}")
+        
+        return {
+            "message": f"{imported_count} recettes importées avec succès",
+            "errors": errors
+        }
+        
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Erreur lors de la lecture du fichier: {str(e)}")
+
+@api_router.get("/export/recettes")
+async def export_recettes():
+    """Export des recettes vers Excel"""
+    # Récupérer toutes les recettes
+    recettes = await db.recettes.find().to_list(1000)
+    
+    # Préparer les données pour Excel
+    data = []
+    for recette in recettes:
+        if recette.get("ingredients"):
+            for ingredient in recette["ingredients"]:
+                data.append({
+                    "Nom Recette": recette["nom"],
+                    "Description": recette.get("description", ""),
+                    "Catégorie": recette.get("categorie", ""),
+                    "Portions": recette["portions"],
+                    "Temps Préparation": recette.get("temps_preparation", ""),
+                    "Prix Vente": recette.get("prix_vente", ""),
+                    "Produit ID": ingredient["produit_id"],
+                    "Nom Produit": ingredient.get("produit_nom", ""),
+                    "Quantité": ingredient["quantite"],
+                    "Unité": ingredient["unite"]
+                })
+        else:
+            # Recette sans ingrédients
+            data.append({
+                "Nom Recette": recette["nom"],
+                "Description": recette.get("description", ""),
+                "Catégorie": recette.get("categorie", ""),
+                "Portions": recette["portions"],
+                "Temps Préparation": recette.get("temps_preparation", ""),
+                "Prix Vente": recette.get("prix_vente", ""),
+                "Produit ID": "",
+                "Nom Produit": "",
+                "Quantité": "",
+                "Unité": ""
+            })
+    
+    # Créer le fichier Excel
+    df = pd.DataFrame(data)
+    output = io.BytesIO()
+    with pd.ExcelWriter(output, engine='openpyxl') as writer:
+        df.to_excel(writer, sheet_name='Recettes', index=False)
+    
+    output.seek(0)
+    
+    headers = {
+        'Content-Disposition': 'attachment; filename="recettes_export.xlsx"'
+    }
+    
+    return StreamingResponse(
+        io.BytesIO(output.read()),
+        media_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        headers=headers
+    )
+
 # Dashboard stats
 @api_router.get("/dashboard/stats")
 async def get_dashboard_stats():
