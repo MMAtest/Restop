@@ -181,6 +181,87 @@ function App() {
     setLoading(false);
   };
 
+  // Gestion des recettes
+  const handleRecetteSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      const formData = {
+        ...recetteForm,
+        portions: parseInt(recetteForm.portions),
+        temps_preparation: recetteForm.temps_preparation ? parseInt(recetteForm.temps_preparation) : null,
+        prix_vente: recetteForm.prix_vente ? parseFloat(recetteForm.prix_vente) : null,
+        ingredients: recetteForm.ingredients.map(ing => ({
+          ...ing,
+          quantite: parseFloat(ing.quantite)
+        }))
+      };
+
+      if (editingItem) {
+        await axios.put(`${API}/recettes/${editingItem.id}`, formData);
+      } else {
+        await axios.post(`${API}/recettes`, formData);
+      }
+
+      setShowRecetteModal(false);
+      resetRecetteForm();
+      setEditingItem(null);
+      fetchRecettes();
+    } catch (error) {
+      console.error("Erreur lors de la sauvegarde de la recette:", error);
+      alert("Erreur lors de la sauvegarde");
+    }
+    setLoading(false);
+  };
+
+  const resetRecetteForm = () => {
+    setRecetteForm({
+      nom: "", description: "", categorie: "", portions: "", temps_preparation: "", 
+      prix_vente: "", instructions: "", ingredients: []
+    });
+    setIngredientForm({ produit_id: "", quantite: "", unite: "" });
+  };
+
+  const addIngredient = () => {
+    if (ingredientForm.produit_id && ingredientForm.quantite) {
+      const produit = produits.find(p => p.id === ingredientForm.produit_id);
+      if (produit) {
+        const newIngredient = {
+          produit_id: ingredientForm.produit_id,
+          produit_nom: produit.nom,
+          quantite: parseFloat(ingredientForm.quantite),
+          unite: ingredientForm.unite || produit.unite
+        };
+        
+        setRecetteForm(prev => ({
+          ...prev,
+          ingredients: [...prev.ingredients, newIngredient]
+        }));
+        
+        setIngredientForm({ produit_id: "", quantite: "", unite: "" });
+      }
+    }
+  };
+
+  const removeIngredient = (index) => {
+    setRecetteForm(prev => ({
+      ...prev,
+      ingredients: prev.ingredients.filter((_, i) => i !== index)
+    }));
+  };
+
+  // Calculer la capacité de production
+  const calculateProductionCapacity = async (recetteId) => {
+    try {
+      const response = await axios.get(`${API}/recettes/${recetteId}/production-capacity`);
+      setProductionCapacity(response.data);
+      setSelectedRecette(recetteId);
+    } catch (error) {
+      console.error("Erreur lors du calcul de capacité:", error);
+      alert("Erreur lors du calcul");
+    }
+  };
+
   // Fonction d'édition
   const handleEdit = (item, type) => {
     setEditingItem(item);
