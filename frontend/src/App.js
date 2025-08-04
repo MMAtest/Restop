@@ -284,6 +284,18 @@ function App() {
         adresse: item.adresse || ""
       });
       setShowFournisseurModal(true);
+    } else if (type === "recette") {
+      setRecetteForm({
+        nom: item.nom,
+        description: item.description || "",
+        categorie: item.categorie || "",
+        portions: item.portions.toString(),
+        temps_preparation: item.temps_preparation?.toString() || "",
+        prix_vente: item.prix_vente?.toString() || "",
+        instructions: item.instructions || "",
+        ingredients: item.ingredients || []
+      });
+      setShowRecetteModal(true);
     }
   };
 
