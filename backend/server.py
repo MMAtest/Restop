@@ -315,6 +315,131 @@ async def get_mouvements():
     mouvements = await db.mouvements_stock.find().sort("date", -1).to_list(1000)
     return [MouvementStock(**m) for m in mouvements]
 
+# Routes pour les recettes
+@api_router.post("/recettes", response_model=Recette)
+async def create_recette(recette: RecetteCreate):
+    # Enrichir les ingrédients avec les noms des produits
+    enriched_ingredients = []
+    for ingredient in recette.ingredients:
+        produit = await db.produits.find_one({"id": ingredient.produit_id})
+        if produit:
+            ingredient_dict = ingredient.dict()
+            ingredient_dict["produit_nom"] = produit["nom"]
+            enriched_ingredients.append(RecetteIngredient(**ingredient_dict))
+        else:
+            enriched_ingredients.append(ingredient)
+    
+    recette_dict = recette.dict()
+    recette_dict["ingredients"] = [ing.dict() for ing in enriched_ingredients]
+    
+    recette_obj = Recette(**recette_dict)
+    await db.recettes.insert_one(recette_obj.dict())
+    return recette_obj
+
+@api_router.get("/recettes", response_model=List[Recette])
+async def get_recettes():
+    recettes = await db.recettes.find().to_list(1000)
+    return [Recette(**r) for r in recettes]
+
+@api_router.get("/recettes/{recette_id}", response_model=Recette)
+async def get_recette(recette_id: str):
+    recette = await db.recettes.find_one({"id": recette_id})
+    if not recette:
+        raise HTTPException(status_code=404, detail="Recette non trouvée")
+    return Recette(**recette)
+
+@api_router.put("/recettes/{recette_id}", response_model=Recette)
+async def update_recette(recette_id: str, recette_update: RecetteUpdate):
+    update_dict = {k: v for k, v in recette_update.dict().items() if v is not None}
+    
+    # Si des ingrédients sont fournis, enrichir avec les noms des produits
+    if "ingredients" in update_dict and update_dict["ingredients"]:
+        enriched_ingredients = []
+        for ingredient in update_dict["ingredients"]:
+            if isinstance(ingredient, dict):
+                produit = await db.produits.find_one({"id": ingredient.get("produit_id")})
+                if produit:
+                    ingredient["produit_nom"] = produit["nom"]
+                enriched_ingredients.append(ingredient)
+            else:
+                produit = await db.produits.find_one({"id": ingredient.produit_id})
+                if produit:
+                    ingredient_dict = ingredient.dict()
+                    ingredient_dict["produit_nom"] = produit["nom"]
+                    enriched_ingredients.append(ingredient_dict)
+        update_dict["ingredients"] = enriched_ingredients
+    
+    result = await db.recettes.update_one(
+        {"id": recette_id},
+        {"$set": update_dict}
+    )
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Recette non trouvée")
+    
+    updated_recette = await db.recettes.find_one({"id": recette_id})
+    return Recette(**updated_recette)
+
+@api_router.delete("/recettes/{recette_id}")
+async def delete_recette(recette_id: str):
+    result = await db.recettes.delete_one({"id": recette_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Recette non trouvée")
+    return {"message": "Recette supprimée"}
+
+# Calculateur de production de recettes
+@api_router.get("/recettes/{recette_id}/production-capacity")
+async def get_recipe_production_capacity(recette_id: str):
+    """Calculer combien de portions peuvent être produites avec le stock actuel"""
+    recette = await db.recettes.find_one({"id": recette_id})
+    if not recette:
+        raise HTTPException(status_code=404, detail="Recette non trouvée")
+    
+    # Récupérer tous les stocks des ingrédients
+    min_portions = float('inf')
+    ingredient_status = []
+    
+    for ingredient in recette.get("ingredients", []):
+        stock = await db.stocks.find_one({"produit_id": ingredient["produit_id"]})
+        if stock:
+            # Calculer combien de portions possibles avec cet ingrédient
+            quantite_disponible = stock["quantite_actuelle"]
+            quantite_requise_par_portion = ingredient["quantite"] / recette["portions"]
+            
+            if quantite_requise_par_portion > 0:
+                portions_possibles = int(quantite_disponible / quantite_requise_par_portion)
+                min_portions = min(min_portions, portions_possibles)
+            else:
+                portions_possibles = float('inf')
+            
+            ingredient_status.append({
+                "produit_nom": ingredient.get("produit_nom", "Produit inconnu"),
+                "quantite_disponible": quantite_disponible,
+                "quantite_requise_par_portion": quantite_requise_par_portion,
+                "quantite_requise_total": quantite_requise_par_portion * 1,  # Pour 1 portion
+                "portions_possibles": portions_possibles,
+                "unite": ingredient["unite"]
+            })
+        else:
+            # Ingrédient non en stock
+            min_portions = 0
+            ingredient_status.append({
+                "produit_nom": ingredient.get("produit_nom", "Produit inconnu"),
+                "quantite_disponible": 0,
+                "quantite_requise_par_portion": ingredient["quantite"] / recette["portions"],
+                "quantite_requise_total": ingredient["quantite"] / recette["portions"],
+                "portions_possibles": 0,
+                "unite": ingredient["unite"]
+            })
+    
+    if min_portions == float('inf'):
+        min_portions = 0
+    
+    return {
+        "recette_nom": recette["nom"],
+        "portions_max": max(0, int(min_portions)),
+        "ingredients_status": ingredient_status
+    }
+
 # Routes pour l'export/import Excel
 @api_router.get("/export/stocks")
 async def export_stocks():
