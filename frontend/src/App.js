@@ -1308,6 +1308,197 @@ function App() {
           </div>
         </div>
       )}
+
+      {/* Modal Recette */}
+      {showRecetteModal && (
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+          <div className="relative top-10 mx-auto p-5 border w-full max-w-4xl shadow-lg rounded-md bg-white">
+            <div className="mt-3">
+              <h3 className="text-lg font-medium text-gray-900 mb-4">
+                {editingItem ? "Modifier la recette" : "Nouvelle recette"}
+              </h3>
+              <form onSubmit={handleRecetteSubmit} className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Nom *</label>
+                    <input
+                      type="text"
+                      required
+                      value={recetteForm.nom}
+                      onChange={(e) => setRecetteForm({...recetteForm, nom: e.target.value})}
+                      className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-orange-500 focus:border-orange-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Catégorie</label>
+                    <select
+                      value={recetteForm.categorie}
+                      onChange={(e) => setRecetteForm({...recetteForm, categorie: e.target.value})}
+                      className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-orange-500 focus:border-orange-500"
+                    >
+                      <option value="">Sélectionner</option>
+                      <option value="entrée">Entrée</option>
+                      <option value="plat">Plat</option>
+                      <option value="dessert">Dessert</option>
+                      <option value="boisson">Boisson</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Description</label>
+                  <textarea
+                    value={recetteForm.description}
+                    onChange={(e) => setRecetteForm({...recetteForm, description: e.target.value})}
+                    className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-orange-500 focus:border-orange-500"
+                    rows="2"
+                  />
+                </div>
+
+                <div className="grid grid-cols-3 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Portions *</label>
+                    <input
+                      type="number"
+                      required
+                      min="1"
+                      value={recetteForm.portions}
+                      onChange={(e) => setRecetteForm({...recetteForm, portions: e.target.value})}
+                      className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-orange-500 focus:border-orange-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Temps (min)</label>
+                    <input
+                      type="number"
+                      min="0"
+                      value={recetteForm.temps_preparation}
+                      onChange={(e) => setRecetteForm({...recetteForm, temps_preparation: e.target.value})}
+                      className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-orange-500 focus:border-orange-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Prix vente (€)</label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      value={recetteForm.prix_vente}
+                      onChange={(e) => setRecetteForm({...recetteForm, prix_vente: e.target.value})}
+                      className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-orange-500 focus:border-orange-500"
+                    />
+                  </div>
+                </div>
+
+                {/* Section Ingrédients */}
+                <div className="border-t pt-6">
+                  <h4 className="text-md font-medium text-gray-900 mb-4">Ingrédients</h4>
+                  
+                  {/* Ajouter un ingrédient */}
+                  <div className="grid grid-cols-4 gap-4 mb-4 p-4 bg-gray-50 rounded-md">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">Produit</label>
+                      <select
+                        value={ingredientForm.produit_id}
+                        onChange={(e) => setIngredientForm({...ingredientForm, produit_id: e.target.value})}
+                        className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-orange-500 focus:border-orange-500 text-sm"
+                      >
+                        <option value="">Sélectionner</option>
+                        {produits.map(p => (
+                          <option key={p.id} value={p.id}>{p.nom}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">Quantité</label>
+                      <input
+                        type="number"
+                        step="0.01"
+                        value={ingredientForm.quantite}
+                        onChange={(e) => setIngredientForm({...ingredientForm, quantite: e.target.value})}
+                        className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-orange-500 focus:border-orange-500 text-sm"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">Unité</label>
+                      <input
+                        type="text"
+                        value={ingredientForm.unite}
+                        onChange={(e) => setIngredientForm({...ingredientForm, unite: e.target.value})}
+                        className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-orange-500 focus:border-orange-500 text-sm"
+                        placeholder="kg, g, L, mL..."
+                      />
+                    </div>
+                    <div className="flex items-end">
+                      <button
+                        type="button"
+                        onClick={addIngredient}
+                        className="w-full bg-green-600 text-white px-3 py-2 rounded-md text-sm hover:bg-green-700"
+                      >
+                        Ajouter
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Liste des ingrédients */}
+                  {recetteForm.ingredients.length > 0 && (
+                    <div className="space-y-2">
+                      {recetteForm.ingredients.map((ingredient, index) => (
+                        <div key={index} className="flex items-center justify-between p-3 bg-white border rounded-md">
+                          <div className="flex-1 grid grid-cols-3 gap-4">
+                            <div className="font-medium">{ingredient.produit_nom}</div>
+                            <div>{ingredient.quantite} {ingredient.unite}</div>
+                            <div></div>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => removeIngredient(index)}
+                            className="text-red-600 hover:text-red-800 ml-4"
+                          >
+                            Supprimer
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Instructions</label>
+                  <textarea
+                    value={recetteForm.instructions}
+                    onChange={(e) => setRecetteForm({...recetteForm, instructions: e.target.value})}
+                    className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-orange-500 focus:border-orange-500"
+                    rows="4"
+                    placeholder="Étapes de préparation..."
+                  />
+                </div>
+
+                <div className="flex justify-end space-x-3 pt-4 border-t">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowRecetteModal(false);
+                      setEditingItem(null);
+                      resetRecetteForm();
+                    }}
+                    className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50"
+                  >
+                    Annuler
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={loading}
+                    className="px-4 py-2 bg-orange-600 border border-transparent rounded-md text-sm font-medium text-white hover:bg-orange-700 disabled:opacity-50"
+                  >
+                    {loading ? "Sauvegarde..." : "Sauvegarder"}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
