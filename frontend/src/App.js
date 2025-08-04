@@ -342,6 +342,26 @@ function App() {
     }
   };
 
+  // Export Recettes Excel
+  const handleExportRecettes = async () => {
+    try {
+      const response = await axios.get(`${API}/export/recettes`, {
+        responseType: 'blob'
+      });
+      
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', 'recettes_export.xlsx');
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+    } catch (error) {
+      console.error("Erreur lors de l'export des recettes:", error);
+      alert("Erreur lors de l'export des recettes");
+    }
+  };
+
   // Import Excel
   const handleImport = async (event) => {
     const file = event.target.files[0];
@@ -368,6 +388,56 @@ function App() {
     }
     
     event.target.value = '';
+  };
+
+  // Import Recettes Excel
+  const handleImportRecettes = async (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const formData = new FormData();
+    formData.append('file', file);
+
+    try {
+      const response = await axios.post(`${API}/import/recettes`, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+      
+      alert(response.data.message);
+      if (response.data.errors.length > 0) {
+        console.warn("Erreurs d'import:", response.data.errors);
+      }
+      
+      fetchRecettes();
+    } catch (error) {
+      console.error("Erreur lors de l'import des recettes:", error);
+      alert("Erreur lors de l'import des recettes");
+    }
+    
+    event.target.value = '';
+  };
+
+  // Initialiser données de démo
+  const handleInitDemo = async () => {
+    if (!window.confirm("Voulez-vous initialiser les données de démonstration pour un restaurant français-italien ? Cela ajoutera des fournisseurs, produits et recettes d'exemple.")) return;
+    
+    try {
+      setLoading(true);
+      const response = await axios.post(`${API}/demo/init-french-italian-data`);
+      alert(response.data.message);
+      
+      // Rafraîchir toutes les données
+      fetchProduits();
+      fetchFournisseurs();
+      fetchStocks();
+      fetchRecettes();
+      fetchDashboardStats();
+    } catch (error) {
+      console.error("Erreur lors de l'initialisation:", error);
+      alert("Erreur lors de l'initialisation");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
