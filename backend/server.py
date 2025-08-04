@@ -709,6 +709,229 @@ async def get_dashboard_stats():
         "stocks_recents": stocks_recents
     }
 
+# Endpoint pour initialiser des données de démonstration (restaurant français-italien)
+@api_router.post("/demo/init-french-italian-data")
+async def init_french_italian_demo_data():
+    """Initialise des données de démonstration pour un restaurant français-italien"""
+    
+    # Données des fournisseurs
+    demo_fournisseurs = [
+        {
+            "nom": "Fromagerie Laurent",
+            "contact": "M. Laurent Dubois",
+            "email": "laurent@fromagerie-laurent.fr",
+            "telephone": "01.45.67.89.12",
+            "adresse": "12 Rue de la Fromagerie, 75011 Paris"
+        },
+        {
+            "nom": "Boucherie Artisanale",
+            "contact": "Mme Marie Rousseau",
+            "email": "marie@boucherie-artisan.fr",
+            "telephone": "01.42.35.78.90",
+            "adresse": "8 Avenue de la République, 75012 Paris"
+        },
+        {
+            "nom": "Pasta & Co",
+            "contact": "Giuseppe Rossi",
+            "email": "giuseppe@pastaeco.it",
+            "telephone": "+39.02.1234567",
+            "adresse": "Via Milano 45, 20100 Milano, Italia"
+        },
+        {
+            "nom": "Marché des Légumes",
+            "contact": "Pierre Martin",
+            "email": "pierre@marche-legumes.fr",
+            "telephone": "01.48.92.15.30",
+            "adresse": "Place du Marché, 94200 Ivry-sur-Seine"
+        }
+    ]
+    
+    # Créer les fournisseurs
+    fournisseurs_ids = {}
+    for fournisseur_data in demo_fournisseurs:
+        # Vérifier si le fournisseur existe déjà
+        existing = await db.fournisseurs.find_one({"nom": fournisseur_data["nom"]})
+        if not existing:
+            fournisseur_obj = Fournisseur(**fournisseur_data)
+            await db.fournisseurs.insert_one(fournisseur_obj.dict())
+            fournisseurs_ids[fournisseur_data["nom"]] = fournisseur_obj.id
+        else:
+            fournisseurs_ids[fournisseur_data["nom"]] = existing["id"]
+    
+    # Données des produits
+    demo_produits = [
+        # Fromages et produits laitiers
+        {"nom": "Mozzarella di Bufala", "categorie": "Fromage", "unite": "kg", "prix_achat": 18.5, "fournisseur": "Fromagerie Laurent"},
+        {"nom": "Parmesan Reggiano 24 mois", "categorie": "Fromage", "unite": "kg", "prix_achat": 35.0, "fournisseur": "Fromagerie Laurent"},
+        {"nom": "Beurre doux", "categorie": "Produit laitier", "unite": "kg", "prix_achat": 6.2, "fournisseur": "Fromagerie Laurent"},
+        {"nom": "Crème fraîche 35%", "categorie": "Produit laitier", "unite": "L", "prix_achat": 4.8, "fournisseur": "Fromagerie Laurent"},
+        
+        # Viandes
+        {"nom": "Escalope de veau", "categorie": "Viande", "unite": "kg", "prix_achat": 28.0, "fournisseur": "Boucherie Artisanale"},
+        {"nom": "Poitrine de porc fumée", "categorie": "Viande", "unite": "kg", "prix_achat": 12.5, "fournisseur": "Boucherie Artisanale"},
+        {"nom": "Jambon de Parme", "categorie": "Charcuterie", "unite": "kg", "prix_achat": 45.0, "fournisseur": "Boucherie Artisanale"},
+        
+        # Pâtes et riz
+        {"nom": "Spaghetti Artisanaux", "categorie": "Pâtes", "unite": "kg", "prix_achat": 8.5, "fournisseur": "Pasta & Co"},
+        {"nom": "Tagliatelles aux œufs", "categorie": "Pâtes", "unite": "kg", "prix_achat": 9.2, "fournisseur": "Pasta & Co"},
+        {"nom": "Risotto Carnaroli", "categorie": "Riz", "unite": "kg", "prix_achat": 6.8, "fournisseur": "Pasta & Co"},
+        {"nom": "Gnocchi frais", "categorie": "Pâtes", "unite": "kg", "prix_achat": 7.5, "fournisseur": "Pasta & Co"},
+        
+        # Légumes
+        {"nom": "Tomates cerises", "categorie": "Légume", "unite": "kg", "prix_achat": 4.2, "fournisseur": "Marché des Légumes"},
+        {"nom": "Basilic frais", "categorie": "Herbes", "unite": "paquet", "prix_achat": 1.8, "fournisseur": "Marché des Légumes"},
+        {"nom": "Roquette", "categorie": "Salade", "unite": "kg", "prix_achat": 12.0, "fournisseur": "Marché des Légumes"},
+        {"nom": "Champignons de Paris", "categorie": "Légume", "unite": "kg", "prix_achat": 5.5, "fournisseur": "Marché des Légumes"},
+        {"nom": "Courgettes", "categorie": "Légume", "unite": "kg", "prix_achat": 2.8, "fournisseur": "Marché des Légumes"},
+        {"nom": "Aubergines", "categorie": "Légume", "unite": "kg", "prix_achat": 3.5, "fournisseur": "Marché des Légumes"},
+        
+        # Condiments et huiles
+        {"nom": "Huile d'olive extra vierge", "categorie": "Huile", "unite": "L", "prix_achat": 15.0, "fournisseur": "Pasta & Co"},
+        {"nom": "Vinaigre balsamique", "categorie": "Condiment", "unite": "L", "prix_achat": 25.0, "fournisseur": "Pasta & Co"},
+        {"nom": "Ail", "categorie": "Condiment", "unite": "kg", "prix_achat": 8.0, "fournisseur": "Marché des Légumes"}
+    ]
+    
+    # Créer les produits avec stocks initiaux
+    produits_ids = {}
+    for produit_data in demo_produits:
+        # Vérifier si le produit existe déjà
+        existing = await db.produits.find_one({"nom": produit_data["nom"]})
+        if not existing:
+            produit_create_data = {
+                "nom": produit_data["nom"],
+                "categorie": produit_data["categorie"],
+                "unite": produit_data["unite"],
+                "prix_achat": produit_data["prix_achat"],
+                "fournisseur_id": fournisseurs_ids.get(produit_data["fournisseur"])
+            }
+            
+            # Récupérer le nom du fournisseur
+            if produit_create_data["fournisseur_id"]:
+                fournisseur = await db.fournisseurs.find_one({"id": produit_create_data["fournisseur_id"]})
+                if fournisseur:
+                    produit_create_data["fournisseur_nom"] = fournisseur["nom"]
+            
+            produit_obj = Produit(**produit_create_data)
+            await db.produits.insert_one(produit_obj.dict())
+            produits_ids[produit_data["nom"]] = produit_obj.id
+            
+            # Créer un stock initial réaliste
+            import random
+            stock_initial = random.uniform(10, 50)  # Stock entre 10 et 50 unités
+            stock_obj = Stock(
+                produit_id=produit_obj.id, 
+                produit_nom=produit_obj.nom, 
+                quantite_actuelle=stock_initial,
+                quantite_min=5.0,
+                quantite_max=100.0
+            )
+            await db.stocks.insert_one(stock_obj.dict())
+        else:
+            produits_ids[produit_data["nom"]] = existing["id"]
+    
+    # Créer des recettes typiques franco-italiennes
+    demo_recettes = [
+        {
+            "nom": "Spaghetti Carbonara",
+            "description": "Recette traditionnelle italienne avec œufs, parmesan et pancetta",
+            "categorie": "plat",
+            "portions": 4,
+            "temps_preparation": 20,
+            "prix_vente": 18.50,
+            "instructions": "1. Faire bouillir l'eau salée\n2. Cuire les spaghettis al dente\n3. Faire revenir la pancetta\n4. Mélanger œufs et parmesan\n5. Incorporer hors du feu",
+            "ingredients": [
+                {"produit": "Spaghetti Artisanaux", "quantite": 400, "unite": "g"},
+                {"produit": "Parmesan Reggiano 24 mois", "quantite": 100, "unite": "g"},
+                {"produit": "Poitrine de porc fumée", "quantite": 150, "unite": "g"}
+            ]
+        },
+        {
+            "nom": "Risotto aux Champignons",
+            "description": "Risotto crémeux aux champignons de saison",
+            "categorie": "plat",
+            "portions": 4,
+            "temps_preparation": 35,
+            "prix_vente": 16.00,
+            "instructions": "1. Faire chauffer le bouillon\n2. Faire revenir les champignons\n3. Toaster le riz\n4. Ajouter louche par louche\n5. Incorporer beurre et parmesan",
+            "ingredients": [
+                {"produit": "Risotto Carnaroli", "quantite": 320, "unite": "g"},
+                {"produit": "Champignons de Paris", "quantite": 300, "unite": "g"},
+                {"produit": "Parmesan Reggiano 24 mois", "quantite": 80, "unite": "g"},
+                {"produit": "Beurre doux", "quantite": 50, "unite": "g"}
+            ]
+        },
+        {
+            "nom": "Escalope Milanaise",
+            "description": "Escalope de veau panée à la milanaise",
+            "categorie": "plat",
+            "portions": 2,
+            "temps_preparation": 25,
+            "prix_vente": 24.00,
+            "instructions": "1. Aplatir les escalopes\n2. Passer dans l'œuf battu\n3. Paner au parmesan\n4. Faire dorer à la poêle\n5. Servir avec roquette",
+            "ingredients": [
+                {"produit": "Escalope de veau", "quantite": 400, "unite": "g"},
+                {"produit": "Parmesan Reggiano 24 mois", "quantite": 50, "unite": "g"},
+                {"produit": "Roquette", "quantite": 100, "unite": "g"}
+            ]
+        },
+        {
+            "nom": "Salade Caprese",
+            "description": "Salade italienne tomate, mozzarella, basilic",
+            "categorie": "entrée",
+            "portions": 4,
+            "temps_preparation": 10,
+            "prix_vente": 12.50,
+            "instructions": "1. Trancher tomates et mozzarella\n2. Alterner sur l'assiette\n3. Parsemer de basilic\n4. Arroser d'huile d'olive\n5. Assaisonner",
+            "ingredients": [
+                {"produit": "Mozzarella di Bufala", "quantite": 250, "unite": "g"},
+                {"produit": "Tomates cerises", "quantite": 400, "unite": "g"},
+                {"produit": "Basilic frais", "quantite": 2, "unite": "paquet"},
+                {"produit": "Huile d'olive extra vierge", "quantite": 50, "unite": "mL"}
+            ]
+        }
+    ]
+    
+    # Créer les recettes
+    recettes_count = 0
+    for recette_data in demo_recettes:
+        # Vérifier si la recette existe déjà
+        existing = await db.recettes.find_one({"nom": recette_data["nom"]})
+        if not existing:
+            # Préparer les ingrédients avec les IDs des produits
+            ingredients_with_ids = []
+            for ingredient in recette_data["ingredients"]:
+                produit_id = produits_ids.get(ingredient["produit"])
+                if produit_id:
+                    produit = await db.produits.find_one({"id": produit_id})
+                    ingredients_with_ids.append({
+                        "produit_id": produit_id,
+                        "produit_nom": produit["nom"] if produit else ingredient["produit"],
+                        "quantite": ingredient["quantite"],
+                        "unite": ingredient["unite"]
+                    })
+            
+            recette_create_data = {
+                "nom": recette_data["nom"],
+                "description": recette_data["description"],
+                "categorie": recette_data["categorie"],
+                "portions": recette_data["portions"],
+                "temps_preparation": recette_data["temps_preparation"],
+                "prix_vente": recette_data["prix_vente"],
+                "instructions": recette_data["instructions"],
+                "ingredients": ingredients_with_ids
+            }
+            
+            recette_obj = Recette(**recette_create_data)
+            await db.recettes.insert_one(recette_obj.dict())
+            recettes_count += 1
+    
+    return {
+        "message": "Données de démonstration créées avec succès",
+        "fournisseurs_crees": len([f for f in demo_fournisseurs]),
+        "produits_crees": len([p for p in demo_produits]),
+        "recettes_creees": recettes_count
+    }
+
 # Include the router in the main app
 app.include_router(api_router)
 
