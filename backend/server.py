@@ -103,6 +103,45 @@ class MouvementCreate(BaseModel):
     fournisseur_id: Optional[str] = None
     commentaire: Optional[str] = None
 
+# Models pour la gestion des recettes
+class RecetteIngredient(BaseModel):
+    produit_id: str
+    produit_nom: Optional[str] = None
+    quantite: float
+    unite: str
+
+class Recette(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    nom: str
+    description: Optional[str] = None
+    categorie: Optional[str] = None  # "entrée", "plat", "dessert", "boisson"
+    portions: int  # Nombre de portions que la recette produit
+    temps_preparation: Optional[int] = None  # en minutes
+    instructions: Optional[str] = None
+    prix_vente: Optional[float] = None
+    ingredients: List[RecetteIngredient] = []
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+
+class RecetteCreate(BaseModel):
+    nom: str
+    description: Optional[str] = None
+    categorie: Optional[str] = None
+    portions: int
+    temps_preparation: Optional[int] = None
+    instructions: Optional[str] = None
+    prix_vente: Optional[float] = None
+    ingredients: List[RecetteIngredient] = []
+
+class RecetteUpdate(BaseModel):
+    nom: Optional[str] = None
+    description: Optional[str] = None
+    categorie: Optional[str] = None
+    portions: Optional[int] = None
+    temps_preparation: Optional[int] = None
+    instructions: Optional[str] = None
+    prix_vente: Optional[float] = None
+    ingredients: Optional[List[RecetteIngredient]] = None
+
 # Routes pour les fournisseurs
 @api_router.post("/fournisseurs", response_model=Fournisseur)
 async def create_fournisseur(fournisseur: FournisseurCreate):
