@@ -351,40 +351,44 @@ def parse_z_report(texte_ocr: str) -> ZReportData:
     return data
 
 def parse_facture_fournisseur(texte_ocr: str) -> FactureFournisseurData:
-    """Parser les données d'une facture fournisseur"""
+    """Parser les données d'une facture fournisseur avec adaptation aux formats réels"""
     data = FactureFournisseurData()
     
     try:
-        # Rechercher le fournisseur dans les premières lignes
+        # Rechercher le fournisseur - adapté aux formats réels
         lines = texte_ocr.split('\n')
-        for i, line in enumerate(lines[:8]):  # Les 8 premières lignes
-            line = line.strip()
-            if len(line) > 3 and not line.isdigit() and not re.match(r'^\d{2}[/\-.]', line):
-                # Éviter les dates, numéros de facture, etc.
-                if any(word in line.lower() for word in ['facture', 'invoice', 'devis', 'bon', 'date', 'n°', 'numero']):
-                    continue
-                # Si c'est une ligne avec du texte significatif et pas trop générique
-                if re.search(r'[a-zA-ZÀ-ÿ]{3,}', line) and len(line.split()) <= 5:
-                    data.fournisseur = line
-                    break
+        fournisseur_candidates = []
         
-        # Rechercher la date avec patterns améliorés
+        for i, line in enumerate(lines[:15]):  # Examiner plus de lignes
+            line = line.strip()
+            if len(line) > 5:
+                # Détecter les noms de fournisseurs typiques
+                if any(keyword in line.upper() for keyword in ['MAMMAFIORE', 'PROVENCE', 'SARL', 'SAS', 'EURL', 'MIN DES', 'PÊCHERIE', 'MAISON']):
+                    if not any(excl in line.upper() for excl in ['AUGUSTINE', 'CLIENT', 'FACTURE', 'NUMERO', 'DATE']):
+                        fournisseur_candidates.append(line.strip())
+        
+        if fournisseur_candidates:
+            # Prendre le candidat le plus probable
+            data.fournisseur = fournisseur_candidates[0]
+        
+        # Rechercher la date avec patterns améliorés pour les formats réels
         date_patterns = [
-            r'date[:\s]*(\d{1,2}[/\-.]\d{1,2}[/\-.]\d{2,4})',
-            r'(\d{1,2}[/\-.]\d{1,2}[/\-.]\d{2,4})'
+            r'(\d{2}-\d{2}-\d{4})',  # Format: 16-08-2024
+            r'(\d{1,2}/\d{1,2}/\d{4})',  # Format: 16/08/2024
+            r'(\d{1,2}\.\d{1,2}\.\d{4})', # Format: 16.08.2024
         ]
         
         for pattern in date_patterns:
-            date_match = re.search(pattern, texte_ocr, re.IGNORECASE)
+            date_match = re.search(pattern, texte_ocr)
             if date_match:
                 data.date = date_match.group(1)
                 break
         
-        # Rechercher le numéro de facture
+        # Rechercher le numéro de facture avec patterns adaptés
         facture_patterns = [
+            r'Bon Livraison[:\s]*(\d+)',  # "Bon Livraison 14887"
+            r'N°[:\s]*([A-Z0-9\-]+)',
             r'facture[:\s#n°]*([A-Z0-9\-]{3,15})',
-            r'n°[:\s]*([A-Z0-9\-]{3,15})',
-            r'invoice[:\s#]*([A-Z0-9\-]{3,15})'
         ]
         
         for pattern in facture_patterns:
@@ -393,11 +397,15 @@ def parse_facture_fournisseur(texte_ocr: str) -> FactureFournisseurData:
                 data.numero_facture = facture_match.group(1)
                 break
         
-        # Patterns améliorés pour les produits et prix
+        # Patterns adaptés pour les produits réels - Format Mammafiore et autres
         produits = []
         produit_patterns = [
-            # Format: "Nom produit quantité x prix = total"
-            r'([A-Za-zÀ-ÿ\s\'\-]{3,40})\s+(\d{1,3})[x\*]\s*(\d+[,.]?\d*)[€]?\s*=?\s*(\d+[,.]?\d*)\s*[€]?',
+            # Format Mammafiore: "GNOCCHI DE PATATE 500GR*8 - RUMMO (u) 120,000 ..."
+            r'([A-ZÁÀÂÄÇÉÈÊËÏÎÔÙÛÜŸ][A-Za-zÀ-ÿ\s\d\*\-\(\)\.]{10,80})\s+(\d+[,.]?\d*)\s+(\d+[,.]?\d*)',
+            # Format poissonnerie: "PALOURDE MOYENNE" suivi des détails sur lignes suivantes
+            r'([A-ZÁÀÂÄÇÉÈÊËÏÎÔÙÛÜŸ\s]{3,40})\s+(\d{1,3})\s+(\d{1,3})\s+KG\s+(\d+[,.]?\d*)\s+(\d+[,.]?\d*)',
+            # Format classique: "Nom produit quantité prix total"
+            r'([A-Za-zÀ-ÿ\s\'\-]{3,40})\s+(\d+[,.]?\d*)\s+(\d+[,.]?\d*)\s+(\d+[,.]?\d*)',
             # Format: "Nom produit: quantité x prix€"
             r'([A-Za-zÀ-ÿ\s\'\-]{3,40})[:\s]+(\d{1,3})[x\*]\s*(\d+[,.]?\d*)\s*[€]',
             # Format: "quantité x Nom produit @ prix€"
