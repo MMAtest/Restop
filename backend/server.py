@@ -231,7 +231,7 @@ def extract_text_from_image(image_base64: str) -> str:
         raise HTTPException(status_code=400, detail=f"Erreur lors de l'extraction OCR: {str(e)}")
 
 def parse_z_report(texte_ocr: str) -> ZReportData:
-    """Parser les données d'un rapport Z"""
+    """Parser les données d'un rapport Z avec adaptation aux formats réels La Table d'Augustine"""
     data = ZReportData()
     
     try:
@@ -247,14 +247,14 @@ def parse_z_report(texte_ocr: str) -> ZReportData:
                 data.date = date_match.group(1)
                 break
         
-        # Patterns améliorés pour les plats vendus
+        # Patterns adaptés aux rapports Z La Table d'Augustine - Format "(xN) Nom plat"
         plat_patterns = [
-            # Format: "Nom du plat: quantité" ou "Nom du plat quantité"
-            r'([A-ZÁÀÂÄÇÉÈÊËÏÎÔÙÛÜŸ][A-Za-zÀ-ÿ\s\'\-]{3,50})\s*:?\s*(\d{1,3})(?:\s*[x\*]?\s*(\d+[,.]?\d*)?\s*[€]?)?',
-            # Format: "quantité x Nom du plat"  
-            r'(\d{1,3})\s*[x\*]\s*([A-ZÁÀÂÄÇÉÈÊËÏÎÔÙÛÜŸ][A-Za-zÀ-ÿ\s\'\-]{3,50})',
-            # Format: "Nom du plat    quantité    prix"
-            r'([A-ZÁÀÂÄÇÉÈÊËÏÎÔÙÛÜŸ][A-Za-zÀ-ÿ\s\'\-]{3,50})\s+(\d{1,3})\s+(\d+[,.]?\d*)',
+            # Format principal: "(x14) Linguine" ou "(14) Linguine" 
+            r'\([x]?(\d{1,3})\)\s+([A-Za-zÀ-ÿ][A-Za-zÀ-ÿ\s\'\-\.]{3,50})',
+            # Format alternatif: "14x Linguine" ou "14 Linguine"
+            r'(\d{1,3})[x\s]+([A-Za-zÀ-ÿ][A-Za-zÀ-ÿ\s\'\-\.]{3,50})',
+            # Format classique: "Nom du plat: quantité"
+            r'([A-Za-zÀ-ÿ][A-Za-zÀ-ÿ\s\'\-\.]{3,50})\s*:?\s*(\d{1,3})(?:\s*[x\*]?\s*(\d+[,.]?\d*)?\s*[€]?)?',
         ]
         
         plats_vendus = []
