@@ -13,6 +13,7 @@ function App() {
   const [stocks, setStocks] = useState([]);
   const [mouvements, setMouvements] = useState([]);
   const [recettes, setRecettes] = useState([]);
+  const [documentsOcr, setDocumentsOcr] = useState([]);
   const [loading, setLoading] = useState(false);
 
   // États pour les modals
@@ -20,9 +21,17 @@ function App() {
   const [showFournisseurModal, setShowFournisseurModal] = useState(false);
   const [showMouvementModal, setShowMouvementModal] = useState(false);
   const [showRecetteModal, setShowRecetteModal] = useState(false);
+  const [showOcrModal, setShowOcrModal] = useState(false);
   const [editingItem, setEditingItem] = useState(null);
   const [selectedRecette, setSelectedRecette] = useState(null);
   const [productionCapacity, setProductionCapacity] = useState(null);
+
+  // États OCR
+  const [ocrFile, setOcrFile] = useState(null);
+  const [ocrPreview, setOcrPreview] = useState(null);
+  const [ocrType, setOcrType] = useState("z_report");
+  const [ocrResult, setOcrResult] = useState(null);
+  const [processingOcr, setProcessingOcr] = useState(false);
 
   // Formulaires
   const [produitForm, setProduitForm] = useState({
