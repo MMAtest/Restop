@@ -517,6 +517,43 @@ function App() {
     setProcessingOcr(false);
   };
 
+  // Fonction utilitaire pour formater les quantités
+  const formatQuantity = (quantity, unit) => {
+    if (quantity === undefined || quantity === null) return "0";
+    
+    // Si c'est un nombre entier ou très proche d'un entier
+    if (quantity % 1 === 0) {
+      return `${Math.round(quantity)} ${unit || ''}`.trim();
+    }
+    
+    // Pour les décimales, limiter à 2 chiffres après la virgule
+    if (quantity < 10) {
+      return `${parseFloat(quantity.toFixed(2))} ${unit || ''}`.trim();
+    } else {
+      return `${parseFloat(quantity.toFixed(1))} ${unit || ''}`.trim();
+    }
+  };
+
+  // Fonction pour obtenir l'unité d'affichage appropriée
+  const getDisplayUnit = (unit) => {
+    const unitMapping = {
+      'kg': 'kg',
+      'g': 'g',
+      'L': 'L',
+      'mL': 'mL',
+      'cl': 'cL',
+      'pièce': 'pcs',
+      'paquet': 'pqts',
+      'botte': 'bottes',
+      'piece': 'pcs',
+      'litre': 'L',
+      'gramme': 'g',
+      'kilogramme': 'kg'
+    };
+    
+    return unitMapping[unit] || unit || 'unité';
+  };
+
   return (
     <div className="min-h-screen bg-gray-100">
       {/* Header */}
