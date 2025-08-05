@@ -146,9 +146,42 @@ class RecetteUpdate(BaseModel):
     categorie: Optional[str] = None
     portions: Optional[int] = None
     temps_preparation: Optional[int] = None
-    instructions: Optional[str] = None
     prix_vente: Optional[float] = None
+    instructions: Optional[str] = None
     ingredients: Optional[List[RecetteIngredient]] = None
+
+# Modèles pour l'OCR et traitement de documents
+class DocumentOCR(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    type_document: str  # "z_report", "facture_fournisseur"
+    nom_fichier: str
+    image_base64: Optional[str] = None
+    texte_extrait: Optional[str] = None
+    donnees_parsees: Optional[dict] = None
+    statut: str = "en_attente"  # "en_attente", "traite", "erreur"
+    date_upload: datetime = Field(default_factory=datetime.utcnow)
+    date_traitement: Optional[datetime] = None
+
+class DocumentUploadResponse(BaseModel):
+    document_id: str
+    type_document: str
+    texte_extrait: str
+    donnees_parsees: dict
+    message: str
+
+class ZReportData(BaseModel):
+    date: Optional[str] = None
+    plats_vendus: List[dict] = []
+    total_ca: Optional[float] = None
+    nb_couverts: Optional[int] = None
+
+class FactureFournisseurData(BaseModel):
+    fournisseur: Optional[str] = None
+    date: Optional[str] = None
+    numero_facture: Optional[str] = None
+    produits: List[dict] = []
+    total_ht: Optional[float] = None
+    total_ttc: Optional[float] = None
 
 # Routes pour les fournisseurs
 @api_router.post("/fournisseurs", response_model=Fournisseur)
