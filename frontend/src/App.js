@@ -482,6 +482,87 @@ function App() {
     }
   };
 
+  // Fonctions pour OCR
+  const handleOcrFileSelect = (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      if (!file.type.startsWith('image/')) {
+        alert('Veuillez sélectionner un fichier image');
+        return;
+      }
+      
+      setOcrFile(file);
+      
+      // Créer un aperçu
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setOcrPreview(e.target.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleOcrUpload = async () => {
+    if (!ocrFile) {
+      alert('Veuillez sélectionner un fichier');
+      return;
+    }
+
+    setProcessingOcr(true);
+    
+    try {
+      const formData = new FormData();
+      formData.append('file', ocrFile);
+      formData.append('document_type', ocrType);
+
+      const response = await axios.post(`${API}/ocr/upload-document?document_type=${ocrType}`, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      });
+
+      setOcrResult(response.data);
+      alert('Document traité avec succès !');
+      fetchDocumentsOcr();
+      
+    } catch (error) {
+      console.error('Erreur lors du traitement OCR:', error);
+      alert(`Erreur: ${error.response?.data?.detail || 'Erreur lors du traitement'}`);
+    } finally {
+      setProcessingOcr(false);
+    }
+  };
+
+  const handleProcessZReport = async (documentId) => {
+    if (!window.confirm('Voulez-vous traiter ce rapport Z pour déduire automatiquement les stocks ?')) return;
+    
+    try {
+      setLoading(true);
+      const response = await axios.post(`${API}/ocr/process-z-report/${documentId}`);
+      
+      alert(response.data.message + 
+            (response.data.warnings.length > 0 ? '\n\nAvertissements:\n' + response.data.warnings.join('\n') : ''));
+      
+      fetchDocumentsOcr();
+      fetchStocks();
+      fetchMouvements();
+      fetchDashboardStats();
+    } catch (error) {
+      console.error('Erreur lors du traitement du rapport Z:', error);
+      alert(`Erreur: ${error.response?.data?.detail || 'Erreur lors du traitement'}`);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const resetOcrModal = () => {
+    setOcrFile(null);
+    setOcrPreview(null);
+    setOcrResult(null);
+    setOcrType("z_report");
+    setProcessingOcr(false);
+  };
+
   return (
     <div className="min-h-screen bg-gray-100">
       {/* Header */}
