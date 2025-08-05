@@ -1060,6 +1060,366 @@ async def get_dashboard_stats():
         "stocks_recents": stocks_recents
     }
 
+# Endpoint pour réinitialiser les données de La Table d'Augustine
+@api_router.post("/demo/init-table-augustine-data")
+async def init_table_augustine_demo_data():
+    """Initialise des données de démonstration basées sur La Table d'Augustine - Restaurant méditerranéen"""
+    
+    # Données des fournisseurs réalistes pour La Table d'Augustine
+    demo_fournisseurs = [
+        {
+            "nom": "Maison Artigiana",
+            "contact": "Giuseppe Pellegrino",
+            "email": "contact@artigiana-burrata.com",
+            "telephone": "+39.080.4721234",
+            "adresse": "Via dei Trulli 23, 70015 Noci, Bari, Italie"
+        },
+        {
+            "nom": "Pêcherie des Sanguinaires",
+            "contact": "Antoine Corsetti",
+            "email": "contact@pecherie-sanguinaires.fr",
+            "telephone": "04.95.51.32.87",
+            "adresse": "Baie des Sanguinaires, 20000 Ajaccio, Corse"
+        },
+        {
+            "nom": "Boucherie Limousine du Sud",
+            "contact": "Pierre Dufour",
+            "email": "pierre@boucherie-limousine.fr",
+            "telephone": "05.55.34.67.89",
+            "adresse": "Avenue du Limousin, 87000 Limoges"
+        },
+        {
+            "nom": "Trufficulteurs de Forcalquier",
+            "contact": "Marie Trubert",
+            "email": "marie@truffes-forcalquier.fr",
+            "telephone": "04.92.75.18.45",
+            "adresse": "Route des Truffes, 04300 Forcalquier, Alpes-de-Haute-Provence"
+        },
+        {
+            "nom": "Maraîchers de Provence",
+            "contact": "Jean-Claude Méditerranée",
+            "email": "jc@maraichers-provence.fr",
+            "telephone": "04.42.67.23.11",
+            "adresse": "Chemin des Oliviers, 13100 Aix-en-Provence"
+        },
+        {
+            "nom": "Fromagerie des Alpilles",
+            "contact": "Sylvie Berger",
+            "email": "sylvie@fromagerie-alpilles.fr",
+            "telephone": "04.90.54.32.76",
+            "adresse": "Place du Village, 13520 Les Baux-de-Provence"
+        }
+    ]
+    
+    # Créer les fournisseurs
+    fournisseurs_ids = {}
+    for fournisseur_data in demo_fournisseurs:
+        existing = await db.fournisseurs.find_one({"nom": fournisseur_data["nom"]})
+        if not existing:
+            fournisseur_obj = Fournisseur(**fournisseur_data)
+            await db.fournisseurs.insert_one(fournisseur_obj.dict())
+            fournisseurs_ids[fournisseur_data["nom"]] = fournisseur_obj.id
+        else:
+            fournisseurs_ids[fournisseur_data["nom"]] = existing["id"]
+    
+    # Produits basés sur la carte de La Table d'Augustine
+    demo_produits = [
+        # Fruits de mer et poissons
+        {"nom": "Supions (petits calamars)", "categorie": "Fruits de mer", "unite": "kg", "prix_achat": 22.0, "fournisseur": "Pêcherie des Sanguinaires"},
+        {"nom": "Moules de Méditerranée", "categorie": "Fruits de mer", "unite": "kg", "prix_achat": 8.5, "fournisseur": "Pêcherie des Sanguinaires"},
+        {"nom": "Sardines fraîches", "categorie": "Poisson", "unite": "kg", "prix_achat": 12.0, "fournisseur": "Pêcherie des Sanguinaires"},
+        {"nom": "Daurade royale de Corse", "categorie": "Poisson", "unite": "kg", "prix_achat": 28.0, "fournisseur": "Pêcherie des Sanguinaires"},
+        {"nom": "Palourdes", "categorie": "Fruits de mer", "unite": "kg", "prix_achat": 35.0, "fournisseur": "Pêcherie des Sanguinaires"},
+        {"nom": "Sole", "categorie": "Poisson", "unite": "kg", "prix_achat": 42.0, "fournisseur": "Pêcherie des Sanguinaires"},
+        {"nom": "Poisson du jour", "categorie": "Poisson", "unite": "kg", "prix_achat": 25.0, "fournisseur": "Pêcherie des Sanguinaires"},
+        
+        # Fromages et produits laitiers  
+        {"nom": "Burrata des Pouilles Artigiana", "categorie": "Fromage", "unite": "pièce", "prix_achat": 8.5, "fournisseur": "Maison Artigiana"},
+        {"nom": "Stracciatella", "categorie": "Fromage", "unite": "kg", "prix_achat": 24.0, "fournisseur": "Maison Artigiana"},
+        {"nom": "Tomme de brebis AOP", "categorie": "Fromage", "unite": "kg", "prix_achat": 18.0, "fournisseur": "Fromagerie des Alpilles"},
+        {"nom": "Féta", "categorie": "Fromage", "unite": "kg", "prix_achat": 14.0, "fournisseur": "Fromagerie des Alpilles"},
+        {"nom": "Brousse fraîche", "categorie": "Fromage", "unite": "kg", "prix_achat": 12.0, "fournisseur": "Fromagerie des Alpilles"},
+        
+        # Viandes
+        {"nom": "Bœuf Limousin (filet)", "categorie": "Viande", "unite": "kg", "prix_achat": 45.0, "fournisseur": "Boucherie Limousine du Sud"},
+        {"nom": "Côte de bœuf Aubarc", "categorie": "Viande", "unite": "kg", "prix_achat": 35.0, "fournisseur": "Boucherie Limousine du Sud"},
+        {"nom": "Souris d'agneau", "categorie": "Viande", "unite": "kg", "prix_achat": 18.0, "fournisseur": "Boucherie Limousine du Sud"},
+        {"nom": "Jarret de veau", "categorie": "Viande", "unite": "kg", "prix_achat": 22.0, "fournisseur": "Boucherie Limousine du Sud"},
+        {"nom": "Porc pour farce", "categorie": "Viande", "unite": "kg", "prix_achat": 12.0, "fournisseur": "Boucherie Limousine du Sud"},
+        {"nom": "Foie gras", "categorie": "Charcuterie", "unite": "kg", "prix_achat": 85.0, "fournisseur": "Boucherie Limousine du Sud"},
+        
+        # Légumes et herbes méditerranéennes
+        {"nom": "Fleurs de courgettes", "categorie": "Légume", "unite": "pièce", "prix_achat": 0.8, "fournisseur": "Maraîchers de Provence"},
+        {"nom": "Courgettes", "categorie": "Légume", "unite": "kg", "prix_achat": 3.2, "fournisseur": "Maraîchers de Provence"},
+        {"nom": "Tomates anciennes", "categorie": "Légume", "unite": "kg", "prix_achat": 6.5, "fournisseur": "Maraîchers de Provence"},
+        {"nom": "Pastèque", "categorie": "Fruit", "unite": "kg", "prix_achat": 2.8, "fournisseur": "Maraîchers de Provence"},
+        {"nom": "Poivrons colorés", "categorie": "Légume", "unite": "kg", "prix_achat": 4.5, "fournisseur": "Maraîchers de Provence"},
+        {"nom": "Blettes", "categorie": "Légume", "unite": "kg", "prix_achat": 3.8, "fournisseur": "Maraîchers de Provence"},
+        {"nom": "Pommes de terre grenaille", "categorie": "Légume", "unite": "kg", "prix_achat": 2.5, "fournisseur": "Maraîchers de Provence"},
+        {"nom": "Champignons de Paris", "categorie": "Légume", "unite": "kg", "prix_achat": 8.5, "fournisseur": "Maraîchers de Provence"},
+        {"nom": "Céleri-rave", "categorie": "Légume", "unite": "kg", "prix_achat": 3.0, "fournisseur": "Maraîchers de Provence"},
+        
+        # Herbes aromatiques
+        {"nom": "Persil plat", "categorie": "Herbes", "unite": "botte", "prix_achat": 1.5, "fournisseur": "Maraîchers de Provence"},
+        {"nom": "Menthe fraîche", "categorie": "Herbes", "unite": "botte", "prix_achat": 2.0, "fournisseur": "Maraîchers de Provence"},
+        {"nom": "Ail de Provence", "categorie": "Condiment", "unite": "kg", "prix_achat": 12.0, "fournisseur": "Maraîchers de Provence"},
+        {"nom": "Raifort", "categorie": "Condiment", "unite": "kg", "prix_achat": 15.0, "fournisseur": "Maraîchers de Provence"},
+        
+        # Pâtes et farines
+        {"nom": "Linguine artisanales", "categorie": "Pâtes", "unite": "kg", "prix_achat": 9.5, "fournisseur": "Maison Artigiana"},
+        {"nom": "Rigatoni", "categorie": "Pâtes", "unite": "kg", "prix_achat": 8.8, "fournisseur": "Maison Artigiana"},
+        {"nom": "Gnocchi frais", "categorie": "Pâtes", "unite": "kg", "prix_achat": 7.2, "fournisseur": "Maison Artigiana"},
+        {"nom": "Farine de pois-chiche", "categorie": "Farine", "unite": "kg", "prix_achat": 6.5, "fournisseur": "Maraîchers de Provence"},
+        
+        # Produits de luxe
+        {"nom": "Truffe d'été Aestivum", "categorie": "Truffe", "unite": "kg", "prix_achat": 800.0, "fournisseur": "Trufficulteurs de Forcalquier"},
+        {"nom": "Huile de truffe", "categorie": "Huile", "unite": "L", "prix_achat": 120.0, "fournisseur": "Trufficulteurs de Forcalquier"},
+        
+        # Condiments et accompagnements
+        {"nom": "Huile d'olive extra vierge", "categorie": "Huile", "unite": "L", "prix_achat": 18.0, "fournisseur": "Maraîchers de Provence"},
+        {"nom": "Huile verte aux herbes", "categorie": "Huile", "unite": "L", "prix_achat": 25.0, "fournisseur": "Maraîchers de Provence"},
+        
+        # Desserts
+        {"nom": "Pistaches de Sicile", "categorie": "Fruits secs", "unite": "kg", "prix_achat": 28.0, "fournisseur": "Maison Artigiana"},
+        {"nom": "Fraises de saison", "categorie": "Fruit", "unite": "kg", "prix_achat": 8.5, "fournisseur": "Maraîchers de Provence"},
+        {"nom": "Mascarpone", "categorie": "Produit laitier", "unite": "kg", "prix_achat": 12.5, "fournisseur": "Maison Artigiana"},
+        {"nom": "Chocolat noir 70%", "categorie": "Chocolat", "unite": "kg", "prix_achat": 22.0, "fournisseur": "Maison Artigiana"}
+    ]
+    
+    # Créer les produits avec stocks initiaux
+    produits_ids = {}
+    for produit_data in demo_produits:
+        existing = await db.produits.find_one({"nom": produit_data["nom"]})
+        if not existing:
+            produit_create_data = {
+                "nom": produit_data["nom"],
+                "categorie": produit_data["categorie"],
+                "unite": produit_data["unite"],
+                "prix_achat": produit_data["prix_achat"],
+                "fournisseur_id": fournisseurs_ids.get(produit_data["fournisseur"])
+            }
+            
+            if produit_create_data["fournisseur_id"]:
+                fournisseur = await db.fournisseurs.find_one({"id": produit_create_data["fournisseur_id"]})
+                if fournisseur:
+                    produit_create_data["fournisseur_nom"] = fournisseur["nom"]
+            
+            produit_obj = Produit(**produit_create_data)
+            await db.produits.insert_one(produit_obj.dict())
+            produits_ids[produit_data["nom"]] = produit_obj.id
+            
+            # Stock initial réaliste selon le type de produit
+            import random
+            if produit_data["categorie"] in ["Truffe", "Foie gras"]:
+                stock_initial = random.uniform(0.5, 3.0)  # Produits rares
+            elif produit_data["unite"] == "pièce":
+                stock_initial = random.uniform(20, 80)  # Fleurs, burrata, etc.
+            elif produit_data["categorie"] in ["Poisson", "Fruits de mer"]:
+                stock_initial = random.uniform(5, 15)  # Produits frais
+            else:
+                stock_initial = random.uniform(10, 50)  # Autres produits
+                
+            stock_obj = Stock(
+                produit_id=produit_obj.id, 
+                produit_nom=produit_obj.nom, 
+                quantite_actuelle=stock_initial,
+                quantite_min=stock_initial * 0.2,
+                quantite_max=stock_initial * 3
+            )
+            await db.stocks.insert_one(stock_obj.dict())
+        else:
+            produits_ids[produit_data["nom"]] = existing["id"]
+    
+    # Recettes basées sur la vraie carte de La Table d'Augustine
+    demo_recettes = [
+        {
+            "nom": "Supions en persillade de Mamie",
+            "description": "Petits calamars que l'on aime cuisiner chez Mamie, une touche d'ail et de persil, les supions sont sans conteste, notre entrée signature.",
+            "categorie": "entrée",
+            "portions": 4,
+            "temps_preparation": 15,
+            "prix_vente": 24.00,
+            "instructions": "1. Nettoyer les supions\n2. Faire chauffer l'huile d'olive\n3. Saisir les supions 2 minutes\n4. Ajouter l'ail et le persil\n5. Assaisonner et servir immédiatement",
+            "ingredients": [
+                {"produit": "Supions (petits calamars)", "quantite": 800, "unite": "g"},
+                {"produit": "Ail de Provence", "quantite": 30, "unite": "g"},
+                {"produit": "Persil plat", "quantite": 2, "unite": "botte"},
+                {"produit": "Huile d'olive extra vierge", "quantite": 80, "unite": "mL"}
+            ]
+        },
+        {
+            "nom": "Fleurs de courgettes de Mamet",
+            "description": "Fleurs de courgette croustillantes et sa crème de brousse menthe et citron vert. Votre coup de cœur, sans aucun doute",
+            "categorie": "entrée",
+            "portions": 4,
+            "temps_preparation": 25,
+            "prix_vente": 21.00,
+            "instructions": "1. Préparer la pâte à beignet\n2. Farcir les fleurs avec la brousse\n3. Tremper dans la pâte\n4. Frire à 170°C\n5. Servir avec la crème menthe-citron",
+            "ingredients": [
+                {"produit": "Fleurs de courgettes", "quantite": 12, "unite": "pièce"},
+                {"produit": "Brousse fraîche", "quantite": 200, "unite": "g"},
+                {"produit": "Menthe fraîche", "quantite": 1, "unite": "botte"},
+                {"produit": "Farine de pois-chiche", "quantite": 150, "unite": "g"}
+            ]
+        },
+        {
+            "nom": "Burrata des Pouilles et tomates anciennes",
+            "description": "La Maison Artigiana a reçu le prix de la meilleure burrata du monde en 2018 et 2019.",
+            "categorie": "entrée",
+            "portions": 2,
+            "temps_preparation": 10,
+            "prix_vente": 18.00,
+            "instructions": "1. Sortir la burrata 30 min avant\n2. Trancher les tomates anciennes\n3. Dresser harmonieusement\n4. Arroser d'huile d'olive\n5. Assaisonner délicatement",
+            "ingredients": [
+                {"produit": "Burrata des Pouilles Artigiana", "quantite": 2, "unite": "pièce"},
+                {"produit": "Tomates anciennes", "quantite": 400, "unite": "g"},
+                {"produit": "Huile d'olive extra vierge", "quantite": 50, "unite": "mL"}
+            ]
+        },
+        {
+            "nom": "Linguine aux palourdes & sauce à l'ail",
+            "description": "Un véritable plat gourmand avec une sélection de palourdes minutieuse. Sa sauce à l'ail onctueuse et son beurre monté sont un secret familial.",
+            "categorie": "plat",
+            "portions": 4,
+            "temps_preparation": 20,
+            "prix_vente": 28.00,
+            "instructions": "1. Faire dégorger les palourdes\n2. Cuire les linguines al dente\n3. Ouvrir les palourdes au vin blanc\n4. Préparer la sauce à l'ail secrète\n5. Mélanger et monter au beurre",
+            "ingredients": [
+                {"produit": "Linguine artisanales", "quantite": 400, "unite": "g"},
+                {"produit": "Palourdes", "quantite": 1000, "unite": "g"},
+                {"produit": "Ail de Provence", "quantite": 40, "unite": "g"},
+                {"produit": "Persil plat", "quantite": 1, "unite": "botte"}
+            ]
+        },
+        {
+            "nom": "Rigatoni à la truffe fraîche de Forcalquier",
+            "description": "Délectez-vous de ce plat mythique de Mamet avec ces truffes fraîches (Aestivum) & sa merveilleuse crème.",
+            "categorie": "plat",
+            "portions": 4,
+            "temps_preparation": 15,
+            "prix_vente": 31.00,
+            "instructions": "1. Cuire les rigatoni al dente\n2. Préparer la crème à la truffe\n3. Râper la truffe fraîche\n4. Mélanger délicatement\n5. Servir immédiatement avec copeaux de truffe",
+            "ingredients": [
+                {"produit": "Rigatoni", "quantite": 400, "unite": "g"},
+                {"produit": "Truffe d'été Aestivum", "quantite": 60, "unite": "g"},
+                {"produit": "Huile de truffe", "quantite": 20, "unite": "mL"},
+                {"produit": "Stracciatella", "quantite": 200, "unite": "g"}
+            ]
+        },
+        {
+            "nom": "Gnocchi d'Augustine sauce napolitaine",
+            "description": "Un classique chez Mamet: Tomate du soleil & cœur de burrata crémeuse.",
+            "categorie": "plat",
+            "portions": 4,
+            "temps_preparation": 25,
+            "prix_vente": 22.00,
+            "instructions": "1. Préparer la sauce tomate napolitaine\n2. Cuire les gnocchi dans l'eau salée\n3. Les faire sauter dans la sauce\n4. Ajouter la stracciatella\n5. Servir bien chaud",
+            "ingredients": [
+                {"produit": "Gnocchi frais", "quantite": 600, "unite": "g"},
+                {"produit": "Tomates anciennes", "quantite": 500, "unite": "g"},
+                {"produit": "Stracciatella", "quantite": 150, "unite": "g"},
+                {"produit": "Ail de Provence", "quantite": 20, "unite": "g"}
+            ]
+        },
+        {
+            "nom": "Souris d'agneau confite",
+            "description": "8h de cuisson pour quelques minutes de plaisir. L'emblématique souris d'agneau (400 gr) est le seul plat qui n'est jamais sorti de la carte.",
+            "categorie": "plat",
+            "portions": 2,
+            "temps_preparation": 480,
+            "prix_vente": 36.00,
+            "instructions": "1. Assaisonner les souris 24h avant\n2. Confit à basse température 8h\n3. Préparer les gnocchi\n4. Réduire le jus de cuisson\n5. Dresser avec le jus réduit",
+            "ingredients": [
+                {"produit": "Souris d'agneau", "quantite": 800, "unite": "g"},
+                {"produit": "Gnocchi frais", "quantite": 400, "unite": "g"},
+                {"produit": "Ail de Provence", "quantite": 30, "unite": "g"},
+                {"produit": "Huile d'olive extra vierge", "quantite": 100, "unite": "mL"}
+            ]
+        },
+        {
+            "nom": "Bœuf Wellington à la truffe",
+            "description": "Le 'Filet de bœuf en croûte' tricolore : viande limousine, champignons frais, jus de viande. Le plaisir et ses lettres de noblesse.",
+            "categorie": "plat",
+            "portions": 4,
+            "temps_preparation": 90,
+            "prix_vente": 56.00,
+            "instructions": "1. Saisir le filet de bœuf\n2. Préparer la duxelles de champignons\n3. Étaler la pâte feuilletée\n4. Assembler avec la truffe\n5. Cuire au four 25 min à 200°C",
+            "ingredients": [
+                {"produit": "Bœuf Limousin (filet)", "quantite": 800, "unite": "g"},
+                {"produit": "Champignons de Paris", "quantite": 300, "unite": "g"},
+                {"produit": "Truffe d'été Aestivum", "quantite": 40, "unite": "g"}
+            ]
+        },
+        {
+            "nom": "Salade pastèque-féta & menthe ciselée",
+            "description": "L'entrée fraîcheur d'Augustine iconique depuis 2020.",
+            "categorie": "entrée",
+            "portions": 4,
+            "temps_preparation": 15,
+            "prix_vente": 16.00,
+            "instructions": "1. Couper la pastèque en cubes\n2. Émietter la féta\n3. Ciseler la menthe fraîche\n4. Dresser harmonieusement\n5. Arroser d'huile d'olive",
+            "ingredients": [
+                {"produit": "Pastèque", "quantite": 600, "unite": "g"},
+                {"produit": "Féta", "quantite": 200, "unite": "g"},
+                {"produit": "Menthe fraîche", "quantite": 2, "unite": "botte"},
+                {"produit": "Huile d'olive extra vierge", "quantite": 60, "unite": "mL"}
+            ]
+        },
+        {
+            "nom": "Tiramisu de Mamet",
+            "description": "Connaissez-vous le Tiramisu d'Augustine ?",
+            "categorie": "dessert",
+            "portions": 6,
+            "temps_preparation": 30,
+            "prix_vente": 9.00,
+            "instructions": "1. Préparer le café serré\n2. Monter le mascarpone avec les œufs\n3. Tremper les biscuits\n4. Alterner les couches\n5. Réserver au frais 4h minimum",
+            "ingredients": [
+                {"produit": "Mascarpone", "quantite": 500, "unite": "g"},
+                {"produit": "Chocolat noir 70%", "quantite": 100, "unite": "g"}
+            ]
+        }
+    ]
+    
+    # Créer les recettes
+    recettes_count = 0
+    for recette_data in demo_recettes:
+        existing = await db.recettes.find_one({"nom": recette_data["nom"]})
+        if not existing:
+            ingredients_with_ids = []
+            for ingredient in recette_data["ingredients"]:
+                produit_id = produits_ids.get(ingredient["produit"])
+                if produit_id:
+                    produit = await db.produits.find_one({"id": produit_id})
+                    ingredients_with_ids.append({
+                        "produit_id": produit_id,
+                        "produit_nom": produit["nom"] if produit else ingredient["produit"],
+                        "quantite": ingredient["quantite"],
+                        "unite": ingredient["unite"]
+                    })
+            
+            recette_create_data = {
+                "nom": recette_data["nom"],
+                "description": recette_data["description"],
+                "categorie": recette_data["categorie"],
+                "portions": recette_data["portions"],
+                "temps_preparation": recette_data["temps_preparation"],
+                "prix_vente": recette_data["prix_vente"],
+                "instructions": recette_data["instructions"],
+                "ingredients": ingredients_with_ids
+            }
+            
+            recette_obj = Recette(**recette_create_data)
+            await db.recettes.insert_one(recette_obj.dict())
+            recettes_count += 1
+    
+    return {
+        "message": "Données de La Table d'Augustine créées avec succès",
+        "fournisseurs_crees": len(demo_fournisseurs),
+        "produits_crees": len(demo_produits),
+        "recettes_creees": recettes_count,
+        "restaurant": "La Table d'Augustine - Restaurant méditerranéen avec spécialités provençales et corses"
+    }
+
 # Routes pour le traitement OCR
 @api_router.post("/ocr/upload-document", response_model=DocumentUploadResponse)
 async def upload_and_process_document(
