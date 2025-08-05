@@ -698,11 +698,9 @@ function App() {
                   ))
                 )}
                 {documentsOcr.length === 0 && (
-                  <>
-                    <div className="table-row">
-                      <span>Aucune donnée extraite</span>
-                    </div>
-                  </>
+                  <div className="table-row">
+                    <span>Aucune donnée extraite</span>
+                  </div>
                 )}
               </div>
               
@@ -1251,1324 +1249,504 @@ function App() {
           </div>
         </div>
       </div>
-          <div className="px-4 py-6 sm:px-0">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-              <div className="bg-white overflow-hidden shadow rounded-lg">
-                <div className="p-5">
-                  <div className="flex items-center">
-                    <div className="flex-shrink-0">
-                      <span className="text-2xl">🥘</span>
-                    </div>
-                    <div className="ml-5 w-0 flex-1">
-                      <dl>
-                        <dt className="text-sm font-medium text-gray-500 truncate">Total Produits</dt>
-                        <dd className="text-lg font-medium text-gray-900">{dashboardStats.total_produits || 0}</dd>
-                      </dl>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="bg-white overflow-hidden shadow rounded-lg">
-                <div className="p-5">
-                  <div className="flex items-center">
-                    <div className="flex-shrink-0">
-                      <span className="text-2xl">🏪</span>
-                    </div>
-                    <div className="ml-5 w-0 flex-1">
-                      <dl>
-                        <dt className="text-sm font-medium text-gray-500 truncate">Fournisseurs</dt>
-                        <dd className="text-lg font-medium text-gray-900">{dashboardStats.total_fournisseurs || 0}</dd>
-                      </dl>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="bg-white overflow-hidden shadow rounded-lg">
-                <div className="p-5">
-                  <div className="flex items-center">
-                    <div className="flex-shrink-0">
-                      <span className="text-2xl">⚠️</span>
-                    </div>
-                    <div className="ml-5 w-0 flex-1">
-                      <dl>
-                        <dt className="text-sm font-medium text-gray-500 truncate">Stocks Faibles</dt>
-                        <dd className="text-lg font-medium text-red-600">{dashboardStats.stocks_faibles || 0}</dd>
-                      </dl>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="bg-white overflow-hidden shadow rounded-lg">
-                <div className="p-5">
-                  <div className="flex items-center">
-                    <div className="flex-shrink-0">
-                      <span className="text-2xl">🔄</span>
-                    </div>
-                    <div className="ml-5 w-0 flex-1">
-                      <dl>
-                        <dt className="text-sm font-medium text-gray-500 truncate">Stocks Récents</dt>
-                        <dd className="text-lg font-medium text-green-600">{dashboardStats.stocks_recents || 0}</dd>
-                      </dl>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Derniers mouvements */}
-            <div className="bg-white shadow rounded-lg">
-              <div className="px-4 py-5 sm:p-6">
-                <h3 className="text-lg leading-6 font-medium text-gray-900 mb-4">Derniers Mouvements</h3>
-                <div className="overflow-x-auto">
-                  <table className="min-w-full divide-y divide-gray-200">
-                    <thead className="bg-gray-50">
-                      <tr>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Produit</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Quantité</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                      </tr>
-                    </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
-                      {mouvements.map((mouvement) => (
-                        <tr key={mouvement.id}>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                            {mouvement.produit_nom || "Produit inconnu"}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                              mouvement.type === 'entree' ? 'bg-green-100 text-green-800' :
-                              mouvement.type === 'sortie' ? 'bg-red-100 text-red-800' :
-                              'bg-blue-100 text-blue-800'
-                            }`}>
-                              {mouvement.type}
-                            </span>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                            {mouvement.quantite}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {new Date(mouvement.date).toLocaleDateString('fr-FR')}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Stocks */}
-        {activeTab === "stocks" && (
-          <div className="px-4 py-6 sm:px-0">
-            <div className="sm:flex sm:items-center mb-6">
-              <div className="sm:flex-auto">
-                <h1 className="text-xl font-semibold text-gray-900">Gestion des Stocks</h1>
-                <p className="mt-2 text-sm text-gray-700">
-                  Vue d'ensemble des niveaux de stock actuels
-                </p>
-              </div>
-              <div className="mt-4 sm:mt-0 sm:ml-16 sm:flex-none">
-                <button
-                  onClick={() => setShowMouvementModal(true)}
-                  className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors"
-                >
-                  + Nouveau Mouvement
-                </button>
-              </div>
-            </div>
-
-            <div className="bg-white shadow rounded-lg overflow-hidden">
-              <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200">
-                  <thead className="bg-gray-50">
-                    <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Produit</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Quantité Actuelle</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Quantité Min</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Quantité Max</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Statut</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Dernière MAJ</th>
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
-                    {stocks.map((stock) => {
-                      const isLowStock = stock.quantite_actuelle <= stock.quantite_min;
-                      const produit = produits.find(p => p.id === stock.produit_id);
-                      const unite = getDisplayUnit(produit?.unite);
-                      
-                      return (
-                        <tr key={stock.id}>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <div>
-                              <div className="text-sm font-medium text-gray-900">
-                                {stock.produit_nom || "Produit inconnu"}
-                              </div>
-                              {produit && (
-                                <div className="text-xs text-gray-500">
-                                  Catégorie: {produit.categorie || 'Non définie'}
-                                </div>
-                              )}
-                            </div>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <div className="text-sm font-medium text-gray-900">
-                              {formatQuantity(stock.quantite_actuelle, unite)}
-                            </div>
-                            <div className="text-xs text-gray-500">
-                              Actuel
-                            </div>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <div className="text-sm text-gray-500">
-                              {formatQuantity(stock.quantite_min, unite)}
-                            </div>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <div className="text-sm text-gray-500">
-                              {stock.quantite_max ? 
-                                formatQuantity(stock.quantite_max, unite) : 
-                                'Non défini'}
-                            </div>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                              isLowStock ? 'bg-red-100 text-red-800' : 
-                              stock.quantite_actuelle <= stock.quantite_min * 1.5 ? 'bg-yellow-100 text-yellow-800' :
-                              'bg-green-100 text-green-800'
-                            }`}>
-                              {isLowStock ? "🔴 Stock faible" : 
-                               stock.quantite_actuelle <= stock.quantite_min * 1.5 ? "⚠️ Attention" :
-                               "✅ Normal"}
-                            </span>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {new Date(stock.derniere_maj).toLocaleDateString('fr-FR', {
-                              day: '2-digit',
-                              month: '2-digit',
-                              year: '2-digit',
-                              hour: '2-digit',
-                              minute: '2-digit'
-                            })}
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Produits */}
-        {activeTab === "produits" && (
-          <div className="px-4 py-6 sm:px-0">
-            <div className="sm:flex sm:items-center mb-6">
-              <div className="sm:flex-auto">
-                <h1 className="text-xl font-semibold text-gray-900">Gestion des Produits</h1>
-                <p className="mt-2 text-sm text-gray-700">
-                  Gérez votre catalogue de produits
-                </p>
-              </div>
-              <div className="mt-4 sm:mt-0 sm:ml-16 sm:flex-none">
-                <button
-                  onClick={() => setShowProduitModal(true)}
-                  className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors"
-                >
-                  + Nouveau Produit
-                </button>
-              </div>
-            </div>
-
-            <div className="bg-white shadow rounded-lg overflow-hidden">
-              <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200">
-                  <thead className="bg-gray-50">
-                    <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nom</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Catégorie</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Unité</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Prix Achat</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fournisseur</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
-                    {produits.map((produit) => (
-                      <tr key={produit.id}>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div>
-                            <div className="text-sm font-medium text-gray-900">{produit.nom}</div>
-                            <div className="text-sm text-gray-500">{produit.description}</div>
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                          {produit.categorie || "-"}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                          {produit.unite}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                          {produit.prix_achat ? `${produit.prix_achat}€` : "-"}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                          {produit.fournisseur_nom || "-"}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                          <button 
-                            onClick={() => handleEdit(produit, 'produit')}
-                            className="text-blue-600 hover:text-blue-900 mr-3"
-                          >
-                            Modifier
-                          </button>
-                          <button 
-                            onClick={() => handleDelete(produit.id, 'produit')}
-                            className="text-red-600 hover:text-red-900"
-                          >
-                            Supprimer
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Fournisseurs */}
-        {activeTab === "fournisseurs" && (
-          <div className="px-4 py-6 sm:px-0">
-            <div className="sm:flex sm:items-center mb-6">
-              <div className="sm:flex-auto">
-                <h1 className="text-xl font-semibold text-gray-900">Gestion des Fournisseurs</h1>
-                <p className="mt-2 text-sm text-gray-700">
-                  Gérez vos contacts fournisseurs
-                </p>
-              </div>
-              <div className="mt-4 sm:mt-0 sm:ml-16 sm:flex-none">
-                <button
-                  onClick={() => setShowFournisseurModal(true)}
-                  className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors"
-                >
-                  + Nouveau Fournisseur
-                </button>
-              </div>
-            </div>
-
-            <div className="bg-white shadow rounded-lg overflow-hidden">
-              <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200">
-                  <thead className="bg-gray-50">
-                    <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nom</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Contact</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Téléphone</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
-                    {fournisseurs.map((fournisseur) => (
-                      <tr key={fournisseur.id}>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm font-medium text-gray-900">{fournisseur.nom}</div>
-                          <div className="text-sm text-gray-500">{fournisseur.adresse}</div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                          {fournisseur.contact || "-"}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                          {fournisseur.email || "-"}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                          {fournisseur.telephone || "-"}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                          <button 
-                            onClick={() => handleEdit(fournisseur, 'fournisseur')}
-                            className="text-blue-600 hover:text-blue-900 mr-3"
-                          >
-                            Modifier
-                          </button>
-                          <button 
-                            onClick={() => handleDelete(fournisseur.id, 'fournisseur')}
-                            className="text-red-600 hover:text-red-900"
-                          >
-                            Supprimer
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Recettes */}
-        {activeTab === "recettes" && (
-          <div className="px-4 py-6 sm:px-0">
-            <div className="sm:flex sm:items-center mb-6">
-              <div className="sm:flex-auto">
-                <h1 className="text-xl font-semibold text-gray-900">Gestion des Recettes</h1>
-                <p className="mt-2 text-sm text-gray-700">
-                  Gérez vos recettes et calculez la production possible
-                </p>
-              </div>
-              <div className="mt-4 sm:mt-0 sm:ml-16 sm:flex-none space-x-2">
-                <button
-                  onClick={handleExportRecettes}
-                  className="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 transition-colors"
-                >
-                  📊 Export Excel
-                </button>
-                <label className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors cursor-pointer">
-                  📁 Import Excel
-                  <input type="file" accept=".xlsx,.xls" onChange={handleImportRecettes} className="hidden" />
-                </label>
-                <button
-                  onClick={() => setShowRecetteModal(true)}
-                  className="bg-orange-600 text-white px-4 py-2 rounded-md hover:bg-orange-700 transition-colors"
-                >
-                  + Nouvelle Recette
-                </button>
-              </div>
-            </div>
-
-            <div className="bg-white shadow rounded-lg overflow-hidden">
-              <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200">
-                  <thead className="bg-gray-50">
-                    <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nom</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Catégorie</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Portions</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Temps</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Prix Vente</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Production Max</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
-                    {recettes.map((recette) => (
-                      <tr key={recette.id}>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div>
-                            <div className="text-sm font-medium text-gray-900">{recette.nom}</div>
-                            <div className="text-sm text-gray-500">{recette.description}</div>
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                            recette.categorie === 'entrée' ? 'bg-blue-100 text-blue-800' :
-                            recette.categorie === 'plat' ? 'bg-green-100 text-green-800' :
-                            recette.categorie === 'dessert' ? 'bg-pink-100 text-pink-800' :
-                            'bg-gray-100 text-gray-800'
-                          }`}>
-                            {recette.categorie || 'Non défini'}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                          {recette.portions}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                          {recette.temps_preparation ? `${recette.temps_preparation} min` : '-'}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                          {recette.prix_vente ? `${recette.prix_vente}€` : '-'}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm">
-                          <button
-                            onClick={() => calculateProductionCapacity(recette.id)}
-                            className="bg-indigo-600 text-white px-3 py-1 rounded text-xs hover:bg-indigo-700"
-                          >
-                            Calculer
-                          </button>
-                          {selectedRecette === recette.id && productionCapacity && (
-                            <div className="mt-1 text-xs text-indigo-600 font-medium">
-                              {productionCapacity.portions_max} portions
-                            </div>
-                          )}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                          <button 
-                            onClick={() => handleEdit(recette, 'recette')}
-                            className="text-blue-600 hover:text-blue-900 mr-3"
-                          >
-                            Modifier
-                          </button>
-                          <button 
-                            onClick={() => handleDelete(recette.id, 'recette')}
-                            className="text-red-600 hover:text-red-900"
-                          >
-                            Supprimer
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-
-            {/* Détails de production capacity */}
-            {productionCapacity && (
-              <div className="mt-6 bg-indigo-50 border border-indigo-200 rounded-lg p-6">
-                <h3 className="text-lg font-medium text-indigo-900 mb-4">
-                  Capacité de production: {productionCapacity.recette_nom}
-                </h3>
-                <div className="bg-white rounded-md p-4 mb-4">
-                  <div className="text-2xl font-bold text-indigo-600 text-center">
-                    Vous pouvez préparer <span className="text-3xl">{productionCapacity.portions_max}</span> portions
-                  </div>
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {productionCapacity.ingredients_status.map((ingredient, index) => {
-                    const unite = getDisplayUnit(ingredient.unite);
-                    return (
-                      <div key={index} className={`p-4 rounded-lg border ${
-                        ingredient.portions_possibles === 0 ? 'bg-red-50 border-red-200' :
-                        ingredient.portions_possibles < productionCapacity.portions_max + 1 ? 'bg-yellow-50 border-yellow-200' :
-                        'bg-green-50 border-green-200'
-                      }`}>
-                        <h4 className="font-medium text-gray-900">{ingredient.produit_nom}</h4>
-                        <div className="mt-2 text-sm text-gray-600">
-                          <div>
-                            <span className="font-medium">Disponible:</span> {formatQuantity(ingredient.quantite_disponible, unite)}
-                          </div>
-                          <div>
-                            <span className="font-medium">Requis/portion:</span> {formatQuantity(ingredient.quantite_requise_par_portion, unite)}
-                          </div>
-                          <div className="font-medium mt-2">
-                            <span className={`inline-flex px-2 py-1 text-xs rounded-full ${
-                              ingredient.portions_possibles === 0 ? 'bg-red-100 text-red-800' :
-                              ingredient.portions_possibles < productionCapacity.portions_max + 1 ? 'bg-yellow-100 text-yellow-800' :
-                              'bg-green-100 text-green-800'
-                            }`}>
-                              Max: {ingredient.portions_possibles === Infinity ? '∞' : Math.floor(ingredient.portions_possibles)} portions
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* OCR Documents */}
-        {activeTab === "ocr" && (
-          <div className="px-4 py-6 sm:px-0">
-            <div className="sm:flex sm:items-center mb-6">
-              <div className="sm:flex-auto">
-                <h1 className="text-xl font-semibold text-gray-900">Traitement OCR des Documents</h1>
-                <p className="mt-2 text-sm text-gray-700">
-                  Uploadez vos rapports Z et factures fournisseurs pour extraction automatique des données
-                </p>
-              </div>
-              <div className="mt-4 sm:mt-0 sm:ml-16 sm:flex-none">
-                <button
-                  onClick={() => setShowOcrModal(true)}
-                  className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors"
-                >
-                  📷 Nouveau Document
-                </button>
-              </div>
-            </div>
-
-            {/* Liste des documents traités */}
-            <div className="bg-white shadow rounded-lg overflow-hidden">
-              <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200">
-                  <thead className="bg-gray-50">
-                    <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Document</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date Upload</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Statut</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Données Extraites</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
-                    {documentsOcr.map((doc) => (
-                      <tr key={doc.id}>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm font-medium text-gray-900">{doc.nom_fichier}</div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                            doc.type_document === 'z_report' ? 'bg-purple-100 text-purple-800' : 'bg-orange-100 text-orange-800'
-                          }`}>
-                            {doc.type_document === 'z_report' ? 'Rapport Z' : 'Facture'}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                          {new Date(doc.date_upload).toLocaleDateString('fr-FR')}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                            doc.statut === 'traite' ? 'bg-green-100 text-green-800' :
-                            doc.statut === 'stock_traite' ? 'bg-blue-100 text-blue-800' :
-                            doc.statut === 'erreur' ? 'bg-red-100 text-red-800' :
-                            'bg-yellow-100 text-yellow-800'
-                          }`}>
-                            {doc.statut === 'traite' ? 'OCR Traité' : 
-                             doc.statut === 'stock_traite' ? 'Stock Traité' :
-                             doc.statut === 'erreur' ? 'Erreur' : 'En Attente'}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4 text-sm text-gray-500">
-                          {doc.type_document === 'z_report' && doc.donnees_parsees ? (
-                            <div>
-                              <div>{doc.donnees_parsees.plats_vendus?.length || 0} plats détectés</div>
-                              {doc.donnees_parsees.total_ca && <div>CA: {doc.donnees_parsees.total_ca}€</div>}
-                            </div>
-                          ) : doc.type_document === 'facture_fournisseur' && doc.donnees_parsees ? (
-                            <div>
-                              <div>{doc.donnees_parsees.produits?.length || 0} produits</div>
-                              {doc.donnees_parsees.fournisseur && <div>{doc.donnees_parsees.fournisseur}</div>}
-                            </div>
-                          ) : 'Aucune donnée'}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                          {doc.type_document === 'z_report' && doc.statut === 'traite' && (
-                            <button 
-                              onClick={() => handleProcessZReport(doc.id)}
-                              disabled={loading}
-                              className="text-blue-600 hover:text-blue-900 mr-3 disabled:opacity-50"
-                            >
-                              🔄 Traiter Stock
-                            </button>
-                          )}
-                          <button 
-                            onClick={() => window.open(`data:application/json,${encodeURIComponent(JSON.stringify(doc.donnees_parsees, null, 2))}`, '_blank')}
-                            className="text-green-600 hover:text-green-900 mr-3"
-                          >
-                            👁️ Voir
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                    {documentsOcr.length === 0 && (
-                      <tr>
-                        <td colSpan="6" className="px-6 py-4 text-center text-gray-500">
-                          Aucun document traité. Uploadez votre premier document !
-                        </td>
-                      </tr>
-                    )}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Mouvements */}
-        {activeTab === "mouvements" && (
-          <div className="px-4 py-6 sm:px-0">
-            <div className="sm:flex sm:items-center mb-6">
-              <div className="sm:flex-auto">
-                <h1 className="text-xl font-semibold text-gray-900">Historique des Mouvements</h1>
-                <p className="mt-2 text-sm text-gray-700">
-                  Suivi complet des entrées et sorties de stock
-                </p>
-              </div>
-            </div>
-
-            <div className="bg-white shadow rounded-lg overflow-hidden">
-              <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200">
-                  <thead className="bg-gray-50">
-                    <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Produit</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Quantité</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Référence</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Commentaire</th>
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
-                    {mouvements.map((mouvement) => {
-                      const produit = produits.find(p => p.id === mouvement.produit_id);
-                      const unite = getDisplayUnit(produit?.unite);
-                      
-                      return (
-                        <tr key={mouvement.id}>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                            {new Date(mouvement.date).toLocaleString('fr-FR', {
-                              day: '2-digit',
-                              month: '2-digit',
-                              year: '2-digit',
-                              hour: '2-digit',
-                              minute: '2-digit'
-                            })}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <div className="text-sm font-medium text-gray-900">
-                              {mouvement.produit_nom || "Produit inconnu"}
-                            </div>
-                            {mouvement.fournisseur_nom && (
-                              <div className="text-xs text-gray-500">
-                                {mouvement.fournisseur_nom}
-                              </div>
-                            )}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                              mouvement.type === 'entree' ? 'bg-green-100 text-green-800' :
-                              mouvement.type === 'sortie' ? 'bg-red-100 text-red-800' :
-                              'bg-blue-100 text-blue-800'
-                            }`}>
-                              {mouvement.type === 'entree' ? '⬆️ Entrée' :
-                               mouvement.type === 'sortie' ? '⬇️ Sortie' : '🔄 Ajustement'}
-                            </span>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <div className={`text-sm font-medium ${
-                              mouvement.type === 'entree' ? 'text-green-600' :
-                              mouvement.type === 'sortie' ? 'text-red-600' : 'text-blue-600'
-                            }`}>
-                              {mouvement.type === 'sortie' ? '-' : '+'}
-                              {formatQuantity(Math.abs(mouvement.quantite), unite)}
-                            </div>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {mouvement.reference || "-"}
-                          </td>
-                          <td className="px-6 py-4 text-sm text-gray-500">
-                            <div className="max-w-xs truncate" title={mouvement.commentaire}>
-                              {mouvement.commentaire || "-"}
-                            </div>
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </div>
-        )}
-      </main>
 
       {/* Modal Produit */}
       {showProduitModal && (
-        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-          <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
-            <div className="mt-3">
-              <h3 className="text-lg font-medium text-gray-900 mb-4">
-                {editingItem ? "Modifier le produit" : "Nouveau produit"}
-              </h3>
-              <form onSubmit={handleProduitSubmit} className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">Nom *</label>
-                  <input
-                    type="text"
-                    required
-                    value={produitForm.nom}
-                    onChange={(e) => setProduitForm({...produitForm, nom: e.target.value})}
-                    className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">Description</label>
-                  <textarea
-                    value={produitForm.description}
-                    onChange={(e) => setProduitForm({...produitForm, description: e.target.value})}
-                    className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">Catégorie</label>
-                  <input
-                    type="text"
-                    value={produitForm.categorie}
-                    onChange={(e) => setProduitForm({...produitForm, categorie: e.target.value})}
-                    className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">Unité *</label>
-                  <select
-                    required
-                    value={produitForm.unite}
-                    onChange={(e) => setProduitForm({...produitForm, unite: e.target.value})}
-                    className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-                  >
-                    <option value="">Sélectionner</option>
-                    <option value="kg">kg</option>
-                    <option value="g">g</option>
-                    <option value="L">L</option>
-                    <option value="mL">mL</option>
-                    <option value="pièce">pièce</option>
-                    <option value="boîte">boîte</option>
-                    <option value="paquet">paquet</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">Prix d'achat (€)</label>
-                  <input
-                    type="number"
-                    step="0.01"
-                    value={produitForm.prix_achat}
-                    onChange={(e) => setProduitForm({...produitForm, prix_achat: e.target.value})}
-                    className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">Fournisseur</label>
-                  <select
-                    value={produitForm.fournisseur_id}
-                    onChange={(e) => setProduitForm({...produitForm, fournisseur_id: e.target.value})}
-                    className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-                  >
-                    <option value="">Aucun fournisseur</option>
-                    {fournisseurs.map(f => (
-                      <option key={f.id} value={f.id}>{f.nom}</option>
-                    ))}
-                  </select>
-                </div>
-                <div className="flex justify-end space-x-3 pt-4">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setShowProduitModal(false);
-                      setEditingItem(null);
-                      setProduitForm({ nom: "", description: "", categorie: "", unite: "", prix_achat: "", fournisseur_id: "" });
-                    }}
-                    className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50"
-                  >
-                    Annuler
-                  </button>
-                  <button
-                    type="submit"
-                    disabled={loading}
-                    className="px-4 py-2 bg-blue-600 border border-transparent rounded-md text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
-                  >
-                    {loading ? "Sauvegarde..." : "Sauvegarder"}
-                  </button>
-                </div>
-              </form>
-            </div>
+        <div className="modal-overlay">
+          <div className="modal-content">
+            <h3 className="modal-header">
+              {editingItem ? "Modifier le produit" : "Ajouter un produit"}
+            </h3>
+            <form onSubmit={handleProduitSubmit}>
+              <div className="form-group">
+                <label className="form-label">Nom du produit</label>
+                <input
+                  type="text"
+                  className="form-input"
+                  value={produitForm.nom}
+                  onChange={(e) => setProduitForm({...produitForm, nom: e.target.value})}
+                  required
+                />
+              </div>
+              <div className="form-group">
+                <label className="form-label">Description</label>
+                <textarea
+                  className="form-textarea"
+                  value={produitForm.description}
+                  onChange={(e) => setProduitForm({...produitForm, description: e.target.value})}
+                />
+              </div>
+              <div className="form-group">
+                <label className="form-label">Catégorie</label>
+                <input
+                  type="text"
+                  className="form-input"
+                  value={produitForm.categorie}
+                  onChange={(e) => setProduitForm({...produitForm, categorie: e.target.value})}
+                />
+              </div>
+              <div className="form-group">
+                <label className="form-label">Unité</label>
+                <select
+                  className="form-select"
+                  value={produitForm.unite}
+                  onChange={(e) => setProduitForm({...produitForm, unite: e.target.value})}
+                  required
+                >
+                  <option value="">Sélectionnez une unité</option>
+                  <option value="kg">Kilogramme (kg)</option>
+                  <option value="g">Gramme (g)</option>
+                  <option value="L">Litre (L)</option>
+                  <option value="mL">Millilitre (mL)</option>
+                  <option value="pièce">Pièce</option>
+                  <option value="paquet">Paquet</option>
+                </select>
+              </div>
+              <div className="form-group">
+                <label className="form-label">Prix d'achat (€)</label>
+                <input
+                  type="number"
+                  step="0.01"
+                  className="form-input"
+                  value={produitForm.prix_achat}
+                  onChange={(e) => setProduitForm({...produitForm, prix_achat: e.target.value})}
+                />
+              </div>
+              <div className="form-group">
+                <label className="form-label">Fournisseur</label>
+                <select
+                  className="form-select"
+                  value={produitForm.fournisseur_id}
+                  onChange={(e) => setProduitForm({...produitForm, fournisseur_id: e.target.value})}
+                >
+                  <option value="">Sélectionnez un fournisseur</option>
+                  {fournisseurs.map((fournisseur) => (
+                    <option key={fournisseur.id} value={fournisseur.id}>
+                      {fournisseur.nom}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="button-group">
+                <button
+                  type="button"
+                  className="button btn-cancel"
+                  onClick={() => {
+                    setShowProduitModal(false);
+                    setEditingItem(null);
+                    setProduitForm({ nom: "", description: "", categorie: "", unite: "", prix_achat: "", fournisseur_id: "" });
+                  }}
+                >
+                  Annuler
+                </button>
+                <button
+                  type="submit"
+                  className="button btn-primary"
+                  disabled={loading}
+                >
+                  {loading ? "Sauvegarde..." : (editingItem ? "Modifier" : "Ajouter")}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}
 
       {/* Modal Fournisseur */}
       {showFournisseurModal && (
-        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-          <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
-            <div className="mt-3">
-              <h3 className="text-lg font-medium text-gray-900 mb-4">
-                {editingItem ? "Modifier le fournisseur" : "Nouveau fournisseur"}
-              </h3>
-              <form onSubmit={handleFournisseurSubmit} className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">Nom *</label>
-                  <input
-                    type="text"
-                    required
-                    value={fournisseurForm.nom}
-                    onChange={(e) => setFournisseurForm({...fournisseurForm, nom: e.target.value})}
-                    className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">Contact</label>
-                  <input
-                    type="text"
-                    value={fournisseurForm.contact}
-                    onChange={(e) => setFournisseurForm({...fournisseurForm, contact: e.target.value})}
-                    className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">Email</label>
-                  <input
-                    type="email"
-                    value={fournisseurForm.email}
-                    onChange={(e) => setFournisseurForm({...fournisseurForm, email: e.target.value})}
-                    className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">Téléphone</label>
-                  <input
-                    type="tel"
-                    value={fournisseurForm.telephone}
-                    onChange={(e) => setFournisseurForm({...fournisseurForm, telephone: e.target.value})}
-                    className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">Adresse</label>
-                  <textarea
-                    value={fournisseurForm.adresse}
-                    onChange={(e) => setFournisseurForm({...fournisseurForm, adresse: e.target.value})}
-                    className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-                  />
-                </div>
-                <div className="flex justify-end space-x-3 pt-4">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setShowFournisseurModal(false);
-                      setEditingItem(null);
-                      setFournisseurForm({ nom: "", contact: "", email: "", telephone: "", adresse: "" });
-                    }}
-                    className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50"
-                  >
-                    Annuler
-                  </button>
-                  <button
-                    type="submit"
-                    disabled={loading}
-                    className="px-4 py-2 bg-blue-600 border border-transparent rounded-md text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
-                  >
-                    {loading ? "Sauvegarde..." : "Sauvegarder"}
-                  </button>
-                </div>
-              </form>
-            </div>
+        <div className="modal-overlay">
+          <div className="modal-content">
+            <h3 className="modal-header">
+              {editingItem ? "Modifier le fournisseur" : "Ajouter un fournisseur"}
+            </h3>
+            <form onSubmit={handleFournisseurSubmit}>
+              <div className="form-group">
+                <label className="form-label">Nom du fournisseur</label>
+                <input
+                  type="text"
+                  className="form-input"
+                  value={fournisseurForm.nom}
+                  onChange={(e) => setFournisseurForm({...fournisseurForm, nom: e.target.value})}
+                  required
+                />
+              </div>
+              <div className="form-group">
+                <label className="form-label">Contact</label>
+                <input
+                  type="text"
+                  className="form-input"
+                  value={fournisseurForm.contact}
+                  onChange={(e) => setFournisseurForm({...fournisseurForm, contact: e.target.value})}
+                />
+              </div>
+              <div className="form-group">
+                <label className="form-label">Email</label>
+                <input
+                  type="email"
+                  className="form-input"
+                  value={fournisseurForm.email}
+                  onChange={(e) => setFournisseurForm({...fournisseurForm, email: e.target.value})}
+                />
+              </div>
+              <div className="form-group">
+                <label className="form-label">Téléphone</label>
+                <input
+                  type="tel"
+                  className="form-input"
+                  value={fournisseurForm.telephone}
+                  onChange={(e) => setFournisseurForm({...fournisseurForm, telephone: e.target.value})}
+                />
+              </div>
+              <div className="form-group">
+                <label className="form-label">Adresse</label>
+                <textarea
+                  className="form-textarea"
+                  value={fournisseurForm.adresse}
+                  onChange={(e) => setFournisseurForm({...fournisseurForm, adresse: e.target.value})}
+                />
+              </div>
+              <div className="button-group">
+                <button
+                  type="button"
+                  className="button btn-cancel"
+                  onClick={() => {
+                    setShowFournisseurModal(false);
+                    setEditingItem(null);
+                    setFournisseurForm({ nom: "", contact: "", email: "", telephone: "", adresse: "" });
+                  }}
+                >
+                  Annuler
+                </button>
+                <button
+                  type="submit"
+                  className="button btn-primary"
+                  disabled={loading}
+                >
+                  {loading ? "Sauvegarde..." : (editingItem ? "Modifier" : "Ajouter")}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}
 
       {/* Modal Mouvement */}
       {showMouvementModal && (
-        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-          <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
-            <div className="mt-3">
-              <h3 className="text-lg font-medium text-gray-900 mb-4">Nouveau mouvement de stock</h3>
-              <form onSubmit={handleMouvementSubmit} className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">Produit *</label>
-                  <select
-                    required
-                    value={mouvementForm.produit_id}
-                    onChange={(e) => setMouvementForm({...mouvementForm, produit_id: e.target.value})}
-                    className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-                  >
-                    <option value="">Sélectionner un produit</option>
-                    {produits.map(p => (
-                      <option key={p.id} value={p.id}>{p.nom}</option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">Type *</label>
-                  <select
-                    required
-                    value={mouvementForm.type}
-                    onChange={(e) => setMouvementForm({...mouvementForm, type: e.target.value})}
-                    className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-                  >
-                    <option value="entree">Entrée</option>
-                    <option value="sortie">Sortie</option>
-                    <option value="ajustement">Ajustement</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">Quantité *</label>
-                  <input
-                    type="number"
-                    step="0.01"
-                    required
-                    value={mouvementForm.quantite}
-                    onChange={(e) => setMouvementForm({...mouvementForm, quantite: e.target.value})}
-                    className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">Référence</label>
-                  <input
-                    type="text"
-                    value={mouvementForm.reference}
-                    onChange={(e) => setMouvementForm({...mouvementForm, reference: e.target.value})}
-                    className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-                    placeholder="Numéro de facture, bon de livraison..."
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">Commentaire</label>
-                  <textarea
-                    value={mouvementForm.commentaire}
-                    onChange={(e) => setMouvementForm({...mouvementForm, commentaire: e.target.value})}
-                    className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-                    placeholder="Commentaire optionnel..."
-                  />
-                </div>
-                <div className="flex justify-end space-x-3 pt-4">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setShowMouvementModal(false);
-                      setMouvementForm({ produit_id: "", type: "entree", quantite: "", reference: "", commentaire: "" });
-                    }}
-                    className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50"
-                  >
-                    Annuler
-                  </button>
-                  <button
-                    type="submit"
-                    disabled={loading}
-                    className="px-4 py-2 bg-blue-600 border border-transparent rounded-md text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
-                  >
-                    {loading ? "Sauvegarde..." : "Sauvegarder"}
-                  </button>
-                </div>
-              </form>
-            </div>
+        <div className="modal-overlay">
+          <div className="modal-content">
+            <h3 className="modal-header">Nouveau mouvement de stock</h3>
+            <form onSubmit={handleMouvementSubmit}>
+              <div className="form-group">
+                <label className="form-label">Produit</label>
+                <select
+                  className="form-select"
+                  value={mouvementForm.produit_id}
+                  onChange={(e) => setMouvementForm({...mouvementForm, produit_id: e.target.value})}
+                  required
+                >
+                  <option value="">Sélectionnez un produit</option>
+                  {produits.map((produit) => (
+                    <option key={produit.id} value={produit.id}>
+                      {produit.nom}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="form-group">
+                <label className="form-label">Type de mouvement</label>
+                <select
+                  className="form-select"
+                  value={mouvementForm.type}
+                  onChange={(e) => setMouvementForm({...mouvementForm, type: e.target.value})}
+                  required
+                >
+                  <option value="entree">Entrée</option>
+                  <option value="sortie">Sortie</option>
+                  <option value="ajustement">Ajustement</option>
+                </select>
+              </div>
+              <div className="form-group">
+                <label className="form-label">Quantité</label>
+                <input
+                  type="number"
+                  step="0.01"
+                  className="form-input"
+                  value={mouvementForm.quantite}
+                  onChange={(e) => setMouvementForm({...mouvementForm, quantite: e.target.value})}
+                  required
+                />
+              </div>
+              <div className="form-group">
+                <label className="form-label">Référence</label>
+                <input
+                  type="text"
+                  className="form-input"
+                  value={mouvementForm.reference}
+                  onChange={(e) => setMouvementForm({...mouvementForm, reference: e.target.value})}
+                />
+              </div>
+              <div className="form-group">
+                <label className="form-label">Commentaire</label>
+                <textarea
+                  className="form-textarea"
+                  value={mouvementForm.commentaire}
+                  onChange={(e) => setMouvementForm({...mouvementForm, commentaire: e.target.value})}
+                />
+              </div>
+              <div className="button-group">
+                <button
+                  type="button"
+                  className="button btn-cancel"
+                  onClick={() => {
+                    setShowMouvementModal(false);
+                    setMouvementForm({ produit_id: "", type: "entree", quantite: "", reference: "", commentaire: "" });
+                  }}
+                >
+                  Annuler
+                </button>
+                <button
+                  type="submit"
+                  className="button btn-primary"
+                  disabled={loading}
+                >
+                  {loading ? "Sauvegarde..." : "Créer"}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}
 
       {/* Modal Recette */}
       {showRecetteModal && (
-        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-          <div className="relative top-10 mx-auto p-5 border w-full max-w-4xl shadow-lg rounded-md bg-white">
-            <div className="mt-3">
-              <h3 className="text-lg font-medium text-gray-900 mb-4">
-                {editingItem ? "Modifier la recette" : "Nouvelle recette"}
-              </h3>
-              <form onSubmit={handleRecetteSubmit} className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">Nom *</label>
-                    <input
-                      type="text"
-                      required
-                      value={recetteForm.nom}
-                      onChange={(e) => setRecetteForm({...recetteForm, nom: e.target.value})}
-                      className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-orange-500 focus:border-orange-500"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">Catégorie</label>
+        <div className="modal-overlay">
+          <div className="modal-content">
+            <h3 className="modal-header">
+              {editingItem ? "Modifier la recette" : "Ajouter une recette"}
+            </h3>
+            <form onSubmit={handleRecetteSubmit}>
+              <div className="form-group">
+                <label className="form-label">Nom de la recette</label>
+                <input
+                  type="text"
+                  className="form-input"
+                  value={recetteForm.nom}
+                  onChange={(e) => setRecetteForm({...recetteForm, nom: e.target.value})}
+                  required
+                />
+              </div>
+              <div className="form-group">
+                <label className="form-label">Description</label>
+                <textarea
+                  className="form-textarea"
+                  value={recetteForm.description}
+                  onChange={(e) => setRecetteForm({...recetteForm, description: e.target.value})}
+                />
+              </div>
+              <div className="form-group">
+                <label className="form-label">Catégorie</label>
+                <select
+                  className="form-select"
+                  value={recetteForm.categorie}
+                  onChange={(e) => setRecetteForm({...recetteForm, categorie: e.target.value})}
+                >
+                  <option value="">Sélectionnez une catégorie</option>
+                  <option value="entrée">Entrée</option>
+                  <option value="plat">Plat</option>
+                  <option value="dessert">Dessert</option>
+                </select>
+              </div>
+              <div className="form-group">
+                <label className="form-label">Nombre de portions</label>
+                <input
+                  type="number"
+                  className="form-input"
+                  value={recetteForm.portions}
+                  onChange={(e) => setRecetteForm({...recetteForm, portions: e.target.value})}
+                  required
+                />
+              </div>
+              <div className="form-group">
+                <label className="form-label">Temps de préparation (minutes)</label>
+                <input
+                  type="number"
+                  className="form-input"
+                  value={recetteForm.temps_preparation}
+                  onChange={(e) => setRecetteForm({...recetteForm, temps_preparation: e.target.value})}
+                />
+              </div>
+              <div className="form-group">
+                <label className="form-label">Prix de vente (€)</label>
+                <input
+                  type="number"
+                  step="0.01"
+                  className="form-input"
+                  value={recetteForm.prix_vente}
+                  onChange={(e) => setRecetteForm({...recetteForm, prix_vente: e.target.value})}
+                />
+              </div>
+
+              {/* Gestion des ingrédients */}
+              <div className="form-group">
+                <label className="form-label">Ingrédients</label>
+                
+                {/* Liste des ingrédients actuels */}
+                <div style={{marginBottom: '15px'}}>
+                  {recetteForm.ingredients.map((ingredient, index) => (
+                    <div key={index} style={{display: 'flex', alignItems: 'center', marginBottom: '8px', padding: '8px', background: '#f8f7f4', borderRadius: '5px'}}>
+                      <span style={{flex: 1}}>
+                        {ingredient.produit_nom} - {ingredient.quantite} {ingredient.unite}
+                      </span>
+                      <button
+                        type="button"
+                        className="button"
+                        style={{fontSize: '0.7rem', padding: '4px 8px', background: '#e53e3e', color: 'white'}}
+                        onClick={() => removeIngredient(index)}
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Formulaire d'ajout d'ingrédient */}
+                <div style={{display: 'flex', gap: '10px', alignItems: 'end'}}>
+                  <div style={{flex: 1}}>
                     <select
-                      value={recetteForm.categorie}
-                      onChange={(e) => setRecetteForm({...recetteForm, categorie: e.target.value})}
-                      className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-orange-500 focus:border-orange-500"
+                      className="form-select"
+                      value={ingredientForm.produit_id}
+                      onChange={(e) => setIngredientForm({...ingredientForm, produit_id: e.target.value})}
                     >
-                      <option value="">Sélectionner</option>
-                      <option value="entrée">Entrée</option>
-                      <option value="plat">Plat</option>
-                      <option value="dessert">Dessert</option>
-                      <option value="boisson">Boisson</option>
+                      <option value="">Sélectionnez un produit</option>
+                      {produits.map((produit) => (
+                        <option key={produit.id} value={produit.id}>
+                          {produit.nom}
+                        </option>
+                      ))}
                     </select>
                   </div>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">Description</label>
-                  <textarea
-                    value={recetteForm.description}
-                    onChange={(e) => setRecetteForm({...recetteForm, description: e.target.value})}
-                    className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-orange-500 focus:border-orange-500"
-                    rows="2"
-                  />
-                </div>
-
-                <div className="grid grid-cols-3 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">Portions *</label>
-                    <input
-                      type="number"
-                      required
-                      min="1"
-                      value={recetteForm.portions}
-                      onChange={(e) => setRecetteForm({...recetteForm, portions: e.target.value})}
-                      className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-orange-500 focus:border-orange-500"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">Temps (min)</label>
-                    <input
-                      type="number"
-                      min="0"
-                      value={recetteForm.temps_preparation}
-                      onChange={(e) => setRecetteForm({...recetteForm, temps_preparation: e.target.value})}
-                      className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-orange-500 focus:border-orange-500"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">Prix vente (€)</label>
+                  <div style={{width: '100px'}}>
                     <input
                       type="number"
                       step="0.01"
-                      min="0"
-                      value={recetteForm.prix_vente}
-                      onChange={(e) => setRecetteForm({...recetteForm, prix_vente: e.target.value})}
-                      className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-orange-500 focus:border-orange-500"
+                      className="form-input"
+                      placeholder="Quantité"
+                      value={ingredientForm.quantite}
+                      onChange={(e) => setIngredientForm({...ingredientForm, quantite: e.target.value})}
                     />
                   </div>
-                </div>
-
-                {/* Section Ingrédients */}
-                <div className="border-t pt-6">
-                  <h4 className="text-md font-medium text-gray-900 mb-4">Ingrédients</h4>
-                  
-                  {/* Ajouter un ingrédient */}
-                  <div className="grid grid-cols-4 gap-4 mb-4 p-4 bg-gray-50 rounded-md">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700">Produit</label>
-                      <select
-                        value={ingredientForm.produit_id}
-                        onChange={(e) => setIngredientForm({...ingredientForm, produit_id: e.target.value})}
-                        className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-orange-500 focus:border-orange-500 text-sm"
-                      >
-                        <option value="">Sélectionner</option>
-                        {produits.map(p => (
-                          <option key={p.id} value={p.id}>{p.nom}</option>
-                        ))}
-                      </select>
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700">Quantité</label>
-                      <input
-                        type="number"
-                        step="0.01"
-                        value={ingredientForm.quantite}
-                        onChange={(e) => setIngredientForm({...ingredientForm, quantite: e.target.value})}
-                        className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-orange-500 focus:border-orange-500 text-sm"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700">Unité</label>
-                      <input
-                        type="text"
-                        value={ingredientForm.unite}
-                        onChange={(e) => setIngredientForm({...ingredientForm, unite: e.target.value})}
-                        className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-orange-500 focus:border-orange-500 text-sm"
-                        placeholder="kg, g, L, mL..."
-                      />
-                    </div>
-                    <div className="flex items-end">
-                      <button
-                        type="button"
-                        onClick={addIngredient}
-                        className="w-full bg-green-600 text-white px-3 py-2 rounded-md text-sm hover:bg-green-700"
-                      >
-                        Ajouter
-                      </button>
-                    </div>
+                  <div style={{width: '80px'}}>
+                    <input
+                      type="text"
+                      className="form-input"
+                      placeholder="Unité"
+                      value={ingredientForm.unite}
+                      onChange={(e) => setIngredientForm({...ingredientForm, unite: e.target.value})}
+                    />
                   </div>
-
-                  {/* Liste des ingrédients */}
-                  {recetteForm.ingredients.length > 0 && (
-                    <div className="space-y-2">
-                      {recetteForm.ingredients.map((ingredient, index) => (
-                        <div key={index} className="flex items-center justify-between p-3 bg-white border rounded-md">
-                          <div className="flex-1 grid grid-cols-3 gap-4">
-                            <div className="font-medium">{ingredient.produit_nom}</div>
-                            <div>{ingredient.quantite} {ingredient.unite}</div>
-                            <div></div>
-                          </div>
-                          <button
-                            type="button"
-                            onClick={() => removeIngredient(index)}
-                            className="text-red-600 hover:text-red-800 ml-4"
-                          >
-                            Supprimer
-                          </button>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">Instructions</label>
-                  <textarea
-                    value={recetteForm.instructions}
-                    onChange={(e) => setRecetteForm({...recetteForm, instructions: e.target.value})}
-                    className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-orange-500 focus:border-orange-500"
-                    rows="4"
-                    placeholder="Étapes de préparation..."
-                  />
-                </div>
-
-                <div className="flex justify-end space-x-3 pt-4 border-t">
                   <button
                     type="button"
-                    onClick={() => {
-                      setShowRecetteModal(false);
-                      setEditingItem(null);
-                      resetRecetteForm();
-                    }}
-                    className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50"
+                    className="button btn-primary"
+                    onClick={addIngredient}
+                    style={{minWidth: '80px'}}
                   >
-                    Annuler
-                  </button>
-                  <button
-                    type="submit"
-                    disabled={loading}
-                    className="px-4 py-2 bg-orange-600 border border-transparent rounded-md text-sm font-medium text-white hover:bg-orange-700 disabled:opacity-50"
-                  >
-                    {loading ? "Sauvegarde..." : "Sauvegarder"}
+                    Ajouter
                   </button>
                 </div>
-              </form>
-            </div>
+              </div>
+
+              <div className="button-group">
+                <button
+                  type="button"
+                  className="button btn-cancel"
+                  onClick={() => {
+                    setShowRecetteModal(false);
+                    setEditingItem(null);
+                    resetRecetteForm();
+                  }}
+                >
+                  Annuler
+                </button>
+                <button
+                  type="submit"
+                  className="button btn-primary"
+                  disabled={loading}
+                >
+                  {loading ? "Sauvegarde..." : (editingItem ? "Modifier" : "Ajouter")}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}
 
       {/* Modal OCR */}
       {showOcrModal && (
-        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-          <div className="relative top-10 mx-auto p-5 border w-full max-w-2xl shadow-lg rounded-md bg-white">
-            <div className="mt-3">
-              <h3 className="text-lg font-medium text-gray-900 mb-4">
-                Traitement OCR de Document
-              </h3>
-              
-              {!ocrResult ? (
-                <div className="space-y-6">
-                  {/* Sélection du type de document */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Type de Document</label>
-                    <div className="flex space-x-4">
-                      <label className="flex items-center">
-                        <input
-                          type="radio"
-                          value="z_report"
-                          checked={ocrType === "z_report"}
-                          onChange={(e) => setOcrType(e.target.value)}
-                          className="mr-2"
-                        />
-                        <span className="text-sm">📊 Rapport Z (TPV)</span>
-                      </label>
-                      <label className="flex items-center">
-                        <input
-                          type="radio"
-                          value="facture_fournisseur"
-                          checked={ocrType === "facture_fournisseur"}
-                          onChange={(e) => setOcrType(e.target.value)}
-                          className="mr-2"
-                        />
-                        <span className="text-sm">🧾 Facture Fournisseur</span>
-                      </label>
-                    </div>
-                  </div>
+        <div className="modal-overlay">
+          <div className="modal-content">
+            <h3 className="modal-header">Upload Document OCR</h3>
+            
+            <div className="form-group">
+              <label className="form-label">Type de document</label>
+              <select
+                className="form-select"
+                value={ocrType}
+                onChange={(e) => setOcrType(e.target.value)}
+              >
+                <option value="z_report">Rapport Z</option>
+                <option value="facture_fournisseur">Facture Fournisseur</option>
+              </select>
+            </div>
 
-                  {/* Zone de drop et upload */}
-                  <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
-                    {ocrPreview ? (
-                      <div className="space-y-4">
-                        <img 
-                          src={ocrPreview} 
-                          alt="Aperçu" 
-                          className="mx-auto max-h-64 rounded border"
-                        />
-                        <div>
-                          <p className="text-sm text-gray-600 mb-2">Fichier sélectionné: {ocrFile?.name}</p>
-                          <button
-                            onClick={() => {
-                              setOcrFile(null);
-                              setOcrPreview(null);
-                            }}
-                            className="text-red-600 hover:text-red-800 text-sm"
-                          >
-                            Changer de fichier
-                          </button>
-                        </div>
-                      </div>
-                    ) : (
-                      <div>
-                        <div className="text-6xl text-gray-400 mb-4">📷</div>
-                        <p className="text-lg font-medium text-gray-900 mb-2">
-                          Sélectionnez une image à traiter
-                        </p>
-                        <p className="text-sm text-gray-500 mb-4">
-                          Formats supportés: JPG, PNG, JPEG
-                        </p>
-                        <label className="cursor-pointer bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 inline-block">
-                          📁 Choisir un fichier
-                          <input 
-                            type="file" 
-                            accept="image/*" 
-                            onChange={handleOcrFileSelect}
-                            className="hidden"
-                          />
-                        </label>
-                      </div>
-                    )}
-                  </div>
+            <div className="form-group">
+              <label className="form-label">Fichier image</label>
+              <input
+                type="file"
+                accept="image/*"
+                className="form-input"
+                onChange={handleOcrFileSelect}
+              />
+            </div>
 
-                  {/* Instructions */}
-                  <div className="bg-blue-50 border border-blue-200 rounded-md p-4">
-                    <h4 className="text-sm font-medium text-blue-900 mb-2">💡 Conseils pour un meilleur OCR :</h4>
-                    <ul className="text-sm text-blue-800 space-y-1">
-                      <li>• Assurez-vous que le texte est lisible et bien éclairé</li>
-                      <li>• Évitez les reflets et les ombres</li>
-                      <li>• Tenez l'appareil photo bien droit</li>
-                      <li>• Pour les rapports Z: capturez la section des ventes par plat</li>
-                    </ul>
-                  </div>
-                </div>
-              ) : (
-                /* Résultats OCR */
-                <div className="space-y-4">
-                  <div className="bg-green-50 border border-green-200 rounded-md p-4">
-                    <h4 className="text-sm font-medium text-green-900 mb-2">✅ Traitement réussi !</h4>
-                    <p className="text-sm text-green-800">{ocrResult.message}</p>
-                  </div>
-
-                  <div>
-                    <h4 className="text-sm font-medium text-gray-900 mb-2">Données extraites :</h4>
-                    <div className="bg-gray-50 rounded-md p-4 max-h-64 overflow-y-auto">
-                      <pre className="text-xs text-gray-700 whitespace-pre-wrap">
-                        {JSON.stringify(ocrResult.donnees_parsees, null, 2)}
-                      </pre>
-                    </div>
-                  </div>
-
-                  {ocrType === 'z_report' && ocrResult.donnees_parsees.plats_vendus?.length > 0 && (
-                    <div className="bg-yellow-50 border border-yellow-200 rounded-md p-4">
-                      <p className="text-sm text-yellow-800">
-                        💡 Vous pouvez maintenant fermer cette fenêtre et aller dans l'onglet "OCR Documents" pour traiter automatiquement les stocks.
-                      </p>
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {/* Boutons */}
-              <div className="flex justify-end space-x-3 pt-6 border-t mt-6">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setShowOcrModal(false);
-                    resetOcrModal();
-                  }}
-                  className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50"
-                >
-                  Fermer
-                </button>
-                {!ocrResult && ocrFile && (
-                  <button
-                    onClick={handleOcrUpload}
-                    disabled={processingOcr}
-                    className="px-4 py-2 bg-blue-600 border border-transparent rounded-md text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
-                  >
-                    {processingOcr ? "⏳ Traitement..." : "🔍 Analyser"}
-                  </button>
-                )}
+            {ocrPreview && (
+              <div className="form-group">
+                <label className="form-label">Aperçu</label>
+                <img
+                  src={ocrPreview}
+                  alt="Aperçu du document"
+                  style={{maxWidth: '100%', maxHeight: '200px', objectFit: 'contain', border: '1px solid #ddd', borderRadius: '5px'}}
+                />
               </div>
+            )}
+
+            {ocrResult && (
+              <div className="form-group">
+                <label className="form-label">Données extraites</label>
+                <pre style={{background: '#f5f5f5', padding: '10px', borderRadius: '5px', fontSize: '0.8rem', maxHeight: '150px', overflow: 'auto'}}>
+                  {JSON.stringify(ocrResult, null, 2)}
+                </pre>
+              </div>
+            )}
+
+            <div className="button-group">
+              <button
+                type="button"
+                className="button btn-cancel"
+                onClick={() => {
+                  setShowOcrModal(false);
+                  resetOcrModal();
+                }}
+              >
+                Annuler
+              </button>
+              <button
+                type="button"
+                className="button btn-primary"
+                onClick={handleOcrUpload}
+                disabled={processingOcr || !ocrFile}
+              >
+                {processingOcr ? "Traitement..." : "Traiter"}
+              </button>
             </div>
           </div>
         </div>
