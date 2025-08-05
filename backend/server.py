@@ -14,6 +14,14 @@ import io
 import pandas as pd
 import json
 
+# Imports pour OCR
+import pytesseract
+import cv2
+import numpy as np
+from PIL import Image
+import base64
+import re
+
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
 
