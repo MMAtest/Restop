@@ -834,6 +834,140 @@ class StockTestSuite:
         except Exception as e:
             self.log_result("DELETE /recettes/{id}", False, "Exception", str(e))
 
+    def test_table_augustine_demo_data(self):
+        """Test spécifique pour les données de démonstration La Table d'Augustine"""
+        print("\n=== TEST DONNÉES DÉMONSTRATION LA TABLE D'AUGUSTINE ===")
+        
+        try:
+            response = requests.post(f"{BASE_URL}/demo/init-table-augustine-data", headers=HEADERS)
+            if response.status_code == 200:
+                result = response.json()
+                if "La Table d'Augustine" in result.get("message", "") and "succès" in result.get("message", ""):
+                    self.log_result("POST /demo/init-table-augustine-data", True, 
+                                  f"Données créées: {result.get('fournisseurs_crees', 0)} fournisseurs, "
+                                  f"{result.get('produits_crees', 0)} produits, {result.get('recettes_creees', 0)} recettes")
+                    
+                    # Vérifier les fournisseurs authentiques de La Table d'Augustine
+                    fournisseurs_response = requests.get(f"{BASE_URL}/fournisseurs")
+                    if fournisseurs_response.status_code == 200:
+                        fournisseurs = fournisseurs_response.json()
+                        expected_suppliers = [
+                            "Maison Artigiana", "Pêcherie des Sanguinaires", "Boucherie Limousine du Sud",
+                            "Trufficulteurs de Forcalquier", "Maraîchers de Provence", "Fromagerie des Alpilles"
+                        ]
+                        found_suppliers = [f for f in fournisseurs if f["nom"] in expected_suppliers]
+                        
+                        if len(found_suppliers) >= 6:
+                            self.log_result("Fournisseurs authentiques La Table d'Augustine", True, 
+                                          f"{len(found_suppliers)} fournisseurs authentiques créés")
+                            
+                            # Vérifier les détails d'un fournisseur spécifique
+                            artigiana = next((f for f in found_suppliers if f["nom"] == "Maison Artigiana"), None)
+                            if artigiana and "Giuseppe Pellegrino" in artigiana.get("contact", ""):
+                                self.log_result("Détails fournisseur Artigiana", True, "Contact Giuseppe Pellegrino validé")
+                            else:
+                                self.log_result("Détails fournisseur Artigiana", False, "Contact incorrect ou manquant")
+                        else:
+                            self.log_result("Fournisseurs authentiques La Table d'Augustine", False, 
+                                          f"Seulement {len(found_suppliers)} fournisseurs trouvés sur 6 attendus")
+                    
+                    # Vérifier les produits du menu authentique
+                    produits_response = requests.get(f"{BASE_URL}/produits")
+                    if produits_response.status_code == 200:
+                        produits = produits_response.json()
+                        expected_products = [
+                            "Supions (petits calamars)", "Burrata des Pouilles Artigiana", "Palourdes",
+                            "Daurade royale de Corse", "Bœuf Limousin (filet)", "Souris d'agneau",
+                            "Jarret de veau", "Fleurs de courgettes", "Tomates anciennes",
+                            "Truffe d'été Aestivum", "Linguine artisanales", "Rigatoni",
+                            "Huile verte aux herbes", "Farine de pois-chiche"
+                        ]
+                        found_products = [p for p in produits if p["nom"] in expected_products]
+                        
+                        if len(found_products) >= 10:
+                            self.log_result("Produits menu authentique", True, 
+                                          f"{len(found_products)} produits du menu créés")
+                            
+                            # Vérifier les prix réalistes
+                            truffe = next((p for p in found_products if "Truffe" in p["nom"]), None)
+                            if truffe and truffe.get("prix_achat", 0) >= 500:
+                                self.log_result("Prix produits luxe", True, f"Truffe à {truffe['prix_achat']}€/kg")
+                            else:
+                                self.log_result("Prix produits luxe", False, "Prix truffe incorrect")
+                        else:
+                            self.log_result("Produits menu authentique", False, 
+                                          f"Seulement {len(found_products)} produits trouvés")
+                    
+                    # Vérifier les recettes authentiques avec prix corrects
+                    recettes_response = requests.get(f"{BASE_URL}/recettes")
+                    if recettes_response.status_code == 200:
+                        recettes = recettes_response.json()
+                        expected_recipes = [
+                            ("Supions en persillade de Mamie", 24.00),
+                            ("Fleurs de courgettes de Mamet", 21.00),
+                            ("Linguine aux palourdes & sauce à l'ail", 28.00),
+                            ("Rigatoni à la truffe fraîche de Forcalquier", 31.00),
+                            ("Souris d'agneau confite", 36.00),
+                            ("Bœuf Wellington à la truffe", 56.00)
+                        ]
+                        
+                        found_recipes = []
+                        for recipe_name, expected_price in expected_recipes:
+                            recipe = next((r for r in recettes if r["nom"] == recipe_name), None)
+                            if recipe:
+                                found_recipes.append(recipe)
+                                # Vérifier le prix
+                                if abs(recipe.get("prix_vente", 0) - expected_price) < 0.01:
+                                    self.log_result(f"Prix recette {recipe_name}", True, f"{expected_price}€")
+                                else:
+                                    self.log_result(f"Prix recette {recipe_name}", False, 
+                                                  f"Prix incorrect: {recipe.get('prix_vente')}€ au lieu de {expected_price}€")
+                        
+                        if len(found_recipes) >= 6:
+                            self.log_result("Recettes authentiques La Table d'Augustine", True, 
+                                          f"{len(found_recipes)} recettes du menu créées")
+                        else:
+                            self.log_result("Recettes authentiques La Table d'Augustine", False, 
+                                          f"Seulement {len(found_recipes)} recettes trouvées sur 6 attendues")
+                    
+                    # Test de calcul de capacité de production pour une recette
+                    if found_recipes:
+                        test_recipe = found_recipes[0]
+                        capacity_response = requests.get(f"{BASE_URL}/recettes/{test_recipe['id']}/production-capacity")
+                        if capacity_response.status_code == 200:
+                            capacity_data = capacity_response.json()
+                            if "portions_max" in capacity_data and "ingredients_status" in capacity_data:
+                                self.log_result("Calcul production capacity La Table d'Augustine", True, 
+                                              f"Capacité calculée pour {test_recipe['nom']}: {capacity_data['portions_max']} portions")
+                            else:
+                                self.log_result("Calcul production capacity La Table d'Augustine", False, 
+                                              "Structure de réponse incorrecte")
+                        else:
+                            self.log_result("Calcul production capacity La Table d'Augustine", False, 
+                                          f"Erreur {capacity_response.status_code}")
+                    
+                    # Vérifier les relations ingrédients-produits
+                    if found_recipes:
+                        recipe_with_ingredients = next((r for r in found_recipes if len(r.get("ingredients", [])) > 0), None)
+                        if recipe_with_ingredients:
+                            ingredients = recipe_with_ingredients["ingredients"]
+                            valid_ingredients = [ing for ing in ingredients if ing.get("produit_nom") and ing.get("quantite", 0) > 0]
+                            if len(valid_ingredients) == len(ingredients):
+                                self.log_result("Relations ingrédients-produits", True, 
+                                              f"Tous les ingrédients correctement liés pour {recipe_with_ingredients['nom']}")
+                            else:
+                                self.log_result("Relations ingrédients-produits", False, 
+                                              f"Ingrédients mal liés: {len(valid_ingredients)}/{len(ingredients)}")
+                        else:
+                            self.log_result("Relations ingrédients-produits", False, "Aucune recette avec ingrédients trouvée")
+                    
+                else:
+                    self.log_result("POST /demo/init-table-augustine-data", False, f"Message inattendu: {result.get('message')}")
+            else:
+                self.log_result("POST /demo/init-table-augustine-data", False, f"Erreur {response.status_code}", response.text)
+        except Exception as e:
+            self.log_result("POST /demo/init-table-augustine-data", False, "Exception", str(e))
+
     def test_cascade_delete(self):
         """Test suppression en cascade"""
         print("\n=== TEST SUPPRESSION EN CASCADE ===")
