@@ -406,12 +406,6 @@ def parse_facture_fournisseur(texte_ocr: str) -> FactureFournisseurData:
             r'([A-ZÁÀÂÄÇÉÈÊËÏÎÔÙÛÜŸ\s]{3,40})\s+(\d{1,3})\s+(\d{1,3})\s+KG\s+(\d+[,.]?\d*)\s+(\d+[,.]?\d*)',
             # Format classique: "Nom produit quantité prix total"
             r'([A-Za-zÀ-ÿ\s\'\-]{3,40})\s+(\d+[,.]?\d*)\s+(\d+[,.]?\d*)\s+(\d+[,.]?\d*)',
-            # Format: "Nom produit: quantité x prix€"
-            r'([A-Za-zÀ-ÿ\s\'\-]{3,40})[:\s]+(\d{1,3})[x\*]\s*(\d+[,.]?\d*)\s*[€]',
-            # Format: "quantité x Nom produit @ prix€"
-            r'(\d{1,3})\s*[x\*]\s*([A-Za-zÀ-ÿ\s\'\-]{3,40})\s*[@]\s*(\d+[,.]?\d*)\s*[€]?',
-            # Format simple: "Nom produit    prix€"
-            r'([A-Za-zÀ-ÿ\s\'\-]{3,40})\s+(\d+[,.]?\d*)\s*[€]'
         ]
         
         for line in texte_ocr.split('\n'):
