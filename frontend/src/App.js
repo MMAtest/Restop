@@ -781,9 +781,476 @@ function App() {
         </div>
       </div>
 
-        
-        {/* Dashboard */}
-        {activeTab === "dashboard" && (
+      {/* PRODUCTION */}
+      <div id="production" className={`wireframe-section ${activeTab === "production" ? "active" : ""}`}>
+        <div className="wireframe">
+          <h2>🍳 Module Production</h2>
+          
+          {/* Sous-navigation Production */}
+          <div className="sub-nav-tabs">
+            <button 
+              className="button" 
+              onClick={() => setActiveProductionTab('produits')}
+              style={{
+                background: activeProductionTab === 'produits' ? 'linear-gradient(135deg, #2d5016, #4a7c59)' : 'linear-gradient(135deg, #d4af37, #f4d03f)',
+                color: activeProductionTab === 'produits' ? '#f5f3f0' : '#2d5016'
+              }}
+            >
+              🍽️ Produits
+            </button>
+            <button 
+              className="button" 
+              onClick={() => setActiveProductionTab('fournisseurs')}
+              style={{
+                background: activeProductionTab === 'fournisseurs' ? 'linear-gradient(135deg, #2d5016, #4a7c59)' : 'linear-gradient(135deg, #d4af37, #f4d03f)',
+                color: activeProductionTab === 'fournisseurs' ? '#f5f3f0' : '#2d5016'
+              }}
+            >
+              🚚 Fournisseurs
+            </button>
+            <button 
+              className="button" 
+              onClick={() => setActiveProductionTab('recettes')}
+              style={{
+                background: activeProductionTab === 'recettes' ? 'linear-gradient(135deg, #2d5016, #4a7c59)' : 'linear-gradient(135deg, #d4af37, #f4d03f)',
+                color: activeProductionTab === 'recettes' ? '#f5f3f0' : '#2d5016'
+              }}
+            >
+              📝 Recettes
+            </button>
+          </div>
+
+          {/* PRODUITS */}
+          <div className={`production-tab ${activeProductionTab === 'produits' ? 'active' : ''}`}>
+            <div className="layout">
+              <div className="card full-width">
+                <div className="card-title">🍽️ Gestion des Produits</div>
+                <input type="text" className="search-bar" placeholder="🔍 Rechercher un produit..."/>
+                <div style={{textAlign: 'center', margin: '15px 0'}}>
+                  <button className="button" onClick={() => setShowProduitModal(true)}>➕ Nouveau Produit</button>
+                  <button className="button">📊 Analyse Produits</button>
+                  <button className="button">🏷️ Étiquettes</button>
+                </div>
+              </div>
+              
+              <div className="layout three-column">
+                {produits.slice(0, 6).map((produit, index) => (
+                  <div key={index} className="card">
+                    <div className="icon">
+                      {produit.categorie === 'entrée' ? '🥗' : 
+                       produit.categorie === 'plat' ? '🍖' : 
+                       produit.categorie === 'poisson' ? '🐟' : '🍽️'}
+                    </div>
+                    <div className="card-title">{produit.nom}</div>
+                    <div className="card-content">
+                      Prix: €{produit.prix_achat || 'N/A'}<br/>
+                      {produit.description && `${produit.description.substring(0, 20)}...`}
+                    </div>
+                    <div style={{marginTop: '15px'}}>
+                      <button className="button" style={{fontSize: '0.8rem', padding: '8px 16px'}} onClick={() => handleEdit(produit, 'produit')}>✏️ Éditer</button>
+                      <button className="button" style={{fontSize: '0.8rem', padding: '8px 16px'}} onClick={() => handleDelete(produit.id, 'produit')}>🗑️ Suppr.</button>
+                    </div>
+                  </div>
+                ))}
+                {produits.length === 0 && (
+                  <div className="card">
+                    <div className="card-content">Aucun produit disponible</div>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* FOURNISSEURS */}
+          <div className={`production-tab ${activeProductionTab === 'fournisseurs' ? 'active' : ''}`}>
+            <div className="layout">
+              <div className="card full-width">
+                <div className="card-title">🚚 Gestion des Fournisseurs</div>
+                <input type="text" className="search-bar" placeholder="🔍 Rechercher un fournisseur..."/>
+                <div style={{textAlign: 'center', margin: '15px 0'}}>
+                  <button className="button" onClick={() => setShowFournisseurModal(true)}>➕ Nouveau Fournisseur</button>
+                  <button className="button">📞 Contacts</button>
+                  <button className="button">📊 Performance</button>
+                </div>
+              </div>
+              
+              <div className="table-mockup">
+                <div className="table-header">Fournisseur | Contact | Spécialité | Email | Actions</div>
+                {fournisseurs.map((fournisseur, index) => (
+                  <div key={index} className="table-row">
+                    <span>
+                      {fournisseur.nom.includes('Bio') ? '🌿' : 
+                       fournisseur.nom.includes('Poissonnerie') ? '🐟' : 
+                       fournisseur.nom.includes('Cave') ? '🍷' : 
+                       fournisseur.nom.includes('Boulangerie') ? '🥖' : '🏪'} {fournisseur.nom} | {fournisseur.contact || fournisseur.telephone || 'N/A'} | {fournisseur.adresse?.split(',')[0] || 'Non spécifié'} | {fournisseur.email || 'N/A'}
+                    </span>
+                    <div>
+                      <button className="button" style={{fontSize: '0.7rem', padding: '4px 8px'}} onClick={() => handleEdit(fournisseur, 'fournisseur')}>✏️ Éditer</button>
+                      <button className="button" style={{fontSize: '0.7rem', padding: '4px 8px'}}>📞 Appeler</button>
+                      <button className="button" style={{fontSize: '0.7rem', padding: '4px 8px'}}>📧 Email</button>
+                    </div>
+                  </div>
+                ))}
+                {fournisseurs.length === 0 && (
+                  <div className="table-row">
+                    <span>Aucun fournisseur disponible</span>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* RECETTES */}
+          <div className={`production-tab ${activeProductionTab === 'recettes' ? 'active' : ''}`}>
+            <div className="layout">
+              <div className="card full-width">
+                <div className="card-title">📝 Gestion des Recettes</div>
+                <input type="text" className="search-bar" placeholder="🔍 Rechercher une recette..."/>
+                <div style={{textAlign: 'center', margin: '15px 0'}}>
+                  <button className="button" onClick={() => setShowRecetteModal(true)}>➕ Nouvelle Recette</button>
+                  <button className="button">💰 Calculer Coûts</button>
+                  <button className="button" onClick={handleExportRecettes}>📖 Export Excel</button>
+                </div>
+              </div>
+              
+              <div className="layout two-column">
+                <div className="card">
+                  <div className="card-title">📋 Liste des Recettes</div>
+                  <div style={{maxHeight: '300px', overflowY: 'auto'}}>
+                    {recettes.map((recette, index) => (
+                      <div key={index} className="table-row">
+                        <span>
+                          {recette.categorie === 'entrée' ? '🥗' : 
+                           recette.categorie === 'plat' ? '🍖' : 
+                           recette.categorie === 'dessert' ? '🍰' : '🍽️'} {recette.nom} - {recette.ingredients?.length || 0} ingrédients
+                        </span>
+                        <div>
+                          <button className="button" style={{fontSize: '0.7rem', padding: '4px 8px', margin: '2px'}} onClick={() => handleEdit(recette, 'recette')}>✏️ Éditer</button>
+                          <button className="button" style={{fontSize: '0.7rem', padding: '4px 8px', margin: '2px'}} onClick={() => calculateProductionCapacity(recette.id)}>👁️ Voir</button>
+                        </div>
+                      </div>
+                    ))}
+                    {recettes.length === 0 && (
+                      <div className="table-row">
+                        <span>Aucune recette disponible</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+                <div className="card">
+                  <div className="card-title">📝 Recette Sélectionnée</div>
+                  {selectedRecette && productionCapacity ? (
+                    <div className="card-content">
+                      <strong>Recette:</strong> {productionCapacity.recette_nom}<br/>
+                      <strong>Portions possibles:</strong> {productionCapacity.portions_max}<br/>
+                      <strong>Ingrédients:</strong><br/>
+                      {productionCapacity.ingredients_status?.slice(0, 3).map((ingredient, idx) => (
+                        <div key={idx}>• {ingredient.produit_nom}: {formatQuantity(ingredient.quantite_disponible, getDisplayUnit(ingredient.unite))}</div>
+                      ))}
+                      <br/>
+                      <button className="button" style={{fontSize: '0.8rem'}} onClick={() => calculateProductionCapacity(selectedRecette)}>🔄 Actualiser</button>
+                    </div>
+                  ) : (
+                    <div className="card-content">
+                      Sélectionnez une recette pour voir les détails de production
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* HISTORIQUE */}
+      <div id="historique" className={`wireframe-section ${activeTab === "historique" ? "active" : ""}`}>
+        <div className="wireframe">
+          <h2>📊 Gestion de l'Historique</h2>
+          
+          {/* Sous-navigation Historique */}
+          <div className="sub-nav-tabs">
+            <button 
+              className="button" 
+              onClick={() => setActiveHistoriqueTab('ventes')}
+              style={{
+                background: activeHistoriqueTab === 'ventes' ? 'linear-gradient(135deg, #2d5016, #4a7c59)' : 'linear-gradient(135deg, #d4af37, #f4d03f)',
+                color: activeHistoriqueTab === 'ventes' ? '#f5f3f0' : '#2d5016'
+              }}
+            >
+              💰 Ventes
+            </button>
+            <button 
+              className="button" 
+              onClick={() => setActiveHistoriqueTab('stocks')}
+              style={{
+                background: activeHistoriqueTab === 'stocks' ? 'linear-gradient(135deg, #2d5016, #4a7c59)' : 'linear-gradient(135deg, #d4af37, #f4d03f)',
+                color: activeHistoriqueTab === 'stocks' ? '#f5f3f0' : '#2d5016'
+              }}
+            >
+              📦 Mouvements Stock
+            </button>
+            <button 
+              className="button" 
+              onClick={() => setActiveHistoriqueTab('commandes')}
+              style={{
+                background: activeHistoriqueTab === 'commandes' ? 'linear-gradient(135deg, #2d5016, #4a7c59)' : 'linear-gradient(135deg, #d4af37, #f4d03f)',
+                color: activeHistoriqueTab === 'commandes' ? '#f5f3f0' : '#2d5016'
+              }}
+            >
+              🛒 Commandes
+            </button>
+            <button 
+              className="button" 
+              onClick={() => setActiveHistoriqueTab('factures')}
+              style={{
+                background: activeHistoriqueTab === 'factures' ? 'linear-gradient(135deg, #2d5016, #4a7c59)' : 'linear-gradient(135deg, #d4af37, #f4d03f)',
+                color: activeHistoriqueTab === 'factures' ? '#f5f3f0' : '#2d5016'
+              }}
+            >
+              📄 Factures
+            </button>
+            <button 
+              className="button" 
+              onClick={() => setActiveHistoriqueTab('modifications')}
+              style={{
+                background: activeHistoriqueTab === 'modifications' ? 'linear-gradient(135deg, #2d5016, #4a7c59)' : 'linear-gradient(135deg, #d4af37, #f4d03f)',
+                color: activeHistoriqueTab === 'modifications' ? '#f5f3f0' : '#2d5016'
+              }}
+            >
+              ✏️ Modifications
+            </button>
+          </div>
+
+          {/* HISTORIQUE VENTES */}
+          <div className={`historique-tab ${activeHistoriqueTab === 'ventes' ? 'active' : ''}`}>
+            <div className="layout">
+              <div className="card full-width">
+                <div className="card-title">💰 Historique des Ventes</div>
+                <div style={{display: 'flex', gap: '15px', alignItems: 'center', justifyContent: 'center', margin: '15px 0', flexWrap: 'wrap'}}>
+                  <input type="date" className="search-bar" style={{width: 'auto', margin: 0}} defaultValue="2025-08-01"/>
+                  <span style={{color: '#2d5016', fontWeight: 'bold'}}>à</span>
+                  <input type="date" className="search-bar" style={{width: 'auto', margin: 0}} defaultValue="2025-08-05"/>
+                  <button className="button">🔍 Filtrer</button>
+                  <button className="button">📊 Exporter</button>
+                </div>
+              </div>
+              
+              <div className="layout three-column">
+                <div className="card stat-card">
+                  <div className="icon">💰</div>
+                  <div className="card-title">CA Total Période</div>
+                  <div className="card-content">€8,420.50</div>
+                </div>
+                <div className="card stat-card">
+                  <div className="icon">🍽️</div>
+                  <div className="card-title">Plats Vendus</div>
+                  <div className="card-content">267 plats</div>
+                </div>
+                <div className="card stat-card">
+                  <div className="icon">📈</div>
+                  <div className="card-title">Ticket Moyen</div>
+                  <div className="card-content">€31.50</div>
+                </div>
+              </div>
+              
+              <div className="card full-width">
+                <div className="table-mockup">
+                  <div className="table-header">Date | Heure | Plat | Quantité | Prix Unit. | Total</div>
+                  {recettes.slice(0, 5).map((recette, index) => (
+                    <div key={index} className="table-row">
+                      <span>{new Date().toLocaleDateString('fr-FR')} | {String(12 + index).padStart(2, '0')}:30 | {recette.nom} | 1 | €{recette.prix_vente || '15.00'} | €{recette.prix_vente || '15.00'}</span>
+                    </div>
+                  ))}
+                  {recettes.length === 0 && (
+                    <div className="table-row">
+                      <span>Aucune vente enregistrée</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* HISTORIQUE MOUVEMENTS STOCK */}
+          <div className={`historique-tab ${activeHistoriqueTab === 'stocks' ? 'active' : ''}`}>
+            <div className="layout">
+              <div className="card full-width">
+                <div className="card-title">📦 Historique des Mouvements de Stock</div>
+                <div style={{display: 'flex', gap: '15px', alignItems: 'center', justifyContent: 'center', margin: '15px 0', flexWrap: 'wrap'}}>
+                  <select className="search-bar" style={{width: 'auto', margin: 0}}>
+                    <option>Tous les produits</option>
+                    {produits.slice(0, 5).map((produit, index) => (
+                      <option key={index}>{produit.nom}</option>
+                    ))}
+                  </select>
+                  <select className="search-bar" style={{width: 'auto', margin: 0}}>
+                    <option>Tous mouvements</option>
+                    <option>➕ Entrée</option>
+                    <option>➖ Sortie</option>
+                    <option>🔄 Ajustement</option>
+                  </select>
+                  <button className="button">🔍 Filtrer</button>
+                </div>
+              </div>
+              
+              <div className="card full-width">
+                <div className="table-mockup">
+                  <div className="table-header">Date | Produit | Type | Quantité | Stock Avant | Stock Après | Motif</div>
+                  {mouvements.slice(0, 5).map((mouvement, index) => {
+                    const produit = produits.find(p => p.id === mouvement.produit_id);
+                    const unite = getDisplayUnit(produit?.unite);
+                    return (
+                      <div key={index} className="table-row">
+                        <span>
+                          {new Date(mouvement.date).toLocaleDateString('fr-FR')} | {mouvement.produit_nom} | 
+                          <span style={{
+                            color: mouvement.type === 'entree' ? '#38a169' : mouvement.type === 'sortie' ? '#e53e3e' : '#d69e2e',
+                            fontWeight: 'bold'
+                          }}>
+                            {mouvement.type === 'entree' ? '➕ Entrée' : mouvement.type === 'sortie' ? '➖ Sortie' : '🔄 Ajustement'}
+                          </span> | 
+                          {formatQuantity(Math.abs(mouvement.quantite), unite)} | - | - | {mouvement.commentaire || 'Mouvement standard'}
+                        </span>
+                      </div>
+                    );
+                  })}
+                  {mouvements.length === 0 && (
+                    <div className="table-row">
+                      <span>Aucun mouvement enregistré</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* HISTORIQUE COMMANDES */}
+          <div className={`historique-tab ${activeHistoriqueTab === 'commandes' ? 'active' : ''}`}>
+            <div className="layout">
+              <div className="card full-width">
+                <div className="card-title">🛒 Historique des Commandes Fournisseurs</div>
+                <div style={{display: 'flex', gap: '15px', alignItems: 'center', justifyContent: 'center', margin: '15px 0', flexWrap: 'wrap'}}>
+                  <select className="search-bar" style={{width: 'auto', margin: 0}}>
+                    <option>Tous les fournisseurs</option>
+                    {fournisseurs.slice(0, 4).map((fournisseur, index) => (
+                      <option key={index}>{fournisseur.nom}</option>
+                    ))}
+                  </select>
+                  <select className="search-bar" style={{width: 'auto', margin: 0}}>
+                    <option>Tous statuts</option>
+                    <option>✅ Livrée</option>
+                    <option>🚚 En cours</option>
+                    <option>❌ Annulée</option>
+                  </select>
+                  <button className="button">🔍 Filtrer</button>
+                </div>
+              </div>
+              
+              <div className="card full-width">
+                <div className="table-mockup">
+                  <div className="table-header">N° Commande | Date | Fournisseur | Montant | Statut | Actions</div>
+                  {fournisseurs.slice(0, 4).map((fournisseur, index) => (
+                    <div key={index} className="table-row">
+                      <span>
+                        CMD-2025-{String(90 + index).padStart(3, '0')} | {new Date(Date.now() - index * 24 * 60 * 60 * 1000).toLocaleDateString('fr-FR')} | {fournisseur.nom} | €{(Math.random() * 500 + 100).toFixed(2)} | 
+                        <span style={{color: '#38a169', fontWeight: 'bold'}}>✅ Livrée</span>
+                      </span>
+                      <button className="button" style={{fontSize: '0.7rem', padding: '4px 8px'}}>👁️ Détails</button>
+                    </div>
+                  ))}
+                  {fournisseurs.length === 0 && (
+                    <div className="table-row">
+                      <span>Aucune commande enregistrée</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* HISTORIQUE FACTURES */}
+          <div className={`historique-tab ${activeHistoriqueTab === 'factures' ? 'active' : ''}`}>
+            <div className="layout">
+              <div className="card full-width">
+                <div className="card-title">📄 Historique des Factures OCR</div>
+                <div style={{display: 'flex', gap: '15px', alignItems: 'center', justifyContent: 'center', margin: '15px 0', flexWrap: 'wrap'}}>
+                  <input type="text" className="search-bar" placeholder="🔍 Rechercher par fournisseur..." style={{width: '300px', margin: 0}}/>
+                  <select className="search-bar" style={{width: 'auto', margin: 0}}>
+                    <option>Tous statuts</option>
+                    <option>✅ Validée</option>
+                    <option>⏳ En attente</option>
+                    <option>❌ Rejetée</option>
+                  </select>
+                  <button className="button">🔍 Filtrer</button>
+                </div>
+              </div>
+              
+              <div className="card full-width">
+                <div className="table-mockup">
+                  <div className="table-header">Date Upload | Nom Fichier | Fournisseur | Montant | Statut | Actions</div>
+                  {documentsOcr.slice(0, 4).map((doc, index) => (
+                    <div key={index} className="table-row">
+                      <span>
+                        {new Date(doc.date_upload).toLocaleDateString('fr-FR')} | {doc.nom_fichier} | {doc.donnees_parsees?.fournisseur || 'Non identifié'} | €{doc.donnees_parsees?.total_ca || 'N/A'} | 
+                        <span style={{color: '#38a169', fontWeight: 'bold'}}>✅ Validée</span>
+                      </span>
+                      <div>
+                        <button className="button" style={{fontSize: '0.7rem', padding: '4px 8px'}}>👁️ Voir</button>
+                        <button className="button" style={{fontSize: '0.7rem', padding: '4px 8px'}}>📄 PDF</button>
+                      </div>
+                    </div>
+                  ))}
+                  {documentsOcr.length === 0 && (
+                    <div className="table-row">
+                      <span>Aucune facture OCR traitée</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* HISTORIQUE MODIFICATIONS */}
+          <div className={`historique-tab ${activeHistoriqueTab === 'modifications' ? 'active' : ''}`}>
+            <div className="layout">
+              <div className="card full-width">
+                <div className="card-title">✏️ Historique des Modifications</div>
+                <div style={{display: 'flex', gap: '15px', alignItems: 'center', justifyContent: 'center', margin: '15px 0', flexWrap: 'wrap'}}>
+                  <select className="search-bar" style={{width: 'auto', margin: 0}}>
+                    <option>Toutes les sections</option>
+                    <option>🍽️ Produits</option>
+                    <option>📝 Recettes</option>
+                    <option>🚚 Fournisseurs</option>
+                    <option>📦 Stock</option>
+                  </select>
+                  <select className="search-bar" style={{width: 'auto', margin: 0}}>
+                    <option>Tous utilisateurs</option>
+                    <option>Chef Antoine</option>
+                    <option>Marie</option>
+                    <option>Pierre</option>
+                  </select>
+                  <button className="button">🔍 Filtrer</button>
+                </div>
+              </div>
+              
+              <div className="card full-width">
+                <div className="table-mockup">
+                  <div className="table-header">Date/Heure | Utilisateur | Section | Élément | Action | Détails</div>
+                  <div className="table-row">
+                    <span>{new Date().toLocaleDateString('fr-FR')} 14:30 | Chef Antoine | <span style={{color: '#9f7aea', fontWeight: 'bold'}}>🍽️ Produits</span> | Salade Augustine | <span style={{color: '#3182ce'}}>Modification prix</span> | Prix mis à jour</span>
+                  </div>
+                  <div className="table-row">
+                    <span>{new Date(Date.now() - 24*60*60*1000).toLocaleDateString('fr-FR')} 10:15 | Marie | <span style={{color: '#38a169', fontWeight: 'bold'}}>📝 Recettes</span> | Nouvelle recette | <span style={{color: '#38a169'}}>Ajout recette</span> | Recette créée</span>
+                  </div>
+                  <div className="table-row">
+                    <span>{new Date(Date.now() - 2*24*60*60*1000).toLocaleDateString('fr-FR')} 16:45 | Pierre | <span style={{color: '#d69e2e', fontWeight: 'bold'}}>🚚 Fournisseurs</span> | Contact modifié | <span style={{color: '#3182ce'}}>Modification contact</span> | Coordonnées mises à jour</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
           <div className="px-4 py-6 sm:px-0">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
               <div className="bg-white overflow-hidden shadow rounded-lg">
