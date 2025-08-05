@@ -355,19 +355,20 @@ def parse_facture_fournisseur(texte_ocr: str) -> FactureFournisseurData:
     data = FactureFournisseurData()
     
     try:
-        # Rechercher le fournisseur (généralement en haut)
-        lines = texte_ocr.split('\n')[:10]  # Les 10 premières lignes
-        for line in lines:
+        # Rechercher le fournisseur dans les premières lignes
+        lines = texte_ocr.split('\n')
+        for i, line in enumerate(lines[:8]):  # Les 8 premières lignes
             line = line.strip()
             if len(line) > 3 and not line.isdigit() and not re.match(r'^\d{2}[/\-.]', line):
-                # Éviter les dates et numéros
-                if any(word in line.lower() for word in ['facture', 'invoice', 'devis', 'bon']):
+                # Éviter les dates, numéros de facture, etc.
+                if any(word in line.lower() for word in ['facture', 'invoice', 'devis', 'bon', 'date', 'n°', 'numero']):
                     continue
-                if re.search(r'[a-zA-Z]{3,}', line):
+                # Si c'est une ligne avec du texte significatif et pas trop générique
+                if re.search(r'[a-zA-ZÀ-ÿ]{3,}', line) and len(line.split()) <= 5:
                     data.fournisseur = line
                     break
         
-        # Rechercher la date
+        # Rechercher la date avec patterns améliorés
         date_patterns = [
             r'date[:\s]*(\d{1,2}[/\-.]\d{1,2}[/\-.]\d{2,4})',
             r'(\d{1,2}[/\-.]\d{1,2}[/\-.]\d{2,4})'
@@ -392,59 +393,100 @@ def parse_facture_fournisseur(texte_ocr: str) -> FactureFournisseurData:
                 data.numero_facture = facture_match.group(1)
                 break
         
-        # Rechercher les produits et prix
+        # Patterns améliorés pour les produits et prix
         produits = []
         produit_patterns = [
-            # Différents formats de lignes de facture
-            r'([A-Za-zÀ-ÿ\s\']{3,40})\s+(\d{1,3}[,.]?\d*)\s*[x\*]\s*(\d+[,.]?\d*)\s*[€]?\s*=?\s*(\d+[,.]?\d*)\s*[€]?',
-            r'([A-Za-zÀ-ÿ\s\']{3,40})\s+(\d+[,.]?\d*)\s*[€]\s*(\d{1,3})',
-            r'(\d{1,3})\s*[x\*]\s*([A-Za-zÀ-ÿ\s\']{3,40})\s*[\s@]\s*(\d+[,.]?\d*)\s*[€]?'
+            # Format: "Nom produit quantité x prix = total"
+            r'([A-Za-zÀ-ÿ\s\'\-]{3,40})\s+(\d{1,3})[x\*]\s*(\d+[,.]?\d*)[€]?\s*=?\s*(\d+[,.]?\d*)\s*[€]?',
+            # Format: "Nom produit: quantité x prix€"
+            r'([A-Za-zÀ-ÿ\s\'\-]{3,40})[:\s]+(\d{1,3})[x\*]\s*(\d+[,.]?\d*)\s*[€]',
+            # Format: "quantité x Nom produit @ prix€"
+            r'(\d{1,3})\s*[x\*]\s*([A-Za-zÀ-ÿ\s\'\-]{3,40})\s*[@]\s*(\d+[,.]?\d*)\s*[€]?',
+            # Format simple: "Nom produit    prix€"
+            r'([A-Za-zÀ-ÿ\s\'\-]{3,40})\s+(\d+[,.]?\d*)\s*[€]'
         ]
         
         for line in texte_ocr.split('\n'):
             line = line.strip()
-            if len(line) < 10:  # Ignorer les lignes trop courtes
+            if len(line) < 8:  # Ignorer les lignes trop courtes
+                continue
+            
+            # Ignorer les lignes de total/sous-total
+            if re.search(r'total|sous.total|tva|€\s*$', line.lower()):
                 continue
                 
             for pattern in produit_patterns:
-                match = re.search(pattern, line)
+                match = re.search(pattern, line, re.IGNORECASE)
                 if match:
                     groups = match.groups()
-                    if len(groups) >= 3:
-                        produit = {
-                            "nom": groups[0].strip() if not groups[0].isdigit() else groups[1].strip(),
-                            "quantite": float(groups[1].replace(',', '.')) if len(groups) > 1 else 1,
-                            "prix_unitaire": float(groups[2].replace(',', '.')) if len(groups) > 2 else 0,
-                            "ligne_originale": line
-                        }
-                        
-                        # Calculer le total si pas fourni
-                        if len(groups) >= 4 and groups[3]:
-                            produit["total"] = float(groups[3].replace(',', '.'))
-                        else:
-                            produit["total"] = produit["quantite"] * produit["prix_unitaire"]
-                        
-                        produits.append(produit)
-                        break
+                    if len(groups) >= 2:
+                        try:
+                            # Analyser selon le format détecté
+                            if groups[0].isdigit():
+                                # Format: quantité + nom + prix
+                                quantite = float(groups[0])
+                                nom_produit = groups[1].strip()
+                                prix_unitaire = float(groups[2].replace(',', '.')) if len(groups) > 2 else 0
+                            else:
+                                # Format: nom + quantité/prix
+                                nom_produit = groups[0].strip()
+                                if len(groups) >= 4 and groups[1].isdigit():
+                                    # Format avec quantité explicite
+                                    quantite = float(groups[1])
+                                    prix_unitaire = float(groups[2].replace(',', '.'))
+                                    total = float(groups[3].replace(',', '.')) if groups[3] else quantite * prix_unitaire
+                                else:
+                                    # Format simple nom + prix
+                                    quantite = 1.0
+                                    prix_unitaire = float(groups[1].replace(',', '.'))
+                                    total = prix_unitaire
+                            
+                            # Nettoyer le nom du produit
+                            nom_produit = re.sub(r'[:\-_]+$', '', nom_produit).strip()
+                            
+                            # Valider les données
+                            if (len(nom_produit) > 2 and 
+                                quantite > 0 and quantite < 9999 and 
+                                prix_unitaire >= 0 and
+                                not nom_produit.isdigit()):
+                                
+                                produit = {
+                                    "nom": nom_produit,
+                                    "quantite": quantite,
+                                    "prix_unitaire": prix_unitaire,
+                                    "total": quantite * prix_unitaire,
+                                    "ligne_originale": line
+                                }
+                                
+                                # Éviter les doublons
+                                if not any(p["nom"].lower() == nom_produit.lower() for p in produits):
+                                    produits.append(produit)
+                                break
+                        except (ValueError, IndexError):
+                            continue
         
         data.produits = produits
         
-        # Rechercher les totaux HT et TTC
+        # Rechercher les totaux HT et TTC avec patterns améliorés
         total_patterns = [
-            r'total\s*ht[:\s]*(\d+[,.]?\d*)\s*[€]?',
-            r'total\s*ttc[:\s]*(\d+[,.]?\d*)\s*[€]?',
-            r'montant\s*ht[:\s]*(\d+[,.]?\d*)\s*[€]?',
-            r'montant\s*ttc[:\s]*(\d+[,.]?\d*)\s*[€]?'
+            (r'total\s*ht[:\s]*(\d+[,.]?\d*)\s*[€]?', 'ht'),
+            (r'total\s*ttc[:\s]*(\d+[,.]?\d*)\s*[€]?', 'ttc'),
+            (r'montant\s*ht[:\s]*(\d+[,.]?\d*)\s*[€]?', 'ht'),
+            (r'montant\s*ttc[:\s]*(\d+[,.]?\d*)\s*[€]?', 'ttc'),
+            (r'sous.total[:\s]*(\d+[,.]?\d*)\s*[€]?', 'ht')
         ]
         
-        for pattern in total_patterns:
+        for pattern, type_total in total_patterns:
             match = re.search(pattern, texte_ocr, re.IGNORECASE)
             if match:
-                montant = float(match.group(1).replace(',', '.'))
-                if 'ht' in pattern:
-                    data.total_ht = montant
-                elif 'ttc' in pattern:
-                    data.total_ttc = montant
+                try:
+                    montant = float(match.group(1).replace(',', '.'))
+                    if type_total == 'ht':
+                        data.total_ht = montant
+                    elif type_total == 'ttc':
+                        data.total_ttc = montant
+                except ValueError:
+                    continue
         
     except Exception as e:
         print(f"Erreur parsing facture: {str(e)}")
