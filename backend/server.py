@@ -1347,6 +1347,201 @@ async def init_table_augustine_demo_data():
         "restaurant": "La Table d'Augustine - Restaurant méditerranéen avec spécialités provençales et corses"
     }
 
+# Routes pour le traitement OCR
+@api_router.post("/ocr/upload-document", response_model=DocumentUploadResponse)
+async def upload_and_process_document(
+    file: UploadFile = File(...),
+    document_type: str = "z_report"  # "z_report" ou "facture_fournisseur"
+):
+    """Upload et traitement OCR d'un document (photo Z report ou facture)"""
+    
+    if document_type not in ["z_report", "facture_fournisseur"]:
+        raise HTTPException(status_code=400, detail="Type de document invalide. Utilisez 'z_report' ou 'facture_fournisseur'")
+    
+    # Vérifier le format de fichier
+    if not file.content_type.startswith('image/'):
+        raise HTTPException(status_code=400, detail="Le fichier doit être une image (JPG, PNG, etc.)")
+    
+    try:
+        # Lire le contenu du fichier
+        image_content = await file.read()
+        image_base64 = base64.b64encode(image_content).decode('utf-8')
+        
+        # Extraire le texte avec OCR
+        texte_extrait = extract_text_from_image(image_base64)
+        
+        if not texte_extrait or len(texte_extrait.strip()) < 10:
+            raise HTTPException(status_code=400, detail="Impossible d'extraire du texte de l'image. Vérifiez la qualité de l'image.")
+        
+        # Parser selon le type de document
+        donnees_parsees = {}
+        if document_type == "z_report":
+            z_data = parse_z_report(texte_extrait)
+            donnees_parsees = z_data.dict()
+        elif document_type == "facture_fournisseur":
+            facture_data = parse_facture_fournisseur(texte_extrait)
+            donnees_parsees = facture_data.dict()
+        
+        # Créer le document dans la base
+        document = DocumentOCR(
+            type_document=document_type,
+            nom_fichier=file.filename,
+            image_base64=f"data:{file.content_type};base64,{image_base64}",
+            texte_extrait=texte_extrait,
+            donnees_parsees=donnees_parsees,
+            statut="traite",
+            date_traitement=datetime.utcnow()
+        )
+        
+        await db.documents_ocr.insert_one(document.dict())
+        
+        return DocumentUploadResponse(
+            document_id=document.id,
+            type_document=document_type,
+            texte_extrait=texte_extrait,
+            donnees_parsees=donnees_parsees,
+            message=f"Document {document_type} traité avec succès"
+        )
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Erreur lors du traitement: {str(e)}")
+
+@api_router.get("/ocr/documents")
+async def get_processed_documents(document_type: Optional[str] = None, limit: int = 50):
+    """Récupérer l'historique des documents traités"""
+    query = {}
+    if document_type:
+        query["type_document"] = document_type
+    
+    documents = await db.documents_ocr.find(query).sort("date_upload", -1).limit(limit).to_list(limit)
+    
+    # Enlever les images base64 pour alléger la réponse
+    for doc in documents:
+        if "image_base64" in doc:
+            doc["image_base64"] = None
+    
+    return documents
+
+@api_router.get("/ocr/document/{document_id}")
+async def get_document_by_id(document_id: str):
+    """Récupérer un document spécifique par son ID"""
+    document = await db.documents_ocr.find_one({"id": document_id})
+    if not document:
+        raise HTTPException(status_code=404, detail="Document non trouvé")
+    return document
+
+@api_router.post("/ocr/process-z-report/{document_id}")
+async def process_z_report_stock_deduction(document_id: str):
+    """Traiter un Z report pour déduire automatiquement les stocks"""
+    
+    # Récupérer le document
+    document = await db.documents_ocr.find_one({"id": document_id})
+    if not document:
+        raise HTTPException(status_code=404, detail="Document non trouvé")
+    
+    if document["type_document"] != "z_report":
+        raise HTTPException(status_code=400, detail="Ce document n'est pas un rapport Z")
+    
+    donnees_parsees = document.get("donnees_parsees", {})
+    plats_vendus = donnees_parsees.get("plats_vendus", [])
+    
+    if not plats_vendus:
+        raise HTTPException(status_code=400, detail="Aucun plat trouvé dans le rapport Z")
+    
+    # Traiter chaque plat vendu
+    stock_updates = []
+    warnings = []
+    
+    for plat in plats_vendus:
+        nom_plat = plat.get("nom", "").strip()
+        quantite_vendue = plat.get("quantite", 0)
+        
+        if not nom_plat or quantite_vendue <= 0:
+            continue
+        
+        # Rechercher la recette correspondante
+        recette = await db.recettes.find_one({
+            "$or": [
+                {"nom": {"$regex": f".*{nom_plat}.*", "$options": "i"}},
+                {"nom": nom_plat}
+            ]
+        })
+        
+        if not recette:
+            warnings.append(f"Recette non trouvée pour: {nom_plat}")
+            continue
+        
+        # Déduire les ingrédients du stock
+        for ingredient in recette.get("ingredients", []):
+            produit_id = ingredient.get("produit_id")
+            if not produit_id:
+                continue
+            
+            # Calculer la quantité à déduire
+            quantite_par_portion = ingredient.get("quantite", 0) / recette.get("portions", 1)
+            quantite_a_deduire = quantite_par_portion * quantite_vendue
+            
+            # Mettre à jour le stock
+            stock = await db.stocks.find_one({"produit_id": produit_id})
+            if stock:
+                nouvelle_quantite = max(0, stock["quantite_actuelle"] - quantite_a_deduire)
+                
+                await db.stocks.update_one(
+                    {"produit_id": produit_id},
+                    {"$set": {
+                        "quantite_actuelle": nouvelle_quantite,
+                        "derniere_maj": datetime.utcnow()
+                    }}
+                )
+                
+                # Créer un mouvement de stock
+                mouvement = MouvementStock(
+                    produit_id=produit_id,
+                    produit_nom=ingredient.get("produit_nom", ""),
+                    type="sortie",
+                    quantite=quantite_a_deduire,
+                    reference=f"Z-Report-{document_id[:8]}",
+                    commentaire=f"Déduction automatique pour {quantite_vendue}x {nom_plat}",
+                    fournisseur_nom="Système automatique"
+                )
+                
+                await db.mouvements_stock.insert_one(mouvement.dict())
+                
+                stock_updates.append({
+                    "produit_nom": ingredient.get("produit_nom", ""),
+                    "quantite_deduite": quantite_a_deduire,
+                    "nouvelle_quantite": nouvelle_quantite,
+                    "plat": nom_plat,
+                    "portions_vendues": quantite_vendue
+                })
+            else:
+                warnings.append(f"Stock non trouvé pour le produit ID: {produit_id}")
+    
+    # Marquer le document comme traité
+    await db.documents_ocr.update_one(
+        {"id": document_id},
+        {"$set": {
+            "statut": "stock_traite",
+            "date_traitement_stock": datetime.utcnow()
+        }}
+    )
+    
+    return {
+        "message": f"Traitement terminé. {len(stock_updates)} mises à jour de stock effectuées.",
+        "stock_updates": stock_updates,
+        "warnings": warnings
+    }
+
+@api_router.delete("/ocr/document/{document_id}")
+async def delete_document(document_id: str):
+    """Supprimer un document OCR"""
+    result = await db.documents_ocr.delete_one({"id": document_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Document non trouvé")
+    return {"message": "Document supprimé"}
+
 # Include the router in the main app
 app.include_router(api_router)
 
