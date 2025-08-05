@@ -247,12 +247,14 @@ def parse_z_report(texte_ocr: str) -> ZReportData:
                 data.date = date_match.group(1)
                 break
         
-        # Rechercher les plats et quantités
+        # Patterns améliorés pour les plats vendus
         plat_patterns = [
-            # Patterns pour différents formats de TPV
-            r'([A-ZÁÀÂÄÇÉÈÊËÏÎÔÙÛÜŸ][A-Za-zÀ-ÿ\s\']{3,30})\s*[:\-\s]*(\d{1,3})\s*[x\*]?\s*(\d+[,.]?\d*)?\s*[€]?',
-            r'(\d{1,3})\s*[x\*]\s*([A-ZÁÀÂÄÇÉÈÊËÏÎÔÙÛÜŸ][A-Za-zÀ-ÿ\s\']{3,30})',
-            r'([A-Z][A-Za-z\s]{3,20})\s+(\d{1,3})\s+(\d+[,.]?\d*)',
+            # Format: "Nom du plat: quantité" ou "Nom du plat quantité"
+            r'([A-ZÁÀÂÄÇÉÈÊËÏÎÔÙÛÜŸ][A-Za-zÀ-ÿ\s\'\-]{3,50})\s*:?\s*(\d{1,3})(?:\s*[x\*]?\s*(\d+[,.]?\d*)?\s*[€]?)?',
+            # Format: "quantité x Nom du plat"  
+            r'(\d{1,3})\s*[x\*]\s*([A-ZÁÀÂÄÇÉÈÊËÏÎÔÙÛÜŸ][A-Za-zÀ-ÿ\s\'\-]{3,50})',
+            # Format: "Nom du plat    quantité    prix"
+            r'([A-ZÁÀÂÄÇÉÈÊËÏÎÔÙÛÜŸ][A-Za-zÀ-ÿ\s\'\-]{3,50})\s+(\d{1,3})\s+(\d+[,.]?\d*)',
         ]
         
         plats_vendus = []
@@ -262,44 +264,70 @@ def parse_z_report(texte_ocr: str) -> ZReportData:
             line = line.strip()
             if not line or len(line) < 5:
                 continue
+            
+            # Ignorer les lignes qui contiennent clairement des totaux ou des dates
+            if re.search(r'total|somme|ca\s|date|rapport|couverts?', line.lower()):
+                continue
                 
             for pattern in plat_patterns:
-                matches = re.finditer(pattern, line, re.IGNORECASE)
-                for match in matches:
-                    if len(match.groups()) >= 2:
-                        if match.group(1).isdigit():
+                match = re.search(pattern, line, re.IGNORECASE)
+                if match:
+                    groups = match.groups()
+                    
+                    if len(groups) >= 2:
+                        # Déterminer le nom du plat et la quantité
+                        if groups[0].isdigit():
                             # Format: quantité + nom
-                            quantite = int(match.group(1))
-                            nom_plat = match.group(2).strip()
+                            quantite = int(groups[0])
+                            nom_plat = groups[1].strip()
                         else:
-                            # Format: nom + quantité
-                            nom_plat = match.group(1).strip()
-                            quantite = int(match.group(2)) if match.group(2).isdigit() else 1
+                            # Format: nom + quantité  
+                            nom_plat = groups[0].strip()
+                            try:
+                                quantite = int(groups[1]) if groups[1] and groups[1].isdigit() else 1
+                            except:
+                                quantite = 1
                         
-                        # Valider que c'est bien un nom de plat
-                        if len(nom_plat) > 3 and not nom_plat.isdigit():
-                            plats_vendus.append({
-                                "nom": nom_plat,
-                                "quantite": quantite,
-                                "ligne_originale": line
-                            })
+                        # Nettoyer le nom du plat
+                        nom_plat = re.sub(r'[:\-_]+$', '', nom_plat).strip()
+                        
+                        # Valider que c'est bien un nom de plat (pas un prix ou autre)
+                        if (len(nom_plat) > 3 and 
+                            not nom_plat.isdigit() and 
+                            quantite > 0 and quantite < 999 and
+                            not re.match(r'^\d+[,.]?\d*\s*[€]?$', nom_plat)):
+                            
+                            # Éviter les doublons
+                            existing = next((p for p in plats_vendus if p["nom"].lower() == nom_plat.lower()), None)
+                            if existing:
+                                existing["quantite"] += quantite
+                            else:
+                                plats_vendus.append({
+                                    "nom": nom_plat,
+                                    "quantite": quantite,
+                                    "ligne_originale": line
+                                })
                             break
         
         data.plats_vendus = plats_vendus
         
-        # Rechercher le total CA
+        # Rechercher le total CA avec patterns améliorés
         ca_patterns = [
             r'total[:\s]*(\d+[,.]?\d*)\s*[€]?',
             r'ca[:\s]*(\d+[,.]?\d*)\s*[€]?',
-            r'montant[:\s]*(\d+[,.]?\d*)\s*[€]?'
+            r'montant[:\s]*(\d+[,.]?\d*)\s*[€]?',
+            r'somme[:\s]*(\d+[,.]?\d*)\s*[€]?'
         ]
         
         for pattern in ca_patterns:
             ca_match = re.search(pattern, texte_ocr, re.IGNORECASE)
             if ca_match:
                 ca_str = ca_match.group(1).replace(',', '.')
-                data.total_ca = float(ca_str)
-                break
+                try:
+                    data.total_ca = float(ca_str)
+                    break
+                except:
+                    continue
         
         # Rechercher le nombre de couverts
         couvert_patterns = [
@@ -311,8 +339,11 @@ def parse_z_report(texte_ocr: str) -> ZReportData:
         for pattern in couvert_patterns:
             couvert_match = re.search(pattern, texte_ocr, re.IGNORECASE)
             if couvert_match:
-                data.nb_couverts = int(couvert_match.group(1))
-                break
+                try:
+                    data.nb_couverts = int(couvert_match.group(1))
+                    break
+                except:
+                    continue
         
     except Exception as e:
         print(f"Erreur parsing Z report: {str(e)}")
