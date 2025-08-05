@@ -440,6 +440,29 @@ function App() {
     }
   };
 
+  // Initialiser données La Table d'Augustine
+  const handleInitTableAugustine = async () => {
+    if (!window.confirm("Voulez-vous initialiser les données de La Table d'Augustine ? Cela ajoutera les vrais fournisseurs, produits et recettes de ce restaurant méditerranéen.")) return;
+    
+    try {
+      setLoading(true);
+      const response = await axios.post(`${API}/demo/init-table-augustine-data`);
+      alert(response.data.message + "\n" + response.data.restaurant);
+      
+      // Rafraîchir toutes les données
+      fetchProduits();
+      fetchFournisseurs();
+      fetchStocks();
+      fetchRecettes();
+      fetchDashboardStats();
+    } catch (error) {
+      console.error("Erreur lors de l'initialisation Table d'Augustine:", error);
+      alert("Erreur lors de l'initialisation");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-100">
       {/* Header */}
