@@ -1295,6 +1295,58 @@ class StockTestSuite:
             self.log_result("OCR traitement document inexistant", False, "Exception", str(e))
     
     def test_cascade_delete(self):
+        """Test suppression en cascade"""
+        print("\n=== TEST SUPPRESSION EN CASCADE ===")
+        
+        if not self.created_produit_id:
+            self.log_result("Suppression cascade", False, "Pas de produit à supprimer")
+            return
+        
+        # Vérifier qu'il y a des mouvements avant suppression
+        try:
+            mouvements_response = requests.get(f"{BASE_URL}/mouvements")
+            initial_mouvements_count = len(mouvements_response.json()) if mouvements_response.status_code == 200 else 0
+            
+            # Supprimer le produit
+            response = requests.delete(f"{BASE_URL}/produits/{self.created_produit_id}")
+            if response.status_code == 200:
+                self.log_result("DELETE /produits/{id}", True, "Produit supprimé")
+                
+                # Vérifier que le stock a été supprimé
+                stock_response = requests.get(f"{BASE_URL}/stocks/{self.created_produit_id}")
+                if stock_response.status_code == 404:
+                    self.log_result("Suppression stock cascade", True, "Stock supprimé automatiquement")
+                else:
+                    self.log_result("Suppression stock cascade", False, "Stock non supprimé")
+                
+                # Vérifier que les mouvements ont été supprimés
+                time.sleep(0.5)
+                mouvements_response = requests.get(f"{BASE_URL}/mouvements")
+                if mouvements_response.status_code == 200:
+                    final_mouvements = mouvements_response.json()
+                    # Filtrer les mouvements du produit supprimé
+                    remaining_mouvements = [m for m in final_mouvements if m["produit_id"] != self.created_produit_id]
+                    if len(remaining_mouvements) < initial_mouvements_count:
+                        self.log_result("Suppression mouvements cascade", True, "Mouvements supprimés automatiquement")
+                    else:
+                        self.log_result("Suppression mouvements cascade", False, "Mouvements non supprimés")
+            else:
+                self.log_result("DELETE /produits/{id}", False, f"Erreur {response.status_code}", response.text)
+        except Exception as e:
+            self.log_result("Suppression cascade", False, "Exception", str(e))
+        
+        # Nettoyer le fournisseur de test
+        if self.created_fournisseur_id:
+            try:
+                response = requests.delete(f"{BASE_URL}/fournisseurs/{self.created_fournisseur_id}")
+                if response.status_code == 200:
+                    self.log_result("Nettoyage fournisseur", True, "Fournisseur de test supprimé")
+                else:
+                    self.log_result("Nettoyage fournisseur", False, f"Erreur {response.status_code}")
+            except Exception as e:
+                self.log_result("Nettoyage fournisseur", False, "Exception", str(e))
+    
+    def run_all_tests(self):
         """Exécute tous les tests"""
         print("🚀 DÉBUT DES TESTS BACKEND - GESTION STOCKS RESTAURANT")
         print(f"URL de base: {BASE_URL}")
