@@ -59,6 +59,7 @@ function App() {
     fetchStocks();
     fetchMouvements();
     fetchRecettes();
+    fetchDocumentsOcr();
   }, []);
 
   const fetchDashboardStats = async () => {
@@ -112,6 +113,15 @@ function App() {
       setRecettes(response.data);
     } catch (error) {
       console.error("Erreur lors du chargement des recettes:", error);
+    }
+  };
+
+  const fetchDocumentsOcr = async () => {
+    try {
+      const response = await axios.get(`${API}/ocr/documents`);
+      setDocumentsOcr(response.data);
+    } catch (error) {
+      console.error("Erreur lors du chargement des documents OCR:", error);
     }
   };
 
