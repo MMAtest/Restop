@@ -1094,22 +1094,35 @@ function App() {
                   </div>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {productionCapacity.ingredients_status.map((ingredient, index) => (
-                    <div key={index} className={`p-4 rounded-lg border ${
-                      ingredient.portions_possibles === 0 ? 'bg-red-50 border-red-200' :
-                      ingredient.portions_possibles < productionCapacity.portions_max + 1 ? 'bg-yellow-50 border-yellow-200' :
-                      'bg-green-50 border-green-200'
-                    }`}>
-                      <h4 className="font-medium text-gray-900">{ingredient.produit_nom}</h4>
-                      <div className="mt-2 text-sm text-gray-600">
-                        <div>Disponible: {ingredient.quantite_disponible} {ingredient.unite}</div>
-                        <div>Requis/portion: {ingredient.quantite_requise_par_portion} {ingredient.unite}</div>
-                        <div className="font-medium">
-                          Max portions: {ingredient.portions_possibles === Infinity ? '∞' : ingredient.portions_possibles}
+                  {productionCapacity.ingredients_status.map((ingredient, index) => {
+                    const unite = getDisplayUnit(ingredient.unite);
+                    return (
+                      <div key={index} className={`p-4 rounded-lg border ${
+                        ingredient.portions_possibles === 0 ? 'bg-red-50 border-red-200' :
+                        ingredient.portions_possibles < productionCapacity.portions_max + 1 ? 'bg-yellow-50 border-yellow-200' :
+                        'bg-green-50 border-green-200'
+                      }`}>
+                        <h4 className="font-medium text-gray-900">{ingredient.produit_nom}</h4>
+                        <div className="mt-2 text-sm text-gray-600">
+                          <div>
+                            <span className="font-medium">Disponible:</span> {formatQuantity(ingredient.quantite_disponible, unite)}
+                          </div>
+                          <div>
+                            <span className="font-medium">Requis/portion:</span> {formatQuantity(ingredient.quantite_requise_par_portion, unite)}
+                          </div>
+                          <div className="font-medium mt-2">
+                            <span className={`inline-flex px-2 py-1 text-xs rounded-full ${
+                              ingredient.portions_possibles === 0 ? 'bg-red-100 text-red-800' :
+                              ingredient.portions_possibles < productionCapacity.portions_max + 1 ? 'bg-yellow-100 text-yellow-800' :
+                              'bg-green-100 text-green-800'
+                            }`}>
+                              Max: {ingredient.portions_possibles === Infinity ? '∞' : Math.floor(ingredient.portions_possibles)} portions
+                            </span>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
             )}
