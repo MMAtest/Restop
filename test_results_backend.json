@@ -1,358 +1,435 @@
 {
-  "total": 50,
-  "passed": 50,
-  "failed": 0,
-  "success_rate": 100.0,
+  "total": 61,
+  "passed": 60,
+  "failed": 1,
+  "success_rate": 98.36065573770492,
   "results": [
     {
       "test": "POST /fournisseurs",
       "success": true,
       "message": "Fournisseur créé avec succès",
       "details": null,
-      "timestamp": "2025-08-05T18:54:48.717410"
+      "timestamp": "2025-08-05T19:04:23.730500"
     },
     {
       "test": "GET /fournisseurs",
       "success": true,
-      "message": "1 fournisseur(s) récupéré(s)",
+      "message": "5 fournisseur(s) récupéré(s)",
       "details": null,
-      "timestamp": "2025-08-05T18:54:48.739463"
+      "timestamp": "2025-08-05T19:04:23.752607"
     },
     {
       "test": "GET /fournisseurs/{id}",
       "success": true,
       "message": "Fournisseur récupéré correctement",
       "details": null,
-      "timestamp": "2025-08-05T18:54:48.797313"
+      "timestamp": "2025-08-05T19:04:23.772619"
     },
     {
       "test": "PUT /fournisseurs/{id}",
       "success": true,
       "message": "Fournisseur modifié avec succès",
       "details": null,
-      "timestamp": "2025-08-05T18:54:48.824521"
+      "timestamp": "2025-08-05T19:04:23.798437"
     },
     {
       "test": "POST /produits",
       "success": true,
       "message": "Produit créé avec liaison fournisseur",
       "details": null,
-      "timestamp": "2025-08-05T18:54:48.863894"
+      "timestamp": "2025-08-05T19:04:23.817807"
     },
     {
       "test": "Auto-création stock",
       "success": true,
       "message": "Stock créé automatiquement à 0",
       "details": null,
-      "timestamp": "2025-08-05T18:54:48.884592"
+      "timestamp": "2025-08-05T19:04:23.878410"
     },
     {
       "test": "GET /produits",
       "success": true,
-      "message": "1 produit(s) récupéré(s)",
+      "message": "21 produit(s) récupéré(s)",
       "details": null,
-      "timestamp": "2025-08-05T18:54:48.907694"
+      "timestamp": "2025-08-05T19:04:23.899797"
     },
     {
       "test": "PUT /produits/{id}",
       "success": true,
       "message": "Produit modifié avec succès",
       "details": null,
-      "timestamp": "2025-08-05T18:54:48.935428"
+      "timestamp": "2025-08-05T19:04:23.930769"
     },
     {
       "test": "Mise à jour nom dans stock",
       "success": true,
       "message": "Nom mis à jour dans stock",
       "details": null,
-      "timestamp": "2025-08-05T18:54:48.950220"
+      "timestamp": "2025-08-05T19:04:23.948297"
     },
     {
       "test": "GET /stocks",
       "success": true,
-      "message": "1 stock(s) récupéré(s)",
+      "message": "21 stock(s) récupéré(s)",
       "details": null,
-      "timestamp": "2025-08-05T18:54:48.973714"
+      "timestamp": "2025-08-05T19:04:23.972934"
     },
     {
       "test": "Structure données stocks",
       "success": true,
       "message": "Tous les champs requis présents",
       "details": null,
-      "timestamp": "2025-08-05T18:54:48.973757"
+      "timestamp": "2025-08-05T19:04:23.972975"
     },
     {
       "test": "PUT /stocks/{id}",
       "success": true,
       "message": "Stock mis à jour avec succès",
       "details": null,
-      "timestamp": "2025-08-05T18:54:48.993713"
+      "timestamp": "2025-08-05T19:04:24.014105"
     },
     {
       "test": "Mise à jour derniere_maj",
       "success": true,
       "message": "Date de dernière MAJ mise à jour",
       "details": null,
-      "timestamp": "2025-08-05T18:54:48.993751"
+      "timestamp": "2025-08-05T19:04:24.014155"
     },
     {
       "test": "POST /mouvements (entrée)",
       "success": true,
       "message": "Mouvement d'entrée créé",
       "details": null,
-      "timestamp": "2025-08-05T18:54:49.022877"
+      "timestamp": "2025-08-05T19:04:24.038882"
     },
     {
       "test": "Mise à jour stock (entrée)",
       "success": true,
       "message": "Stock mis à jour: 75.5",
       "details": null,
-      "timestamp": "2025-08-05T18:54:49.538957"
+      "timestamp": "2025-08-05T19:04:24.557853"
     },
     {
       "test": "POST /mouvements (sortie)",
       "success": true,
       "message": "Mouvement de sortie créé",
       "details": null,
-      "timestamp": "2025-08-05T18:54:49.561083"
+      "timestamp": "2025-08-05T19:04:24.576713"
     },
     {
       "test": "Mise à jour stock (sortie)",
       "success": true,
       "message": "Stock mis à jour: 60.5",
       "details": null,
-      "timestamp": "2025-08-05T18:54:50.091684"
+      "timestamp": "2025-08-05T19:04:25.097201"
     },
     {
       "test": "POST /mouvements (ajustement)",
       "success": true,
       "message": "Ajustement créé",
       "details": null,
-      "timestamp": "2025-08-05T18:54:50.158096"
+      "timestamp": "2025-08-05T19:04:25.122179"
     },
     {
       "test": "Mise à jour stock (ajustement)",
       "success": true,
       "message": "Stock ajusté: 55.0",
       "details": null,
-      "timestamp": "2025-08-05T18:54:50.678651"
+      "timestamp": "2025-08-05T19:04:25.644775"
     },
     {
       "test": "GET /mouvements",
       "success": true,
       "message": "3 mouvement(s) dans l'historique",
       "details": null,
-      "timestamp": "2025-08-05T18:54:50.695851"
+      "timestamp": "2025-08-05T19:04:25.664019"
     },
     {
       "test": "Ordre chronologique mouvements",
       "success": true,
       "message": "Mouvements triés par date décroissante",
       "details": null,
-      "timestamp": "2025-08-05T18:54:50.695893"
+      "timestamp": "2025-08-05T19:04:25.664065"
     },
     {
       "test": "GET /export/stocks",
       "success": true,
       "message": "Fichier Excel généré avec succès",
       "details": null,
-      "timestamp": "2025-08-05T18:54:50.733303"
+      "timestamp": "2025-08-05T19:04:25.803825"
     },
     {
       "test": "Taille fichier Excel",
       "success": true,
-      "message": "Fichier de 5184 bytes",
+      "message": "Fichier de 7178 bytes",
       "details": null,
-      "timestamp": "2025-08-05T18:54:50.733351"
+      "timestamp": "2025-08-05T19:04:25.803869"
     },
     {
       "test": "Structure Excel",
       "success": true,
-      "message": "Excel valide avec 1 lignes",
+      "message": "Excel valide avec 21 lignes",
       "details": null,
-      "timestamp": "2025-08-05T18:54:50.834472"
+      "timestamp": "2025-08-05T19:04:25.901265"
     },
     {
       "test": "POST /import/stocks",
       "success": true,
       "message": "Import Excel réussi",
       "details": null,
-      "timestamp": "2025-08-05T18:54:50.872859"
+      "timestamp": "2025-08-05T19:04:25.940067"
     },
     {
       "test": "Validation import Excel",
       "success": true,
       "message": "Données importées correctement",
       "details": null,
-      "timestamp": "2025-08-05T18:54:51.390094"
+      "timestamp": "2025-08-05T19:04:26.460473"
     },
     {
       "test": "GET /dashboard/stats",
       "success": true,
       "message": "Toutes les statistiques présentes",
       "details": null,
-      "timestamp": "2025-08-05T18:54:51.412820"
+      "timestamp": "2025-08-05T19:04:26.479253"
     },
     {
       "test": "Validation stats",
       "success": true,
-      "message": "Produits: 1, Fournisseurs: 1",
+      "message": "Produits: 21, Fournisseurs: 5",
       "details": null,
-      "timestamp": "2025-08-05T18:54:51.412866"
+      "timestamp": "2025-08-05T19:04:26.479311"
     },
     {
       "test": "POST /demo/init-french-italian-data",
-      "success": true,
-      "message": "Données créées: 4 fournisseurs, 20 produits, 4 recettes",
-      "details": null,
-      "timestamp": "2025-08-05T18:54:51.543115"
-    },
-    {
-      "test": "Fournisseurs démo créés",
-      "success": true,
-      "message": "4 fournisseurs authentiques",
-      "details": null,
-      "timestamp": "2025-08-05T18:54:51.558641"
-    },
-    {
-      "test": "Produits démo créés",
-      "success": true,
-      "message": "6 produits italiens/français",
-      "details": null,
-      "timestamp": "2025-08-05T18:54:51.583471"
-    },
-    {
-      "test": "Recettes démo créées",
-      "success": true,
-      "message": "4 recettes classiques",
-      "details": null,
-      "timestamp": "2025-08-05T18:54:51.601622"
+      "success": false,
+      "message": "Erreur 404",
+      "details": "{\"detail\":\"Not Found\"}",
+      "timestamp": "2025-08-05T19:04:26.503397"
     },
     {
       "test": "POST /recettes",
       "success": true,
       "message": "Recette créée avec enrichissement noms produits",
       "details": null,
-      "timestamp": "2025-08-05T18:54:51.664435"
+      "timestamp": "2025-08-05T19:04:26.521094"
     },
     {
       "test": "GET /recettes",
       "success": true,
-      "message": "5 recette(s) récupérée(s)",
+      "message": "6 recette(s) récupérée(s)",
       "details": null,
-      "timestamp": "2025-08-05T18:54:51.684374"
+      "timestamp": "2025-08-05T19:04:26.543463"
     },
     {
       "test": "Structure données recettes",
       "success": true,
       "message": "Tous les champs requis présents",
       "details": null,
-      "timestamp": "2025-08-05T18:54:51.684412"
+      "timestamp": "2025-08-05T19:04:26.543509"
     },
     {
       "test": "GET /recettes/{id}",
       "success": true,
       "message": "Recette récupérée correctement",
       "details": null,
-      "timestamp": "2025-08-05T18:54:51.705915"
+      "timestamp": "2025-08-05T19:04:26.572269"
     },
     {
       "test": "PUT /recettes/{id}",
       "success": true,
       "message": "Recette modifiée avec succès",
       "details": null,
-      "timestamp": "2025-08-05T18:54:51.723703"
+      "timestamp": "2025-08-05T19:04:26.596768"
     },
     {
       "test": "GET /recettes/{id}/production-capacity",
       "success": true,
-      "message": "Capacité calculée: 0 portions max",
+      "message": "Capacité calculée: 1 portions max",
       "details": null,
-      "timestamp": "2025-08-05T18:54:51.743159"
+      "timestamp": "2025-08-05T19:04:26.614566"
     },
     {
       "test": "Structure ingredients_status",
       "success": true,
       "message": "Détails ingrédients complets",
       "details": null,
-      "timestamp": "2025-08-05T18:54:51.743202"
+      "timestamp": "2025-08-05T19:04:26.614605"
     },
     {
       "test": "GET /export/recettes",
       "success": true,
       "message": "Fichier Excel recettes généré",
       "details": null,
-      "timestamp": "2025-08-05T18:54:51.781164"
+      "timestamp": "2025-08-05T19:04:26.651974"
     },
     {
       "test": "Taille fichier Excel recettes",
       "success": true,
-      "message": "Fichier de 6423 bytes",
+      "message": "Fichier de 6535 bytes",
       "details": null,
-      "timestamp": "2025-08-05T18:54:51.781205"
+      "timestamp": "2025-08-05T19:04:26.652015"
     },
     {
       "test": "Structure Excel recettes",
       "success": true,
-      "message": "Excel valide avec 16 lignes",
+      "message": "Excel valide avec 17 lignes",
       "details": null,
-      "timestamp": "2025-08-05T18:54:51.792260"
+      "timestamp": "2025-08-05T19:04:26.661038"
     },
     {
       "test": "POST /import/recettes",
       "success": true,
       "message": "Import Excel recettes réussi",
       "details": null,
-      "timestamp": "2025-08-05T18:54:51.828184"
+      "timestamp": "2025-08-05T19:04:26.702516"
     },
     {
       "test": "Validation import recettes",
       "success": true,
       "message": "Recette importée correctement",
       "details": null,
-      "timestamp": "2025-08-05T18:54:52.348623"
+      "timestamp": "2025-08-05T19:04:27.222495"
     },
     {
       "test": "DELETE /recettes/{id}",
       "success": true,
       "message": "Recette supprimée",
       "details": null,
-      "timestamp": "2025-08-05T18:54:52.371038"
+      "timestamp": "2025-08-05T19:04:27.287777"
     },
     {
       "test": "Validation suppression recette",
       "success": true,
       "message": "Recette bien supprimée",
       "details": null,
-      "timestamp": "2025-08-05T18:54:52.386462"
+      "timestamp": "2025-08-05T19:04:27.305848"
+    },
+    {
+      "test": "POST /demo/init-table-augustine-data",
+      "success": true,
+      "message": "Données créées: 6 fournisseurs, 43 produits, 10 recettes",
+      "details": null,
+      "timestamp": "2025-08-05T19:04:27.584805"
+    },
+    {
+      "test": "Fournisseurs authentiques La Table d'Augustine",
+      "success": true,
+      "message": "6 fournisseurs authentiques créés",
+      "details": null,
+      "timestamp": "2025-08-05T19:04:27.601481"
+    },
+    {
+      "test": "Détails fournisseur Artigiana",
+      "success": true,
+      "message": "Contact Giuseppe Pellegrino validé",
+      "details": null,
+      "timestamp": "2025-08-05T19:04:27.601522"
+    },
+    {
+      "test": "Produits menu authentique",
+      "success": true,
+      "message": "14 produits du menu créés",
+      "details": null,
+      "timestamp": "2025-08-05T19:04:27.620140"
+    },
+    {
+      "test": "Prix produits luxe",
+      "success": true,
+      "message": "Truffe à 800.0€/kg",
+      "details": null,
+      "timestamp": "2025-08-05T19:04:27.620187"
+    },
+    {
+      "test": "Prix recette Supions en persillade de Mamie",
+      "success": true,
+      "message": "24.0€",
+      "details": null,
+      "timestamp": "2025-08-05T19:04:27.638751"
+    },
+    {
+      "test": "Prix recette Fleurs de courgettes de Mamet",
+      "success": true,
+      "message": "21.0€",
+      "details": null,
+      "timestamp": "2025-08-05T19:04:27.638794"
+    },
+    {
+      "test": "Prix recette Linguine aux palourdes & sauce à l'ail",
+      "success": true,
+      "message": "28.0€",
+      "details": null,
+      "timestamp": "2025-08-05T19:04:27.638803"
+    },
+    {
+      "test": "Prix recette Rigatoni à la truffe fraîche de Forcalquier",
+      "success": true,
+      "message": "31.0€",
+      "details": null,
+      "timestamp": "2025-08-05T19:04:27.638810"
+    },
+    {
+      "test": "Prix recette Souris d'agneau confite",
+      "success": true,
+      "message": "36.0€",
+      "details": null,
+      "timestamp": "2025-08-05T19:04:27.638817"
+    },
+    {
+      "test": "Prix recette Bœuf Wellington à la truffe",
+      "success": true,
+      "message": "56.0€",
+      "details": null,
+      "timestamp": "2025-08-05T19:04:27.638824"
+    },
+    {
+      "test": "Recettes authentiques La Table d'Augustine",
+      "success": true,
+      "message": "6 recettes du menu créées",
+      "details": null,
+      "timestamp": "2025-08-05T19:04:27.638831"
+    },
+    {
+      "test": "Calcul production capacity La Table d'Augustine",
+      "success": true,
+      "message": "Capacité calculée pour Supions en persillade de Mamie: 0 portions",
+      "details": null,
+      "timestamp": "2025-08-05T19:04:27.663198"
+    },
+    {
+      "test": "Relations ingrédients-produits",
+      "success": true,
+      "message": "Tous les ingrédients correctement liés pour Supions en persillade de Mamie",
+      "details": null,
+      "timestamp": "2025-08-05T19:04:27.663251"
     },
     {
       "test": "DELETE /produits/{id}",
       "success": true,
       "message": "Produit supprimé",
       "details": null,
-      "timestamp": "2025-08-05T18:54:52.429858"
+      "timestamp": "2025-08-05T19:04:27.741325"
     },
     {
       "test": "Suppression stock cascade",
       "success": true,
       "message": "Stock supprimé automatiquement",
       "details": null,
-      "timestamp": "2025-08-05T18:54:52.454357"
+      "timestamp": "2025-08-05T19:04:27.759396"
     },
     {
       "test": "Suppression mouvements cascade",
       "success": true,
       "message": "Mouvements supprimés automatiquement",
       "details": null,
-      "timestamp": "2025-08-05T18:54:52.980839"
+      "timestamp": "2025-08-05T19:04:28.277655"
     },
     {
       "test": "Nettoyage fournisseur",
       "success": true,
       "message": "Fournisseur de test supprimé",
       "details": null,
-      "timestamp": "2025-08-05T18:54:53.012423"
+      "timestamp": "2025-08-05T19:04:28.295861"
     }
   ]
 }
