@@ -1043,6 +1043,9 @@ class StockTestSuite:
         self.test_recettes_excel_import()
         self.test_recette_delete()
         
+        # Test spécifique pour La Table d'Augustine
+        self.test_table_augustine_demo_data()
+        
         # Test de suppression en cascade à la fin
         self.test_cascade_delete()
         
