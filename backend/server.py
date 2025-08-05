@@ -1074,8 +1074,14 @@ async def upload_and_process_document(
         raise HTTPException(status_code=400, detail="Type de document invalide. Utilisez 'z_report' ou 'facture_fournisseur'")
     
     # Vérifier le format de fichier
-    if not file.content_type.startswith('image/'):
+    if file.content_type and not file.content_type.startswith('image/'):
         raise HTTPException(status_code=400, detail="Le fichier doit être une image (JPG, PNG, etc.)")
+    
+    # Si content_type est None, vérifier l'extension du fichier
+    if not file.content_type:
+        filename_lower = file.filename.lower() if file.filename else ""
+        if not any(filename_lower.endswith(ext) for ext in ['.jpg', '.jpeg', '.png', '.gif', '.bmp', '.tiff']):
+            raise HTTPException(status_code=400, detail="Le fichier doit avoir une extension image valide (.jpg, .png, etc.)")
     
     try:
         # Lire le contenu du fichier
