@@ -436,52 +436,6 @@ function App() {
     event.target.value = '';
   };
 
-  // Initialiser données de démo
-  const handleInitDemo = async () => {
-    if (!window.confirm("Voulez-vous initialiser les données de démonstration pour un restaurant français-italien ? Cela ajoutera des fournisseurs, produits et recettes d'exemple.")) return;
-    
-    try {
-      setLoading(true);
-      const response = await axios.post(`${API}/demo/init-french-italian-data`);
-      alert(response.data.message);
-      
-      // Rafraîchir toutes les données
-      fetchProduits();
-      fetchFournisseurs();
-      fetchStocks();
-      fetchRecettes();
-      fetchDashboardStats();
-    } catch (error) {
-      console.error("Erreur lors de l'initialisation:", error);
-      alert("Erreur lors de l'initialisation");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Initialiser données La Table d'Augustine
-  const handleInitTableAugustine = async () => {
-    if (!window.confirm("Voulez-vous initialiser les données de La Table d'Augustine ? Cela ajoutera les vrais fournisseurs, produits et recettes de ce restaurant méditerranéen.")) return;
-    
-    try {
-      setLoading(true);
-      const response = await axios.post(`${API}/demo/init-table-augustine-data`);
-      alert(response.data.message + "\n" + response.data.restaurant);
-      
-      // Rafraîchir toutes les données
-      fetchProduits();
-      fetchFournisseurs();
-      fetchStocks();
-      fetchRecettes();
-      fetchDashboardStats();
-    } catch (error) {
-      console.error("Erreur lors de l'initialisation Table d'Augustine:", error);
-      alert("Erreur lors de l'initialisation");
-    } finally {
-      setLoading(false);
-    }
-  };
-
   // Fonctions pour OCR
   const handleOcrFileSelect = (event) => {
     const file = event.target.files[0];
