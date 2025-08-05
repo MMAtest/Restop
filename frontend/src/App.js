@@ -481,6 +481,13 @@ function App() {
                 🎯 Données Démo
               </button>
               <button
+                onClick={handleInitTableAugustine}
+                disabled={loading}
+                className="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700 transition-colors disabled:opacity-50"
+              >
+                🍽️ Table d'Augustine
+              </button>
+              <button
                 onClick={handleExport}
                 className="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 transition-colors"
               >
