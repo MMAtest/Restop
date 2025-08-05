@@ -1250,34 +1250,61 @@ function App() {
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
-                    {mouvements.map((mouvement) => (
-                      <tr key={mouvement.id}>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                          {new Date(mouvement.date).toLocaleString('fr-FR')}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                          {mouvement.produit_nom || "Produit inconnu"}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                            mouvement.type === 'entree' ? 'bg-green-100 text-green-800' :
-                            mouvement.type === 'sortie' ? 'bg-red-100 text-red-800' :
-                            'bg-blue-100 text-blue-800'
-                          }`}>
-                            {mouvement.type}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                          {mouvement.quantite}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          {mouvement.reference || "-"}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          {mouvement.commentaire || "-"}
-                        </td>
-                      </tr>
-                    ))}
+                    {mouvements.map((mouvement) => {
+                      const produit = produits.find(p => p.id === mouvement.produit_id);
+                      const unite = getDisplayUnit(produit?.unite);
+                      
+                      return (
+                        <tr key={mouvement.id}>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            {new Date(mouvement.date).toLocaleString('fr-FR', {
+                              day: '2-digit',
+                              month: '2-digit',
+                              year: '2-digit',
+                              hour: '2-digit',
+                              minute: '2-digit'
+                            })}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="text-sm font-medium text-gray-900">
+                              {mouvement.produit_nom || "Produit inconnu"}
+                            </div>
+                            {mouvement.fournisseur_nom && (
+                              <div className="text-xs text-gray-500">
+                                {mouvement.fournisseur_nom}
+                              </div>
+                            )}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                              mouvement.type === 'entree' ? 'bg-green-100 text-green-800' :
+                              mouvement.type === 'sortie' ? 'bg-red-100 text-red-800' :
+                              'bg-blue-100 text-blue-800'
+                            }`}>
+                              {mouvement.type === 'entree' ? '⬆️ Entrée' :
+                               mouvement.type === 'sortie' ? '⬇️ Sortie' : '🔄 Ajustement'}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className={`text-sm font-medium ${
+                              mouvement.type === 'entree' ? 'text-green-600' :
+                              mouvement.type === 'sortie' ? 'text-red-600' : 'text-blue-600'
+                            }`}>
+                              {mouvement.type === 'sortie' ? '-' : '+'}
+                              {formatQuantity(Math.abs(mouvement.quantite), unite)}
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {mouvement.reference || "-"}
+                          </td>
+                          <td className="px-6 py-4 text-sm text-gray-500">
+                            <div className="max-w-xs truncate" title={mouvement.commentaire}>
+                              {mouvement.commentaire || "-"}
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })}
                   </tbody>
                 </table>
               </div>
