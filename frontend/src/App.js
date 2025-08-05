@@ -689,22 +689,92 @@ function App() {
               </div>
               
               <div className="table-mockup">
-                <div className="table-header">Documents Récents</div>
-                {documentsOcr.map((doc, index) => (
-                  <div key={index} className="table-row">
-                    <span>{doc.type_document}: {doc.nom_fichier} | {new Date(doc.date_upload).toLocaleDateString('fr-FR')}</span>
-                  </div>
-                ))}
+                <div className="table-header">Données Extraites</div>
+                {documentsOcr.length > 0 && (
+                  documentsOcr.slice(0, 3).map((doc, index) => (
+                    <div key={index} className="table-row">
+                      <span>Fournisseur: {doc.donnees_parsees?.fournisseur || 'Non identifié'} | Montant: {doc.donnees_parsees?.total_ca || 'N/A'}€</span>
+                    </div>
+                  ))
+                )}
                 {documentsOcr.length === 0 && (
-                  <div className="table-row">
-                    <span>Aucun document traité</span>
-                  </div>
+                  <>
+                    <div className="table-row">
+                      <span>Aucune donnée extraite</span>
+                    </div>
+                  </>
                 )}
               </div>
               
               <div style={{textAlign: 'center', marginTop: '20px'}}>
-                <button className="button" onClick={() => setShowOcrModal(true)}>➕ Nouveau Document</button>
-                <button className="button">📊 Rapport OCR</button>
+                <button className="button" onClick={() => setShowOcrModal(true)}>✅ Valider</button>
+                <button className="button">✏️ Corriger</button>
+                <button className="button">💾 Enregistrer</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* STOCKS */}
+      <div id="stocks" className={`wireframe-section ${activeTab === "stocks" ? "active" : ""}`}>
+        <div className="wireframe">
+          <h2>📦 Gestion de Stocks</h2>
+          <div className="layout">
+            <div className="card full-width">
+              <input type="text" className="search-bar" placeholder="🔍 Rechercher un produit..."/>
+              <div style={{display: 'flex', justifyContent: 'center', gap: '10px', marginTop: '15px', flexWrap: 'wrap'}}>
+                <button className="button" onClick={() => setShowProduitModal(true)}>➕ Nouveau Produit</button>
+                <button className="button" onClick={handleExport}>📊 Rapport Stock</button>
+                <button className="button">⚠️ Alertes</button>
+                <button className="button" onClick={() => setShowMouvementModal(true)}>📱 Inventaire</button>
+              </div>
+            </div>
+            
+            <div className="layout three-column">
+              <div className="card stat-card">
+                <div className="icon">📈</div>
+                <div className="card-title">Stock Total</div>
+                <div className="card-content">€12,450</div>
+              </div>
+              <div className="card stat-card">
+                <div className="icon">⚠️</div>
+                <div className="card-title">Produits Critiques</div>
+                <div className="card-content">{dashboardStats.stocks_faibles || 0} produits</div>
+              </div>
+              <div className="card stat-card">
+                <div className="icon">🔄</div>
+                <div className="card-title">Rotation Stock</div>
+                <div className="card-content">15 jours moy.</div>
+              </div>
+            </div>
+            
+            <div className="card full-width">
+              <div className="card-title">📋 Liste des Produits</div>
+              <div className="table-mockup">
+                <div className="table-header">Produit | Quantité | Stock Min | Statut | Actions</div>
+                {stocks.map((stock, index) => {
+                  const isLowStock = stock.quantite_actuelle <= stock.quantite_min;
+                  const produit = produits.find(p => p.id === stock.produit_id);
+                  const unite = getDisplayUnit(produit?.unite);
+                  
+                  return (
+                    <div key={index} className="table-row">
+                      <span>
+                        {produit?.categorie === 'légumes' ? '🍅' : produit?.categorie === 'épices' ? '🧄' : produit?.categorie === 'huiles' ? '🫒' : produit?.categorie === 'fromages' ? '🧀' : '📦'} {stock.produit_nom} | {formatQuantity(stock.quantite_actuelle, unite)} | {formatQuantity(stock.quantite_min, unite)} | {isLowStock ? '⚠️ Critique' : '✅ OK'}
+                      </span>
+                      <div>
+                        <button className="button" style={{fontSize: '0.7rem', padding: '4px 8px'}} onClick={() => handleEdit(produit, 'produit')}>✏️ Éditer</button>
+                        <button className="button" style={{fontSize: '0.7rem', padding: '4px 8px'}} onClick={() => setShowMouvementModal(true)}>🛒 Commander</button>
+                      </div>
+                    </div>
+                  );
+                })}
+                {stocks.length === 0 && (
+                  <div className="table-row">
+                    <span>Aucun stock disponible</span>
+                  </div>
+                )}
               </div>
             </div>
           </div>
