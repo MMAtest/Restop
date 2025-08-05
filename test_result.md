@@ -223,7 +223,7 @@ backend:
         comment: "Implémenté endpoints CRUD complets pour recettes avec modèle RecetteIngredient, calculateur de production capacity basé sur stock actuel, enrichissement automatique des noms de produits pour ingrédients"
       - working: true
         agent: "testing"
-        comment: "✅ TOUS TESTS RÉUSSIS - API Gestion Recettes complètement fonctionnelle. POST/GET/PUT/DELETE recettes validés avec enrichissement automatique noms produits. Structure RecetteIngredient correcte avec produit_id, quantité, unité. Création recette avec ingrédients multiples testée avec succès. Modification recette (nom, prix, portions, ingrédients) opérationnelle. Suppression recette avec validation 404 confirmée."
+        comment: "✅ TOUS TESTS RÉUSSIS - API Gestion Recettes complètement fonctionnelle. POST/GET/PUT/DELETE recettes validés avec enrichissement automatique noms produits. Structure RecetteIngredient correcte avec produit_id, quantité, unité. Création recette avec ingrédients multiples testée avec succès. Modification recette (nom, prix, portions, ingrédients) opérationnelle. Suppression recette avec validation 404 confirmée. GET /recettes/{id}/production-capacity calcule correctement portions maximales basées sur stock actuel avec détails par ingrédient (quantité_disponible, quantité_requise_par_portion, portions_possibles)."
 
   - task: "API Import/Export Recettes Excel"
     implemented: true
