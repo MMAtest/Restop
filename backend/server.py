@@ -1057,8 +1057,12 @@ async def get_processed_documents(document_type: Optional[str] = None, limit: in
     
     documents = await db.documents_ocr.find(query).sort("date_upload", -1).limit(limit).to_list(limit)
     
-    # Enlever les images base64 pour alléger la réponse
+    # Nettoyer les documents pour la sérialisation JSON
     for doc in documents:
+        # Supprimer l'_id MongoDB qui cause des problèmes de sérialisation
+        if "_id" in doc:
+            del doc["_id"]
+        # Enlever les images base64 pour alléger la réponse
         if "image_base64" in doc:
             doc["image_base64"] = None
     
@@ -1070,6 +1074,11 @@ async def get_document_by_id(document_id: str):
     document = await db.documents_ocr.find_one({"id": document_id})
     if not document:
         raise HTTPException(status_code=404, detail="Document non trouvé")
+    
+    # Supprimer l'_id MongoDB pour éviter les problèmes de sérialisation
+    if "_id" in document:
+        del document["_id"]
+    
     return document
 
 @api_router.post("/ocr/process-z-report/{document_id}")
