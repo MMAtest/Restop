@@ -11,6 +11,7 @@ import pandas as pd
 from datetime import datetime
 import time
 import os
+import base64
 
 # Configuration
 BASE_URL = "https://7dcd9914-c4fe-4243-9f17-efffeffdde7b.preview.emergentagent.com/api"
