@@ -1024,10 +1024,35 @@ class StockTestSuite:
     
     def create_mock_base64_image(self, text_content):
         """Créer une image base64 simulée avec du texte pour les tests OCR"""
-        # Créer une image simple avec du texte simulé
-        # En réalité, on simule juste le format base64 avec du contenu textuel
-        mock_image_data = f"Mock image containing: {text_content}"
-        return base64.b64encode(mock_image_data.encode()).decode()
+        # Créer une image PNG simple de 100x100 pixels avec du texte
+        from PIL import Image, ImageDraw, ImageFont
+        import io
+        
+        # Créer une image blanche
+        img = Image.new('RGB', (400, 200), color='white')
+        draw = ImageDraw.Draw(img)
+        
+        # Ajouter le texte (utiliser une police par défaut)
+        try:
+            # Essayer d'utiliser une police par défaut
+            font = ImageFont.load_default()
+        except:
+            font = None
+        
+        # Diviser le texte en lignes et les dessiner
+        lines = text_content.strip().split('\n')
+        y_offset = 10
+        for line in lines:
+            if line.strip():
+                draw.text((10, y_offset), line.strip(), fill='black', font=font)
+                y_offset += 20
+        
+        # Convertir en base64
+        buffer = io.BytesIO()
+        img.save(buffer, format='PNG')
+        buffer.seek(0)
+        
+        return base64.b64encode(buffer.getvalue()).decode()
     
     def test_ocr_document_upload_z_report(self):
         """Test upload et traitement OCR d'un rapport Z"""
