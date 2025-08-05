@@ -1348,7 +1348,7 @@ class StockTestSuite:
     
     def run_all_tests(self):
         """Exécute tous les tests"""
-        print("🚀 DÉBUT DES TESTS BACKEND - GESTION STOCKS RESTAURANT")
+        print("🚀 DÉBUT DES TESTS BACKEND - GESTION STOCKS RESTAURANT + OCR")
         print(f"URL de base: {BASE_URL}")
         print("=" * 60)
         
@@ -1371,6 +1371,19 @@ class StockTestSuite:
         
         # Test spécifique pour La Table d'Augustine
         self.test_table_augustine_demo_data()
+        
+        # Tests OCR - Système de traitement de documents
+        print("\n" + "=" * 60)
+        print("🔍 TESTS SYSTÈME OCR - TRAITEMENT DOCUMENTS RESTAURANT")
+        print("=" * 60)
+        
+        self.test_ocr_document_upload_z_report()
+        self.test_ocr_document_upload_facture()
+        self.test_ocr_documents_list()
+        self.test_ocr_document_by_id()
+        self.test_ocr_z_report_stock_processing()
+        self.test_ocr_document_delete()
+        self.test_ocr_error_handling()
         
         # Test de suppression en cascade à la fin
         self.test_cascade_delete()
