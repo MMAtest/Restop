@@ -1022,7 +1022,279 @@ class StockTestSuite:
             except Exception as e:
                 self.log_result("Nettoyage fournisseur", False, "Exception", str(e))
     
-    def run_all_tests(self):
+    def create_mock_base64_image(self, text_content):
+        """Créer une image base64 simulée avec du texte pour les tests OCR"""
+        # Créer une image simple avec du texte simulé
+        # En réalité, on simule juste le format base64 avec du contenu textuel
+        mock_image_data = f"Mock image containing: {text_content}"
+        return base64.b64encode(mock_image_data.encode()).decode()
+    
+    def test_ocr_document_upload_z_report(self):
+        """Test upload et traitement OCR d'un rapport Z"""
+        print("\n=== TEST OCR UPLOAD Z-REPORT ===")
+        
+        # Créer des données simulées de Z-report
+        z_report_text = """
+        RAPPORT Z - 15/12/2024
+        
+        Linguine aux palourdes: 3
+        Supions en persillade: 2  
+        Bœuf Wellington: 1
+        Salade Caprese: 4
+        
+        Total: 84.00€
+        Couverts: 10
+        """
+        
+        mock_image_base64 = self.create_mock_base64_image(z_report_text)
+        
+        try:
+            # Simuler un upload de fichier avec des données base64
+            files = {
+                'file': ('z_report_test.jpg', base64.b64decode(mock_image_base64), 'image/jpeg')
+            }
+            data = {'document_type': 'z_report'}
+            
+            response = requests.post(f"{BASE_URL}/ocr/upload-document", files=files, data=data)
+            if response.status_code == 200 or response.status_code == 201:
+                result = response.json()
+                if "document_id" in result and "texte_extrait" in result:
+                    self.created_document_id = result["document_id"]
+                    self.log_result("POST /ocr/upload-document (z_report)", True, 
+                                  f"Document Z-report traité, ID: {result['document_id'][:8]}...")
+                    
+                    # Vérifier la structure des données parsées
+                    if "donnees_parsees" in result and isinstance(result["donnees_parsees"], dict):
+                        parsed_data = result["donnees_parsees"]
+                        if "plats_vendus" in parsed_data:
+                            self.log_result("Parsing Z-report", True, 
+                                          f"Données parsées avec {len(parsed_data.get('plats_vendus', []))} plats")
+                        else:
+                            self.log_result("Parsing Z-report", False, "Structure de données parsées incorrecte")
+                    else:
+                        self.log_result("Parsing Z-report", False, "Données parsées manquantes")
+                else:
+                    self.log_result("POST /ocr/upload-document (z_report)", False, "Réponse incomplète")
+            else:
+                self.log_result("POST /ocr/upload-document (z_report)", False, 
+                              f"Erreur {response.status_code}", response.text)
+        except Exception as e:
+            self.log_result("POST /ocr/upload-document (z_report)", False, "Exception", str(e))
+    
+    def test_ocr_document_upload_facture(self):
+        """Test upload et traitement OCR d'une facture fournisseur"""
+        print("\n=== TEST OCR UPLOAD FACTURE FOURNISSEUR ===")
+        
+        # Créer des données simulées de facture
+        facture_text = """
+        Maison Artigiana
+        Facture N° FAC-2024-001
+        Date: 15/12/2024
+        
+        Burrata 2x 8.50€ = 17.00€
+        Mozzarella 1x 12.00€ = 12.00€
+        Parmesan 500g x 45.00€ = 22.50€
+        
+        Total HT: 51.50€
+        Total TTC: 56.65€
+        """
+        
+        mock_image_base64 = self.create_mock_base64_image(facture_text)
+        
+        try:
+            files = {
+                'file': ('facture_test.jpg', base64.b64decode(mock_image_base64), 'image/jpeg')
+            }
+            data = {'document_type': 'facture_fournisseur'}
+            
+            response = requests.post(f"{BASE_URL}/ocr/upload-document", files=files, data=data)
+            if response.status_code == 200 or response.status_code == 201:
+                result = response.json()
+                if "document_id" in result and "texte_extrait" in result:
+                    self.log_result("POST /ocr/upload-document (facture)", True, 
+                                  f"Facture traitée, ID: {result['document_id'][:8]}...")
+                    
+                    # Vérifier la structure des données parsées
+                    if "donnees_parsees" in result and isinstance(result["donnees_parsees"], dict):
+                        parsed_data = result["donnees_parsees"]
+                        if "produits" in parsed_data and "fournisseur" in parsed_data:
+                            self.log_result("Parsing facture", True, 
+                                          f"Facture parsée: {parsed_data.get('fournisseur', 'N/A')} avec {len(parsed_data.get('produits', []))} produits")
+                        else:
+                            self.log_result("Parsing facture", False, "Structure de données parsées incorrecte")
+                    else:
+                        self.log_result("Parsing facture", False, "Données parsées manquantes")
+                else:
+                    self.log_result("POST /ocr/upload-document (facture)", False, "Réponse incomplète")
+            else:
+                self.log_result("POST /ocr/upload-document (facture)", False, 
+                              f"Erreur {response.status_code}", response.text)
+        except Exception as e:
+            self.log_result("POST /ocr/upload-document (facture)", False, "Exception", str(e))
+    
+    def test_ocr_documents_list(self):
+        """Test récupération de la liste des documents OCR"""
+        print("\n=== TEST OCR DOCUMENTS LIST ===")
+        
+        try:
+            response = requests.get(f"{BASE_URL}/ocr/documents")
+            if response.status_code == 200:
+                documents = response.json()
+                if isinstance(documents, list):
+                    self.log_result("GET /ocr/documents", True, f"{len(documents)} document(s) récupéré(s)")
+                    
+                    # Vérifier la structure des documents
+                    if len(documents) > 0:
+                        doc = documents[0]
+                        required_fields = ["id", "type_document", "nom_fichier", "statut", "date_upload"]
+                        if all(field in doc for field in required_fields):
+                            self.log_result("Structure documents OCR", True, "Tous les champs requis présents")
+                        else:
+                            missing = [f for f in required_fields if f not in doc]
+                            self.log_result("Structure documents OCR", False, f"Champs manquants: {missing}")
+                else:
+                    self.log_result("GET /ocr/documents", False, "Format de réponse incorrect")
+            else:
+                self.log_result("GET /ocr/documents", False, f"Erreur {response.status_code}", response.text)
+        except Exception as e:
+            self.log_result("GET /ocr/documents", False, "Exception", str(e))
+    
+    def test_ocr_document_by_id(self):
+        """Test récupération d'un document OCR spécifique"""
+        print("\n=== TEST OCR DOCUMENT BY ID ===")
+        
+        if not self.created_document_id:
+            self.log_result("GET /ocr/document/{id}", False, "Pas de document créé pour le test")
+            return
+        
+        try:
+            response = requests.get(f"{BASE_URL}/ocr/document/{self.created_document_id}")
+            if response.status_code == 200:
+                document = response.json()
+                if "id" in document and document["id"] == self.created_document_id:
+                    self.log_result("GET /ocr/document/{id}", True, "Document récupéré correctement")
+                    
+                    # Vérifier que les données complètes sont présentes
+                    if "texte_extrait" in document and "donnees_parsees" in document:
+                        self.log_result("Données complètes document", True, "Texte et données parsées présents")
+                    else:
+                        self.log_result("Données complètes document", False, "Données manquantes")
+                else:
+                    self.log_result("GET /ocr/document/{id}", False, "Document incorrect")
+            else:
+                self.log_result("GET /ocr/document/{id}", False, f"Erreur {response.status_code}", response.text)
+        except Exception as e:
+            self.log_result("GET /ocr/document/{id}", False, "Exception", str(e))
+    
+    def test_ocr_z_report_stock_processing(self):
+        """Test traitement automatique des stocks depuis un Z-report"""
+        print("\n=== TEST OCR Z-REPORT STOCK PROCESSING ===")
+        
+        if not self.created_document_id:
+            self.log_result("POST /ocr/process-z-report", False, "Pas de document Z-report pour le test")
+            return
+        
+        # S'assurer qu'on a des recettes correspondantes aux plats du Z-report
+        # (Les données de démo La Table d'Augustine devraient contenir "Linguine aux palourdes")
+        
+        try:
+            response = requests.post(f"{BASE_URL}/ocr/process-z-report/{self.created_document_id}")
+            if response.status_code == 200:
+                result = response.json()
+                if "stock_updates" in result:
+                    stock_updates = result["stock_updates"]
+                    self.log_result("POST /ocr/process-z-report", True, 
+                                  f"Traitement réussi: {len(stock_updates)} mise(s) à jour de stock")
+                    
+                    # Vérifier la structure des mises à jour
+                    if len(stock_updates) > 0:
+                        update = stock_updates[0]
+                        required_fields = ["produit_nom", "quantite_deduite", "nouvelle_quantite", "plat"]
+                        if all(field in update for field in required_fields):
+                            self.log_result("Structure stock updates", True, "Détails complets des mises à jour")
+                        else:
+                            self.log_result("Structure stock updates", False, "Champs manquants dans les mises à jour")
+                    
+                    # Vérifier les avertissements
+                    if "warnings" in result:
+                        warnings = result["warnings"]
+                        if len(warnings) > 0:
+                            self.log_result("Warnings Z-report", True, f"{len(warnings)} avertissement(s) signalé(s)")
+                        else:
+                            self.log_result("Warnings Z-report", True, "Aucun avertissement")
+                else:
+                    self.log_result("POST /ocr/process-z-report", False, "Structure de réponse incorrecte")
+            else:
+                self.log_result("POST /ocr/process-z-report", False, f"Erreur {response.status_code}", response.text)
+        except Exception as e:
+            self.log_result("POST /ocr/process-z-report", False, "Exception", str(e))
+    
+    def test_ocr_document_delete(self):
+        """Test suppression d'un document OCR"""
+        print("\n=== TEST OCR DOCUMENT DELETE ===")
+        
+        if not self.created_document_id:
+            self.log_result("DELETE /ocr/document/{id}", False, "Pas de document à supprimer")
+            return
+        
+        try:
+            response = requests.delete(f"{BASE_URL}/ocr/document/{self.created_document_id}")
+            if response.status_code == 200:
+                self.log_result("DELETE /ocr/document/{id}", True, "Document OCR supprimé")
+                
+                # Vérifier que le document n'existe plus
+                get_response = requests.get(f"{BASE_URL}/ocr/document/{self.created_document_id}")
+                if get_response.status_code == 404:
+                    self.log_result("Validation suppression document OCR", True, "Document bien supprimé")
+                else:
+                    self.log_result("Validation suppression document OCR", False, "Document encore présent")
+            else:
+                self.log_result("DELETE /ocr/document/{id}", False, f"Erreur {response.status_code}", response.text)
+        except Exception as e:
+            self.log_result("DELETE /ocr/document/{id}", False, "Exception", str(e))
+    
+    def test_ocr_error_handling(self):
+        """Test gestion d'erreurs OCR"""
+        print("\n=== TEST OCR ERROR HANDLING ===")
+        
+        # Test avec type de document invalide
+        try:
+            files = {
+                'file': ('test.jpg', b'fake image data', 'image/jpeg')
+            }
+            data = {'document_type': 'invalid_type'}
+            
+            response = requests.post(f"{BASE_URL}/ocr/upload-document", files=files, data=data)
+            if response.status_code == 400:
+                self.log_result("OCR type document invalide", True, "Erreur 400 pour type invalide")
+            else:
+                self.log_result("OCR type document invalide", False, f"Code erreur inattendu: {response.status_code}")
+        except Exception as e:
+            self.log_result("OCR type document invalide", False, "Exception", str(e))
+        
+        # Test avec document inexistant
+        try:
+            fake_id = "fake-document-id-123"
+            response = requests.get(f"{BASE_URL}/ocr/document/{fake_id}")
+            if response.status_code == 404:
+                self.log_result("OCR document inexistant", True, "Erreur 404 pour document inexistant")
+            else:
+                self.log_result("OCR document inexistant", False, f"Code erreur inattendu: {response.status_code}")
+        except Exception as e:
+            self.log_result("OCR document inexistant", False, "Exception", str(e))
+        
+        # Test traitement Z-report avec document inexistant
+        try:
+            fake_id = "fake-document-id-456"
+            response = requests.post(f"{BASE_URL}/ocr/process-z-report/{fake_id}")
+            if response.status_code == 404:
+                self.log_result("OCR traitement document inexistant", True, "Erreur 404 pour traitement document inexistant")
+            else:
+                self.log_result("OCR traitement document inexistant", False, f"Code erreur inattendu: {response.status_code}")
+        except Exception as e:
+            self.log_result("OCR traitement document inexistant", False, "Exception", str(e))
+    
+    def test_cascade_delete(self):
         """Exécute tous les tests"""
         print("🚀 DÉBUT DES TESTS BACKEND - GESTION STOCKS RESTAURANT")
         print(f"URL de base: {BASE_URL}")
