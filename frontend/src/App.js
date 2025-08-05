@@ -1738,6 +1738,153 @@ function App() {
           </div>
         </div>
       )}
+
+      {/* Modal OCR */}
+      {showOcrModal && (
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+          <div className="relative top-10 mx-auto p-5 border w-full max-w-2xl shadow-lg rounded-md bg-white">
+            <div className="mt-3">
+              <h3 className="text-lg font-medium text-gray-900 mb-4">
+                Traitement OCR de Document
+              </h3>
+              
+              {!ocrResult ? (
+                <div className="space-y-6">
+                  {/* Sélection du type de document */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Type de Document</label>
+                    <div className="flex space-x-4">
+                      <label className="flex items-center">
+                        <input
+                          type="radio"
+                          value="z_report"
+                          checked={ocrType === "z_report"}
+                          onChange={(e) => setOcrType(e.target.value)}
+                          className="mr-2"
+                        />
+                        <span className="text-sm">📊 Rapport Z (TPV)</span>
+                      </label>
+                      <label className="flex items-center">
+                        <input
+                          type="radio"
+                          value="facture_fournisseur"
+                          checked={ocrType === "facture_fournisseur"}
+                          onChange={(e) => setOcrType(e.target.value)}
+                          className="mr-2"
+                        />
+                        <span className="text-sm">🧾 Facture Fournisseur</span>
+                      </label>
+                    </div>
+                  </div>
+
+                  {/* Zone de drop et upload */}
+                  <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
+                    {ocrPreview ? (
+                      <div className="space-y-4">
+                        <img 
+                          src={ocrPreview} 
+                          alt="Aperçu" 
+                          className="mx-auto max-h-64 rounded border"
+                        />
+                        <div>
+                          <p className="text-sm text-gray-600 mb-2">Fichier sélectionné: {ocrFile?.name}</p>
+                          <button
+                            onClick={() => {
+                              setOcrFile(null);
+                              setOcrPreview(null);
+                            }}
+                            className="text-red-600 hover:text-red-800 text-sm"
+                          >
+                            Changer de fichier
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <div>
+                        <div className="text-6xl text-gray-400 mb-4">📷</div>
+                        <p className="text-lg font-medium text-gray-900 mb-2">
+                          Sélectionnez une image à traiter
+                        </p>
+                        <p className="text-sm text-gray-500 mb-4">
+                          Formats supportés: JPG, PNG, JPEG
+                        </p>
+                        <label className="cursor-pointer bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 inline-block">
+                          📁 Choisir un fichier
+                          <input 
+                            type="file" 
+                            accept="image/*" 
+                            onChange={handleOcrFileSelect}
+                            className="hidden"
+                          />
+                        </label>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Instructions */}
+                  <div className="bg-blue-50 border border-blue-200 rounded-md p-4">
+                    <h4 className="text-sm font-medium text-blue-900 mb-2">💡 Conseils pour un meilleur OCR :</h4>
+                    <ul className="text-sm text-blue-800 space-y-1">
+                      <li>• Assurez-vous que le texte est lisible et bien éclairé</li>
+                      <li>• Évitez les reflets et les ombres</li>
+                      <li>• Tenez l'appareil photo bien droit</li>
+                      <li>• Pour les rapports Z: capturez la section des ventes par plat</li>
+                    </ul>
+                  </div>
+                </div>
+              ) : (
+                /* Résultats OCR */
+                <div className="space-y-4">
+                  <div className="bg-green-50 border border-green-200 rounded-md p-4">
+                    <h4 className="text-sm font-medium text-green-900 mb-2">✅ Traitement réussi !</h4>
+                    <p className="text-sm text-green-800">{ocrResult.message}</p>
+                  </div>
+
+                  <div>
+                    <h4 className="text-sm font-medium text-gray-900 mb-2">Données extraites :</h4>
+                    <div className="bg-gray-50 rounded-md p-4 max-h-64 overflow-y-auto">
+                      <pre className="text-xs text-gray-700 whitespace-pre-wrap">
+                        {JSON.stringify(ocrResult.donnees_parsees, null, 2)}
+                      </pre>
+                    </div>
+                  </div>
+
+                  {ocrType === 'z_report' && ocrResult.donnees_parsees.plats_vendus?.length > 0 && (
+                    <div className="bg-yellow-50 border border-yellow-200 rounded-md p-4">
+                      <p className="text-sm text-yellow-800">
+                        💡 Vous pouvez maintenant fermer cette fenêtre et aller dans l'onglet "OCR Documents" pour traiter automatiquement les stocks.
+                      </p>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Boutons */}
+              <div className="flex justify-end space-x-3 pt-6 border-t mt-6">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowOcrModal(false);
+                    resetOcrModal();
+                  }}
+                  className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50"
+                >
+                  Fermer
+                </button>
+                {!ocrResult && ocrFile && (
+                  <button
+                    onClick={handleOcrUpload}
+                    disabled={processingOcr}
+                    className="px-4 py-2 bg-blue-600 border border-transparent rounded-md text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
+                  >
+                    {processingOcr ? "⏳ Traitement..." : "🔍 Analyser"}
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
