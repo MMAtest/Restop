@@ -15,7 +15,7 @@ import base64
 from PIL import Image, ImageDraw, ImageFont
 
 # Configuration
-BASE_URL = "https://7dcd9914-c4fe-4243-9f17-efffeffdde7b.preview.emergentagent.com/api"
+BASE_URL = "https://7fcf5492-aee5-4565-92a6-393f60236120.preview.emergentagent.com/api"
 HEADERS = {"Content-Type": "application/json"}
 
 class StockTestSuite:
