@@ -183,6 +183,238 @@ class FactureFournisseurData(BaseModel):
     total_ht: Optional[float] = None
     total_ttc: Optional[float] = None
 
+# Configuration OCR
+pytesseract.pytesseract.tesseract_cmd = '/usr/bin/tesseract'
+
+# Fonctions utilitaires pour OCR
+def preprocess_image(image):
+    """Préprocessing de l'image pour améliorer l'OCR"""
+    # Convertir en niveaux de gris
+    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    
+    # Appliquer un filtre pour réduire le bruit
+    denoised = cv2.medianBlur(gray, 5)
+    
+    # Améliorer le contraste
+    clahe = cv2.createCLAHE(clipLimit=3.0, tileGridSize=(8,8))
+    enhanced = clahe.apply(denoised)
+    
+    # Seuillage adaptatif pour améliorer la lisibilité
+    binary = cv2.adaptiveThreshold(enhanced, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 11, 2)
+    
+    return binary
+
+def extract_text_from_image(image_base64: str) -> str:
+    """Extraire le texte d'une image en base64 avec OCR"""
+    try:
+        # Décoder l'image base64
+        image_data = base64.b64decode(image_base64.split(',')[1] if ',' in image_base64 else image_base64)
+        nparr = np.frombuffer(image_data, np.uint8)
+        image = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+        
+        # Préprocessing de l'image
+        processed_image = preprocess_image(image)
+        
+        # Configuration OCR pour français
+        config = '--oem 3 --psm 6 -l fra+eng'
+        
+        # Extraire le texte
+        text = pytesseract.image_to_string(processed_image, config=config)
+        
+        return text.strip()
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Erreur lors de l'extraction OCR: {str(e)}")
+
+def parse_z_report(texte_ocr: str) -> ZReportData:
+    """Parser les données d'un rapport Z"""
+    data = ZReportData()
+    
+    try:
+        # Rechercher la date
+        date_patterns = [
+            r'(\d{1,2}[/\-.]\d{1,2}[/\-.]\d{2,4})',
+            r'(\d{2,4}[/\-.]\d{1,2}[/\-.]\d{1,2})'
+        ]
+        
+        for pattern in date_patterns:
+            date_match = re.search(pattern, texte_ocr)
+            if date_match:
+                data.date = date_match.group(1)
+                break
+        
+        # Rechercher les plats et quantités
+        plat_patterns = [
+            # Patterns pour différents formats de TPV
+            r'([A-ZÁÀÂÄÇÉÈÊËÏÎÔÙÛÜŸ][A-Za-zÀ-ÿ\s\']{3,30})\s*[:\-\s]*(\d{1,3})\s*[x\*]?\s*(\d+[,.]?\d*)?\s*[€]?',
+            r'(\d{1,3})\s*[x\*]\s*([A-ZÁÀÂÄÇÉÈÊËÏÎÔÙÛÜŸ][A-Za-zÀ-ÿ\s\']{3,30})',
+            r'([A-Z][A-Za-z\s]{3,20})\s+(\d{1,3})\s+(\d+[,.]?\d*)',
+        ]
+        
+        plats_vendus = []
+        lines = texte_ocr.split('\n')
+        
+        for line in lines:
+            line = line.strip()
+            if not line or len(line) < 5:
+                continue
+                
+            for pattern in plat_patterns:
+                matches = re.finditer(pattern, line, re.IGNORECASE)
+                for match in matches:
+                    if len(match.groups()) >= 2:
+                        if match.group(1).isdigit():
+                            # Format: quantité + nom
+                            quantite = int(match.group(1))
+                            nom_plat = match.group(2).strip()
+                        else:
+                            # Format: nom + quantité
+                            nom_plat = match.group(1).strip()
+                            quantite = int(match.group(2)) if match.group(2).isdigit() else 1
+                        
+                        # Valider que c'est bien un nom de plat
+                        if len(nom_plat) > 3 and not nom_plat.isdigit():
+                            plats_vendus.append({
+                                "nom": nom_plat,
+                                "quantite": quantite,
+                                "ligne_originale": line
+                            })
+                            break
+        
+        data.plats_vendus = plats_vendus
+        
+        # Rechercher le total CA
+        ca_patterns = [
+            r'total[:\s]*(\d+[,.]?\d*)\s*[€]?',
+            r'ca[:\s]*(\d+[,.]?\d*)\s*[€]?',
+            r'montant[:\s]*(\d+[,.]?\d*)\s*[€]?'
+        ]
+        
+        for pattern in ca_patterns:
+            ca_match = re.search(pattern, texte_ocr, re.IGNORECASE)
+            if ca_match:
+                ca_str = ca_match.group(1).replace(',', '.')
+                data.total_ca = float(ca_str)
+                break
+        
+        # Rechercher le nombre de couverts
+        couvert_patterns = [
+            r'couverts?[:\s]*(\d+)',
+            r'nb[.\s]*couverts?[:\s]*(\d+)',
+            r'(\d+)\s*couverts?'
+        ]
+        
+        for pattern in couvert_patterns:
+            couvert_match = re.search(pattern, texte_ocr, re.IGNORECASE)
+            if couvert_match:
+                data.nb_couverts = int(couvert_match.group(1))
+                break
+        
+    except Exception as e:
+        print(f"Erreur parsing Z report: {str(e)}")
+    
+    return data
+
+def parse_facture_fournisseur(texte_ocr: str) -> FactureFournisseurData:
+    """Parser les données d'une facture fournisseur"""
+    data = FactureFournisseurData()
+    
+    try:
+        # Rechercher le fournisseur (généralement en haut)
+        lines = texte_ocr.split('\n')[:10]  # Les 10 premières lignes
+        for line in lines:
+            line = line.strip()
+            if len(line) > 3 and not line.isdigit() and not re.match(r'^\d{2}[/\-.]', line):
+                # Éviter les dates et numéros
+                if any(word in line.lower() for word in ['facture', 'invoice', 'devis', 'bon']):
+                    continue
+                if re.search(r'[a-zA-Z]{3,}', line):
+                    data.fournisseur = line
+                    break
+        
+        # Rechercher la date
+        date_patterns = [
+            r'date[:\s]*(\d{1,2}[/\-.]\d{1,2}[/\-.]\d{2,4})',
+            r'(\d{1,2}[/\-.]\d{1,2}[/\-.]\d{2,4})'
+        ]
+        
+        for pattern in date_patterns:
+            date_match = re.search(pattern, texte_ocr, re.IGNORECASE)
+            if date_match:
+                data.date = date_match.group(1)
+                break
+        
+        # Rechercher le numéro de facture
+        facture_patterns = [
+            r'facture[:\s#n°]*([A-Z0-9\-]{3,15})',
+            r'n°[:\s]*([A-Z0-9\-]{3,15})',
+            r'invoice[:\s#]*([A-Z0-9\-]{3,15})'
+        ]
+        
+        for pattern in facture_patterns:
+            facture_match = re.search(pattern, texte_ocr, re.IGNORECASE)
+            if facture_match:
+                data.numero_facture = facture_match.group(1)
+                break
+        
+        # Rechercher les produits et prix
+        produits = []
+        produit_patterns = [
+            # Différents formats de lignes de facture
+            r'([A-Za-zÀ-ÿ\s\']{3,40})\s+(\d{1,3}[,.]?\d*)\s*[x\*]\s*(\d+[,.]?\d*)\s*[€]?\s*=?\s*(\d+[,.]?\d*)\s*[€]?',
+            r'([A-Za-zÀ-ÿ\s\']{3,40})\s+(\d+[,.]?\d*)\s*[€]\s*(\d{1,3})',
+            r'(\d{1,3})\s*[x\*]\s*([A-Za-zÀ-ÿ\s\']{3,40})\s*[\s@]\s*(\d+[,.]?\d*)\s*[€]?'
+        ]
+        
+        for line in texte_ocr.split('\n'):
+            line = line.strip()
+            if len(line) < 10:  # Ignorer les lignes trop courtes
+                continue
+                
+            for pattern in produit_patterns:
+                match = re.search(pattern, line)
+                if match:
+                    groups = match.groups()
+                    if len(groups) >= 3:
+                        produit = {
+                            "nom": groups[0].strip() if not groups[0].isdigit() else groups[1].strip(),
+                            "quantite": float(groups[1].replace(',', '.')) if len(groups) > 1 else 1,
+                            "prix_unitaire": float(groups[2].replace(',', '.')) if len(groups) > 2 else 0,
+                            "ligne_originale": line
+                        }
+                        
+                        # Calculer le total si pas fourni
+                        if len(groups) >= 4 and groups[3]:
+                            produit["total"] = float(groups[3].replace(',', '.'))
+                        else:
+                            produit["total"] = produit["quantite"] * produit["prix_unitaire"]
+                        
+                        produits.append(produit)
+                        break
+        
+        data.produits = produits
+        
+        # Rechercher les totaux HT et TTC
+        total_patterns = [
+            r'total\s*ht[:\s]*(\d+[,.]?\d*)\s*[€]?',
+            r'total\s*ttc[:\s]*(\d+[,.]?\d*)\s*[€]?',
+            r'montant\s*ht[:\s]*(\d+[,.]?\d*)\s*[€]?',
+            r'montant\s*ttc[:\s]*(\d+[,.]?\d*)\s*[€]?'
+        ]
+        
+        for pattern in total_patterns:
+            match = re.search(pattern, texte_ocr, re.IGNORECASE)
+            if match:
+                montant = float(match.group(1).replace(',', '.'))
+                if 'ht' in pattern:
+                    data.total_ht = montant
+                elif 'ttc' in pattern:
+                    data.total_ttc = montant
+        
+    except Exception as e:
+        print(f"Erreur parsing facture: {str(e)}")
+    
+    return data
+
 # Routes pour les fournisseurs
 @api_router.post("/fournisseurs", response_model=Fournisseur)
 async def create_fournisseur(fournisseur: FournisseurCreate):
