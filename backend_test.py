@@ -833,6 +833,8 @@ class StockTestSuite:
                 self.log_result("DELETE /recettes/{id}", False, f"Erreur {response.status_code}", response.text)
         except Exception as e:
             self.log_result("DELETE /recettes/{id}", False, "Exception", str(e))
+
+    def test_cascade_delete(self):
         """Test suppression en cascade"""
         print("\n=== TEST SUPPRESSION EN CASCADE ===")
         
