@@ -557,43 +557,159 @@ function App() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100">
+    <div className="container">
       {/* Header */}
-      <header className="bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-4">
-            <div className="flex items-center">
-              <h1 className="text-2xl font-bold text-gray-900">🍽️ Gestion des Stocks Restaurant</h1>
+      <div className="header">
+        <h1>ResTop : Gestion de La Table d'Augustine</h1>
+      </div>
+
+      {/* Navigation */}
+      <div className="nav-tabs">
+        <button 
+          className={`nav-tab ${activeTab === "dashboard" ? "active" : ""}`}
+          onClick={() => setActiveTab("dashboard")}
+        >
+          📊 Dashboard
+        </button>
+        <button 
+          className={`nav-tab ${activeTab === "ocr" ? "active" : ""}`}
+          onClick={() => setActiveTab("ocr")}
+        >
+          📱 OCR
+        </button>
+        <button 
+          className={`nav-tab ${activeTab === "stocks" ? "active" : ""}`}
+          onClick={() => setActiveTab("stocks")}
+        >
+          📦 Gestion de Stocks
+        </button>
+        <button 
+          className={`nav-tab ${activeTab === "production" ? "active" : ""}`}
+          onClick={() => setActiveTab("production")}
+        >
+          🍳 Production
+        </button>
+        <button 
+          className={`nav-tab ${activeTab === "historique" ? "active" : ""}`}
+          onClick={() => setActiveTab("historique")}
+        >
+          📊 Historique
+        </button>
+      </div>
+
+      {/* DASHBOARD */}
+      <div id="dashboard" className={`wireframe-section ${activeTab === "dashboard" ? "active" : ""}`}>
+        <div className="wireframe">
+          <h2>📊 Dashboard Principal</h2>
+          <div className="layout dashboard-layout">
+            <div className="card stat-card">
+              <div className="icon">💰</div>
+              <div className="card-title">Chiffre d'Affaires</div>
+              <div className="card-content">€15,420 ce mois</div>
             </div>
-            <div className="flex space-x-2">
-              <button
-                onClick={handleExport}
-                className="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 transition-colors"
-              >
-                📊 Exporter Excel
-              </button>
-              <label className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors cursor-pointer">
-                📁 Importer Excel
-                <input type="file" accept=".xlsx,.xls" onChange={handleImport} className="hidden" />
-              </label>
+            <div className="card stat-card">
+              <div className="icon">📦</div>
+              <div className="card-title">Stock Critique</div>
+              <div className="card-content">{dashboardStats.stocks_faibles || 0} produits</div>
+            </div>
+            <div className="card stat-card">
+              <div className="icon">🍽️</div>
+              <div className="card-title">Produits Total</div>
+              <div className="card-content">{dashboardStats.total_produits || 0} produits</div>
+            </div>
+            
+            <div className="card full-width">
+              <div className="card-title">📈 Graphique des Ventes</div>
+              <div className="card-content">Évolution du CA sur les 30 derniers jours</div>
+            </div>
+            
+            <div className="card">
+              <div className="card-title">⚠️ Alertes</div>
+              <ul className="feature-list">
+                <li>Stock tomates faible</li>
+                <li>Livraison prévue 14h</li>
+                <li>Nouvelle recette ajoutée</li>
+              </ul>
+            </div>
+            
+            <div className="card">
+              <div className="card-title">📋 Tâches du Jour</div>
+              <ul className="feature-list">
+                <li>Inventaire cuisine</li>
+                <li>Formation équipe</li>
+                <li>Réunion fournisseur</li>
+              </ul>
+            </div>
+            
+            <div className="card">
+              <div className="card-title">🔄 Activité Récente</div>
+              <ul className="feature-list">
+                {mouvements.slice(0, 3).map((mouvement, index) => (
+                  <li key={index}>Stock {mouvement.produit_nom} mis à jour</li>
+                ))}
+                {mouvements.length === 0 && <li>Aucune activité récente</li>}
+              </ul>
             </div>
           </div>
         </div>
-      </header>
+      </div>
 
-      {/* Navigation */}
-      <nav className="bg-white shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex space-x-8">
-            {[
-              { id: "dashboard", label: "📊 Tableau de bord" },
-              { id: "stocks", label: "📦 Stocks" },
-              { id: "produits", label: "🥘 Produits" },
-              { id: "fournisseurs", label: "🏪 Fournisseurs" },
-              { id: "recettes", label: "👨‍🍳 Recettes" },
-              { id: "ocr", label: "📱 OCR Documents" },
-              { id: "mouvements", label: "📋 Mouvements" }
-            ].map(tab => (
+      {/* OCR */}
+      <div id="ocr" className={`wireframe-section ${activeTab === "ocr" ? "active" : ""}`}>
+        <div className="wireframe">
+          <h2>📱 Module OCR - Numérisation Factures</h2>
+          <div className="layout two-column">
+            <div className="sidebar">
+              <h3 style={{color: '#d4af37', marginBottom: '15px'}}>Actions</h3>
+              <button className="button" onClick={() => setShowOcrModal(true)}>📷 Nouvelle Photo</button>
+              <button className="button" onClick={() => setShowOcrModal(true)}>📁 Importer Fichier</button>
+              <button className="button">🔄 Traitement Auto</button>
+              <h4 style={{color: '#d4af37', margin: '20px 0 10px'}}>Historique</h4>
+              <div style={{fontSize: '0.9rem'}}>
+                {documentsOcr.slice(0, 3).map((doc, index) => (
+                  <div key={index} style={{padding: '8px', margin: '5px 0', background: 'rgba(255,255,255,0.2)', borderRadius: '5px'}}>
+                    {doc.nom_fichier}
+                  </div>
+                ))}
+                {documentsOcr.length === 0 && (
+                  <div style={{padding: '8px', margin: '5px 0', background: 'rgba(255,255,255,0.2)', borderRadius: '5px'}}>
+                    Aucun document
+                  </div>
+                )}
+              </div>
+            </div>
+            <div className="main-content">
+              <input type="text" className="search-bar" placeholder="🔍 Rechercher une facture..."/>
+              
+              <div className="card">
+                <div className="card-title">📄 Zone de Prévisualisation</div>
+                <div style={{height: '200px', background: '#f8f7f4', border: '2px dashed #d4af37', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '15px 0'}}>
+                  <span style={{color: '#4a5568'}}>Glissez votre facture ici ou cliquez pour sélectionner</span>
+                </div>
+              </div>
+              
+              <div className="table-mockup">
+                <div className="table-header">Documents Récents</div>
+                {documentsOcr.map((doc, index) => (
+                  <div key={index} className="table-row">
+                    <span>{doc.type_document}: {doc.nom_fichier} | {new Date(doc.date_upload).toLocaleDateString('fr-FR')}</span>
+                  </div>
+                ))}
+                {documentsOcr.length === 0 && (
+                  <div className="table-row">
+                    <span>Aucun document traité</span>
+                  </div>
+                )}
+              </div>
+              
+              <div style={{textAlign: 'center', marginTop: '20px'}}>
+                <button className="button" onClick={() => setShowOcrModal(true)}>➕ Nouveau Document</button>
+                <button className="button">📊 Rapport OCR</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
