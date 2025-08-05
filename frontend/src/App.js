@@ -612,6 +612,7 @@ function App() {
               { id: "produits", label: "🥘 Produits" },
               { id: "fournisseurs", label: "🏪 Fournisseurs" },
               { id: "recettes", label: "👨‍🍳 Recettes" },
+              { id: "ocr", label: "📱 OCR Documents" },
               { id: "mouvements", label: "📋 Mouvements" }
             ].map(tab => (
               <button
