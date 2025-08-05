@@ -227,15 +227,18 @@ backend:
 
   - task: "API Import/Export Recettes Excel"
     implemented: true
-    working: "NA"
+    working: true
     file: "/app/backend/server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
         comment: "Import Excel recettes avec format Nom Recette|Description|Catégorie|Portions|Temps|Prix|Produit ID|Quantité|Unité. Export vers Excel avec toutes données recettes et ingrédients"
+      - working: true
+        agent: "testing"
+        comment: "✅ IMPORT/EXPORT EXCEL RECETTES VALIDÉ - GET /export/recettes génère fichier Excel 6423 bytes avec structure complète (Nom Recette, Portions, Produit ID, Quantité, Unité, etc.) et 16 lignes de données. POST /import/recettes traite correctement format Excel avec colonnes requises, crée/met à jour recettes avec ingrédients, validation Produit ID fonctionnelle. Test import 'Salade Test Import' avec 2 portions, prix 12.50€ et ingrédients multiples réussi."
 
   - task: "Données Démonstration Restaurant Franco-Italien"
     implemented: true
