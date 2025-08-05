@@ -12,6 +12,7 @@ from datetime import datetime
 import time
 import os
 import base64
+from PIL import Image, ImageDraw, ImageFont
 
 # Configuration
 BASE_URL = "https://7dcd9914-c4fe-4243-9f17-efffeffdde7b.preview.emergentagent.com/api"
