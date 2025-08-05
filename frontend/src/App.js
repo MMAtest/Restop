@@ -7,6 +7,8 @@ const API = `${BACKEND_URL}/api`;
 
 function App() {
   const [activeTab, setActiveTab] = useState("dashboard");
+  const [activeProductionTab, setActiveProductionTab] = useState("produits");
+  const [activeHistoriqueTab, setActiveHistoriqueTab] = useState("ventes");
   const [dashboardStats, setDashboardStats] = useState({});
   const [produits, setProduits] = useState([]);
   const [fournisseurs, setFournisseurs] = useState([]);
