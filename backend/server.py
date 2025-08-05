@@ -186,6 +186,11 @@ class FactureFournisseurData(BaseModel):
 # Configuration OCR
 pytesseract.pytesseract.tesseract_cmd = '/usr/bin/tesseract'
 
+# Configuration de la base de données
+MONGO_URL = os.environ.get('MONGO_URL', 'mongodb://localhost:27017')
+client = AsyncIOMotorClient(MONGO_URL)
+db = client.restaurant_stock
+
 # Fonctions utilitaires pour OCR
 def preprocess_image(image):
     """Préprocessing de l'image pour améliorer l'OCR"""
