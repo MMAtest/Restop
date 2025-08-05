@@ -1106,6 +1106,114 @@ function App() {
           </div>
         )}
 
+        {/* OCR Documents */}
+        {activeTab === "ocr" && (
+          <div className="px-4 py-6 sm:px-0">
+            <div className="sm:flex sm:items-center mb-6">
+              <div className="sm:flex-auto">
+                <h1 className="text-xl font-semibold text-gray-900">Traitement OCR des Documents</h1>
+                <p className="mt-2 text-sm text-gray-700">
+                  Uploadez vos rapports Z et factures fournisseurs pour extraction automatique des données
+                </p>
+              </div>
+              <div className="mt-4 sm:mt-0 sm:ml-16 sm:flex-none">
+                <button
+                  onClick={() => setShowOcrModal(true)}
+                  className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors"
+                >
+                  📷 Nouveau Document
+                </button>
+              </div>
+            </div>
+
+            {/* Liste des documents traités */}
+            <div className="bg-white shadow rounded-lg overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="min-w-full divide-y divide-gray-200">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Document</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date Upload</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Statut</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Données Extraites</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-200">
+                    {documentsOcr.map((doc) => (
+                      <tr key={doc.id}>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="text-sm font-medium text-gray-900">{doc.nom_fichier}</div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                            doc.type_document === 'z_report' ? 'bg-purple-100 text-purple-800' : 'bg-orange-100 text-orange-800'
+                          }`}>
+                            {doc.type_document === 'z_report' ? 'Rapport Z' : 'Facture'}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          {new Date(doc.date_upload).toLocaleDateString('fr-FR')}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                            doc.statut === 'traite' ? 'bg-green-100 text-green-800' :
+                            doc.statut === 'stock_traite' ? 'bg-blue-100 text-blue-800' :
+                            doc.statut === 'erreur' ? 'bg-red-100 text-red-800' :
+                            'bg-yellow-100 text-yellow-800'
+                          }`}>
+                            {doc.statut === 'traite' ? 'OCR Traité' : 
+                             doc.statut === 'stock_traite' ? 'Stock Traité' :
+                             doc.statut === 'erreur' ? 'Erreur' : 'En Attente'}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 text-sm text-gray-500">
+                          {doc.type_document === 'z_report' && doc.donnees_parsees ? (
+                            <div>
+                              <div>{doc.donnees_parsees.plats_vendus?.length || 0} plats détectés</div>
+                              {doc.donnees_parsees.total_ca && <div>CA: {doc.donnees_parsees.total_ca}€</div>}
+                            </div>
+                          ) : doc.type_document === 'facture_fournisseur' && doc.donnees_parsees ? (
+                            <div>
+                              <div>{doc.donnees_parsees.produits?.length || 0} produits</div>
+                              {doc.donnees_parsees.fournisseur && <div>{doc.donnees_parsees.fournisseur}</div>}
+                            </div>
+                          ) : 'Aucune donnée'}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                          {doc.type_document === 'z_report' && doc.statut === 'traite' && (
+                            <button 
+                              onClick={() => handleProcessZReport(doc.id)}
+                              disabled={loading}
+                              className="text-blue-600 hover:text-blue-900 mr-3 disabled:opacity-50"
+                            >
+                              🔄 Traiter Stock
+                            </button>
+                          )}
+                          <button 
+                            onClick={() => window.open(`data:application/json,${encodeURIComponent(JSON.stringify(doc.donnees_parsees, null, 2))}`, '_blank')}
+                            className="text-green-600 hover:text-green-900 mr-3"
+                          >
+                            👁️ Voir
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                    {documentsOcr.length === 0 && (
+                      <tr>
+                        <td colSpan="6" className="px-6 py-4 text-center text-gray-500">
+                          Aucun document traité. Uploadez votre premier document !
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Mouvements */}
         {activeTab === "mouvements" && (
           <div className="px-4 py-6 sm:px-0">
