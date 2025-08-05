@@ -761,29 +761,62 @@ function App() {
                   <tbody className="bg-white divide-y divide-gray-200">
                     {stocks.map((stock) => {
                       const isLowStock = stock.quantite_actuelle <= stock.quantite_min;
+                      const produit = produits.find(p => p.id === stock.produit_id);
+                      const unite = getDisplayUnit(produit?.unite);
+                      
                       return (
                         <tr key={stock.id}>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                            {stock.produit_nom || "Produit inconnu"}
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div>
+                              <div className="text-sm font-medium text-gray-900">
+                                {stock.produit_nom || "Produit inconnu"}
+                              </div>
+                              {produit && (
+                                <div className="text-xs text-gray-500">
+                                  Catégorie: {produit.categorie || 'Non définie'}
+                                </div>
+                              )}
+                            </div>
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                            {stock.quantite_actuelle}
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="text-sm font-medium text-gray-900">
+                              {formatQuantity(stock.quantite_actuelle, unite)}
+                            </div>
+                            <div className="text-xs text-gray-500">
+                              Actuel
+                            </div>
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                            {stock.quantite_min}
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="text-sm text-gray-500">
+                              {formatQuantity(stock.quantite_min, unite)}
+                            </div>
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                            {stock.quantite_max || "-"}
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="text-sm text-gray-500">
+                              {stock.quantite_max ? 
+                                formatQuantity(stock.quantite_max, unite) : 
+                                'Non défini'}
+                            </div>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
                             <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                              isLowStock ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'
+                              isLowStock ? 'bg-red-100 text-red-800' : 
+                              stock.quantite_actuelle <= stock.quantite_min * 1.5 ? 'bg-yellow-100 text-yellow-800' :
+                              'bg-green-100 text-green-800'
                             }`}>
-                              {isLowStock ? "Stock faible" : "Normal"}
+                              {isLowStock ? "🔴 Stock faible" : 
+                               stock.quantite_actuelle <= stock.quantite_min * 1.5 ? "⚠️ Attention" :
+                               "✅ Normal"}
                             </span>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {new Date(stock.derniere_maj).toLocaleDateString('fr-FR')}
+                            {new Date(stock.derniere_maj).toLocaleDateString('fr-FR', {
+                              day: '2-digit',
+                              month: '2-digit',
+                              year: '2-digit',
+                              hour: '2-digit',
+                              minute: '2-digit'
+                            })}
                           </td>
                         </tr>
                       );
