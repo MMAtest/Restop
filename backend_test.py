@@ -898,6 +898,16 @@ class StockTestSuite:
         self.test_export_excel()
         self.test_import_excel()
         self.test_dashboard_stats()
+        
+        # Tests des nouvelles APIs de recettes
+        self.test_demo_data_initialization()
+        self.test_recettes_crud()
+        self.test_production_capacity_calculator()
+        self.test_recettes_excel_export()
+        self.test_recettes_excel_import()
+        self.test_recette_delete()
+        
+        # Test de suppression en cascade à la fin
         self.test_cascade_delete()
         
         # Résumé des résultats
