@@ -242,15 +242,18 @@ backend:
 
   - task: "Données Démonstration Restaurant Franco-Italien"
     implemented: true
-    working: "NA"
+    working: true
     file: "/app/backend/server.py"
     stuck_count: 0
     priority: "medium"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
         comment: "Endpoint /demo/init-french-italian-data avec fournisseurs authentiques (Fromagerie Laurent, Boucherie Artisanale, Pasta & Co), produits italiens/français (Mozzarella Bufala, Parmesan 24 mois, Spaghetti artisanaux) et recettes classiques (Carbonara, Risotto champignons, Escalope milanaise, Salade Caprese)"
+      - working: true
+        agent: "testing"
+        comment: "✅ DONNÉES DÉMO RESTAURANT FRANCO-ITALIEN VALIDÉES - POST /demo/init-french-italian-data crée avec succès 4 fournisseurs authentiques (Fromagerie Laurent, Boucherie Artisanale, Pasta & Co, Marché des Légumes), 20 produits italiens/français de qualité (Mozzarella di Bufala, Parmesan Reggiano 24 mois, Spaghetti Artisanaux, Escalope de veau, Tomates cerises, Basilic frais, etc.) et 4 recettes classiques (Spaghetti Carbonara, Risotto aux Champignons, Escalope Milanaise, Salade Caprese) avec ingrédients liés et stocks initiaux réalistes."
 
 frontend:
   - task: "Interface Dashboard"
