@@ -212,15 +212,18 @@ backend:
 
   - task: "API Gestion Recettes"
     implemented: true
-    working: "NA"
+    working: true
     file: "/app/backend/server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
         comment: "Implémenté endpoints CRUD complets pour recettes avec modèle RecetteIngredient, calculateur de production capacity basé sur stock actuel, enrichissement automatique des noms de produits pour ingrédients"
+      - working: true
+        agent: "testing"
+        comment: "✅ TOUS TESTS RÉUSSIS - API Gestion Recettes complètement fonctionnelle. POST/GET/PUT/DELETE recettes validés avec enrichissement automatique noms produits. Structure RecetteIngredient correcte avec produit_id, quantité, unité. Création recette avec ingrédients multiples testée avec succès. Modification recette (nom, prix, portions, ingrédients) opérationnelle. Suppression recette avec validation 404 confirmée."
 
   - task: "API Import/Export Recettes Excel"
     implemented: true
