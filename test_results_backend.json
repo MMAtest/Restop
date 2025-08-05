@@ -1,6 +1,6 @@
 {
-  "total": 32,
-  "passed": 32,
+  "total": 50,
+  "passed": 50,
   "failed": 0,
   "success_rate": 100.0,
   "results": [
@@ -9,224 +9,350 @@
       "success": true,
       "message": "Fournisseur créé avec succès",
       "details": null,
-      "timestamp": "2025-08-04T12:54:49.454669"
+      "timestamp": "2025-08-05T18:54:48.717410"
     },
     {
       "test": "GET /fournisseurs",
       "success": true,
       "message": "1 fournisseur(s) récupéré(s)",
       "details": null,
-      "timestamp": "2025-08-04T12:54:49.479036"
+      "timestamp": "2025-08-05T18:54:48.739463"
     },
     {
       "test": "GET /fournisseurs/{id}",
       "success": true,
       "message": "Fournisseur récupéré correctement",
       "details": null,
-      "timestamp": "2025-08-04T12:54:49.504989"
+      "timestamp": "2025-08-05T18:54:48.797313"
     },
     {
       "test": "PUT /fournisseurs/{id}",
       "success": true,
       "message": "Fournisseur modifié avec succès",
       "details": null,
-      "timestamp": "2025-08-04T12:54:49.530524"
+      "timestamp": "2025-08-05T18:54:48.824521"
     },
     {
       "test": "POST /produits",
       "success": true,
       "message": "Produit créé avec liaison fournisseur",
       "details": null,
-      "timestamp": "2025-08-04T12:54:49.572686"
+      "timestamp": "2025-08-05T18:54:48.863894"
     },
     {
       "test": "Auto-création stock",
       "success": true,
       "message": "Stock créé automatiquement à 0",
       "details": null,
-      "timestamp": "2025-08-04T12:54:49.595984"
+      "timestamp": "2025-08-05T18:54:48.884592"
     },
     {
       "test": "GET /produits",
       "success": true,
       "message": "1 produit(s) récupéré(s)",
       "details": null,
-      "timestamp": "2025-08-04T12:54:49.620306"
+      "timestamp": "2025-08-05T18:54:48.907694"
     },
     {
       "test": "PUT /produits/{id}",
       "success": true,
       "message": "Produit modifié avec succès",
       "details": null,
-      "timestamp": "2025-08-04T12:54:49.684936"
+      "timestamp": "2025-08-05T18:54:48.935428"
     },
     {
       "test": "Mise à jour nom dans stock",
       "success": true,
       "message": "Nom mis à jour dans stock",
       "details": null,
-      "timestamp": "2025-08-04T12:54:49.708167"
+      "timestamp": "2025-08-05T18:54:48.950220"
     },
     {
       "test": "GET /stocks",
       "success": true,
       "message": "1 stock(s) récupéré(s)",
       "details": null,
-      "timestamp": "2025-08-04T12:54:49.769642"
+      "timestamp": "2025-08-05T18:54:48.973714"
     },
     {
       "test": "Structure données stocks",
       "success": true,
       "message": "Tous les champs requis présents",
       "details": null,
-      "timestamp": "2025-08-04T12:54:49.769684"
+      "timestamp": "2025-08-05T18:54:48.973757"
     },
     {
       "test": "PUT /stocks/{id}",
       "success": true,
       "message": "Stock mis à jour avec succès",
       "details": null,
-      "timestamp": "2025-08-04T12:54:49.791226"
+      "timestamp": "2025-08-05T18:54:48.993713"
     },
     {
       "test": "Mise à jour derniere_maj",
       "success": true,
       "message": "Date de dernière MAJ mise à jour",
       "details": null,
-      "timestamp": "2025-08-04T12:54:49.791284"
+      "timestamp": "2025-08-05T18:54:48.993751"
     },
     {
       "test": "POST /mouvements (entrée)",
       "success": true,
       "message": "Mouvement d'entrée créé",
       "details": null,
-      "timestamp": "2025-08-04T12:54:49.837963"
+      "timestamp": "2025-08-05T18:54:49.022877"
     },
     {
       "test": "Mise à jour stock (entrée)",
       "success": true,
       "message": "Stock mis à jour: 75.5",
       "details": null,
-      "timestamp": "2025-08-04T12:54:50.358453"
+      "timestamp": "2025-08-05T18:54:49.538957"
     },
     {
       "test": "POST /mouvements (sortie)",
       "success": true,
       "message": "Mouvement de sortie créé",
       "details": null,
-      "timestamp": "2025-08-04T12:54:50.382206"
+      "timestamp": "2025-08-05T18:54:49.561083"
     },
     {
       "test": "Mise à jour stock (sortie)",
       "success": true,
       "message": "Stock mis à jour: 60.5",
       "details": null,
-      "timestamp": "2025-08-04T12:54:50.901737"
+      "timestamp": "2025-08-05T18:54:50.091684"
     },
     {
       "test": "POST /mouvements (ajustement)",
       "success": true,
       "message": "Ajustement créé",
       "details": null,
-      "timestamp": "2025-08-04T12:54:50.928927"
+      "timestamp": "2025-08-05T18:54:50.158096"
     },
     {
       "test": "Mise à jour stock (ajustement)",
       "success": true,
       "message": "Stock ajusté: 55.0",
       "details": null,
-      "timestamp": "2025-08-04T12:54:51.452430"
+      "timestamp": "2025-08-05T18:54:50.678651"
     },
     {
       "test": "GET /mouvements",
       "success": true,
       "message": "3 mouvement(s) dans l'historique",
       "details": null,
-      "timestamp": "2025-08-04T12:54:51.472082"
+      "timestamp": "2025-08-05T18:54:50.695851"
     },
     {
       "test": "Ordre chronologique mouvements",
       "success": true,
       "message": "Mouvements triés par date décroissante",
       "details": null,
-      "timestamp": "2025-08-04T12:54:51.472120"
+      "timestamp": "2025-08-05T18:54:50.695893"
     },
     {
       "test": "GET /export/stocks",
       "success": true,
       "message": "Fichier Excel généré avec succès",
       "details": null,
-      "timestamp": "2025-08-04T12:54:51.645666"
+      "timestamp": "2025-08-05T18:54:50.733303"
     },
     {
       "test": "Taille fichier Excel",
       "success": true,
       "message": "Fichier de 5184 bytes",
       "details": null,
-      "timestamp": "2025-08-04T12:54:51.645715"
+      "timestamp": "2025-08-05T18:54:50.733351"
     },
     {
       "test": "Structure Excel",
       "success": true,
       "message": "Excel valide avec 1 lignes",
       "details": null,
-      "timestamp": "2025-08-04T12:54:51.730685"
+      "timestamp": "2025-08-05T18:54:50.834472"
     },
     {
       "test": "POST /import/stocks",
       "success": true,
       "message": "Import Excel réussi",
       "details": null,
-      "timestamp": "2025-08-04T12:54:51.769905"
+      "timestamp": "2025-08-05T18:54:50.872859"
     },
     {
       "test": "Validation import Excel",
       "success": true,
       "message": "Données importées correctement",
       "details": null,
-      "timestamp": "2025-08-04T12:54:52.288282"
+      "timestamp": "2025-08-05T18:54:51.390094"
     },
     {
       "test": "GET /dashboard/stats",
       "success": true,
       "message": "Toutes les statistiques présentes",
       "details": null,
-      "timestamp": "2025-08-04T12:54:52.309585"
+      "timestamp": "2025-08-05T18:54:51.412820"
     },
     {
       "test": "Validation stats",
       "success": true,
       "message": "Produits: 1, Fournisseurs: 1",
       "details": null,
-      "timestamp": "2025-08-04T12:54:52.309620"
+      "timestamp": "2025-08-05T18:54:51.412866"
+    },
+    {
+      "test": "POST /demo/init-french-italian-data",
+      "success": true,
+      "message": "Données créées: 4 fournisseurs, 20 produits, 4 recettes",
+      "details": null,
+      "timestamp": "2025-08-05T18:54:51.543115"
+    },
+    {
+      "test": "Fournisseurs démo créés",
+      "success": true,
+      "message": "4 fournisseurs authentiques",
+      "details": null,
+      "timestamp": "2025-08-05T18:54:51.558641"
+    },
+    {
+      "test": "Produits démo créés",
+      "success": true,
+      "message": "6 produits italiens/français",
+      "details": null,
+      "timestamp": "2025-08-05T18:54:51.583471"
+    },
+    {
+      "test": "Recettes démo créées",
+      "success": true,
+      "message": "4 recettes classiques",
+      "details": null,
+      "timestamp": "2025-08-05T18:54:51.601622"
+    },
+    {
+      "test": "POST /recettes",
+      "success": true,
+      "message": "Recette créée avec enrichissement noms produits",
+      "details": null,
+      "timestamp": "2025-08-05T18:54:51.664435"
+    },
+    {
+      "test": "GET /recettes",
+      "success": true,
+      "message": "5 recette(s) récupérée(s)",
+      "details": null,
+      "timestamp": "2025-08-05T18:54:51.684374"
+    },
+    {
+      "test": "Structure données recettes",
+      "success": true,
+      "message": "Tous les champs requis présents",
+      "details": null,
+      "timestamp": "2025-08-05T18:54:51.684412"
+    },
+    {
+      "test": "GET /recettes/{id}",
+      "success": true,
+      "message": "Recette récupérée correctement",
+      "details": null,
+      "timestamp": "2025-08-05T18:54:51.705915"
+    },
+    {
+      "test": "PUT /recettes/{id}",
+      "success": true,
+      "message": "Recette modifiée avec succès",
+      "details": null,
+      "timestamp": "2025-08-05T18:54:51.723703"
+    },
+    {
+      "test": "GET /recettes/{id}/production-capacity",
+      "success": true,
+      "message": "Capacité calculée: 0 portions max",
+      "details": null,
+      "timestamp": "2025-08-05T18:54:51.743159"
+    },
+    {
+      "test": "Structure ingredients_status",
+      "success": true,
+      "message": "Détails ingrédients complets",
+      "details": null,
+      "timestamp": "2025-08-05T18:54:51.743202"
+    },
+    {
+      "test": "GET /export/recettes",
+      "success": true,
+      "message": "Fichier Excel recettes généré",
+      "details": null,
+      "timestamp": "2025-08-05T18:54:51.781164"
+    },
+    {
+      "test": "Taille fichier Excel recettes",
+      "success": true,
+      "message": "Fichier de 6423 bytes",
+      "details": null,
+      "timestamp": "2025-08-05T18:54:51.781205"
+    },
+    {
+      "test": "Structure Excel recettes",
+      "success": true,
+      "message": "Excel valide avec 16 lignes",
+      "details": null,
+      "timestamp": "2025-08-05T18:54:51.792260"
+    },
+    {
+      "test": "POST /import/recettes",
+      "success": true,
+      "message": "Import Excel recettes réussi",
+      "details": null,
+      "timestamp": "2025-08-05T18:54:51.828184"
+    },
+    {
+      "test": "Validation import recettes",
+      "success": true,
+      "message": "Recette importée correctement",
+      "details": null,
+      "timestamp": "2025-08-05T18:54:52.348623"
+    },
+    {
+      "test": "DELETE /recettes/{id}",
+      "success": true,
+      "message": "Recette supprimée",
+      "details": null,
+      "timestamp": "2025-08-05T18:54:52.371038"
+    },
+    {
+      "test": "Validation suppression recette",
+      "success": true,
+      "message": "Recette bien supprimée",
+      "details": null,
+      "timestamp": "2025-08-05T18:54:52.386462"
     },
     {
       "test": "DELETE /produits/{id}",
       "success": true,
       "message": "Produit supprimé",
       "details": null,
-      "timestamp": "2025-08-04T12:54:52.363937"
+      "timestamp": "2025-08-05T18:54:52.429858"
     },
     {
       "test": "Suppression stock cascade",
       "success": true,
       "message": "Stock supprimé automatiquement",
       "details": null,
-      "timestamp": "2025-08-04T12:54:52.386689"
+      "timestamp": "2025-08-05T18:54:52.454357"
     },
     {
       "test": "Suppression mouvements cascade",
       "success": true,
       "message": "Mouvements supprimés automatiquement",
       "details": null,
-      "timestamp": "2025-08-04T12:54:52.906943"
+      "timestamp": "2025-08-05T18:54:52.980839"
     },
     {
       "test": "Nettoyage fournisseur",
       "success": true,
       "message": "Fournisseur de test supprimé",
       "details": null,
-      "timestamp": "2025-08-04T12:54:52.929486"
+      "timestamp": "2025-08-05T18:54:53.012423"
     }
   ]
 }
