@@ -1111,10 +1111,10 @@ function App() {
           <div className={`production-tab ${activeProductionTab === 'recettes' ? 'active' : ''}`}>
             <div className="layout">
               <div className="card full-width">
-                <div className="card-title">📝 Gestion des Recettes</div>
-                <input type="text" className="search-bar" placeholder="🔍 Rechercher une recette..."/>
+                <div className="card-title">📝 Gestion des Plats & Recettes</div>
+                <input type="text" className="search-bar" placeholder="🔍 Rechercher un plat..."/>
                 <div style={{textAlign: 'center', margin: '15px 0'}}>
-                  <button className="button" onClick={() => setShowRecetteModal(true)}>➕ Nouvelle Recette</button>
+                  <button className="button" onClick={() => setShowRecetteModal(true)}>➕ Nouveau Plat</button>
                   <button className="button" onClick={handleCalculerCouts} disabled={loading}>💰 Calculer Coûts</button>
                   <button className="button" onClick={handleExportRecettes}>📖 Export Excel</button>
                 </div>
