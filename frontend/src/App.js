@@ -769,8 +769,8 @@ function App() {
             </div>
             <div className="card stat-card">
               <div className="icon">🍽️</div>
-              <div className="card-title">Produits Total</div>
-              <div className="card-content">{dashboardStats.total_produits || 0} produits</div>
+              <div className="card-title">Ingrédients Total</div>
+              <div className="card-content">{dashboardStats.total_produits || 0} ingrédients</div>
             </div>
             
             <div className="card full-width">
