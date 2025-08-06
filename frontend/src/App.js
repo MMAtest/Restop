@@ -34,6 +34,7 @@ function App() {
   const [ocrType, setOcrType] = useState("z_report");
   const [ocrResult, setOcrResult] = useState(null);
   const [processingOcr, setProcessingOcr] = useState(false);
+  const [selectedDocument, setSelectedDocument] = useState(null); // Nouveau: pour sélection document
 
   // Formulaires
   const [produitForm, setProduitForm] = useState({
