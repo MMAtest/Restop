@@ -665,6 +665,8 @@ function App() {
       alert(details + "❌ Aucune donnée extraite pour ce document.");
     }
   };
+
+  const resetOcrModal = () => {
     setOcrFile(null);
     setOcrPreview(null);
     setOcrResult(null);
