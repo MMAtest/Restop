@@ -64,8 +64,8 @@ body {
   justify-content: center;
   margin-bottom: 32px;
   padding: 16px 24px;
-  background: var(--gradient-primary);
-  color: var--color-white);
+  background: var(--color-primary);
+  color: var(--color-white);
   border-radius: var(--border-radius-lg);
   box-shadow: var(--shadow-md);
 }
