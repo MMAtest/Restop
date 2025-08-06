@@ -816,19 +816,33 @@ function App() {
           <div className="layout two-column">
             <div className="sidebar">
               <h3 style={{color: '#d4af37', marginBottom: '15px'}}>Actions</h3>
-              <button className="button" onClick={() => setShowOcrModal(true)}>📷 Nouvelle Photo</button>
-              <button className="button" onClick={() => setShowOcrModal(true)}>📁 Importer Fichier</button>
-              <button className="button">🔄 Traitement Auto</button>
-              <h4 style={{color: '#d4af37', margin: '20px 0 10px'}}>Historique</h4>
+              <button className="button" onClick={() => setShowOcrModal(true)}>📁 Importer Document</button>
+              <button className="button" onClick={handleTraitementAuto} disabled={loading}>🔄 Traitement Auto</button>
+              <h4 style={{color: '#d4af37', margin: '20px 0 10px'}}>Historique (Cliquez pour détails)</h4>
               <div style={{fontSize: '0.9rem'}}>
-                {documentsOcr.slice(0, 3).map((doc, index) => (
-                  <div key={index} style={{padding: '8px', margin: '5px 0', background: 'rgba(255,255,255,0.2)', borderRadius: '5px'}}>
-                    {doc.nom_fichier}
+                {documentsOcr.slice(0, 5).map((doc, index) => (
+                  <div 
+                    key={index} 
+                    style={{
+                      padding: '8px', 
+                      margin: '5px 0', 
+                      background: selectedDocument?.id === doc.id ? 'rgba(212, 175, 55, 0.3)' : 'rgba(255,255,255,0.2)', 
+                      borderRadius: '5px',
+                      cursor: 'pointer',
+                      border: selectedDocument?.id === doc.id ? '2px solid #d4af37' : 'none'
+                    }}
+                    onClick={() => handleSelectDocument(doc)}
+                  >
+                    <div style={{fontWeight: 'bold'}}>{doc.nom_fichier}</div>
+                    <div style={{fontSize: '0.8rem', opacity: 0.8}}>
+                      {doc.type_document === 'z_report' ? '📊 Rapport Z' : '🧾 Facture'} - 
+                      {new Date(doc.date_upload).toLocaleDateString('fr-FR')}
+                    </div>
                   </div>
                 ))}
                 {documentsOcr.length === 0 && (
                   <div style={{padding: '8px', margin: '5px 0', background: 'rgba(255,255,255,0.2)', borderRadius: '5px'}}>
-                    Aucun document
+                    Aucun document traité
                   </div>
                 )}
               </div>
