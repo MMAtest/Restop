@@ -1003,7 +1003,7 @@ function App() {
                 color: activeProductionTab === 'produits' ? '#f5f3f0' : '#2d5016'
               }}
             >
-              🍽️ Produits
+              🍽️ Ingrédients
             </button>
             <button 
               className="button" 
@@ -1023,7 +1023,7 @@ function App() {
                 color: activeProductionTab === 'recettes' ? '#f5f3f0' : '#2d5016'
               }}
             >
-              📝 Recettes
+              📝 Plats/Recettes
             </button>
           </div>
 
