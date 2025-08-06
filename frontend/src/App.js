@@ -926,7 +926,7 @@ function App() {
                 <input type="text" className="search-bar" placeholder="🔍 Rechercher une recette..."/>
                 <div style={{textAlign: 'center', margin: '15px 0'}}>
                   <button className="button" onClick={() => setShowRecetteModal(true)}>➕ Nouvelle Recette</button>
-                  <button className="button">💰 Calculer Coûts</button>
+                  <button className="button" onClick={handleCalculerCouts} disabled={loading}>💰 Calculer Coûts</button>
                   <button className="button" onClick={handleExportRecettes}>📖 Export Excel</button>
                 </div>
               </div>
