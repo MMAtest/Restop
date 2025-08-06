@@ -4,7 +4,7 @@ import sys
 import os
 sys.path.append('/app/backend')
 
-from server import parse_z_report, parse_facture_fournisseur, extraire_texte_avec_tesseract
+from server import parse_z_report, parse_facture_fournisseur
 
 def test_ocr_parsing():
     """Test local du parsing OCR avec les données réelles"""
