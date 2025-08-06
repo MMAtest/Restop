@@ -431,7 +431,44 @@ function App() {
     event.target.value = '';
   };
 
-  // Import Recettes Excel
+  // Gestion Alertes Stocks
+  const handleVoirAlertes = () => {
+    const stocksCritiques = stocks.filter(stock => {
+      const produit = produits.find(p => p.id === stock.produit_id);
+      return stock.quantite_actuelle <= stock.quantite_min;
+    });
+    
+    if (stocksCritiques.length === 0) {
+      alert("✅ Aucun stock critique pour le moment !");
+    } else {
+      const message = `⚠️ STOCKS CRITIQUES (${stocksCritiques.length} produits):\n\n` +
+        stocksCritiques.map(stock => {
+          const produit = produits.find(p => p.id === stock.produit_id);
+          const unite = getDisplayUnit(produit?.unite);
+          return `• ${stock.produit_nom}: ${formatQuantity(stock.quantite_actuelle, unite)} (Min: ${formatQuantity(stock.quantite_min, unite)})`;
+        }).join('\n');
+      
+      alert(message);
+    }
+  };
+
+  // Page Inventaire (différent du modal mouvement)
+  const handlePageInventaire = () => {
+    // Cette fonction pourrait ouvrir une page dédiée inventaire
+    // Pour l'instant, on affiche un résumé
+    const totalProduits = stocks.length;
+    const stocksCritiques = stocks.filter(stock => stock.quantite_actuelle <= stock.quantite_min).length;
+    const valeurTotale = stocks.reduce((total, stock) => {
+      const produit = produits.find(p => p.id === stock.produit_id);
+      return total + (stock.quantite_actuelle * (produit?.prix_achat || 0));
+    }, 0);
+
+    alert(`📊 RÉSUMÉ INVENTAIRE:\n\n` +
+      `📦 Produits total: ${totalProduits}\n` +
+      `⚠️ Stocks critiques: ${stocksCritiques}\n` +
+      `💰 Valeur totale: ${valeurTotale.toFixed(2)}€\n\n` +
+      `Pour un inventaire détaillé, utilisez "📊 Rapport Stock" pour export Excel.`);
+  };
   const handleImportRecettes = async (event) => {
     const file = event.target.files[0];
     if (!file) return;
