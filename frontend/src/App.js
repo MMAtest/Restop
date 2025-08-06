@@ -858,17 +858,57 @@ function App() {
               </div>
               
               <div className="table-mockup">
-                <div className="table-header">Données Extraites</div>
-                {documentsOcr.length > 0 && (
-                  documentsOcr.slice(0, 3).map((doc, index) => (
-                    <div key={index} className="table-row">
-                      <span>Fournisseur: {doc.donnees_parsees?.fournisseur || 'Non identifié'} | Montant: {doc.donnees_parsees?.total_ca || 'N/A'}€</span>
+                <div className="table-header">Données Extraites - Document Sélectionné</div>
+                {selectedDocument ? (
+                  <div>
+                    <div className="table-row">
+                      <span><strong>📁 Fichier:</strong> {selectedDocument.nom_fichier}</span>
                     </div>
-                  ))
-                )}
-                {documentsOcr.length === 0 && (
+                    <div className="table-row">
+                      <span><strong>📝 Type:</strong> {selectedDocument.type_document === 'z_report' ? 'Rapport Z' : 'Facture Fournisseur'}</span>
+                    </div>
+                    <div className="table-row">
+                      <span><strong>📅 Date upload:</strong> {new Date(selectedDocument.date_upload).toLocaleDateString('fr-FR')}</span>
+                    </div>
+                    
+                    {selectedDocument.donnees_parsees && Object.keys(selectedDocument.donnees_parsees).length > 0 ? (
+                      <>
+                        {selectedDocument.type_document === 'z_report' && (
+                          <>
+                            <div className="table-row">
+                              <span><strong>💰 CA Total:</strong> {selectedDocument.donnees_parsees.total_ca || 'Non calculé'}€</span>
+                            </div>
+                            <div className="table-row">
+                              <span><strong>🍽️ Plats vendus:</strong> {selectedDocument.donnees_parsees.plats_vendus?.length || 0} plats</span>
+                            </div>
+                          </>
+                        )}
+                        
+                        {selectedDocument.type_document === 'facture_fournisseur' && (
+                          <>
+                            <div className="table-row">
+                              <span><strong>🏪 Fournisseur:</strong> {selectedDocument.donnees_parsees.fournisseur || 'Non identifié'}</span>
+                            </div>
+                            <div className="table-row">
+                              <span><strong>💰 Total:</strong> {selectedDocument.donnees_parsees.total_ttc || selectedDocument.donnees_parsees.total_ht || 'Non calculé'}€</span>
+                            </div>
+                            <div className="table-row">
+                              <span><strong>📦 Produits:</strong> {selectedDocument.donnees_parsees.produits?.length || 0} produits</span>
+                            </div>
+                          </>
+                        )}
+                      </>
+                    ) : (
+                      <div className="table-row">
+                        <span style={{color: '#e53e3e'}}>❌ Aucune donnée extraite - Document nécessite un retraitement</span>
+                      </div>
+                    )}
+                  </div>
+                ) : (
                   <div className="table-row">
-                    <span>Aucune donnée extraite</span>
+                    <span style={{fontStyle: 'italic', color: '#4a5568'}}>
+                      👆 Sélectionnez un document dans l'historique pour voir les données extraites
+                    </span>
                   </div>
                 )}
               </div>
