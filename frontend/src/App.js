@@ -383,6 +383,26 @@ function App() {
     }
   };
 
+  // Calculer Coûts des Recettes
+  const handleCalculerCouts = async () => {
+    try {
+      setLoading(true);
+      const response = await axios.get(`${API}/recettes/calculer-couts`);
+      
+      if (response.data.success) {
+        alert(`Coûts calculés avec succès !\n\nRésumé:\n- ${response.data.recettes_calculees} recettes mises à jour\n- Coût moyen: ${response.data.cout_moyen}€\n- Marge moyenne: ${response.data.marge_moyenne}%`);
+        fetchRecettes(); // Rafraîchir la liste
+      } else {
+        alert("Erreur lors du calcul des coûts");
+      }
+    } catch (error) {
+      console.error("Erreur lors du calcul des coûts:", error);
+      alert("Erreur lors du calcul des coûts");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // Import Excel
   const handleImport = async (event) => {
     const file = event.target.files[0];
