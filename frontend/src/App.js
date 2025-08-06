@@ -452,7 +452,32 @@ function App() {
     }
   };
 
-  // Page Inventaire (différent du modal mouvement)
+  // Analyse Produits
+  const handleAnalyseProduits = () => {
+    const stats = {
+      totalProduits: produits.length,
+      produitsAvecPrix: produits.filter(p => p.prix_achat).length,
+      prixMoyen: produits.filter(p => p.prix_achat).reduce((sum, p) => sum + p.prix_achat, 0) / produits.filter(p => p.prix_achat).length || 0,
+      categories: [...new Set(produits.map(p => p.categorie).filter(Boolean))],
+      fournisseurs: [...new Set(produits.map(p => p.fournisseur_id).filter(Boolean))]
+    };
+
+    alert(`📊 ANALYSE PRODUITS:\n\n` +
+      `📦 Total produits: ${stats.totalProduits}\n` +
+      `💰 Produits avec prix: ${stats.produitsAvecPrix}\n` +
+      `💰 Prix moyen: ${stats.prixMoyen.toFixed(2)}€\n` +
+      `📁 Catégories: ${stats.categories.length} (${stats.categories.slice(0, 3).join(', ')}...)\n` +
+      `🏪 Fournisseurs: ${stats.fournisseurs.length}`);
+  };
+
+  // Générer Étiquettes
+  const handleGenererEtiquettes = () => {
+    alert(`🏷️ GÉNÉRATION D'ÉTIQUETTES:\n\n` +
+      `Cette fonctionnalité générera des étiquettes PDF\n` +
+      `pour tous les produits sélectionnés.\n\n` +
+      `Fonctionnalité en cours de développement.\n` +
+      `Utilisez "📊 Rapport Stock" pour export Excel en attendant.`);
+  };
   const handlePageInventaire = () => {
     // Cette fonction pourrait ouvrir une page dédiée inventaire
     // Pour l'instant, on affiche un résumé
