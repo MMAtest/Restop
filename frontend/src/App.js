@@ -1031,11 +1031,11 @@ function App() {
           <div className={`production-tab ${activeProductionTab === 'produits' ? 'active' : ''}`}>
             <div className="layout">
               <div className="card full-width">
-                <div className="card-title">🍽️ Gestion des Produits</div>
-                <input type="text" className="search-bar" placeholder="🔍 Rechercher un produit..."/>
+                <div className="card-title">🍽️ Gestion des Ingrédients</div>
+                <input type="text" className="search-bar" placeholder="🔍 Rechercher un ingrédient..."/>
                 <div style={{textAlign: 'center', margin: '15px 0'}}>
-                  <button className="button" onClick={() => setShowProduitModal(true)}>➕ Nouveau Produit</button>
-                  <button className="button" onClick={handleAnalyseProduits}>📊 Analyse Produits</button>
+                  <button className="button" onClick={() => setShowProduitModal(true)}>➕ Nouvel Ingrédient</button>
+                  <button className="button" onClick={handleAnalyseProduits}>📊 Analyse Ingrédients</button>
                   <button className="button" onClick={handleGenererEtiquettes}>🏷️ Étiquettes</button>
                 </div>
               </div>
