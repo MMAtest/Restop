@@ -908,8 +908,8 @@ function App() {
                 <input type="text" className="search-bar" placeholder="🔍 Rechercher un produit..."/>
                 <div style={{textAlign: 'center', margin: '15px 0'}}>
                   <button className="button" onClick={() => setShowProduitModal(true)}>➕ Nouveau Produit</button>
-                  <button className="button">📊 Analyse Produits</button>
-                  <button className="button">🏷️ Étiquettes</button>
+                  <button className="button" onClick={handleAnalyseProduits}>📊 Analyse Produits</button>
+                  <button className="button" onClick={handleGenererEtiquettes}>🏷️ Étiquettes</button>
                 </div>
               </div>
               
