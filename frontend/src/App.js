@@ -781,8 +781,8 @@ function App() {
               <div style={{display: 'flex', justifyContent: 'center', gap: '10px', marginTop: '15px', flexWrap: 'wrap'}}>
                 <button className="button" onClick={() => setShowProduitModal(true)}>➕ Nouveau Produit</button>
                 <button className="button" onClick={handleExport}>📊 Rapport Stock</button>
-                <button className="button">⚠️ Alertes</button>
-                <button className="button" onClick={() => setShowMouvementModal(true)}>📱 Inventaire</button>
+                <button className="button" onClick={handleVoirAlertes}>⚠️ Alertes</button>
+                <button className="button" onClick={handlePageInventaire}>📱 Inventaire</button>
               </div>
             </div>
             
