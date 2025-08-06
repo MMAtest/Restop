@@ -27,7 +27,7 @@
   --shadow-md: 0px 4px 12px rgba(0, 0, 0, 0.15);
   --shadow-lg: 0px 8px 24px rgba(0, 0, 0, 0.2);
   
-  --gradient-primary: linear-gradient(135deg, #2D5016 0%, #8B1538 100%);
+  --gradient-primary: linear-gradient(135deg, #2D5016 0%, #1F4A08 100%);
   --gradient-accent: linear-gradient(45deg, #D4AF37 0%, #F4C430 100%);
 }
 
