@@ -394,14 +394,15 @@ body {
 }
 
 .table-header {
-  background: var(--color-primary);
-  color: var(--color-white);
+  background: var(--color-primary-light);
+  color: var(--color-primary-solid);
   padding: 12px 16px;
   border-radius: var(--border-radius-sm);
   margin-bottom: 12px;
   text-align: center;
   font-weight: 600;
   font-size: 16px;
+  border: 1px solid rgba(212, 175, 55, 0.3);
 }
 
 .table-row {
