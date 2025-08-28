@@ -228,7 +228,7 @@ body {
 .card-title {
   font-size: 18px;
   font-weight: 500;
-  color: var(--color-primary);
+  color: var(--color-primary-solid);
   margin-bottom: 12px;
 }
 
