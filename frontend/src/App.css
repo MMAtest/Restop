@@ -479,7 +479,7 @@ body {
 .modal-header {
   font-size: 22px;
   font-weight: 600;
-  color: var(--color-primary);
+  color: var(--color-primary-solid);
   margin-bottom: 24px;
   text-align: center;
   padding-bottom: 16px;
