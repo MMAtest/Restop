@@ -3,14 +3,15 @@
 /* Import de la police Inter */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
-/* CSS Custom Properties selon la charte */
+/* CSS Custom Properties selon la charte - Version allégée */
 :root {
-  --color-primary: #2D5016;
-  --color-primary-dark: #1F4A08;
+  --color-primary: rgba(45, 80, 22, 0.3); /* Vert très léger 30% */
+  --color-primary-dark: rgba(31, 74, 8, 0.3); /* Vert foncé très léger 30% */
+  --color-primary-solid: #2D5016; /* Vert original pour textes */
   --color-accent: #D4AF37;
   --color-accent-light: #F4C430;
-  --color-secondary: #8B1538;
-  --color-secondary-light: #A0293D;
+  --color-secondary: rgba(139, 21, 56, 0.3); /* Rouge bordeaux très léger 30% */
+  --color-secondary-light: rgba(160, 41, 61, 0.3); /* Rouge bordeaux clair très léger 30% */
   --color-background: #F5F3E7;
   --color-background-light: #FFF8DC;
   --color-white: #FFFFFF;
@@ -27,8 +28,9 @@
   --shadow-md: 0px 4px 12px rgba(0, 0, 0, 0.15);
   --shadow-lg: 0px 8px 24px rgba(0, 0, 0, 0.2);
   
-  --gradient-primary: linear-gradient(135deg, #2D5016 0%, #1F4A08 100%);
+  --gradient-primary: linear-gradient(135deg, rgba(45, 80, 22, 0.3) 0%, rgba(31, 74, 8, 0.3) 100%);
   --gradient-accent: linear-gradient(45deg, #D4AF37 0%, #F4C430 100%);
+  --gradient-background: linear-gradient(135deg, rgba(139, 21, 56, 0.3) 0%, rgba(160, 41, 61, 0.3) 50%, rgba(45, 80, 22, 0.3) 100%);
 }
 
 /* Reset et Base */
