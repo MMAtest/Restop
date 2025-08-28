@@ -66,16 +66,17 @@ body {
   justify-content: center;
   margin-bottom: 32px;
   padding: 16px 24px;
-  background: var(--color-primary);
-  color: var(--color-white);
+  background: var(--gradient-primary);
+  color: var(--color-primary-solid);
   border-radius: var(--border-radius-lg);
   box-shadow: var(--shadow-md);
+  border: 1px solid rgba(45, 80, 22, 0.2);
 }
 
 .header h1 {
   font-size: 28px;
   font-weight: 700;
-  color: var(--color-white);
+  color: var(--color-primary-solid);
   text-align: center;
 }
 
