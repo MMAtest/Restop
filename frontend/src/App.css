@@ -71,7 +71,7 @@ body {
   color: var(--color-primary-solid);
   border-radius: var(--border-radius-lg);
   box-shadow: var(--shadow-md);
-  border: 1px solid rgba(45, 80, 22, 0.2);
+  border: 1px solid rgba(212, 175, 55, 0.3);
 }
 
 .header h1 {
