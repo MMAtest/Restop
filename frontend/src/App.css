@@ -5,9 +5,10 @@
 
 /* CSS Custom Properties selon la charte - Version allégée */
 :root {
-  --color-primary: rgba(45, 80, 22, 0.3); /* Vert très léger 30% */
-  --color-primary-dark: rgba(31, 74, 8, 0.3); /* Vert foncé très léger 30% */
+  --color-primary-light: #E8F5E8; /* Vert très clair pour arrière-plans */
+  --color-primary-lighter: #F0F8F0; /* Vert ultra-clair pour arrière-plans */
   --color-primary-solid: #2D5016; /* Vert original pour textes */
+  --color-primary-dark: #1F4A08; /* Vert foncé original */
   --color-accent: #D4AF37;
   --color-accent-light: #F4C430;
   --color-secondary: rgba(139, 21, 56, 0.3); /* Rouge bordeaux très léger 30% */
@@ -28,7 +29,7 @@
   --shadow-md: 0px 4px 12px rgba(0, 0, 0, 0.15);
   --shadow-lg: 0px 8px 24px rgba(0, 0, 0, 0.2);
   
-  --gradient-primary: linear-gradient(135deg, rgba(45, 80, 22, 0.3) 0%, rgba(31, 74, 8, 0.3) 100%);
+  --gradient-primary: linear-gradient(135deg, #E8F5E8 0%, #F0F8F0 100%);
   --gradient-accent: linear-gradient(45deg, #D4AF37 0%, #F4C430 100%);
   --gradient-background: linear-gradient(135deg, rgba(139, 21, 56, 0.3) 0%, rgba(160, 41, 61, 0.3) 50%, rgba(45, 80, 22, 0.3) 100%);
 }
