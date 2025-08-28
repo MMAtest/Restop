@@ -85,12 +85,13 @@ body {
   display: flex;
   justify-content: center;
   margin-bottom: 32px;
-  background: var(--color-primary);
+  background: var(--gradient-primary);
   border-radius: var(--border-radius-xl);
   padding: 8px;
   box-shadow: var(--shadow-md);
   flex-wrap: wrap;
   gap: 8px;
+  border: 1px solid rgba(45, 80, 22, 0.3);
 }
 
 .nav-tab {
