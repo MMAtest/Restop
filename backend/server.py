@@ -38,6 +38,15 @@ db = client[os.environ['DB_NAME']]
 app = FastAPI()
 
 # Create a router with the /api prefix
+
+# ✅ Rapports Z Model
+class RapportZ(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    date: datetime
+    ca_total: float
+    produits: List[dict]
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+
 api_router = APIRouter(prefix="/api")
 
 # Models pour la gestion des stocks
