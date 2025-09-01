@@ -1285,6 +1285,35 @@ async def delete_document(document_id: str):
         raise HTTPException(status_code=404, detail="Document non trouvé")
     return {"message": "Document supprimé"}
 
+# ✅ Endpoints Rapports Z
+@api_router.post("/rapports_z")
+async def create_rapport_z(data: RapportZ):
+    """Créer un nouveau rapport Z"""
+    await db.rapports_z.insert_one(data.dict())
+    return {"status": "ok", "id": data.id}
+
+@api_router.get("/rapports_z")
+async def list_rapports_z():
+    """Lister tous les rapports Z"""
+    docs = await db.rapports_z.find().sort("date", -1).to_list(100)  # Tri par date décroissante
+    return docs
+
+@api_router.get("/rapports_z/{rapport_id}")
+async def get_rapport_z(rapport_id: str):
+    """Obtenir un rapport Z spécifique"""
+    doc = await db.rapports_z.find_one({"id": rapport_id})
+    if not doc:
+        raise HTTPException(status_code=404, detail="Rapport not found")
+    return doc
+
+@api_router.delete("/rapports_z/{rapport_id}")
+async def delete_rapport_z(rapport_id: str):
+    """Supprimer un rapport Z"""
+    result = await db.rapports_z.delete_one({"id": rapport_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Rapport non trouvé")
+    return {"message": "Rapport supprimé"}
+
 # Include the router in the main app
 app.include_router(api_router)
 
