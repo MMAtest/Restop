@@ -1372,6 +1372,187 @@ class StockTestSuite:
             except Exception as e:
                 self.log_result("Nettoyage fournisseur", False, "Exception", str(e))
     
+    def test_rapports_z_crud(self):
+        """Test complet CRUD des rapports Z - Nouveaux endpoints"""
+        print("\n=== TEST API RAPPORTS Z - NOUVEAUX ENDPOINTS ===")
+        
+        created_rapport_id = None
+        
+        # Test POST - Création rapport Z
+        rapport_data = {
+            "date": "2025-01-06T10:00:00",
+            "ca_total": 1850.50,
+            "produits": [
+                {"nom": "Supions Persillade", "quantite": 8, "prix": 24.00},
+                {"nom": "Bœuf Wellington", "quantite": 3, "prix": 56.00},
+                {"nom": "Linguine aux palourdes", "quantite": 5, "prix": 28.00},
+                {"nom": "Salade Caprese", "quantite": 4, "prix": 18.00}
+            ]
+        }
+        
+        try:
+            response = requests.post(f"{BASE_URL}/rapports_z", json=rapport_data, headers=HEADERS)
+            if response.status_code == 200:
+                result = response.json()
+                if "id" in result and result.get("status") == "ok":
+                    created_rapport_id = result["id"]
+                    self.log_result("POST /rapports_z", True, f"Rapport Z créé avec ID: {created_rapport_id[:8]}...")
+                    
+                    # Vérifier que l'ID est un UUID valide
+                    if len(created_rapport_id) == 36 and created_rapport_id.count('-') == 4:
+                        self.log_result("UUID génération automatique", True, "ID UUID généré automatiquement")
+                    else:
+                        self.log_result("UUID génération automatique", False, f"ID invalide: {created_rapport_id}")
+                else:
+                    self.log_result("POST /rapports_z", False, "Réponse incorrecte", str(result))
+            else:
+                self.log_result("POST /rapports_z", False, f"Erreur {response.status_code}", response.text)
+                return
+        except Exception as e:
+            self.log_result("POST /rapports_z", False, "Exception lors de la création", str(e))
+            return
+        
+        # Test GET - Liste tous les rapports Z
+        try:
+            response = requests.get(f"{BASE_URL}/rapports_z")
+            if response.status_code == 200:
+                rapports = response.json()
+                if isinstance(rapports, list) and len(rapports) > 0:
+                    self.log_result("GET /rapports_z", True, f"{len(rapports)} rapport(s) Z récupéré(s)")
+                    
+                    # Vérifier l'ordre (tri par date décroissante)
+                    if len(rapports) >= 2:
+                        first_date = rapports[0].get("date", "")
+                        second_date = rapports[1].get("date", "")
+                        if first_date >= second_date:
+                            self.log_result("Tri par date décroissante", True, "Rapports triés correctement")
+                        else:
+                            self.log_result("Tri par date décroissante", False, f"Ordre incorrect: {first_date} vs {second_date}")
+                    
+                    # Vérifier la structure des données
+                    if len(rapports) > 0:
+                        rapport = rapports[0]
+                        required_fields = ["id", "date", "ca_total", "produits", "created_at"]
+                        if all(field in rapport for field in required_fields):
+                            self.log_result("Structure données rapports Z", True, "Tous les champs requis présents")
+                            
+                            # Vérifier que created_at est ajouté automatiquement
+                            if rapport.get("created_at"):
+                                self.log_result("created_at automatique", True, "Timestamp created_at ajouté")
+                            else:
+                                self.log_result("created_at automatique", False, "created_at manquant")
+                        else:
+                            missing = [f for f in required_fields if f not in rapport]
+                            self.log_result("Structure données rapports Z", False, f"Champs manquants: {missing}")
+                else:
+                    self.log_result("GET /rapports_z", False, "Liste vide ou format incorrect")
+            else:
+                self.log_result("GET /rapports_z", False, f"Erreur {response.status_code}", response.text)
+        except Exception as e:
+            self.log_result("GET /rapports_z", False, "Exception", str(e))
+        
+        # Test GET by ID - Rapport spécifique
+        if created_rapport_id:
+            try:
+                response = requests.get(f"{BASE_URL}/rapports_z/{created_rapport_id}")
+                if response.status_code == 200:
+                    rapport = response.json()
+                    if (rapport.get("ca_total") == rapport_data["ca_total"] and 
+                        len(rapport.get("produits", [])) == len(rapport_data["produits"])):
+                        self.log_result("GET /rapports_z/{id}", True, "Rapport spécifique récupéré correctement")
+                        
+                        # Vérifier les données des produits
+                        produits = rapport.get("produits", [])
+                        if len(produits) > 0:
+                            first_produit = produits[0]
+                            if ("nom" in first_produit and "quantite" in first_produit and "prix" in first_produit):
+                                self.log_result("Structure produits rapport Z", True, "Structure produits correcte")
+                            else:
+                                self.log_result("Structure produits rapport Z", False, "Structure produits incorrecte")
+                    else:
+                        self.log_result("GET /rapports_z/{id}", False, "Données incorrectes")
+                else:
+                    self.log_result("GET /rapports_z/{id}", False, f"Erreur {response.status_code}", response.text)
+            except Exception as e:
+                self.log_result("GET /rapports_z/{id}", False, "Exception", str(e))
+        
+        # Test GET by ID - ID inexistant (doit retourner 404)
+        try:
+            fake_id = "00000000-0000-0000-0000-000000000000"
+            response = requests.get(f"{BASE_URL}/rapports_z/{fake_id}")
+            if response.status_code == 404:
+                self.log_result("GET /rapports_z/{id} inexistant", True, "Erreur 404 pour ID inexistant")
+            else:
+                self.log_result("GET /rapports_z/{id} inexistant", False, f"Code incorrect: {response.status_code}")
+        except Exception as e:
+            self.log_result("GET /rapports_z/{id} inexistant", False, "Exception", str(e))
+        
+        # Test DELETE - Suppression rapport
+        if created_rapport_id:
+            try:
+                response = requests.delete(f"{BASE_URL}/rapports_z/{created_rapport_id}")
+                if response.status_code == 200:
+                    result = response.json()
+                    if "supprimé" in result.get("message", ""):
+                        self.log_result("DELETE /rapports_z/{id}", True, "Rapport Z supprimé avec succès")
+                        
+                        # Vérifier que le rapport n'existe plus
+                        get_response = requests.get(f"{BASE_URL}/rapports_z/{created_rapport_id}")
+                        if get_response.status_code == 404:
+                            self.log_result("Validation suppression rapport Z", True, "Rapport bien supprimé")
+                        else:
+                            self.log_result("Validation suppression rapport Z", False, "Rapport encore présent")
+                    else:
+                        self.log_result("DELETE /rapports_z/{id}", False, f"Message incorrect: {result}")
+                else:
+                    self.log_result("DELETE /rapports_z/{id}", False, f"Erreur {response.status_code}", response.text)
+            except Exception as e:
+                self.log_result("DELETE /rapports_z/{id}", False, "Exception", str(e))
+        
+        # Test DELETE - ID inexistant (doit retourner 404)
+        try:
+            fake_id = "00000000-0000-0000-0000-000000000000"
+            response = requests.delete(f"{BASE_URL}/rapports_z/{fake_id}")
+            if response.status_code == 404:
+                self.log_result("DELETE /rapports_z/{id} inexistant", True, "Erreur 404 pour suppression ID inexistant")
+            else:
+                self.log_result("DELETE /rapports_z/{id} inexistant", False, f"Code incorrect: {response.status_code}")
+        except Exception as e:
+            self.log_result("DELETE /rapports_z/{id} inexistant", False, "Exception", str(e))
+        
+        # Test avec données réalistes supplémentaires
+        rapport_data_2 = {
+            "date": "2025-01-06T14:30:00",
+            "ca_total": 2150.75,
+            "produits": [
+                {"nom": "Rigatoni à la truffe de Forcalquier", "quantite": 6, "prix": 31.00},
+                {"nom": "Souris d'agneau confite", "quantite": 4, "prix": 36.00},
+                {"nom": "Fleurs de courgettes de Mamet", "quantite": 7, "prix": 21.00}
+            ]
+        }
+        
+        try:
+            response = requests.post(f"{BASE_URL}/rapports_z", json=rapport_data_2, headers=HEADERS)
+            if response.status_code == 200:
+                result = response.json()
+                if "id" in result:
+                    self.log_result("POST /rapports_z (données réalistes)", True, "Deuxième rapport Z créé avec données La Table d'Augustine")
+                    
+                    # Vérifier la liste mise à jour
+                    list_response = requests.get(f"{BASE_URL}/rapports_z")
+                    if list_response.status_code == 200:
+                        rapports = list_response.json()
+                        if len(rapports) >= 1:  # Au moins le nouveau rapport
+                            self.log_result("Liste rapports Z mise à jour", True, f"Liste contient {len(rapports)} rapport(s)")
+                        else:
+                            self.log_result("Liste rapports Z mise à jour", False, "Liste non mise à jour")
+                else:
+                    self.log_result("POST /rapports_z (données réalistes)", False, "Réponse incorrecte")
+            else:
+                self.log_result("POST /rapports_z (données réalistes)", False, f"Erreur {response.status_code}")
+        except Exception as e:
+            self.log_result("POST /rapports_z (données réalistes)", False, "Exception", str(e))
+
     def run_all_tests(self):
         """Exécute tous les tests"""
         print("🚀 DÉBUT DES TESTS BACKEND - GESTION STOCKS RESTAURANT + OCR")
