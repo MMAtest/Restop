@@ -459,7 +459,7 @@ metadata:
 
 test_plan:
   current_focus:
-    - "API Rapports Z - Nouveaux Endpoints"
+    - "Interface Historique Rapports Z"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
