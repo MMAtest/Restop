@@ -285,6 +285,21 @@ backend:
         agent: "testing"
         comment: "✅ TESSERACT OCR RÉSOLU - 96.7% RÉUSSITE (58/60 tests) ! Tesseract 5.3.0 installé et fonctionnel. POST /api/ocr/upload-document fonctionne pour z_report et facture_fournisseur avec extraction de texte réussie. GET /api/ocr/documents liste 7 documents traités. GET /api/ocr/document/{id} et DELETE /api/ocr/document/{id} opérationnels. Gestion d'erreurs OCR appropriée (400/404). Workflow OCR complet : Upload → Extraction Tesseract → Parsing → Sauvegarde → Récupération. 2 échecs mineurs non-critiques avec données simulées. Module OCR entièrement opérationnel pour production."
 
+  - task: "API Rapports Z - Nouveaux Endpoints"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Implémentation des nouveaux endpoints CRUD pour rapports Z avec modèle RapportZ (id UUID auto-généré, date, ca_total, produits, created_at auto)"
+      - working: true
+        agent: "testing"
+        comment: "✅ RAPPORTS Z ENDPOINTS - 100% RÉUSSITE (14/14 tests) ! Tous les nouveaux endpoints rapports Z fonctionnent parfaitement : POST /api/rapports_z crée rapport avec UUID auto-généré et created_at automatique. GET /api/rapports_z liste rapports triés par date décroissante avec structure complète (id, date, ca_total, produits, created_at). GET /api/rapports_z/{id} récupère rapport spécifique avec validation structure produits (nom, quantité, prix). DELETE /api/rapports_z/{id} supprime rapport avec validation 404 pour ID inexistant. Tests avec données réalistes La Table d'Augustine (Supions Persillade 24€, Bœuf Wellington 56€, Rigatoni truffe 31€). Correction bug sérialisation MongoDB ObjectId. Endpoints prêts pour production."
+
 frontend:
   - task: "Interface Dashboard"
     implemented: true
