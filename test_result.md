@@ -512,6 +512,18 @@ test_plan:
         agent: "testing"
         comment: "✅ VALIDATION COMPLÈTE DES CORRECTIONS DE BUGS - 100% RÉUSSITE ! Tous les bugs signalés ont été corrigés avec succès : ✅ TERMINOLOGIE CLARIFIÉE : Dashboard affiche '43 ingrédients' (plus '43 produits'), labels 'Ingrédients' vs 'Plats/Recettes' cohérents dans Production ✅ PRODUCTION > PLATS/RECETTES : Bouton '💰 Calculer Coûts' fonctionne (popup calculs), bouton '📖 Export Excel' opérationnel (téléchargement), navigation entre sous-sections fluide ✅ GESTION STOCKS CORRIGÉE : Bouton '⚠️ Alertes' affiche popup stocks critiques, bouton '📱 Inventaire' montre résumé inventaire (PAS modal ajout produit), bouton '📊 Rapport Stock' fonctionne toujours ✅ PRODUCTION > INGRÉDIENTS CORRIGÉE : Bouton '📊 Analyse Ingrédients' affiche popup statistiques, bouton '🏷️ Étiquettes' montre message fonctionnalité ✅ OCR INTERFACE AMÉLIORÉE : Un seul bouton '📁 Importer Document' (plus de doublons), bouton '🔄 Traitement Auto' affiche confirmation, historique documents cliquable pour sélection, section 'Données Extraites' s'affiche lors sélection document. Interface ResTop La Table d'Augustine entièrement corrigée et prête pour production !"
 
+  - task: "Interface Historique Rapports Z"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/pages/HistoriqueZPage.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Nouvelle fonctionnalité Historique Rapports Z implémentée avec composant HistoriqueZPage.jsx intégré dans App.js. Interface complète avec navigation, tableau des rapports, cartes statistiques, boutons d'action (Actualiser, Exporter Excel), gestion état vide, affichage détails rapports. Prêt pour tests complets."
+
 agent_communication:
   - agent: "main"
     message: "🎉 UI REDESIGN MAJEUR TERMINÉ ! Transformation complète de l'interface La Table d'Augustine selon template wireframe sophistiqué : Header élégant dégradé vert/or, navigation professionnelle pill-shaped, Dashboard avec cartes statistiques connectées aux vraies données (43 produits, 6 fournisseurs), Module OCR avec sidebar et zone drag & drop, Section Production avec sous-tabs (Produits/Fournisseurs/Recettes), Historique multi-sections (Ventes/Stocks/Commandes/Factures/Modifications), Gestion Stocks modernisée. Design professionnel Georgia serif, gradients sophistiqués, animations hover, layout responsive. Toutes fonctionnalités préservées, modals CRUD intacts, backend APIs fonctionnels. Interface prête pour production !."
