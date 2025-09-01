@@ -459,12 +459,7 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Interface Gestion Recettes"
-    - "Import/Export Excel Recettes UI"
-    - "Calculateur Production Temps Réel"
-    - "Interface Dashboard"
-    - "Gestion Produits UI"
-    - "Gestion Fournisseurs UI"
+    - "API Rapports Z - Nouveaux Endpoints"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
