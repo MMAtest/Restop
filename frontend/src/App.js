@@ -1180,18 +1180,28 @@ function App() {
               className="button" 
               onClick={() => setActiveHistoriqueTab('ventes')}
               style={{
-                background: activeHistoriqueTab === 'ventes' ? 'linear-gradient(135deg, #2d5016, #4a7c59)' : 'linear-gradient(135deg, #d4af37, #f4d03f)',
-                color: activeHistoriqueTab === 'ventes' ? '#f5f3f0' : '#2d5016'
+                background: activeHistoriqueTab === 'ventes' ? 'linear-gradient(135deg, var(--color-primary-solid), var(--color-primary-dark))' : 'var(--gradient-accent)',
+                color: activeHistoriqueTab === 'ventes' ? 'var(--color-white)' : 'var(--color-primary-solid)'
               }}
             >
               💰 Ventes
             </button>
             <button 
               className="button" 
+              onClick={() => setActiveHistoriqueTab('rapports_z')}
+              style={{
+                background: activeHistoriqueTab === 'rapports_z' ? 'linear-gradient(135deg, var(--color-primary-solid), var(--color-primary-dark))' : 'var(--gradient-accent)',
+                color: activeHistoriqueTab === 'rapports_z' ? 'var(--color-white)' : 'var(--color-primary-solid)'
+              }}
+            >
+              📊 Rapports Z
+            </button>
+            <button 
+              className="button" 
               onClick={() => setActiveHistoriqueTab('stocks')}
               style={{
-                background: activeHistoriqueTab === 'stocks' ? 'linear-gradient(135deg, #2d5016, #4a7c59)' : 'linear-gradient(135deg, #d4af37, #f4d03f)',
-                color: activeHistoriqueTab === 'stocks' ? '#f5f3f0' : '#2d5016'
+                background: activeHistoriqueTab === 'stocks' ? 'linear-gradient(135deg, var(--color-primary-solid), var(--color-primary-dark))' : 'var(--gradient-accent)',
+                color: activeHistoriqueTab === 'stocks' ? 'var(--color-white)' : 'var(--color-primary-solid)'
               }}
             >
               📦 Mouvements Stock
@@ -1200,8 +1210,8 @@ function App() {
               className="button" 
               onClick={() => setActiveHistoriqueTab('commandes')}
               style={{
-                background: activeHistoriqueTab === 'commandes' ? 'linear-gradient(135deg, #2d5016, #4a7c59)' : 'linear-gradient(135deg, #d4af37, #f4d03f)',
-                color: activeHistoriqueTab === 'commandes' ? '#f5f3f0' : '#2d5016'
+                background: activeHistoriqueTab === 'commandes' ? 'linear-gradient(135deg, var(--color-primary-solid), var(--color-primary-dark))' : 'var(--gradient-accent)',
+                color: activeHistoriqueTab === 'commandes' ? 'var(--color-white)' : 'var(--color-primary-solid)'
               }}
             >
               🛒 Commandes
@@ -1210,8 +1220,8 @@ function App() {
               className="button" 
               onClick={() => setActiveHistoriqueTab('factures')}
               style={{
-                background: activeHistoriqueTab === 'factures' ? 'linear-gradient(135deg, #2d5016, #4a7c59)' : 'linear-gradient(135deg, #d4af37, #f4d03f)',
-                color: activeHistoriqueTab === 'factures' ? '#f5f3f0' : '#2d5016'
+                background: activeHistoriqueTab === 'factures' ? 'linear-gradient(135deg, var(--color-primary-solid), var(--color-primary-dark))' : 'var(--gradient-accent)',
+                color: activeHistoriqueTab === 'factures' ? 'var(--color-white)' : 'var(--color-primary-solid)'
               }}
             >
               📄 Factures
@@ -1220,8 +1230,8 @@ function App() {
               className="button" 
               onClick={() => setActiveHistoriqueTab('modifications')}
               style={{
-                background: activeHistoriqueTab === 'modifications' ? 'linear-gradient(135deg, #2d5016, #4a7c59)' : 'linear-gradient(135deg, #d4af37, #f4d03f)',
-                color: activeHistoriqueTab === 'modifications' ? '#f5f3f0' : '#2d5016'
+                background: activeHistoriqueTab === 'modifications' ? 'linear-gradient(135deg, var(--color-primary-solid), var(--color-primary-dark))' : 'var(--gradient-accent)',
+                color: activeHistoriqueTab === 'modifications' ? 'var(--color-white)' : 'var(--color-primary-solid)'
               }}
             >
               ✏️ Modifications
