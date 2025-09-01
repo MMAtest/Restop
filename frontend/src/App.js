@@ -1235,7 +1235,7 @@ function App() {
                 <div className="card-title">💰 Historique des Ventes</div>
                 <div style={{display: 'flex', gap: '15px', alignItems: 'center', justifyContent: 'center', margin: '15px 0', flexWrap: 'wrap'}}>
                   <input type="date" className="search-bar" style={{width: 'auto', margin: 0}} defaultValue="2025-08-01"/>
-                  <span style={{color: '#2d5016', fontWeight: 'bold'}}>à</span>
+                  <span style={{color: 'var(--color-primary-solid)', fontWeight: 'bold'}}>à</span>
                   <input type="date" className="search-bar" style={{width: 'auto', margin: 0}} defaultValue="2025-08-05"/>
                   <button className="button">🔍 Filtrer</button>
                   <button className="button">📊 Exporter</button>
@@ -1261,6 +1261,17 @@ function App() {
               </div>
               
               <div className="card full-width">
+                <div className="card-title">📊 Rapports Z - Accès Rapide</div>
+                <div style={{textAlign: 'center', margin: '20px 0'}}>
+                  <button 
+                    className="button" 
+                    onClick={() => setActiveHistoriqueTab('rapports_z')}
+                  >
+                    📊 Voir Historique Rapports Z
+                  </button>
+                  <button className="button">📈 Créer Rapport Z Manuel</button>
+                </div>
+                
                 <div className="table-mockup">
                   <div className="table-header">Date | Heure | Plat | Quantité | Prix Unit. | Total</div>
                   {recettes.slice(0, 5).map((recette, index) => (
