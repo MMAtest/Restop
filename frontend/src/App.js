@@ -1477,6 +1477,11 @@ function App() {
               </div>
             </div>
           </div>
+
+          {/* HISTORIQUE RAPPORTS Z */}
+          <div className={`historique-tab ${activeHistoriqueTab === 'rapports_z' ? 'active' : ''}`}>
+            <HistoriqueZPage />
+          </div>
         </div>
       </div>
 
