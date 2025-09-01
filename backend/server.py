@@ -1296,6 +1296,10 @@ async def create_rapport_z(data: RapportZ):
 async def list_rapports_z():
     """Lister tous les rapports Z"""
     docs = await db.rapports_z.find().sort("date", -1).to_list(100)  # Tri par date décroissante
+    # Nettoyer les documents pour la sérialisation JSON
+    for doc in docs:
+        if "_id" in doc:
+            del doc["_id"]
     return docs
 
 @api_router.get("/rapports_z/{rapport_id}")
@@ -1304,6 +1308,9 @@ async def get_rapport_z(rapport_id: str):
     doc = await db.rapports_z.find_one({"id": rapport_id})
     if not doc:
         raise HTTPException(status_code=404, detail="Rapport not found")
+    # Supprimer l'_id MongoDB pour éviter les problèmes de sérialisation
+    if "_id" in doc:
+        del doc["_id"]
     return doc
 
 @api_router.delete("/rapports_z/{rapport_id}")
