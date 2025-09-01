@@ -1589,6 +1589,13 @@ class StockTestSuite:
         self.test_ocr_document_delete()
         self.test_ocr_error_handling()
         
+        # Tests des nouveaux endpoints Rapports Z
+        print("\n" + "=" * 60)
+        print("📊 TESTS NOUVEAUX ENDPOINTS RAPPORTS Z")
+        print("=" * 60)
+        
+        self.test_rapports_z_crud()
+        
         # Test de suppression en cascade à la fin
         self.test_cascade_delete()
         
