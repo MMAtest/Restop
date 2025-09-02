@@ -4943,6 +4943,13 @@ Nombre de couverts: 26"""
         
         self.test_pdf_parsing_debug()
         
+        # 🎯 TEST CORRECTIONS PDF PARSING - VALIDATION DES FIXES
+        print("\n" + "="*60)
+        print("🎯 VALIDATION CORRECTIONS PDF PARSING - FIXES APPLIQUÉS")
+        print("="*60)
+        
+        self.test_enhanced_ocr_pdf_parsing()
+        
         # Test de suppression en cascade à la fin
         self.test_cascade_delete()
         
