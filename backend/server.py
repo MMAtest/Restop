@@ -607,6 +607,304 @@ class CostAnalysis(BaseModel):
     cost_trends: dict
     waste_analysis: dict
 
+# ✅ Version 3 Feature #3 - Advanced Stock Management Models
+class AdvancedStockAdjustment(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    adjustment_type: str  # "ingredient" or "prepared_dish"
+    target_id: str  # product_id for ingredient, recipe_id for prepared_dish
+    target_name: str
+    adjustment_reason: str
+    quantity_adjusted: float
+    user_name: Optional[str] = None
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+    ingredient_deductions: List[dict] = []  # For prepared_dish adjustments
+
+class StockAdjustmentRequest(BaseModel):
+    adjustment_type: str  # "ingredient" or "prepared_dish" 
+    target_id: str
+    quantity_adjusted: float
+    adjustment_reason: str
+    user_name: Optional[str] = "System"
+
+class BatchStockInfo(BaseModel):
+    product_id: str
+    product_name: str
+    total_stock: float
+    batches: List[dict]  # ProductBatch info with expiry status
+    critical_batches: int  # Count of batches expiring soon
+    expired_batches: int  # Count of expired batches
+
+# ✅ Version 3 Feature #3 - Advanced Stock Management API Endpoints
+
+@api_router.post("/stock/advanced-adjustment", response_model=AdvancedStockAdjustment)
+async def create_advanced_stock_adjustment(adjustment: StockAdjustmentRequest):
+    """Create advanced stock adjustment - ingredient or prepared dish"""
+    try:
+        adjustment_record = AdvancedStockAdjustment(
+            adjustment_type=adjustment.adjustment_type,
+            target_id=adjustment.target_id,
+            target_name="",
+            adjustment_reason=adjustment.adjustment_reason,
+            quantity_adjusted=adjustment.quantity_adjusted,
+            user_name=adjustment.user_name
+        )
+        
+        if adjustment.adjustment_type == "ingredient":
+            # Direct ingredient adjustment
+            product = await db.produits.find_one({"id": adjustment.target_id})
+            if not product:
+                raise HTTPException(status_code=404, detail="Produit non trouvé")
+            
+            adjustment_record.target_name = product["nom"]
+            
+            # Update stock directly
+            stock = await db.stocks.find_one({"produit_id": adjustment.target_id})
+            if stock:
+                new_quantity = max(0, stock["quantite_actuelle"] + adjustment.quantity_adjusted)
+                await db.stocks.update_one(
+                    {"produit_id": adjustment.target_id},
+                    {
+                        "$set": {
+                            "quantite_actuelle": new_quantity,
+                            "derniere_maj": datetime.utcnow()
+                        }
+                    }
+                )
+                
+                # Create stock movement
+                movement_type = "entree" if adjustment.quantity_adjusted > 0 else "sortie"
+                mouvement = MouvementStock(
+                    produit_id=adjustment.target_id,
+                    produit_nom=product["nom"],
+                    type=movement_type,
+                    quantite=abs(adjustment.quantity_adjusted),
+                    commentaire=f"Ajustement avancé: {adjustment.adjustment_reason}"
+                )
+                await db.mouvements_stock.insert_one(mouvement.dict())
+            else:
+                raise HTTPException(status_code=404, detail="Stock non trouvé pour ce produit")
+                
+        elif adjustment.adjustment_type == "prepared_dish":
+            # Prepared dish adjustment - deduct all ingredients
+            recipe = await db.recettes.find_one({"id": adjustment.target_id})
+            if not recipe:
+                raise HTTPException(status_code=404, detail="Recette non trouvée")
+            
+            adjustment_record.target_name = recipe["nom"]
+            ingredient_deductions = []
+            
+            # Calculate ingredient deductions
+            portions_adjusted = abs(adjustment.quantity_adjusted)
+            recipe_portions = recipe.get("portions", 1)
+            
+            for ingredient in recipe.get("ingredients", []):
+                # Calculate deduction per portion
+                qty_per_portion = ingredient["quantite"] / recipe_portions
+                total_deduction = qty_per_portion * portions_adjusted
+                
+                # Update stock
+                stock = await db.stocks.find_one({"produit_id": ingredient["produit_id"]})
+                if stock:
+                    current_stock = stock["quantite_actuelle"]
+                    new_stock = max(0, current_stock - total_deduction)
+                    
+                    await db.stocks.update_one(
+                        {"produit_id": ingredient["produit_id"]},
+                        {
+                            "$set": {
+                                "quantite_actuelle": new_stock,
+                                "derniere_maj": datetime.utcnow()
+                            }
+                        }
+                    )
+                    
+                    # Create stock movement
+                    mouvement = MouvementStock(
+                        produit_id=ingredient["produit_id"],
+                        produit_nom=ingredient.get("produit_nom", "Ingrédient"),
+                        type="sortie",
+                        quantite=total_deduction,
+                        commentaire=f"Déduction plat préparé: {recipe['nom']} (x{portions_adjusted}) - {adjustment.adjustment_reason}"
+                    )
+                    await db.mouvements_stock.insert_one(mouvement.dict())
+                    
+                    ingredient_deductions.append({
+                        "product_id": ingredient["produit_id"],
+                        "product_name": ingredient.get("produit_nom", "Ingrédient"),
+                        "quantity_deducted": total_deduction,
+                        "previous_stock": current_stock,
+                        "new_stock": new_stock
+                    })
+            
+            adjustment_record.ingredient_deductions = ingredient_deductions
+        else:
+            raise HTTPException(status_code=400, detail="Type d'ajustement invalide")
+        
+        # Save adjustment record
+        await db.advanced_stock_adjustments.insert_one(adjustment_record.dict())
+        
+        return adjustment_record
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Erreur lors de l'ajustement: {str(e)}")
+
+@api_router.get("/stock/adjustments-history", response_model=List[AdvancedStockAdjustment])
+async def get_stock_adjustments_history():
+    """Get history of all stock adjustments"""
+    try:
+        adjustments = await db.advanced_stock_adjustments.find().sort("created_at", -1).to_list(1000)
+        return [AdvancedStockAdjustment(**adj) for adj in adjustments]
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Erreur lors de la récupération: {str(e)}")
+
+@api_router.get("/stock/batch-info/{product_id}", response_model=BatchStockInfo)
+async def get_product_batch_info(product_id: str):
+    """Get batch information for a specific product"""
+    try:
+        product = await db.produits.find_one({"id": product_id})
+        if not product:
+            raise HTTPException(status_code=404, detail="Produit non trouvé")
+        
+        # Get stock info
+        stock = await db.stocks.find_one({"produit_id": product_id})
+        total_stock = stock["quantite_actuelle"] if stock else 0
+        
+        # Get batches
+        batches = await db.product_batches.find({
+            "product_id": product_id,
+            "is_consumed": False
+        }).sort("expiry_date", 1).to_list(1000)
+        
+        # Process batch information
+        processed_batches = []
+        critical_count = 0
+        expired_count = 0
+        now = datetime.utcnow()
+        critical_threshold = now + timedelta(days=7)
+        
+        for batch in batches:
+            batch_info = {
+                "id": batch["id"],
+                "quantity": batch["quantity"],
+                "received_date": batch["received_date"].isoformat(),
+                "expiry_date": batch["expiry_date"].isoformat() if batch.get("expiry_date") else None,
+                "batch_number": batch.get("batch_number"),
+                "supplier_id": batch.get("supplier_id"),
+                "status": "good"
+            }
+            
+            if batch.get("expiry_date"):
+                if batch["expiry_date"] < now:
+                    batch_info["status"] = "expired"
+                    expired_count += 1
+                elif batch["expiry_date"] < critical_threshold:
+                    batch_info["status"] = "critical"
+                    critical_count += 1
+            
+            processed_batches.append(batch_info)
+        
+        return BatchStockInfo(
+            product_id=product_id,
+            product_name=product["nom"],
+            total_stock=total_stock,
+            batches=processed_batches,
+            critical_batches=critical_count,
+            expired_batches=expired_count
+        )
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Erreur lors de la récupération des lots: {str(e)}")
+
+@api_router.get("/stock/batch-summary", response_model=List[BatchStockInfo])
+async def get_batch_summary():
+    """Get batch summary for all products with batches"""
+    try:
+        # Get all products with batches
+        pipeline = [
+            {"$lookup": {
+                "from": "product_batches",
+                "localField": "id",
+                "foreignField": "product_id",
+                "as": "batches"
+            }},
+            {"$match": {"batches": {"$ne": []}}},
+            {"$limit": 100}
+        ]
+        
+        # Since we're using motor, we need to do this differently
+        products = await db.produits.find().to_list(1000)
+        batch_summaries = []
+        
+        for product in products:
+            # Check if product has batches
+            has_batches = await db.product_batches.count_documents({
+                "product_id": product["id"],
+                "is_consumed": False
+            })
+            
+            if has_batches > 0:
+                batch_info = await get_product_batch_info(product["id"])
+                batch_summaries.append(batch_info)
+        
+        return batch_summaries[:50]  # Limit to first 50 for performance
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Erreur lors du résumé des lots: {str(e)}")
+
+@api_router.put("/stock/consume-batch/{batch_id}")
+async def consume_batch(batch_id: str, quantity_consumed: float):
+    """Mark a batch as partially or fully consumed"""
+    try:
+        batch = await db.product_batches.find_one({"id": batch_id})
+        if not batch:
+            raise HTTPException(status_code=404, detail="Lot non trouvé")
+        
+        remaining_quantity = batch["quantity"] - quantity_consumed
+        
+        if remaining_quantity <= 0:
+            # Mark batch as fully consumed
+            await db.product_batches.update_one(
+                {"id": batch_id},
+                {"$set": {"is_consumed": True, "quantity": 0}}
+            )
+        else:
+            # Update remaining quantity
+            await db.product_batches.update_one(
+                {"id": batch_id},
+                {"$set": {"quantity": remaining_quantity}}
+            )
+        
+        # Update total stock
+        await db.stocks.update_one(
+            {"produit_id": batch["product_id"]},
+            {
+                "$inc": {"quantite_actuelle": -quantity_consumed},
+                "$set": {"derniere_maj": datetime.utcnow()}
+            }
+        )
+        
+        # Create stock movement
+        product = await db.produits.find_one({"id": batch["product_id"]})
+        mouvement = MouvementStock(
+            produit_id=batch["product_id"],
+            produit_nom=product["nom"] if product else "Produit",
+            type="sortie",
+            quantite=quantity_consumed,
+            commentaire=f"Consommation lot {batch.get('batch_number', batch_id[:8])}"
+        )
+        await db.mouvements_stock.insert_one(mouvement.dict())
+        
+        return {"message": "Lot mis à jour avec succès", "remaining_quantity": max(0, remaining_quantity)}
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Erreur lors de la consommation: {str(e)}")
+
 # ✅ Version 3 Feature #2 - Enhanced OCR API Endpoints
 
 @api_router.post("/ocr/parse-z-report-enhanced", response_model=StructuredZReportData)
