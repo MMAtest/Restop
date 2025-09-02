@@ -775,59 +775,6 @@ function App() {
         </button>
       </div>
 
-      {/* DASHBOARD */}
-      <div id="dashboard" className={`wireframe-section ${activeTab === "dashboard" ? "active" : ""}`}>
-        <div className="wireframe">
-          <h2>📊 Dashboard Principal</h2>
-          <div className="layout dashboard-layout">
-            <div className="card stat-card">
-              <div className="icon">💰</div>
-              <div className="card-title">Chiffre d'Affaires</div>
-              <div className="card-content">€15,420 ce mois</div>
-            </div>
-            <div className="card stat-card">
-              <div className="icon">📦</div>
-              <div className="card-title">Stock Critique</div>
-              <div className="card-content">{dashboardStats.stocks_faibles || 0} produits</div>
-            </div>
-            <div className="card stat-card">
-              <div className="icon">🍽️</div>
-              <div className="card-title">Ingrédients Total</div>
-              <div className="card-content">{dashboardStats.total_produits || 0} ingrédients</div>
-            </div>
-            
-            <div className="card full-width">
-              <div className="card-title">📈 Graphique des Ventes</div>
-              <div className="card-content">Évolution du CA sur les 30 derniers jours</div>
-            </div>
-            
-            <div className="card">
-              <div className="card-title">⚠️ Alertes</div>
-              <ul className="feature-list">
-                <li>Stock tomates faible</li>
-                <li>Livraison prévue 14h</li>
-                <li>Nouvelle recette ajoutée</li>
-              </ul>
-            </div>
-            
-            <div className="card">
-              <div className="card-title">📋 Tâches du Jour</div>
-              <ul className="feature-list">
-                <li>Inventaire cuisine</li>
-                <li>Formation équipe</li>
-                <li>Réunion fournisseur</li>
-              </ul>
-            </div>
-            
-            <div className="card">
-              <div className="card-title">🔄 Activité Récente</div>
-              <ul className="feature-list">
-                {mouvements.slice(0, 3).map((mouvement, index) => (
-                  <li key={index}>Stock {mouvement.produit_nom} mis à jour</li>
-                ))}
-                {mouvements.length === 0 && <li>Aucune activité récente</li>}
-              </ul>
-            </div>
       {/* DASHBOARD - Analytics & Profitability */}
       <div id="dashboard" className={`wireframe-section ${activeTab === "dashboard" ? "active" : ""}`}>
         <AnalyticsPage />
