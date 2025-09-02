@@ -560,9 +560,22 @@ function App() {
     }
   };
 
-  const handlePreviewDocument = (document) => {
-    setPreviewDocument(document);
-    setShowPreviewModal(true);
+  const handlePreviewDocument = async (document) => {
+    try {
+      setPreviewLoading(true);
+      // fetch full document (with base64) from backend
+      const { data } = await axios.get(`${API}/ocr/document/${document.id}`);
+      setPreviewDocFull(data);
+      setPreviewDocument(document);
+      setPreviewTab('overview');
+      setShowPreviewModal(true);
+    } catch (e) {
+      console.error('Erreur chargement du document OCR complet:', e);
+      setPreviewDocument(document);
+      setShowPreviewModal(true);
+    } finally {
+      setPreviewLoading(false);
+    }
   };
 
   const closePreviewModal = () => {
