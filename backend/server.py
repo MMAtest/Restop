@@ -292,6 +292,7 @@ class DocumentOCR(BaseModel):
     statut: str = "en_attente"  # "en_attente", "traite", "erreur"
     date_upload: datetime = Field(default_factory=datetime.utcnow)
     date_traitement: Optional[datetime] = None
+    file_type: str = "image"  # "image" ou "pdf" - nouveau champ V3
 
 class DocumentUploadResponse(BaseModel):
     document_id: str
