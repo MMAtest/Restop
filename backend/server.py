@@ -436,6 +436,21 @@ def extract_text_from_pdf(pdf_content: bytes) -> str:
     except Exception as e:
         print(f"⚠️ Image-based OCR fallback failed: {str(e)}")
 
+    # If we gathered any text from previous passes, return it combined
+    if extracted_parts:
+        # Deduplicate lines while preserving order
+        seen = set()
+        lines = []
+        for part in extracted_parts:
+            for line in part.splitlines():
+                key = line.strip()
+                if key and key not in seen:
+                    seen.add(key)
+                    lines.append(key)
+        combined = "\n".join(lines)
+        print(f"✅ PDF extraction combined (post-fallback): {len(combined)} chars, {len(lines)} lines")
+        return combined
+
     # Final fallback
     return "Erreur: Extraction PDF incomplète. Merci de fournir un PDF original (non scanné) ou une image de meilleure qualité."
 
