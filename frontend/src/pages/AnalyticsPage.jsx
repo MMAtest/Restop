@@ -75,18 +75,26 @@ const AnalyticsPage = () => {
         <p className="text-gray-600">Tableau de bord complet pour la gestion et l'analyse des performances</p>
       </div>
 
-      {/* Alert Summary Banner */}
+      {/* Alert Summary Banner - CLIQUABLE */}
       {alertCenter && alertCenter.total_alerts > 0 && (
-        <div className="mb-6 bg-gradient-to-r from-red-50 to-orange-50 border-l-4 border-red-400 p-4 rounded-lg shadow-sm">
-          <div className="flex items-center">
-            <div className="text-red-400 text-2xl mr-3">⚠️</div>
-            <div>
-              <h3 className="text-lg font-semibold text-red-800">
-                {alertCenter.total_alerts} Alerte{alertCenter.total_alerts > 1 ? 's' : ''} Nécessitant Attention
-              </h3>
-              <p className="text-red-600">
-                {alertCenter.expiring_products.length} produits expirant, {alertCenter.low_stock_items.length} stocks faibles, {alertCenter.price_anomalies.length} anomalies prix
-              </p>
+        <div 
+          className="mb-6 bg-gradient-to-r from-red-50 to-orange-50 border-l-4 border-red-400 p-4 rounded-lg shadow-sm cursor-pointer hover:shadow-md transition-all"
+          onClick={() => setActiveTab('alerts')}
+        >
+          <div className="flex items-center justify-between">
+            <div className="flex items-center">
+              <div className="text-red-400 text-2xl mr-3">⚠️</div>
+              <div>
+                <h3 className="text-lg font-semibold text-red-800">
+                  {alertCenter.total_alerts} Alerte{alertCenter.total_alerts > 1 ? 's' : ''} Nécessitant Attention
+                </h3>
+                <p className="text-red-600">
+                  {alertCenter.expiring_products.length} produits expirant, {alertCenter.low_stock_items.length} stocks faibles, {alertCenter.price_anomalies.length} anomalies prix
+                </p>
+              </div>
+            </div>
+            <div className="text-blue-600 font-medium">
+              Cliquez pour voir les détails →
             </div>
           </div>
         </div>
