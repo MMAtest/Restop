@@ -272,9 +272,9 @@ backend:
 
   - task: "API OCR Module Complet"
     implemented: true
-    working: true
+    working: false
     file: "/app/backend/server.py"
-    stuck_count: 0
+    stuck_count: 1
     priority: "high"
     needs_retesting: false
     status_history:
@@ -290,6 +290,9 @@ backend:
       - working: true
         agent: "testing"
         comment: "🎯 OCR PDF EXTRACTION COMPLETENESS REGRESSION - 100% RÉUSSITE ! Validation post-changements finaux : ✅ REQ1: PDF upload avec tokens clés validé (Rapport, CA, catégories, (x, Desserts) sur documents existants ztableauaugustinedigital.pdf ✅ REQ2: GET /api/ocr/document/{id} préserve texte_extrait complet (352 chars, aucune troncature) ✅ REQ3: Image upload sanity check opérationnel (Tesseract 5.3.0 fonctionnel) ✅ BONUS: Détection multi-ligne Z-report confirmée (3 catégories, structure BAR/ENTRÉES/PLATS/DESSERTS). Tous endpoints OCR stables après améliorations extraction. Module OCR PDF extraction completeness validé pour production."
+      - working: false
+        agent: "testing"
+        comment: "❌ UNIT_PRICE/TOTAL_PRICE EXTRACTION ISSUE - 85.7% RÉUSSITE (6/7 tests) ! Validation spécifique extraction prix unitaires/totaux selon demande : ✅ ENDPOINTS DISPONIBLES : GET /api/ocr/documents et POST /api/ocr/upload-document opérationnels ✅ DOCUMENTS TRAITÉS : 50 documents Z-report trouvés, texte extrait correctement (17,015 chars), catégorisation fonctionnelle (Bar/Entrées/Plats/Desserts) ✅ STRUCTURE DONNÉES : donnees_parsees.items_by_category présente avec 551 items catégorisés, grand_total_sales calculé (172.74€) ✅ PATTERNS DÉTECTÉS : Patterns prix trouvés dans texte brut ❌ PROBLÈME CRITIQUE : 0/551 items ont unit_price ou total_price renseignés malgré formats (x3) Linguine aux palourdes 28,00 / Burrata di Bufala €18.50 x 2 / 4x Supions persillade 24,00 présents dans texte. Les regex patterns dans parse_z_report_enhanced() ne matchent pas correctement le texte OCR extrait. NÉCESSITE CORRECTION des patterns d'extraction prix pour formats Z-report standards."
 
   - task: "API Rapports Z - Nouveaux Endpoints"
     implemented: true
