@@ -109,7 +109,7 @@ class Produit(BaseModel):
     categorie: Optional[str] = None
     unite: str  # kg, L, pièce, etc.
     prix_achat: Optional[float] = None  # Deprecated - use SupplierProductInfo instead
-    reference_price: float  # ✅ New - Manager-set benchmark price for cost control
+    reference_price: Optional[float] = 10.0  # ✅ New - Manager-set benchmark price for cost control
     main_supplier_id: Optional[str] = None  # ✅ New - Primary supplier
     secondary_supplier_ids: List[str] = []  # ✅ New - Alternative suppliers
     fournisseur_id: Optional[str] = None  # Legacy field for backward compatibility
