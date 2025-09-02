@@ -2674,7 +2674,8 @@ async def upload_and_process_document(
             type_document=document_type,
             texte_extrait=texte_extrait,
             donnees_parsees=donnees_parsees,
-            message=f"Document {document_type} traité avec succès"
+            message=f"Document {document_type} traité avec succès",
+            file_type=file_type
         )
         
     except HTTPException:
