@@ -104,11 +104,11 @@ const AnalyticsPage = () => {
       <div className="mb-6">
         <div className="flex space-x-1 bg-white p-1 rounded-lg shadow-sm">
           {[
-            { id: 'overview', label: '📊 Vue d\'ensemble', icon: '📊' },
-            { id: 'profitability', label: '💰 Profitabilité', icon: '💰' },
-            { id: 'sales', label: '📈 Ventes', icon: '📈' },
-            { id: 'alerts', label: '⚠️ Alertes', icon: '⚠️' },
-            { id: 'costs', label: '💸 Coûts', icon: '💸' }
+            { id: 'overview', label: 'Vue d\'ensemble', icon: '📊' },
+            { id: 'profitability', label: 'Profitabilité', icon: '💰' },
+            { id: 'sales', label: 'Ventes', icon: '📈' },
+            { id: 'alerts', label: 'Alertes', icon: '⚠️' },
+            { id: 'costs', label: 'Coûts', icon: '💸' }
           ].map((tab) => (
             <button
               key={tab.id}
@@ -120,7 +120,7 @@ const AnalyticsPage = () => {
               }`}
             >
               <span className="mr-2">{tab.icon}</span>
-              {tab.label}
+              <span>{tab.label}</span>
             </button>
           ))}
         </div>
