@@ -1950,6 +1950,14 @@ class StockTestSuite:
         self.test_ocr_document_delete()
         self.test_ocr_error_handling()
         
+        # 🆕 NOUVEAUX TESTS VERSION 3 FEATURE #2 - ENHANCED OCR PARSING
+        print("\n" + "=" * 60)
+        print("🆕 TESTS VERSION 3 ENHANCED OCR PARSING APIs")
+        print("=" * 60)
+        
+        self.test_enhanced_ocr_parsing_apis()
+        self.test_enhanced_ocr_stock_integration()
+        
         # Tests des nouveaux endpoints Rapports Z
         print("\n" + "=" * 60)
         print("📊 TESTS NOUVEAUX ENDPOINTS RAPPORTS Z")
