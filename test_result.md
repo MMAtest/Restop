@@ -474,7 +474,7 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Enhanced OCR with PDF Support - Version 3 Testing Complete"
+    - "OCR Behavior with Unknown Items Testing"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
