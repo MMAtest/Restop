@@ -72,15 +72,48 @@ class FournisseurCreate(BaseModel):
     telephone: Optional[str] = None
     adresse: Optional[str] = None
 
+# ✅ Version 3 - Enhanced User Management with RBAC
+class User(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    username: str
+    email: str
+    password_hash: str
+    role: str  # One of ROLES keys
+    full_name: Optional[str] = None
+    is_active: bool = True
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+    last_login: Optional[datetime] = None
+
+class UserCreate(BaseModel):
+    username: str
+    email: str
+    password: str
+    role: str
+    full_name: Optional[str] = None
+
+class UserResponse(BaseModel):
+    id: str
+    username: str
+    email: str
+    role: str
+    full_name: Optional[str] = None
+    is_active: bool
+    created_at: datetime
+    last_login: Optional[datetime] = None
+
+# ✅ Version 3 - Enhanced Product Model with Reference Price and Supplier Relations
 class Produit(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     nom: str
     description: Optional[str] = None
     categorie: Optional[str] = None
     unite: str  # kg, L, pièce, etc.
-    prix_achat: Optional[float] = None
-    fournisseur_id: Optional[str] = None
-    fournisseur_nom: Optional[str] = None
+    prix_achat: Optional[float] = None  # Deprecated - use SupplierProductInfo instead
+    reference_price: float  # ✅ New - Manager-set benchmark price for cost control
+    main_supplier_id: Optional[str] = None  # ✅ New - Primary supplier
+    secondary_supplier_ids: List[str] = []  # ✅ New - Alternative suppliers
+    fournisseur_id: Optional[str] = None  # Legacy field for backward compatibility
+    fournisseur_nom: Optional[str] = None  # Legacy field
     created_at: datetime = Field(default_factory=datetime.utcnow)
 
 class ProduitCreate(BaseModel):
@@ -88,8 +121,67 @@ class ProduitCreate(BaseModel):
     description: Optional[str] = None
     categorie: Optional[str] = None
     unite: str
+    reference_price: float  # ✅ Required for V3
+    main_supplier_id: Optional[str] = None
+    secondary_supplier_ids: List[str] = []
+    # Legacy fields for backward compatibility
     prix_achat: Optional[float] = None
     fournisseur_id: Optional[str] = None
+
+# ✅ Version 3 - New Supplier-Product Price Linking Model
+class SupplierProductInfo(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    supplier_id: str
+    product_id: str
+    price: float  # ✅ Actual supplier-specific price
+    is_preferred: bool = False  # Mark as preferred supplier for this product
+    min_order_quantity: Optional[float] = None
+    lead_time_days: Optional[int] = None
+    last_updated: datetime = Field(default_factory=datetime.utcnow)
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+
+class SupplierProductInfoCreate(BaseModel):
+    supplier_id: str
+    product_id: str
+    price: float
+    is_preferred: bool = False
+    min_order_quantity: Optional[float] = None
+    lead_time_days: Optional[int] = None
+
+# ✅ Version 3 - New Product Batch/Lot Management Model
+class ProductBatch(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    product_id: str
+    quantity: float
+    expiry_date: Optional[datetime] = None  # DLC - Date Limite de Consommation
+    received_date: datetime = Field(default_factory=datetime.utcnow)
+    supplier_id: Optional[str] = None
+    batch_number: Optional[str] = None
+    purchase_price: Optional[float] = None  # Price at which this batch was purchased
+    is_consumed: bool = False  # Track if batch is fully used
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+
+class ProductBatchCreate(BaseModel):
+    product_id: str
+    quantity: float
+    expiry_date: Optional[datetime] = None
+    supplier_id: Optional[str] = None
+    batch_number: Optional[str] = None
+    purchase_price: Optional[float] = None
+
+# ✅ Version 3 - Price Anomaly Alert Model
+class PriceAnomalyAlert(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    product_id: str
+    product_name: str
+    supplier_id: str
+    supplier_name: str
+    reference_price: float
+    actual_price: float
+    difference_percentage: float
+    alert_date: datetime = Field(default_factory=datetime.utcnow)
+    is_resolved: bool = False
+    resolution_note: Optional[str] = None
 
 class Stock(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
