@@ -1503,6 +1503,160 @@ function App() {
                   </select>
                   <button className="button">🔍 Filtrer</button>
                 </div>
+      {/* PREVIEW MODAL OCR */}
+      {showPreviewModal && (
+        <div style={{position:'fixed', inset:0, background:'rgba(0,0,0,0.5)', display:'flex', alignItems:'center', justifyContent:'center', zIndex:1000}}>
+          <div style={{width:'90%', maxWidth:'1200px', maxHeight:'85vh', background:'#fff', borderRadius:'12px', overflow:'hidden', boxShadow:'0 10px 30px rgba(0,0,0,0.3)'}}>
+            {/* Header */}
+            <div style={{display:'flex', alignItems:'center', justifyContent:'space-between', padding:'12px 16px', background:'linear-gradient(135deg, var(--color-primary-solid), var(--color-primary-dark))', color:'#fff'}}>
+              <div style={{display:'flex', alignItems:'center', gap:'10px'}}>
+                <span style={{fontSize:'20px'}}>👁️</span>
+                <div>
+                  <div style={{fontWeight:'700'}}>Aperçu du document</div>
+                  <div style={{fontSize:'12px', opacity:0.9}}>{previewDocument?.nom_fichier}</div>
+                </div>
+              </div>
+              <button className="button" onClick={closePreviewModal} style={{background:'#fff', color:'var(--color-primary-solid)'}}>✖️ Fermer</button>
+            </div>
+
+            {/* Tabs */}
+            <div style={{display:'flex', gap:'8px', padding:'10px 12px', borderBottom:'1px solid #eee'}}>
+              {[
+                {id:'overview', label:'Résumé'},
+                {id:'sidebyside', label:'Document + Données'},
+                {id:'items', label:'Liste complète'},
+                {id:'raw', label:'Texte brut'},
+              ].map(tab => (
+                <button key={tab.id} onClick={() => setPreviewTab(tab.id)} className="button" style={{
+                  background: previewTab===tab.id ? 'var(--color-primary-solid)' : 'var(--color-beige)',
+                  color: previewTab===tab.id ? '#fff' : 'var(--color-primary-solid)'
+                }}>
+                  {tab.label}
+                </button>
+              ))}
+            </div>
+
+            {/* Body */}
+            <div style={{padding:'12px', overflow:'auto', maxHeight:'65vh'}}>
+              {previewLoading && (
+                <div style={{textAlign:'center', padding:'30px'}}>Chargement...</div>
+              )}
+
+              {!previewLoading && (
+                <>
+                  {/* Overview */}
+                  {previewTab==='overview' && (
+                    <div className="layout two-column" style={{gap:'12px'}}>
+                      <div className="card">
+                        <div className="card-title">Informations</div>
+                        <div className="card-content">
+                          <div>Type: {previewDocFull?.type_document === 'z_report' ? 'Rapport Z' : 'Facture Fournisseur'}</div>
+                          <div>Date upload: {previewDocFull?.date_upload ? new Date(previewDocFull.date_upload).toLocaleString('fr-FR') : '-'}</div>
+                          <div>Service: {previewDocFull?.donnees_parsees?.service || '-'}</div>
+                          <div>CA Total: {previewDocFull?.donnees_parsees?.grand_total_sales || previewDocFull?.donnees_parsees?.total_ttc || '-'}</div>
+                        </div>
+                      </div>
+                      <div className="card">
+                        <div className="card-title">Status</div>
+                        <div className="card-content">
+                          <div>Statut: {previewDocFull?.statut}</div>
+                          <div>Traité le: {previewDocFull?.date_traitement ? new Date(previewDocFull.date_traitement).toLocaleString('fr-FR') : '-'}</div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Side by side */}
+                  {previewTab==='sidebyside' && (
+                    <div className="layout two-column" style={{gap:'12px'}}>
+                      <div className="card" style={{height:'60vh', overflow:'auto'}}>
+                        <div className="card-title">Document</div>
+                        <div className="card-content" style={{display:'flex', alignItems:'center', justifyContent:'center'}}>
+                          {previewDocFull?.file_type==='pdf' ? (
+                            <div style={{textAlign:'center'}}>
+                              <div style={{fontSize:'48px'}}>📄</div>
+                              <div>PDF chargé: {previewDocument?.nom_fichier}</div>
+                              <div style={{fontSize:'12px', opacity:0.7}}>Laperçu PDF intégré est simplifié ici</div>
+                            </div>
+                          ) : (
+                            previewDocFull?.image_base64 ? (
+                              <img src={previewDocFull.image_base64} alt="aperçu" style={{maxWidth:'100%', maxHeight:'50vh', borderRadius:'8px'}} />
+                            ) : (
+                              <div>Aucune image</div>
+                            )
+                          )}
+                        </div>
+                      </div>
+                      <div className="card" style={{height:'60vh', overflow:'auto'}}>
+                        <div className="card-title">Données extraites</div>
+                        <div className="card-content">
+                          {previewDocFull?.type_document==='z_report' ? (
+                            <>
+                              <div><strong>Date:</strong> {previewDocFull?.donnees_parsees?.report_date || '-'}</div>
+                              <div><strong>Service:</strong> {previewDocFull?.donnees_parsees?.service || '-'}</div>
+                              <div><strong>CA Total:</strong> {previewDocFull?.donnees_parsees?.grand_total_sales || '-'}</div>
+                              <div style={{marginTop:'8px'}}><strong>Par catégorie</strong></div>
+                              {['Bar','Entrées','Plats','Desserts'].map(cat => (
+                                <div key={cat} style={{marginTop:'4px'}}>
+                                  <div style={{fontWeight:'600'}}>{cat}</div>
+                                  <ul style={{marginLeft:'16px'}}>
+                                    {(previewDocFull?.donnees_parsees?.items_by_category?.[cat]||[]).map((it, i)=> (
+                                      <li key={i}>{it.quantity_sold}x {it.name} {it.unit_price?`- €${it.unit_price}`:''}</li>
+                                    ))}
+                                  </ul>
+                                </div>
+                              ))}
+                            </>
+                          ) : (
+                            <>
+                              <div><strong>Fournisseur:</strong> {previewDocFull?.donnees_parsees?.fournisseur || '-'}</div>
+                              <div><strong>Date facture:</strong> {previewDocFull?.donnees_parsees?.date || '-'}</div>
+                              <div><strong>Total TTC:</strong> {previewDocFull?.donnees_parsees?.total_ttc || '-'}</div>
+                            </>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Items list */}
+                  {previewTab==='items' && (
+                    <div className="card">
+                      <div className="card-title">Liste complète des éléments détectés</div>
+                      <div className="card-content">
+                        {previewDocFull?.type_document==='z_report' ? (
+                          <>
+                            <ul>
+                              {(previewDocFull?.donnees_parsees?.raw_items||[]).map((it, i)=> (
+                                <li key={i}>• {it.quantity_sold}x {it.name} ({it.category}) {it.total_price?`= €${it.total_price}`:''}</li>
+                              ))}
+                            </ul>
+                          </>
+                        ) : (
+                          <ul>
+                            {(previewDocFull?.donnees_parsees?.produits||[]).map((p,i)=> (
+                              <li key={i}>• {p.quantite} {p.unite || ''} {p.nom} à €{p.prix_unitaire || p.prix_total || ''}</li>
+                            ))}
+                          </ul>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Raw text */}
+                  {previewTab==='raw' && (
+                    <div className="card">
+                      <div className="card-title">Texte brut OCR</div>
+                      <pre style={{whiteSpace:'pre-wrap', padding:'12px'}}>{previewDocFull?.texte_extrait || '(vide)'}</pre>
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
               </div>
               
               <div className="card full-width">
