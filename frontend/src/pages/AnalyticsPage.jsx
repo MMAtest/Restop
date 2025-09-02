@@ -43,6 +43,30 @@ const AnalyticsPage = () => {
     }
   };
 
+  const handleResolveAlert = async (alertType, alertId) => {
+    try {
+      if (alertType === 'price_anomaly') {
+        const response = await fetch(`${backendUrl}/api/price-anomalies/${alertId}/resolve`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ resolution_note: 'Résolu depuis le dashboard' })
+        });
+        if (response.ok) {
+          // Refresh alerts data
+          fetchAnalyticsData();
+          alert('Alerte résolue avec succès');
+        }
+      } else if (alertType === 'low_stock') {
+        alert('Pour résoudre cette alerte, ajustez le stock depuis le module de Gestion de Stocks');
+      } else if (alertType === 'expiring') {
+        alert('Pour cette alerte, vérifiez le produit dans le module Gestion de Stocks > Lots');
+      }
+    } catch (error) {
+      console.error('Erreur lors de la résolution de l\'alerte:', error);
+      alert('Erreur lors de la résolution de l\'alerte');
+    }
+  };
+
   const formatCurrency = (amount) => {
     return new Intl.NumberFormat('fr-FR', {
       style: 'currency',
