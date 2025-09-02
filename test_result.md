@@ -474,7 +474,7 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Version 3 Feature #3: Advanced Stock Management APIs Testing Complete"
+    - "Enhanced OCR with PDF Support - Version 3 Testing Complete"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
