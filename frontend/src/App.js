@@ -853,6 +853,11 @@ function App() {
         <DataGridsPage />
       </div>
 
+      {/* PURCHASE ORDERS */}
+      <div id="orders" className={`wireframe-section ${activeTab === "orders" ? "active" : ""}`}>
+        <PurchaseOrderPage />
+      </div>
+
       {/* OCR */}
       <div id="ocr" className={`wireframe-section ${activeTab === "ocr" ? "active" : ""}`}>
         <div className="wireframe">
