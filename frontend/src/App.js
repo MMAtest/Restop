@@ -829,6 +829,11 @@ function App() {
         <AnalyticsPage />
       </div>
 
+      {/* USER MANAGEMENT */}
+      <div id="users" className={`wireframe-section ${activeTab === "users" ? "active" : ""}`}>
+        <UserManagementPage />
+      </div>
+
       {/* OCR */}
       <div id="ocr" className={`wireframe-section ${activeTab === "ocr" ? "active" : ""}`}>
         <div className="wireframe">
