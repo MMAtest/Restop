@@ -2186,8 +2186,8 @@ class StockTestSuite:
                 if upload_response.status_code in [200, 201]:
                     doc_id = upload_response.json().get("document_id")
                     
-                    parse_response = requests.post(f"{BASE_URL}/ocr/parse-z-report-enhanced", 
-                                                 json={"document_id": doc_id}, headers=HEADERS)
+                    parse_response = requests.post(f"{BASE_URL}/ocr/parse-z-report-enhanced?document_id={doc_id}", 
+                                                 headers=HEADERS)
                     if parse_response.status_code == 200:
                         parsed_data = parse_response.json()
                         total_items = sum(len(items) for items in parsed_data.get("items_by_category", {}).values())
