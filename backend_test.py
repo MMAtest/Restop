@@ -1554,6 +1554,366 @@ class StockTestSuite:
         except Exception as e:
             self.log_result("POST /rapports_z (données réalistes)", False, "Exception", str(e))
 
+    def test_analytics_profitability(self):
+        """Test API Analytics - Profitability"""
+        print("\n=== TEST ANALYTICS PROFITABILITY ===")
+        
+        try:
+            response = requests.get(f"{BASE_URL}/analytics/profitability")
+            if response.status_code == 200:
+                profitability_data = response.json()
+                if isinstance(profitability_data, list):
+                    self.log_result("GET /analytics/profitability", True, 
+                                  f"{len(profitability_data)} recettes analysées pour profitabilité")
+                    
+                    # Vérifier la structure des données
+                    if len(profitability_data) > 0:
+                        recipe_profit = profitability_data[0]
+                        required_fields = ["recipe_id", "recipe_name", "ingredient_cost", "profit_margin", 
+                                         "profit_percentage", "portions_sold", "total_revenue", "total_profit"]
+                        
+                        if all(field in recipe_profit for field in required_fields):
+                            self.log_result("Structure profitability data", True, "Tous les champs requis présents")
+                            
+                            # Vérifier la cohérence des calculs
+                            selling_price = recipe_profit.get("selling_price", 0)
+                            ingredient_cost = recipe_profit.get("ingredient_cost", 0)
+                            profit_margin = recipe_profit.get("profit_margin", 0)
+                            
+                            if selling_price > 0:
+                                expected_margin = selling_price - ingredient_cost
+                                if abs(profit_margin - expected_margin) < 0.01:
+                                    self.log_result("Calcul profit margin", True, 
+                                                  f"Marge calculée correctement: {profit_margin:.2f}€")
+                                else:
+                                    self.log_result("Calcul profit margin", False, 
+                                                  f"Marge incorrecte: {profit_margin:.2f}€ vs {expected_margin:.2f}€")
+                            
+                            # Vérifier le tri par profit_percentage décroissant
+                            if len(profitability_data) > 1:
+                                first_profit = profitability_data[0]["profit_percentage"]
+                                second_profit = profitability_data[1]["profit_percentage"]
+                                if first_profit >= second_profit:
+                                    self.log_result("Tri profitability", True, "Données triées par profit décroissant")
+                                else:
+                                    self.log_result("Tri profitability", False, "Tri incorrect")
+                        else:
+                            missing = [f for f in required_fields if f not in recipe_profit]
+                            self.log_result("Structure profitability data", False, f"Champs manquants: {missing}")
+                    else:
+                        self.log_result("Données profitability", True, "Aucune recette pour analyse (normal si pas de données)")
+                else:
+                    self.log_result("GET /analytics/profitability", False, "Format de réponse incorrect")
+            else:
+                self.log_result("GET /analytics/profitability", False, f"Erreur {response.status_code}", response.text)
+        except Exception as e:
+            self.log_result("GET /analytics/profitability", False, "Exception", str(e))
+
+    def test_analytics_sales_performance(self):
+        """Test API Analytics - Sales Performance"""
+        print("\n=== TEST ANALYTICS SALES PERFORMANCE ===")
+        
+        try:
+            response = requests.get(f"{BASE_URL}/analytics/sales-performance?period=monthly")
+            if response.status_code == 200:
+                sales_data = response.json()
+                required_fields = ["period", "total_sales", "total_orders", "average_order_value", 
+                                 "top_recipes", "sales_by_category"]
+                
+                if all(field in sales_data for field in required_fields):
+                    self.log_result("GET /analytics/sales-performance", True, 
+                                  f"Analyse ventes: {sales_data['total_sales']:.2f}€ total, "
+                                  f"{sales_data['total_orders']} commandes")
+                    
+                    # Vérifier la cohérence des calculs
+                    total_sales = sales_data["total_sales"]
+                    total_orders = sales_data["total_orders"]
+                    avg_order_value = sales_data["average_order_value"]
+                    
+                    if total_orders > 0:
+                        expected_avg = total_sales / total_orders
+                        if abs(avg_order_value - expected_avg) < 0.01:
+                            self.log_result("Calcul average order value", True, 
+                                          f"Panier moyen: {avg_order_value:.2f}€")
+                        else:
+                            self.log_result("Calcul average order value", False, 
+                                          f"Calcul incorrect: {avg_order_value:.2f}€ vs {expected_avg:.2f}€")
+                    
+                    # Vérifier la structure des top recipes
+                    if isinstance(sales_data["top_recipes"], list):
+                        if len(sales_data["top_recipes"]) > 0:
+                            top_recipe = sales_data["top_recipes"][0]
+                            if "name" in top_recipe and "quantity" in top_recipe and "revenue" in top_recipe:
+                                self.log_result("Structure top recipes", True, 
+                                              f"Top recette: {top_recipe['name']} ({top_recipe['revenue']:.2f}€)")
+                            else:
+                                self.log_result("Structure top recipes", False, "Champs manquants dans top recipes")
+                        else:
+                            self.log_result("Top recipes", True, "Aucune recette vendue (normal si pas de rapports Z)")
+                    
+                    # Vérifier les catégories de ventes
+                    if isinstance(sales_data["sales_by_category"], dict):
+                        categories = ["Bar", "Entrées", "Plats", "Desserts"]
+                        if all(cat in sales_data["sales_by_category"] for cat in categories):
+                            self.log_result("Sales by category", True, "Toutes les catégories présentes")
+                        else:
+                            self.log_result("Sales by category", False, "Catégories manquantes")
+                else:
+                    missing = [f for f in required_fields if f not in sales_data]
+                    self.log_result("GET /analytics/sales-performance", False, f"Champs manquants: {missing}")
+            else:
+                self.log_result("GET /analytics/sales-performance", False, f"Erreur {response.status_code}", response.text)
+        except Exception as e:
+            self.log_result("GET /analytics/sales-performance", False, "Exception", str(e))
+
+    def test_analytics_alerts(self):
+        """Test API Analytics - Alert Center"""
+        print("\n=== TEST ANALYTICS ALERTS ===")
+        
+        try:
+            response = requests.get(f"{BASE_URL}/analytics/alerts")
+            if response.status_code == 200:
+                alerts_data = response.json()
+                required_fields = ["expiring_products", "price_anomalies", "low_stock_items", 
+                                 "unused_stock", "total_alerts"]
+                
+                if all(field in alerts_data for field in required_fields):
+                    self.log_result("GET /analytics/alerts", True, 
+                                  f"Centre d'alertes: {alerts_data['total_alerts']} alertes totales")
+                    
+                    # Vérifier la cohérence du total
+                    calculated_total = (len(alerts_data["expiring_products"]) + 
+                                      len(alerts_data["price_anomalies"]) + 
+                                      len(alerts_data["low_stock_items"]) + 
+                                      len(alerts_data["unused_stock"]))
+                    
+                    if alerts_data["total_alerts"] == calculated_total:
+                        self.log_result("Calcul total alerts", True, f"Total cohérent: {calculated_total}")
+                    else:
+                        self.log_result("Calcul total alerts", False, 
+                                      f"Total incorrect: {alerts_data['total_alerts']} vs {calculated_total}")
+                    
+                    # Vérifier la structure des produits expirants
+                    if isinstance(alerts_data["expiring_products"], list):
+                        if len(alerts_data["expiring_products"]) > 0:
+                            expiring = alerts_data["expiring_products"][0]
+                            expiring_fields = ["product_name", "batch_id", "quantity", "expiry_date", 
+                                             "days_to_expiry", "urgency"]
+                            if all(field in expiring for field in expiring_fields):
+                                self.log_result("Structure expiring products", True, 
+                                              f"Produit expirant: {expiring['product_name']} "
+                                              f"({expiring['days_to_expiry']} jours)")
+                            else:
+                                self.log_result("Structure expiring products", False, "Champs manquants")
+                        else:
+                            self.log_result("Expiring products", True, "Aucun produit expirant (bon signe)")
+                    
+                    # Vérifier les stocks faibles
+                    if isinstance(alerts_data["low_stock_items"], list):
+                        if len(alerts_data["low_stock_items"]) > 0:
+                            low_stock = alerts_data["low_stock_items"][0]
+                            low_stock_fields = ["product_name", "current_quantity", "minimum_quantity", "shortage"]
+                            if all(field in low_stock for field in low_stock_fields):
+                                self.log_result("Structure low stock", True, 
+                                              f"Stock faible: {low_stock['product_name']} "
+                                              f"({low_stock['current_quantity']}/{low_stock['minimum_quantity']})")
+                            else:
+                                self.log_result("Structure low stock", False, "Champs manquants")
+                        else:
+                            self.log_result("Low stock items", True, "Aucun stock critique (bon signe)")
+                    
+                    # Vérifier les anomalies de prix
+                    if isinstance(alerts_data["price_anomalies"], list):
+                        if len(alerts_data["price_anomalies"]) > 0:
+                            anomaly = alerts_data["price_anomalies"][0]
+                            anomaly_fields = ["product_name", "supplier_name", "reference_price", 
+                                            "actual_price", "difference_percentage"]
+                            if all(field in anomaly for field in anomaly_fields):
+                                self.log_result("Structure price anomalies", True, 
+                                              f"Anomalie prix: {anomaly['product_name']} "
+                                              f"({anomaly['difference_percentage']:.1f}%)")
+                            else:
+                                self.log_result("Structure price anomalies", False, "Champs manquants")
+                        else:
+                            self.log_result("Price anomalies", True, "Aucune anomalie de prix")
+                else:
+                    missing = [f for f in required_fields if f not in alerts_data]
+                    self.log_result("GET /analytics/alerts", False, f"Champs manquants: {missing}")
+            else:
+                self.log_result("GET /analytics/alerts", False, f"Erreur {response.status_code}", response.text)
+        except Exception as e:
+            self.log_result("GET /analytics/alerts", False, "Exception", str(e))
+
+    def test_analytics_cost_analysis(self):
+        """Test API Analytics - Cost Analysis"""
+        print("\n=== TEST ANALYTICS COST ANALYSIS ===")
+        
+        try:
+            response = requests.get(f"{BASE_URL}/analytics/cost-analysis")
+            if response.status_code == 200:
+                cost_data = response.json()
+                required_fields = ["total_inventory_value", "avg_cost_per_recipe", "most_expensive_ingredients", 
+                                 "cost_trends", "waste_analysis"]
+                
+                if all(field in cost_data for field in required_fields):
+                    self.log_result("GET /analytics/cost-analysis", True, 
+                                  f"Analyse coûts: Inventaire {cost_data['total_inventory_value']:.2f}€, "
+                                  f"Coût moyen recette {cost_data['avg_cost_per_recipe']:.2f}€")
+                    
+                    # Vérifier que les valeurs sont cohérentes
+                    inventory_value = cost_data["total_inventory_value"]
+                    avg_recipe_cost = cost_data["avg_cost_per_recipe"]
+                    
+                    if inventory_value >= 0 and avg_recipe_cost >= 0:
+                        self.log_result("Valeurs cost analysis", True, "Valeurs positives cohérentes")
+                    else:
+                        self.log_result("Valeurs cost analysis", False, "Valeurs négatives détectées")
+                    
+                    # Vérifier la structure des ingrédients les plus chers
+                    if isinstance(cost_data["most_expensive_ingredients"], list):
+                        if len(cost_data["most_expensive_ingredients"]) > 0:
+                            expensive = cost_data["most_expensive_ingredients"][0]
+                            expensive_fields = ["name", "unit_price", "category"]
+                            if all(field in expensive for field in expensive_fields):
+                                self.log_result("Structure expensive ingredients", True, 
+                                              f"Ingrédient le plus cher: {expensive['name']} "
+                                              f"({expensive['unit_price']:.2f}€)")
+                                
+                                # Vérifier le tri par prix décroissant
+                                if len(cost_data["most_expensive_ingredients"]) > 1:
+                                    first_price = cost_data["most_expensive_ingredients"][0]["unit_price"]
+                                    second_price = cost_data["most_expensive_ingredients"][1]["unit_price"]
+                                    if first_price >= second_price:
+                                        self.log_result("Tri expensive ingredients", True, "Tri par prix décroissant")
+                                    else:
+                                        self.log_result("Tri expensive ingredients", False, "Tri incorrect")
+                            else:
+                                self.log_result("Structure expensive ingredients", False, "Champs manquants")
+                        else:
+                            self.log_result("Expensive ingredients", True, "Aucun ingrédient (normal si pas de données)")
+                    
+                    # Vérifier les tendances de coûts
+                    if isinstance(cost_data["cost_trends"], dict):
+                        trend_fields = ["monthly_change", "quarterly_change", "highest_cost_category", "lowest_cost_category"]
+                        if all(field in cost_data["cost_trends"] for field in trend_fields):
+                            trends = cost_data["cost_trends"]
+                            self.log_result("Structure cost trends", True, 
+                                          f"Évolution mensuelle: {trends['monthly_change']}%, "
+                                          f"Catégorie la plus chère: {trends['highest_cost_category']}")
+                        else:
+                            self.log_result("Structure cost trends", False, "Champs manquants dans cost_trends")
+                    
+                    # Vérifier l'analyse des déchets
+                    if isinstance(cost_data["waste_analysis"], dict):
+                        waste_fields = ["estimated_waste_percentage", "estimated_waste_value", "main_waste_sources"]
+                        if all(field in cost_data["waste_analysis"] for field in waste_fields):
+                            waste = cost_data["waste_analysis"]
+                            self.log_result("Structure waste analysis", True, 
+                                          f"Gaspillage estimé: {waste['estimated_waste_percentage']}% "
+                                          f"({waste['estimated_waste_value']:.2f}€)")
+                        else:
+                            self.log_result("Structure waste analysis", False, "Champs manquants dans waste_analysis")
+                else:
+                    missing = [f for f in required_fields if f not in cost_data]
+                    self.log_result("GET /analytics/cost-analysis", False, f"Champs manquants: {missing}")
+            else:
+                self.log_result("GET /analytics/cost-analysis", False, f"Erreur {response.status_code}", response.text)
+        except Exception as e:
+            self.log_result("GET /analytics/cost-analysis", False, "Exception", str(e))
+
+    def test_analytics_integration_with_data(self):
+        """Test intégration des Analytics avec les données La Table d'Augustine"""
+        print("\n=== TEST INTÉGRATION ANALYTICS AVEC DONNÉES LA TABLE D'AUGUSTINE ===")
+        
+        # D'abord s'assurer que les données La Table d'Augustine sont présentes
+        try:
+            # Vérifier les produits
+            produits_response = requests.get(f"{BASE_URL}/produits")
+            if produits_response.status_code == 200:
+                produits = produits_response.json()
+                augustine_products = [p for p in produits if any(keyword in p["nom"].lower() 
+                                    for keyword in ["supions", "burrata", "truffe", "linguine", "palourdes"])]
+                
+                if len(augustine_products) >= 5:
+                    self.log_result("Données La Table d'Augustine présentes", True, 
+                                  f"{len(augustine_products)} produits authentiques détectés")
+                    
+                    # Test profitability avec données réelles
+                    profitability_response = requests.get(f"{BASE_URL}/analytics/profitability")
+                    if profitability_response.status_code == 200:
+                        profitability_data = profitability_response.json()
+                        augustine_recipes = [r for r in profitability_data if any(keyword in r["recipe_name"].lower() 
+                                           for keyword in ["supions", "linguine", "rigatoni", "wellington", "caprese"])]
+                        
+                        if len(augustine_recipes) > 0:
+                            self.log_result("Profitability avec données La Table d'Augustine", True, 
+                                          f"{len(augustine_recipes)} recettes analysées")
+                            
+                            # Vérifier les calculs avec prix réels
+                            for recipe in augustine_recipes[:2]:  # Tester les 2 premières
+                                if recipe["selling_price"] and recipe["selling_price"] > 0:
+                                    if recipe["ingredient_cost"] > 0:
+                                        self.log_result(f"Calcul coût {recipe['recipe_name'][:20]}...", True, 
+                                                      f"Coût ingrédients: {recipe['ingredient_cost']:.2f}€, "
+                                                      f"Prix vente: {recipe['selling_price']:.2f}€")
+                                    else:
+                                        self.log_result(f"Calcul coût {recipe['recipe_name'][:20]}...", False, 
+                                                      "Coût ingrédients non calculé")
+                        else:
+                            self.log_result("Profitability avec données La Table d'Augustine", False, 
+                                          "Aucune recette La Table d'Augustine dans l'analyse")
+                    
+                    # Test cost analysis avec produits de luxe
+                    cost_response = requests.get(f"{BASE_URL}/analytics/cost-analysis")
+                    if cost_response.status_code == 200:
+                        cost_data = cost_response.json()
+                        expensive_ingredients = cost_data.get("most_expensive_ingredients", [])
+                        
+                        # Chercher la truffe dans les ingrédients les plus chers
+                        truffe_found = any("truffe" in ing["name"].lower() for ing in expensive_ingredients)
+                        if truffe_found:
+                            truffe_ingredient = next(ing for ing in expensive_ingredients if "truffe" in ing["name"].lower())
+                            if truffe_ingredient["unit_price"] >= 500:  # La truffe devrait être très chère
+                                self.log_result("Détection produits luxe", True, 
+                                              f"Truffe détectée à {truffe_ingredient['unit_price']:.2f}€/kg")
+                            else:
+                                self.log_result("Détection produits luxe", False, 
+                                              f"Prix truffe incorrect: {truffe_ingredient['unit_price']:.2f}€")
+                        else:
+                            self.log_result("Détection produits luxe", False, "Truffe non détectée dans les plus chers")
+                    
+                    # Test alerts avec stocks La Table d'Augustine
+                    alerts_response = requests.get(f"{BASE_URL}/analytics/alerts")
+                    if alerts_response.status_code == 200:
+                        alerts_data = alerts_response.json()
+                        self.log_result("Alerts avec données La Table d'Augustine", True, 
+                                      f"Système d'alertes opérationnel: {alerts_data['total_alerts']} alertes")
+                        
+                        # Vérifier que les noms de produits dans les alertes correspondent aux produits La Table d'Augustine
+                        all_alert_products = []
+                        for alert_type in ["expiring_products", "low_stock_items", "unused_stock"]:
+                            for item in alerts_data.get(alert_type, []):
+                                if "product_name" in item:
+                                    all_alert_products.append(item["product_name"])
+                        
+                        if all_alert_products:
+                            augustine_alerts = [p for p in all_alert_products if any(keyword in p.lower() 
+                                              for keyword in ["supions", "burrata", "truffe", "linguine", "palourdes"])]
+                            if augustine_alerts:
+                                self.log_result("Alertes produits La Table d'Augustine", True, 
+                                              f"{len(augustine_alerts)} alertes sur produits authentiques")
+                            else:
+                                self.log_result("Alertes produits La Table d'Augustine", True, 
+                                              "Aucune alerte sur produits La Table d'Augustine (bon signe)")
+                else:
+                    self.log_result("Données La Table d'Augustine présentes", False, 
+                                  f"Seulement {len(augustine_products)} produits authentiques trouvés")
+            else:
+                self.log_result("Vérification données produits", False, f"Erreur {produits_response.status_code}")
+                
+        except Exception as e:
+            self.log_result("Test intégration Analytics", False, "Exception", str(e))
+
     def run_all_tests(self):
         """Exécute tous les tests"""
         print("🚀 DÉBUT DES TESTS BACKEND - GESTION STOCKS RESTAURANT + OCR")
