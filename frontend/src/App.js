@@ -743,6 +743,12 @@ function App() {
           👑 Utilisateurs
         </button>
         <button 
+          className={`nav-tab ${activeTab === "datagrids" ? "active" : ""}`}
+          onClick={() => setActiveTab("datagrids")}
+        >
+          📋 Grilles Données
+        </button>
+        <button 
           className={`nav-tab ${activeTab === "ocr" ? "active" : ""}`}
           onClick={() => setActiveTab("ocr")}
         >
