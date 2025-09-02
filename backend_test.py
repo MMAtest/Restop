@@ -4543,6 +4543,13 @@ startxref
         
         self.test_user_management_rbac_apis()
         
+        # 🔥 TEST SPÉCIFIQUE POUR LE DEBUG PDF PARSING
+        print("\n" + "="*60)
+        print("🔥 DEBUG PDF PARSING - ztableauaugustinedigital.pdf")
+        print("="*60)
+        
+        self.test_pdf_parsing_debug()
+        
         # Test de suppression en cascade à la fin
         self.test_cascade_delete()
         
