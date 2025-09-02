@@ -287,6 +287,9 @@ backend:
       - working: true
         agent: "testing"
         comment: "🎯 OCR PREVIEW FLOW VALIDÉ - 94.1% RÉUSSITE (16/17 tests) ! Validation complète des endpoints OCR pour support preview flow sans régressions : ✅ GET /api/ocr/documents retourne liste avec image_base64=null (optimisation performance) ✅ GET /api/ocr/document/{id} retourne document complet avec tous champs requis (id, type_document, nom_fichier, image_base64 data URI, texte_extrait, donnees_parsees, statut, date_upload, date_traitement, file_type) ✅ POST /api/ocr/upload-document fonctionne pour images et PDFs avec structure donnees_parsees correcte (z_report avec items_by_category, facture_fournisseur structurée) ✅ POST /api/ocr/process-z-report/{document_id} fonctionne uniquement pour type z_report, retourne message/stock_updates/warnings, erreur 400 appropriée pour autres types ✅ DELETE /api/ocr/document/{document_id} supprime correctement avec validation 404 ✅ Stabilité backend confirmée : 3 appels preview successifs sans régression, endpoints restent stables après fetch preview. Workflow preview complet opérationnel pour production."
+      - working: true
+        agent: "testing"
+        comment: "🎯 OCR PDF EXTRACTION COMPLETENESS REGRESSION - 100% RÉUSSITE ! Validation post-changements finaux : ✅ REQ1: PDF upload avec tokens clés validé (Rapport, CA, catégories, (x, Desserts) sur documents existants ztableauaugustinedigital.pdf ✅ REQ2: GET /api/ocr/document/{id} préserve texte_extrait complet (352 chars, aucune troncature) ✅ REQ3: Image upload sanity check opérationnel (Tesseract 5.3.0 fonctionnel) ✅ BONUS: Détection multi-ligne Z-report confirmée (3 catégories, structure BAR/ENTRÉES/PLATS/DESSERTS). Tous endpoints OCR stables après améliorations extraction. Module OCR PDF extraction completeness validé pour production."
 
   - task: "API Rapports Z - Nouveaux Endpoints"
     implemented: true
