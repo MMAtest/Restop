@@ -477,7 +477,9 @@ metadata:
 
 test_plan:
   current_focus:
-    - "OCR Preview Flow Backend Validation Complete"
+    - "Fix incomplete raw text for OCR PDFs by improving extraction (pdfplumber tuned + PyPDF2 + multi-PSM fallback)"
+    - "Backend OCR endpoints remain stable after extraction changes"
+    - "Verify GET /api/ocr/document/{id} returns longer texte_extrait for provided Z-report PDFs"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
