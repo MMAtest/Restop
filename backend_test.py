@@ -2346,8 +2346,7 @@ class StockTestSuite:
             
             # Test validation avec application des déductions
             try:
-                validation_response = requests.post(f"{BASE_URL}/ocr/validate-z-report", 
-                                                  json={"document_id": doc_id, "apply_deductions": True}, 
+                validation_response = requests.post(f"{BASE_URL}/ocr/validate-z-report?document_id={doc_id}&apply_deductions=true", 
                                                   headers=HEADERS)
                 if validation_response.status_code == 200:
                     validation_result = validation_response.json()
