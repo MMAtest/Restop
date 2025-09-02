@@ -397,10 +397,8 @@ def extract_text_from_pdf(pdf_content: bytes) -> str:
                 append_text(page.extract_text())
             except Exception:
                 continue
-        if extracted_parts:
-            combined = "\n".join(extracted_parts)
-            print(f"✅ PDF text extracted with PyPDF2: {len(combined)} chars")
-            return combined
+        # Do not return yet; we may still add OCR fallback text
+        pass
     except Exception as e:
         print(f"⚠️ PyPDF2 failed: {str(e)}")
 
