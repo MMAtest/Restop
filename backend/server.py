@@ -1715,6 +1715,36 @@ def parse_z_report_enhanced(texte_ocr: str) -> StructuredZReportData:
         # Return empty structured data in case of error
         return StructuredZReportData()
 
+async def enrich_z_report_prices(donnees_parsees: dict) -> dict:
+    """Enrichir les prix manquants à partir des recettes en base"""
+    try:
+        # Parcourir les catégories d'items
+        for category, items in donnees_parsees.get("items_by_category", {}).items():
+            for item in items:
+                # Si le prix unitaire est manquant, essayer de le trouver dans les recettes
+                if item.get("unit_price") is None:
+                    item_name = item.get("name", "").lower()
+                    
+                    # Chercher une recette correspondante
+                    recipe = await db.recettes.find_one({
+                        "$or": [
+                            {"nom": {"$regex": item_name, "$options": "i"}},
+                            {"nom": {"$regex": item_name.replace(" ", ".*"), "$options": "i"}}
+                        ]
+                    })
+                    
+                    if recipe and recipe.get("prix_vente"):
+                        item["unit_price"] = recipe["prix_vente"]
+                        # Calculer le prix total si on a la quantité
+                        if item.get("quantity_sold"):
+                            item["total_price"] = item["unit_price"] * item["quantity_sold"]
+        
+        return donnees_parsees
+        
+    except Exception as e:
+        print(f"Erreur lors de l'enrichissement des prix: {str(e)}")
+        return donnees_parsees
+
 def categorize_menu_item(item_name: str) -> str:
     """Categorize menu items based on name patterns - Enhanced for French cuisine"""
     name_lower = item_name.lower()
