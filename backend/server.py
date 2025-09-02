@@ -346,50 +346,102 @@ class FactureFournisseurData(BaseModel):
     total_ttc: Optional[float] = None
 
 def extract_text_from_pdf(pdf_content: bytes) -> str:
-    """Extract text from PDF using multiple methods for best results"""
-    extracted_text = ""
-    
+    """Extract text from PDF using a robust multi-pass strategy for completeness"""
+    import io
+    extracted_parts = []
+
+    # Helper to append unique chunks
+    def append_text(txt):
+        if not txt:
+            return
+        txt = txt.strip()
+        if not txt:
+            return
+        extracted_parts.append(txt)
+
+    # PASS 1: pdfplumber - try with different laparams to capture multi-column
     try:
-        # Method 1: Try pdfplumber first (better for complex layouts)
-        import io
         pdf_file = io.BytesIO(pdf_content)
-        
         with pdfplumber.open(pdf_file) as pdf:
             for page in pdf.pages:
-                page_text = page.extract_text()
-                if page_text:
-                    extracted_text += page_text + "\n"
-        
-        if extracted_text.strip():
-            print(f"✅ PDF text extracted with pdfplumber: {len(extracted_text)} characters")
-            return extracted_text
-            
+                # default
+                txt1 = page.extract_text()
+                append_text(txt1)
+                # table-aware extraction if tables exist
+                try:
+                    tables = page.extract_tables()
+                    if tables:
+                        for t in tables:
+                            # Flatten table rows into text lines
+                            lines = []
+                            for row in t:
+                                if row:
+                                    line = " ".join([c for c in row if c])
+                                    if line:
+                                        lines.append(line)
+                            if lines:
+                                append_text("\n".join(lines))
+                except Exception:
+                    pass
+        if extracted_parts:
+            combined = "\n".join(extracted_parts)
+            print(f"✅ PDF text extracted with pdfplumber (tables+text): {len(combined)} chars")
+            return combined
     except Exception as e:
         print(f"⚠️ pdfplumber failed: {str(e)}")
-    
+
+    # PASS 2: PyPDF2 text extraction
     try:
-        # Method 2: Fallback to PyPDF2
         pdf_file = io.BytesIO(pdf_content)
-        pdf_reader = PyPDF2.PdfReader(pdf_file)
-        
-        for page_num in range(len(pdf_reader.pages)):
-            page = pdf_reader.pages[page_num]
-            page_text = page.extract_text()
-            if page_text:
-                extracted_text += page_text + "\n"
-        
-        if extracted_text.strip():
-            print(f"✅ PDF text extracted with PyPDF2: {len(extracted_text)} characters")
-            return extracted_text
-            
+        reader = PyPDF2.PdfReader(pdf_file)
+        for page in reader.pages:
+            try:
+                append_text(page.extract_text())
+            except Exception:
+                continue
+        if extracted_parts:
+            combined = "\n".join(extracted_parts)
+            print(f"✅ PDF text extracted with PyPDF2: {len(combined)} chars")
+            return combined
     except Exception as e:
         print(f"⚠️ PyPDF2 failed: {str(e)}")
-    
-    if not extracted_text.strip():
-        print("❌ No text could be extracted from PDF - might be image-based PDF")
-        return "Erreur: Impossible d'extraire le texte du PDF. Il s'agit peut-être d'un PDF contenant uniquement des images."
-    
-    return extracted_text
+
+    # PASS 3: Image-based fallback - rasterize each page and OCR
+    try:
+        # Use pdfplumber to rasterize each page to image then pytesseract
+        pdf_file = io.BytesIO(pdf_content)
+        with pdfplumber.open(pdf_file) as pdf:
+            for page in pdf.pages:
+                try:
+                    im = page.to_image(resolution=300).original
+                    # Convert PIL -> cv2 BGR
+                    import numpy as np
+                    im_np = np.array(im)
+                    # Ensure 3 channels
+                    if im_np.ndim == 2:
+                        im_np = cv2.cvtColor(im_np, cv2.COLOR_GRAY2BGR)
+                    elif im_np.shape[2] == 4:
+                        im_np = cv2.cvtColor(im_np, cv2.COLOR_RGBA2BGR)
+                    processed = preprocess_image(im_np)
+                    # Multi-PSM tries
+                    for psm in [6, 4, 3]:
+                        config = f"--oem 3 --psm {psm} -l fra+eng"
+                        try:
+                            txt = pytesseract.image_to_string(processed, config=config)
+                            append_text(txt)
+                        except Exception:
+                            pass
+                except Exception:
+                    continue
+        if extracted_parts:
+            combined = "\n".join(extracted_parts)
+            print(f"✅ PDF OCR fallback extracted: {len(combined)} chars")
+            return combined
+    except Exception as e:
+        print(f"⚠️ Image-based OCR fallback failed: {str(e)}")
+
+    # Final fallback
+    return "Erreur: Extraction PDF incomplète. Merci de fournir un PDF original (non scanné) ou une image de meilleure qualité."
 
 def detect_file_type(filename: str, content_type: str = None) -> str:
     """Detect if file is image or PDF"""
