@@ -1570,32 +1570,37 @@ def parse_z_report_enhanced(texte_ocr: str) -> StructuredZReportData:
         return StructuredZReportData()
 
 def categorize_menu_item(item_name: str) -> str:
-    """Categorize menu items based on name patterns"""
+    """Categorize menu items based on name patterns - Enhanced for French cuisine"""
     name_lower = item_name.lower()
     
-    # Bar/Beverages
+    # Bar/Beverages - Mots-clés étendus
     bar_keywords = [
         'vin', 'wine', 'bière', 'beer', 'cocktail', 'apéritif', 'digestif',
         'whisky', 'vodka', 'gin', 'rhum', 'champagne', 'prosecco', 'kir',
         'pastis', 'ricard', 'mojito', 'sangria', 'eau', 'soda', 'coca',
-        'jus', 'café', 'thé', 'expresso', 'cappuccino', 'alcool'
+        'jus', 'café', 'thé', 'expresso', 'cappuccino', 'alcool', 'rosé',
+        'blanc', 'rouge', 'côtes', 'bordeaux', 'bourgogne', 'muscadet'
     ]
     
-    # Entrées
+    # Entrées - Mots-clés étendus pour cuisine française
     entree_keywords = [
         'entrée', 'salade', 'soupe', 'velouté', 'tartare', 'carpaccio',
         'toast', 'bruschetta', 'antipasti', 'terrine', 'foie gras',
-        'escargot', 'huître', 'crevette', 'saumon fumé', 'charcuterie'
+        'escargot', 'huître', 'crevette', 'saumon fumé', 'charcuterie',
+        'supions', 'calamars', 'poulpe', 'fleurs de courgettes', # Ajouts spécifiques
+        'fleur', 'persillade', 'tapenade', 'rillettes', 'pâté',
+        'amuse-bouche', 'mise en bouche', 'bouchée', 'feuilleté'
     ]
     
-    # Desserts
+    # Desserts - Mots-clés étendus  
     dessert_keywords = [
         'dessert', 'tarte', 'gâteau', 'mousse', 'tiramisu', 'panna cotta',
         'glace', 'sorbet', 'crème', 'flan', 'fondant', 'mille-feuille',
-        'éclair', 'profiterole', 'macaron', 'fruit', 'café gourmand'
+        'éclair', 'profiterole', 'macaron', 'fruit', 'café gourmand',
+        'charlotte', 'clafoutis', 'soufflé', 'bavarois', 'parfait'
     ]
     
-    # Check categories
+    # Check categories with priority order
     for keyword in bar_keywords:
         if keyword in name_lower:
             return "Bar"
