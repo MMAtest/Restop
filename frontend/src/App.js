@@ -44,6 +44,11 @@ function App() {
   const [selectedDocument, setSelectedDocument] = useState(null); // Nouveau: pour sélection document
 
   // Formulaires
+  // Aperçu OCR - modal détaillée
+  const [previewDocFull, setPreviewDocFull] = useState(null);
+  const [previewLoading, setPreviewLoading] = useState(false);
+  const [previewTab, setPreviewTab] = useState('overview');
+
   const [produitForm, setProduitForm] = useState({
     nom: "", description: "", categorie: "", unite: "", prix_achat: "", fournisseur_id: ""
   });
