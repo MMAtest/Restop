@@ -1580,7 +1580,7 @@ function App() {
                             <div style={{textAlign:'center'}}>
                               <div style={{fontSize:'48px'}}>📄</div>
                               <div>PDF chargé: {previewDocument?.nom_fichier}</div>
-                              <div style={{fontSize:'12px', opacity:0.7}}>Laperçu PDF intégré est simplifié ici</div>
+                              <div style={{fontSize:'12px', opacity:0.7}}>L'aperçu PDF intégré est simplifié ici</div>
                             </div>
                           ) : (
                             previewDocFull?.image_base64 ? (
