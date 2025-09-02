@@ -2427,6 +2427,511 @@ class StockTestSuite:
         except Exception as e:
             self.log_result("Test intégration OCR-Stocks", False, f"Exception générale: {str(e)}")
 
+    def test_advanced_stock_management_apis(self):
+        """Test complet des nouvelles APIs Advanced Stock Management - Version 3 Feature #3"""
+        print("\n=== TEST VERSION 3 ADVANCED STOCK MANAGEMENT APIs ===")
+        
+        # Vérifier que nous avons des données La Table d'Augustine pour les tests
+        try:
+            produits_response = requests.get(f"{BASE_URL}/produits")
+            recettes_response = requests.get(f"{BASE_URL}/recettes")
+            
+            if produits_response.status_code != 200 or recettes_response.status_code != 200:
+                self.log_result("Prérequis Advanced Stock Management", False, "Impossible d'accéder aux produits ou recettes")
+                return
+                
+            produits = produits_response.json()
+            recettes = recettes_response.json()
+            
+            if not produits or not recettes:
+                self.log_result("Prérequis Advanced Stock Management", False, "Pas de produits ou recettes disponibles")
+                return
+                
+            self.log_result("Prérequis Advanced Stock Management", True, f"{len(produits)} produits, {len(recettes)} recettes disponibles")
+            
+            # Sélectionner des produits et recettes pour les tests
+            test_product = produits[0]
+            test_recipe = None
+            for recipe in recettes:
+                if recipe.get("ingredients") and len(recipe["ingredients"]) > 0:
+                    test_recipe = recipe
+                    break
+            
+            if not test_recipe:
+                self.log_result("Sélection recette test", False, "Aucune recette avec ingrédients trouvée")
+                return
+                
+            self.log_result("Sélection données test", True, f"Produit: {test_product['nom']}, Recette: {test_recipe['nom']}")
+            
+        except Exception as e:
+            self.log_result("Prérequis Advanced Stock Management", False, f"Exception: {str(e)}")
+            return
+        
+        # Test 1: POST /api/stock/advanced-adjustment - Type "ingredient"
+        print("\n--- Test Advanced Stock Adjustment - Ingredient ---")
+        try:
+            # Obtenir le stock actuel
+            stock_response = requests.get(f"{BASE_URL}/stocks/{test_product['id']}")
+            initial_stock = 0
+            if stock_response.status_code == 200:
+                initial_stock = stock_response.json()["quantite_actuelle"]
+            
+            adjustment_data = {
+                "adjustment_type": "ingredient",
+                "target_id": test_product["id"],
+                "quantity_adjusted": 10.5,  # Ajout positif
+                "adjustment_reason": "Réception livraison test",
+                "user_name": "Chef Testeur"
+            }
+            
+            response = requests.post(f"{BASE_URL}/stock/advanced-adjustment", json=adjustment_data, headers=HEADERS)
+            if response.status_code == 200:
+                adjustment_result = response.json()
+                
+                # Vérifier la structure AdvancedStockAdjustment
+                required_fields = ["id", "adjustment_type", "target_id", "target_name", "adjustment_reason", 
+                                 "quantity_adjusted", "user_name", "created_at"]
+                if all(field in adjustment_result for field in required_fields):
+                    self.log_result("POST /stock/advanced-adjustment (ingredient) - Structure", True, 
+                                  f"Ajustement créé: {adjustment_result['target_name']} +{adjustment_result['quantity_adjusted']}")
+                    
+                    # Vérifier que le stock a été mis à jour
+                    time.sleep(0.5)
+                    new_stock_response = requests.get(f"{BASE_URL}/stocks/{test_product['id']}")
+                    if new_stock_response.status_code == 200:
+                        new_stock = new_stock_response.json()["quantite_actuelle"]
+                        expected_stock = initial_stock + 10.5
+                        if abs(new_stock - expected_stock) < 0.01:
+                            self.log_result("Mise à jour stock ingredient", True, f"Stock mis à jour: {initial_stock} → {new_stock}")
+                        else:
+                            self.log_result("Mise à jour stock ingredient", False, f"Stock incorrect: {new_stock}, attendu: {expected_stock}")
+                    
+                    # Vérifier la création du mouvement de stock
+                    mouvements_response = requests.get(f"{BASE_URL}/mouvements")
+                    if mouvements_response.status_code == 200:
+                        mouvements = mouvements_response.json()
+                        recent_movement = next((m for m in mouvements if 
+                                             m["produit_id"] == test_product["id"] and 
+                                             "Ajustement avancé" in m.get("commentaire", "")), None)
+                        if recent_movement:
+                            self.log_result("Création mouvement stock automatique", True, 
+                                          f"Mouvement créé: {recent_movement['type']} {recent_movement['quantite']}")
+                        else:
+                            self.log_result("Création mouvement stock automatique", False, "Mouvement non trouvé")
+                else:
+                    missing = [f for f in required_fields if f not in adjustment_result]
+                    self.log_result("POST /stock/advanced-adjustment (ingredient) - Structure", False, f"Champs manquants: {missing}")
+            else:
+                self.log_result("POST /stock/advanced-adjustment (ingredient)", False, f"Erreur {response.status_code}: {response.text}")
+        except Exception as e:
+            self.log_result("POST /stock/advanced-adjustment (ingredient)", False, f"Exception: {str(e)}")
+        
+        # Test 2: POST /api/stock/advanced-adjustment - Type "prepared_dish"
+        print("\n--- Test Advanced Stock Adjustment - Prepared Dish ---")
+        try:
+            # Sauvegarder les stocks initiaux des ingrédients
+            initial_ingredient_stocks = {}
+            for ingredient in test_recipe["ingredients"]:
+                stock_response = requests.get(f"{BASE_URL}/stocks/{ingredient['produit_id']}")
+                if stock_response.status_code == 200:
+                    initial_ingredient_stocks[ingredient["produit_id"]] = stock_response.json()["quantite_actuelle"]
+            
+            prepared_dish_data = {
+                "adjustment_type": "prepared_dish",
+                "target_id": test_recipe["id"],
+                "quantity_adjusted": 2,  # 2 portions préparées
+                "adjustment_reason": "Préparation service midi test",
+                "user_name": "Chef Testeur"
+            }
+            
+            response = requests.post(f"{BASE_URL}/stock/advanced-adjustment", json=prepared_dish_data, headers=HEADERS)
+            if response.status_code == 200:
+                adjustment_result = response.json()
+                
+                # Vérifier la structure avec ingredient_deductions
+                required_fields = ["id", "adjustment_type", "target_name", "ingredient_deductions"]
+                if all(field in adjustment_result for field in required_fields):
+                    self.log_result("POST /stock/advanced-adjustment (prepared_dish) - Structure", True, 
+                                  f"Plat préparé: {adjustment_result['target_name']} x{adjustment_result['quantity_adjusted']}")
+                    
+                    # Vérifier les déductions d'ingrédients
+                    ingredient_deductions = adjustment_result.get("ingredient_deductions", [])
+                    if ingredient_deductions:
+                        self.log_result("Calcul déductions ingrédients", True, 
+                                      f"{len(ingredient_deductions)} ingrédient(s) déduits automatiquement")
+                        
+                        # Vérifier que les stocks des ingrédients ont été mis à jour
+                        time.sleep(0.5)
+                        correct_deductions = 0
+                        for deduction in ingredient_deductions:
+                            product_id = deduction["product_id"]
+                            expected_deduction = deduction["quantity_deducted"]
+                            
+                            new_stock_response = requests.get(f"{BASE_URL}/stocks/{product_id}")
+                            if new_stock_response.status_code == 200:
+                                new_stock = new_stock_response.json()["quantite_actuelle"]
+                                initial_stock = initial_ingredient_stocks.get(product_id, 0)
+                                expected_new_stock = max(0, initial_stock - expected_deduction)
+                                
+                                if abs(new_stock - expected_new_stock) < 0.01:
+                                    correct_deductions += 1
+                        
+                        if correct_deductions == len(ingredient_deductions):
+                            self.log_result("Mise à jour stocks ingrédients", True, 
+                                          f"Tous les {correct_deductions} stocks d'ingrédients mis à jour correctement")
+                        else:
+                            self.log_result("Mise à jour stocks ingrédients", False, 
+                                          f"Seulement {correct_deductions}/{len(ingredient_deductions)} stocks corrects")
+                    else:
+                        self.log_result("Calcul déductions ingrédients", False, "Aucune déduction d'ingrédient calculée")
+                else:
+                    missing = [f for f in required_fields if f not in adjustment_result]
+                    self.log_result("POST /stock/advanced-adjustment (prepared_dish) - Structure", False, f"Champs manquants: {missing}")
+            else:
+                self.log_result("POST /stock/advanced-adjustment (prepared_dish)", False, f"Erreur {response.status_code}: {response.text}")
+        except Exception as e:
+            self.log_result("POST /stock/advanced-adjustment (prepared_dish)", False, f"Exception: {str(e)}")
+        
+        # Test 3: GET /api/stock/adjustments-history
+        print("\n--- Test Stock Adjustments History ---")
+        try:
+            response = requests.get(f"{BASE_URL}/stock/adjustments-history")
+            if response.status_code == 200:
+                adjustments_history = response.json()
+                
+                if isinstance(adjustments_history, list):
+                    self.log_result("GET /stock/adjustments-history", True, 
+                                  f"{len(adjustments_history)} ajustement(s) dans l'historique")
+                    
+                    # Vérifier que nos ajustements de test sont présents
+                    if adjustments_history:
+                        # Vérifier l'ordre (plus récent en premier)
+                        if len(adjustments_history) >= 2:
+                            first_date = adjustments_history[0]["created_at"]
+                            second_date = adjustments_history[1]["created_at"]
+                            if first_date >= second_date:
+                                self.log_result("Tri historique ajustements", True, "Ajustements triés par date décroissante")
+                            else:
+                                self.log_result("Tri historique ajustements", False, "Ordre chronologique incorrect")
+                        
+                        # Vérifier la structure des données
+                        adjustment = adjustments_history[0]
+                        required_fields = ["id", "adjustment_type", "target_name", "adjustment_reason", "user_name", "created_at"]
+                        if all(field in adjustment for field in required_fields):
+                            self.log_result("Structure historique ajustements", True, "Structure AdvancedStockAdjustment complète")
+                            
+                            # Vérifier les types d'ajustements
+                            ingredient_adjustments = [a for a in adjustments_history if a["adjustment_type"] == "ingredient"]
+                            dish_adjustments = [a for a in adjustments_history if a["adjustment_type"] == "prepared_dish"]
+                            
+                            if ingredient_adjustments and dish_adjustments:
+                                self.log_result("Types ajustements dans historique", True, 
+                                              f"{len(ingredient_adjustments)} ingredient, {len(dish_adjustments)} prepared_dish")
+                            else:
+                                self.log_result("Types ajustements dans historique", False, "Types d'ajustements manquants")
+                        else:
+                            missing = [f for f in required_fields if f not in adjustment]
+                            self.log_result("Structure historique ajustements", False, f"Champs manquants: {missing}")
+                    else:
+                        self.log_result("Contenu historique ajustements", False, "Historique vide")
+                else:
+                    self.log_result("GET /stock/adjustments-history", False, "Format de réponse incorrect")
+            else:
+                self.log_result("GET /stock/adjustments-history", False, f"Erreur {response.status_code}: {response.text}")
+        except Exception as e:
+            self.log_result("GET /stock/adjustments-history", False, f"Exception: {str(e)}")
+        
+        # Test 4: GET /api/stock/batch-info/{product_id}
+        print("\n--- Test Product Batch Info ---")
+        try:
+            response = requests.get(f"{BASE_URL}/stock/batch-info/{test_product['id']}")
+            if response.status_code == 200:
+                batch_info = response.json()
+                
+                # Vérifier la structure BatchStockInfo
+                required_fields = ["product_id", "product_name", "total_stock", "batches", "critical_batches", "expired_batches"]
+                if all(field in batch_info for field in required_fields):
+                    self.log_result("GET /stock/batch-info - Structure", True, 
+                                  f"Info lot pour {batch_info['product_name']}: {batch_info['total_stock']} total")
+                    
+                    # Vérifier la cohérence des données
+                    if batch_info["product_id"] == test_product["id"]:
+                        self.log_result("Cohérence product_id", True, "Product ID correct")
+                    else:
+                        self.log_result("Cohérence product_id", False, "Product ID incorrect")
+                    
+                    # Vérifier la structure des batches
+                    batches = batch_info.get("batches", [])
+                    if isinstance(batches, list):
+                        self.log_result("Structure batches", True, f"{len(batches)} lot(s) trouvé(s)")
+                        
+                        # Vérifier la structure d'un batch si présent
+                        if batches:
+                            batch = batches[0]
+                            batch_fields = ["id", "quantity", "received_date", "status"]
+                            if all(field in batch for field in batch_fields):
+                                self.log_result("Structure batch individuel", True, 
+                                              f"Lot {batch['id'][:8]}... : {batch['quantity']} ({batch['status']})")
+                                
+                                # Vérifier les statuts d'expiration
+                                statuses = [b["status"] for b in batches]
+                                valid_statuses = ["good", "critical", "expired"]
+                                if all(status in valid_statuses for status in statuses):
+                                    self.log_result("Calcul statuts expiration", True, 
+                                                  f"Statuts valides: {set(statuses)}")
+                                else:
+                                    invalid_statuses = [s for s in statuses if s not in valid_statuses]
+                                    self.log_result("Calcul statuts expiration", False, f"Statuts invalides: {invalid_statuses}")
+                            else:
+                                missing = [f for f in batch_fields if f not in batch]
+                                self.log_result("Structure batch individuel", False, f"Champs manquants: {missing}")
+                    else:
+                        self.log_result("Structure batches", False, "Format batches incorrect")
+                    
+                    # Vérifier la cohérence des compteurs
+                    critical_count = batch_info["critical_batches"]
+                    expired_count = batch_info["expired_batches"]
+                    actual_critical = len([b for b in batches if b.get("status") == "critical"])
+                    actual_expired = len([b for b in batches if b.get("status") == "expired"])
+                    
+                    if critical_count == actual_critical and expired_count == actual_expired:
+                        self.log_result("Cohérence compteurs batches", True, 
+                                      f"{critical_count} critiques, {expired_count} expirés")
+                    else:
+                        self.log_result("Cohérence compteurs batches", False, 
+                                      f"Compteurs incorrects: {critical_count}/{actual_critical} critiques, {expired_count}/{actual_expired} expirés")
+                else:
+                    missing = [f for f in required_fields if f not in batch_info]
+                    self.log_result("GET /stock/batch-info - Structure", False, f"Champs manquants: {missing}")
+            else:
+                self.log_result("GET /stock/batch-info", False, f"Erreur {response.status_code}: {response.text}")
+        except Exception as e:
+            self.log_result("GET /stock/batch-info", False, f"Exception: {str(e)}")
+        
+        # Test 5: GET /api/stock/batch-summary
+        print("\n--- Test Batch Summary ---")
+        try:
+            response = requests.get(f"{BASE_URL}/stock/batch-summary")
+            if response.status_code == 200:
+                batch_summary = response.json()
+                
+                if isinstance(batch_summary, list):
+                    self.log_result("GET /stock/batch-summary", True, 
+                                  f"{len(batch_summary)} produit(s) avec gestion de lots")
+                    
+                    # Vérifier que seuls les produits avec des batches sont inclus
+                    if batch_summary:
+                        # Vérifier la structure de chaque élément
+                        summary_item = batch_summary[0]
+                        required_fields = ["product_id", "product_name", "total_stock", "batches", "critical_batches", "expired_batches"]
+                        if all(field in summary_item for field in required_fields):
+                            self.log_result("Structure batch summary", True, "Structure BatchStockInfo correcte pour tous les produits")
+                            
+                            # Vérifier que tous les éléments ont des batches
+                            all_have_batches = all(len(item.get("batches", [])) > 0 for item in batch_summary)
+                            if all_have_batches:
+                                self.log_result("Filtrage produits avec batches", True, "Seuls les produits avec batches inclus")
+                            else:
+                                products_without_batches = [item["product_name"] for item in batch_summary if len(item.get("batches", [])) == 0]
+                                self.log_result("Filtrage produits avec batches", False, f"Produits sans batches: {products_without_batches}")
+                            
+                            # Calculer les statistiques globales
+                            total_critical = sum(item["critical_batches"] for item in batch_summary)
+                            total_expired = sum(item["expired_batches"] for item in batch_summary)
+                            total_batches = sum(len(item["batches"]) for item in batch_summary)
+                            
+                            self.log_result("Statistiques globales batches", True, 
+                                          f"{total_batches} lots total, {total_critical} critiques, {total_expired} expirés")
+                        else:
+                            missing = [f for f in required_fields if f not in summary_item]
+                            self.log_result("Structure batch summary", False, f"Champs manquants: {missing}")
+                    else:
+                        self.log_result("Contenu batch summary", True, "Aucun produit avec gestion de lots (normal si pas de batches)")
+                else:
+                    self.log_result("GET /stock/batch-summary", False, "Format de réponse incorrect")
+            else:
+                self.log_result("GET /stock/batch-summary", False, f"Erreur {response.status_code}: {response.text}")
+        except Exception as e:
+            self.log_result("GET /stock/batch-summary", False, f"Exception: {str(e)}")
+        
+        # Test 6: PUT /api/stock/consume-batch/{batch_id}
+        print("\n--- Test Batch Consumption ---")
+        try:
+            # D'abord créer un batch pour le test
+            batch_data = {
+                "product_id": test_product["id"],
+                "quantity": 50.0,
+                "batch_number": "TEST-BATCH-001",
+                "supplier_id": test_product.get("fournisseur_id")
+            }
+            
+            batch_response = requests.post(f"{BASE_URL}/product-batches", json=batch_data, headers=HEADERS)
+            if batch_response.status_code == 200:
+                created_batch = batch_response.json()
+                batch_id = created_batch["id"]
+                
+                self.log_result("Création batch test", True, f"Batch créé: {batch_id[:8]}... ({created_batch['quantity']} unités)")
+                
+                # Obtenir le stock initial
+                stock_response = requests.get(f"{BASE_URL}/stocks/{test_product['id']}")
+                initial_total_stock = 0
+                if stock_response.status_code == 200:
+                    initial_total_stock = stock_response.json()["quantite_actuelle"]
+                
+                # Consommer partiellement le batch
+                consumption_quantity = 20.0
+                consume_response = requests.put(f"{BASE_URL}/stock/consume-batch/{batch_id}?quantity_consumed={consumption_quantity}")
+                
+                if consume_response.status_code == 200:
+                    consume_result = consume_response.json()
+                    
+                    # Vérifier la réponse
+                    if "remaining_quantity" in consume_result:
+                        expected_remaining = 50.0 - 20.0
+                        actual_remaining = consume_result["remaining_quantity"]
+                        
+                        if abs(actual_remaining - expected_remaining) < 0.01:
+                            self.log_result("PUT /stock/consume-batch - Calcul", True, 
+                                          f"Quantité restante correcte: {actual_remaining}")
+                        else:
+                            self.log_result("PUT /stock/consume-batch - Calcul", False, 
+                                          f"Quantité incorrecte: {actual_remaining}, attendu: {expected_remaining}")
+                        
+                        # Vérifier que le stock total a été mis à jour
+                        time.sleep(0.5)
+                        new_stock_response = requests.get(f"{BASE_URL}/stocks/{test_product['id']}")
+                        if new_stock_response.status_code == 200:
+                            new_total_stock = new_stock_response.json()["quantite_actuelle"]
+                            expected_new_total = initial_total_stock - consumption_quantity
+                            
+                            if abs(new_total_stock - expected_new_total) < 0.01:
+                                self.log_result("Mise à jour stock total après consommation", True, 
+                                              f"Stock total mis à jour: {initial_total_stock} → {new_total_stock}")
+                            else:
+                                self.log_result("Mise à jour stock total après consommation", False, 
+                                              f"Stock incorrect: {new_total_stock}, attendu: {expected_new_total}")
+                        
+                        # Vérifier la création du mouvement de stock
+                        mouvements_response = requests.get(f"{BASE_URL}/mouvements")
+                        if mouvements_response.status_code == 200:
+                            mouvements = mouvements_response.json()
+                            consumption_movement = next((m for m in mouvements if 
+                                                       m["produit_id"] == test_product["id"] and 
+                                                       "Consommation lot" in m.get("commentaire", "") and
+                                                       m["type"] == "sortie"), None)
+                            if consumption_movement:
+                                self.log_result("Création mouvement consommation", True, 
+                                              f"Mouvement créé: sortie {consumption_movement['quantite']}")
+                            else:
+                                self.log_result("Création mouvement consommation", False, "Mouvement de consommation non trouvé")
+                        
+                        # Test consommation complète du batch restant
+                        remaining_quantity = consume_result["remaining_quantity"]
+                        if remaining_quantity > 0:
+                            complete_consume_response = requests.put(f"{BASE_URL}/stock/consume-batch/{batch_id}?quantity_consumed={remaining_quantity}")
+                            if complete_consume_response.status_code == 200:
+                                complete_result = complete_consume_response.json()
+                                if complete_result.get("remaining_quantity", -1) == 0:
+                                    self.log_result("Consommation complète batch", True, "Batch entièrement consommé")
+                                    
+                                    # Vérifier que le batch est marqué comme consommé
+                                    batch_info_response = requests.get(f"{BASE_URL}/stock/batch-info/{test_product['id']}")
+                                    if batch_info_response.status_code == 200:
+                                        batch_info = batch_info_response.json()
+                                        active_batches = [b for b in batch_info["batches"] if b["id"] == batch_id]
+                                        if not active_batches:
+                                            self.log_result("Marquage batch consommé", True, "Batch retiré de la liste active")
+                                        else:
+                                            self.log_result("Marquage batch consommé", False, "Batch encore dans la liste active")
+                                else:
+                                    self.log_result("Consommation complète batch", False, f"Quantité restante: {complete_result.get('remaining_quantity')}")
+                            else:
+                                self.log_result("Consommation complète batch", False, f"Erreur {complete_consume_response.status_code}")
+                    else:
+                        self.log_result("PUT /stock/consume-batch - Structure", False, "Champ remaining_quantity manquant")
+                else:
+                    self.log_result("PUT /stock/consume-batch", False, f"Erreur {consume_response.status_code}: {consume_response.text}")
+            else:
+                self.log_result("Création batch test", False, f"Erreur création batch: {batch_response.status_code}")
+        except Exception as e:
+            self.log_result("PUT /stock/consume-batch", False, f"Exception: {str(e)}")
+        
+        # Test 7: Intégration complète avec données La Table d'Augustine
+        print("\n--- Test Intégration avec La Table d'Augustine ---")
+        try:
+            # Tester avec des produits authentiques La Table d'Augustine
+            augustine_products = [p for p in produits if any(keyword in p["nom"].lower() 
+                                for keyword in ["supions", "burrata", "truffe", "linguine", "palourdes"])]
+            
+            if augustine_products:
+                test_augustine_product = augustine_products[0]
+                
+                # Test ajustement avec produit authentique
+                augustine_adjustment = {
+                    "adjustment_type": "ingredient",
+                    "target_id": test_augustine_product["id"],
+                    "quantity_adjusted": 5.0,
+                    "adjustment_reason": "Réception produit La Table d'Augustine",
+                    "user_name": "Chef La Table d'Augustine"
+                }
+                
+                adjustment_response = requests.post(f"{BASE_URL}/stock/advanced-adjustment", 
+                                                  json=augustine_adjustment, headers=HEADERS)
+                if adjustment_response.status_code == 200:
+                    self.log_result("Ajustement produit La Table d'Augustine", True, 
+                                  f"Ajustement réussi pour {test_augustine_product['nom']}")
+                else:
+                    self.log_result("Ajustement produit La Table d'Augustine", False, 
+                                  f"Erreur {adjustment_response.status_code}")
+                
+                # Test avec recette authentique La Table d'Augustine
+                augustine_recipes = [r for r in recettes if any(keyword in r["nom"].lower() 
+                                   for keyword in ["supions", "linguine", "rigatoni", "wellington"])]
+                
+                if augustine_recipes:
+                    test_augustine_recipe = augustine_recipes[0]
+                    
+                    augustine_dish_adjustment = {
+                        "adjustment_type": "prepared_dish",
+                        "target_id": test_augustine_recipe["id"],
+                        "quantity_adjusted": 1,
+                        "adjustment_reason": "Préparation plat signature La Table d'Augustine",
+                        "user_name": "Chef La Table d'Augustine"
+                    }
+                    
+                    dish_response = requests.post(f"{BASE_URL}/stock/advanced-adjustment", 
+                                                json=augustine_dish_adjustment, headers=HEADERS)
+                    if dish_response.status_code == 200:
+                        dish_result = dish_response.json()
+                        ingredient_deductions = dish_result.get("ingredient_deductions", [])
+                        
+                        if ingredient_deductions:
+                            self.log_result("Déduction ingrédients recette La Table d'Augustine", True, 
+                                          f"Recette {test_augustine_recipe['nom']}: {len(ingredient_deductions)} ingrédients déduits")
+                            
+                            # Vérifier les calculs avec portions de recette
+                            recipe_portions = test_augustine_recipe.get("portions", 1)
+                            if recipe_portions > 0:
+                                self.log_result("Calcul portions recette authentique", True, 
+                                              f"Calcul basé sur {recipe_portions} portion(s) de recette")
+                            else:
+                                self.log_result("Calcul portions recette authentique", False, "Portions de recette invalides")
+                        else:
+                            self.log_result("Déduction ingrédients recette La Table d'Augustine", False, 
+                                          "Aucune déduction d'ingrédient")
+                    else:
+                        self.log_result("Ajustement recette La Table d'Augustine", False, 
+                                      f"Erreur {dish_response.status_code}")
+                else:
+                    self.log_result("Recettes La Table d'Augustine", False, "Aucune recette authentique trouvée")
+            else:
+                self.log_result("Produits La Table d'Augustine", False, "Aucun produit authentique trouvé")
+                
+        except Exception as e:
+            self.log_result("Test intégration La Table d'Augustine", False, f"Exception: {str(e)}")
+        
+        print(f"\n=== FIN TEST VERSION 3 ADVANCED STOCK MANAGEMENT APIs ===")
+
     def run_all_tests(self):
         """Exécute tous les tests"""
         print("🚀 DÉBUT DES TESTS BACKEND - GESTION STOCKS RESTAURANT + OCR")
