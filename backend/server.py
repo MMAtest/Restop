@@ -383,10 +383,8 @@ def extract_text_from_pdf(pdf_content: bytes) -> str:
                                 append_text("\n".join(lines))
                 except Exception:
                     pass
-        if extracted_parts:
-            combined = "\n".join(extracted_parts)
-            print(f"✅ PDF text extracted with pdfplumber (tables+text): {len(combined)} chars")
-            return combined
+        # Do not return yet; we'll merge with other passes for completeness
+        pass
     except Exception as e:
         print(f"⚠️ pdfplumber failed: {str(e)}")
 
