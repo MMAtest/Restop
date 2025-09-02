@@ -949,7 +949,15 @@ function App() {
               
               <div style={{textAlign: 'center', marginTop: '20px'}}>
                 <button className="button" onClick={() => setShowOcrModal(true)}>✅ Valider</button>
-                <button className="button">✏️ Corriger</button>
+                <button className="button" onClick={async () => {
+                  if (!selectedDocument) {
+                    alert('Veuillez d\'abord sélectionner un document dans l\'historique.');
+                    return;
+                  }
+                  // Ouvrir l'aperçu côté OCR pour corriger
+                  await handlePreviewDocument(selectedDocument);
+                  setPreviewTab('sidebyside');
+                }}>✏️ Corriger</button>
                 <button className="button">💾 Enregistrer</button>
               </div>
             </div>
