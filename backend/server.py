@@ -1476,9 +1476,65 @@ def extract_text_from_image(image_base64: str) -> str:
         raise HTTPException(status_code=400, detail=f"Erreur lors de l'extraction OCR: {str(e)}")
 
 def parse_z_report_enhanced(texte_ocr: str) -> StructuredZReportData:
-    """Enhanced Z report parser with structured data extraction and categorization"""
+    """Enhanced Z report parser with structured data extraction and categorization (unit prices supported)"""
     structured_data = StructuredZReportData()
-    
+
+    def parse_price(val: str) -> float:
+        try:
+            v = val.replace('€', '').replace(' ', '').replace('\u202f', '').replace('\xa0', '')
+            # Replace comma decimal
+            if v.count(',') == 1 and v.count('.') == 0:
+                v = v.replace(',', '.')
+            # Remove thousand separators if any
+            v = v.replace('.', '.')  # no-op but keeps format
+            return float(v)
+        except Exception:
+            return None
+
+    def try_parse_item_line(line: str):
+        # Clean leading markers
+        line_clean = re.sub(r'^[_\-\•\·\s]+', '', line).strip()
+        # Patterns with price
+        patterns = [
+            # (x3) Name 12,00
+            (r'^\(?x?(\d{1,3})\)?\s*[)\-]*\s*([A-Za-zÀ-ÿ0-9][A-Za-zÀ-ÿ0-9\s\'\-\.,]{3,80})\s+€?\s?(\d{1,4}(?:[\.,]\d{2}))$', ('qty','name','price')),
+            # (x3) Name €12.00
+            (r'^\(?x?(\d{1,3})\)?\s*[)\-]*\s*([A-Za-zÀ-ÿ0-9][A-Za-zÀ-ÿ0-9\s\'\-\.,]{3,80})\s+€\s?(\d{1,4}(?:[\.,]\d{2}))$', ('qty','name','price')),
+            # Name €12.00 x 3
+            (r'^([A-Za-zÀ-ÿ0-9][A-Za-zÀ-ÿ0-9\s\'\-\.,]{3,80})\s+€?\s?(\d{1,4}(?:[\.,]\d{2}))\s*x\s*(\d{1,3})$', ('name','price','qty')),
+            # Name x 3 12,00
+            (r'^([A-Za-zÀ-ÿ0-9][A-Za-zÀ-ÿ0-9\s\'\-\.,]{3,80})\s+x\s*(\d{1,3})\s+€?\s?(\d{1,4}(?:[\.,]\d{2}))$', ('name','qty','price')),
+            # 3x Name 12,00
+            (r'^(\d{1,3})\s*x\s*([A-Za-zÀ-ÿ0-9][A-Za-zÀ-ÿ0-9\s\'\-\.,]{3,80})\s+€?\s?(\d{1,4}(?:[\.,]\d{2}))$', ('qty','name','price')),
+        ]
+        for pat, order in patterns:
+            m = re.match(pat, line_clean, re.IGNORECASE)
+            if m:
+                groups = m.groups()
+                qty = int(groups[order.index('qty')])
+                name = groups[order.index('name')].strip()
+                price = parse_price(groups[order.index('price')])
+                return name, qty, price
+        # Patterns without explicit price (fallback)
+        no_price_patterns = [
+            (r'^\(x?(\d{1,3})\)\s+([A-Za-zÀ-ÿ0-9][A-Za-zÀ-ÿ0-9\s\'\-\.,]{3,80})$', ('qty','name')),
+            (r'^(\d{1,3})x\s+([A-Za-zÀ-ÿ0-9][A-Za-zÀ-ÿ0-9\s\'\-\.,]{3,80})$', ('qty','name')),
+            (r'^([A-Za-zÀ-ÿ0-9][A-Za-zÀ-ÿ0-9\s\'\-\.,]{3,80})\s*:?\s*(\d{1,3})$', ('name','qty')),
+        ]
+        for pat, order in no_price_patterns:
+            m = re.match(pat, line_clean, re.IGNORECASE)
+            if m:
+                groups = m.groups()
+                # Determine indices
+                if order == ('qty','name'):
+                    qty = int(groups[0])
+                    name = groups[1].strip()
+                else:
+                    name = groups[0].strip()
+                    qty = int(groups[1])
+                return name, qty, None
+        return None
+
     try:
         # Extract report date
         date_patterns = [
