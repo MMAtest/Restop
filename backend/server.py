@@ -313,7 +313,241 @@ class FactureFournisseurData(BaseModel):
     total_ttc: Optional[float] = None
 
 # Configuration OCR
-pytesseract.pytesseract.tesseract_cmd = '/usr/bin/tesseract'
+# ✅ Version 3 - Data Migration System
+class MigrationStatus(BaseModel):
+    version: str
+    applied_at: datetime
+    description: str
+    success: bool = True
+
+# Migration functions
+async def migrate_to_v3():
+    """Migrate existing data to Version 3 structure"""
+    migration_results = []
+    
+    try:
+        # Check if migration already applied
+        existing_migration = await db.migrations.find_one({"version": "3.0.0"})
+        if existing_migration:
+            return {"message": "Migration 3.0.0 already applied", "details": existing_migration}
+        
+        # 1. Migrate existing products to include reference_price
+        products_updated = 0
+        async for product in db.produits.find({"reference_price": {"$exists": False}}):
+            # Set reference_price to current prix_achat or default value
+            reference_price = product.get("prix_achat", 10.0) or 10.0
+            await db.produits.update_one(
+                {"id": product["id"]},
+                {
+                    "$set": {
+                        "reference_price": reference_price,
+                        "main_supplier_id": product.get("fournisseur_id"),
+                        "secondary_supplier_ids": []
+                    }
+                }
+            )
+            products_updated += 1
+        
+        migration_results.append(f"Updated {products_updated} products with reference prices")
+        
+        # 2. Create SupplierProductInfo entries for existing product-supplier relations
+        supplier_relations = 0
+        async for product in db.produits.find({"fournisseur_id": {"$ne": None}}):
+            if product.get("fournisseur_id"):
+                # Create supplier-product info if doesn't exist
+                existing = await db.supplier_product_info.find_one({
+                    "supplier_id": product["fournisseur_id"],
+                    "product_id": product["id"]
+                })
+                if not existing:
+                    supplier_info = SupplierProductInfo(
+                        supplier_id=product["fournisseur_id"],
+                        product_id=product["id"],
+                        price=product.get("prix_achat", product.get("reference_price", 10.0)),
+                        is_preferred=True
+                    )
+                    await db.supplier_product_info.insert_one(supplier_info.dict())
+                    supplier_relations += 1
+        
+        migration_results.append(f"Created {supplier_relations} supplier-product relations")
+        
+        # 3. Create initial product batches for existing stock
+        batches_created = 0
+        async for stock in db.stocks.find({"quantite_actuelle": {"$gt": 0}}):
+            # Create a single batch for existing stock
+            batch = ProductBatch(
+                product_id=stock["produit_id"],
+                quantity=stock["quantite_actuelle"],
+                batch_number=f"MIGRATION-{stock['produit_id'][:8]}",
+                received_date=stock.get("derniere_maj", datetime.utcnow())
+            )
+            await db.product_batches.insert_one(batch.dict())
+            batches_created += 1
+        
+        migration_results.append(f"Created {batches_created} initial product batches")
+        
+        # 4. Create default admin user if no users exist
+        user_count = await db.users.count_documents({})
+        if user_count == 0:
+            from passlib.context import CryptContext
+            pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+            
+            admin_user = User(
+                username="admin",
+                email="admin@restaurantla-table-augustine.fr",
+                password_hash=pwd_context.hash("RestaurantAdmin2025!"),
+                role="super_admin",
+                full_name="Administrateur Système"
+            )
+            await db.users.insert_one(admin_user.dict())
+            migration_results.append("Created default admin user (admin/RestaurantAdmin2025!)")
+        
+        # Record migration
+        migration_record = MigrationStatus(
+            version="3.0.0",
+            applied_at=datetime.utcnow(),
+            description="Enhanced data models with RBAC, supplier relations, and batch tracking"
+        )
+        await db.migrations.insert_one(migration_record.dict())
+        
+        return {
+            "message": "Migration to Version 3.0.0 completed successfully",
+            "details": migration_results
+        }
+        
+    except Exception as e:
+        # Record failed migration
+        failed_migration = MigrationStatus(
+            version="3.0.0",
+            applied_at=datetime.utcnow(),
+            description=f"Migration failed: {str(e)}",
+            success=False
+        )
+        await db.migrations.insert_one(failed_migration.dict())
+        raise HTTPException(status_code=500, detail=f"Migration failed: {str(e)}")
+
+# ✅ Version 3 - New API Endpoints
+
+# User Management (Super Admin only)
+@api_router.post("/admin/users", response_model=UserResponse)
+async def create_user(user_create: UserCreate):
+    """Create a new user (Super Admin only)"""
+    from passlib.context import CryptContext
+    pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+    
+    # Check if username or email already exists
+    existing_user = await db.users.find_one({
+        "$or": [{"username": user_create.username}, {"email": user_create.email}]
+    })
+    if existing_user:
+        raise HTTPException(status_code=400, detail="Username or email already exists")
+    
+    # Validate role
+    if user_create.role not in ROLES:
+        raise HTTPException(status_code=400, detail=f"Invalid role. Must be one of: {list(ROLES.keys())}")
+    
+    # Create user
+    user_dict = user_create.dict()
+    user_dict["password_hash"] = pwd_context.hash(user_dict.pop("password"))
+    user_obj = User(**user_dict)
+    
+    await db.users.insert_one(user_obj.dict())
+    return UserResponse(**user_obj.dict())
+
+@api_router.get("/admin/users", response_model=List[UserResponse])
+async def get_users():
+    """Get all users (Super Admin only)"""
+    users = await db.users.find().to_list(1000)
+    return [UserResponse(**user) for user in users]
+
+@api_router.delete("/admin/users/{user_id}")
+async def delete_user(user_id: str):
+    """Delete a user (Super Admin only)"""
+    result = await db.users.delete_one({"id": user_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="User not found")
+    return {"message": "User deleted successfully"}
+
+# Supplier-Product Relations
+@api_router.post("/supplier-product-info", response_model=SupplierProductInfo)
+async def create_supplier_product_info(info: SupplierProductInfoCreate):
+    """Create supplier-product pricing information"""
+    # Validate supplier and product exist
+    supplier = await db.fournisseurs.find_one({"id": info.supplier_id})
+    product = await db.produits.find_one({"id": info.product_id})
+    
+    if not supplier:
+        raise HTTPException(status_code=404, detail="Supplier not found")
+    if not product:
+        raise HTTPException(status_code=404, detail="Product not found")
+    
+    # Check for existing relation
+    existing = await db.supplier_product_info.find_one({
+        "supplier_id": info.supplier_id,
+        "product_id": info.product_id
+    })
+    if existing:
+        raise HTTPException(status_code=400, detail="Supplier-product relation already exists")
+    
+    info_obj = SupplierProductInfo(**info.dict())
+    await db.supplier_product_info.insert_one(info_obj.dict())
+    return info_obj
+
+@api_router.get("/supplier-product-info/{supplier_id}", response_model=List[SupplierProductInfo])
+async def get_supplier_products(supplier_id: str):
+    """Get all products available from a specific supplier with pricing"""
+    relations = await db.supplier_product_info.find({"supplier_id": supplier_id}).to_list(1000)
+    return [SupplierProductInfo(**rel) for rel in relations]
+
+# Product Batch Management
+@api_router.post("/product-batches", response_model=ProductBatch)
+async def create_product_batch(batch: ProductBatchCreate):
+    """Create a new product batch"""
+    # Validate product exists
+    product = await db.produits.find_one({"id": batch.product_id})
+    if not product:
+        raise HTTPException(status_code=404, detail="Product not found")
+    
+    batch_obj = ProductBatch(**batch.dict())
+    await db.product_batches.insert_one(batch_obj.dict())
+    
+    # Update stock with new batch quantity
+    await db.stocks.update_one(
+        {"produit_id": batch.product_id},
+        {"$inc": {"quantite_actuelle": batch.quantity}, "$set": {"derniere_maj": datetime.utcnow()}}
+    )
+    
+    return batch_obj
+
+@api_router.get("/product-batches/{product_id}", response_model=List[ProductBatch])
+async def get_product_batches(product_id: str):
+    """Get all batches for a specific product"""
+    batches = await db.product_batches.find({"product_id": product_id, "is_consumed": False}).to_list(1000)
+    return [ProductBatch(**batch) for batch in batches]
+
+# Price Anomaly Alerts
+@api_router.get("/price-anomalies", response_model=List[PriceAnomalyAlert])
+async def get_price_anomalies():
+    """Get all unresolved price anomaly alerts"""
+    alerts = await db.price_anomaly_alerts.find({"is_resolved": False}).to_list(1000)
+    return [PriceAnomalyAlert(**alert) for alert in alerts]
+
+@api_router.post("/price-anomalies/{alert_id}/resolve")
+async def resolve_price_anomaly(alert_id: str, resolution_note: str = ""):
+    """Mark a price anomaly as resolved"""
+    result = await db.price_anomaly_alerts.update_one(
+        {"id": alert_id},
+        {"$set": {"is_resolved": True, "resolution_note": resolution_note}}
+    )
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Alert not found")
+    return {"message": "Alert resolved successfully"}
+
+# Migration endpoint
+@api_router.post("/admin/migrate/v3")
+async def run_migration_v3():
+    """Run Version 3 data migration (Super Admin only)"""
+    return await migrate_to_v3()
 
 # Configuration de la base de données
 MONGO_URL = os.environ.get('MONGO_URL', 'mongodb://localhost:27017')
