@@ -2932,6 +2932,996 @@ class StockTestSuite:
         
         print(f"\n=== FIN TEST VERSION 3 ADVANCED STOCK MANAGEMENT APIs ===")
 
+    def test_user_management_rbac_apis(self):
+        """Test complet du système User Management RBAC Version 3 Feature #4"""
+        print("\n=== TEST VERSION 3 FEATURE #4: USER MANAGEMENT RBAC ===")
+        
+        # Priority 1 - User Management CRUD APIs
+        self.test_user_creation_all_roles()
+        self.test_user_listing_retrieval()
+        self.test_user_deletion()
+        self.test_password_hashing_bcrypt()
+        self.test_email_username_uniqueness()
+        
+        # Priority 2 - RBAC Role Validation
+        self.test_role_validation()
+        self.test_invalid_role_rejection()
+        self.test_user_model_structure()
+        self.test_user_response_model_security()
+        
+        # Priority 3 - Data Integrity
+        self.test_default_admin_user_creation()
+        self.test_user_creation_database_updates()
+        self.test_user_deletion_complete_removal()
+        self.test_user_timestamps_metadata()
+        
+        # Priority 4 - Integration Testing
+        self.test_user_management_system_integration()
+        self.test_mongodb_collection_storage()
+        self.test_user_operations_isolation()
+        self.test_user_data_format_validation()
+    
+    def test_user_creation_all_roles(self):
+        """Test création d'utilisateurs avec tous les 5 rôles RBAC"""
+        print("\n--- Test création utilisateurs tous rôles ---")
+        
+        roles_to_test = [
+            ("super_admin", "Super Admin"),
+            ("gerant", "Gérant Manager"),
+            ("chef_cuisine", "Chef de Cuisine"),
+            ("barman", "Barman Bartender"),
+            ("caissier", "Caissier Cashier")
+        ]
+        
+        created_users = []
+        
+        for role_key, role_description in roles_to_test:
+            user_data = {
+                "username": f"user_{role_key}_test",
+                "email": f"{role_key}@la-table-augustine.fr",
+                "password": f"SecurePass_{role_key}2025!",
+                "role": role_key,
+                "full_name": f"Test User {role_description}"
+            }
+            
+            try:
+                response = requests.post(f"{BASE_URL}/admin/users", json=user_data, headers=HEADERS)
+                if response.status_code == 200:
+                    created_user = response.json()
+                    created_users.append(created_user)
+                    
+                    # Vérifier la structure de la réponse
+                    required_fields = ["id", "username", "email", "role", "full_name", "is_active", "created_at"]
+                    if all(field in created_user for field in required_fields):
+                        # Vérifier que le mot de passe n'est pas exposé
+                        if "password" not in created_user and "password_hash" not in created_user:
+                            self.log_result(f"POST /admin/users (role: {role_key})", True, 
+                                          f"Utilisateur {role_key} créé avec sécurité")
+                        else:
+                            self.log_result(f"POST /admin/users (role: {role_key})", False, 
+                                          "Mot de passe exposé dans la réponse")
+                    else:
+                        missing_fields = [f for f in required_fields if f not in created_user]
+                        self.log_result(f"POST /admin/users (role: {role_key})", False, 
+                                      f"Champs manquants: {missing_fields}")
+                else:
+                    self.log_result(f"POST /admin/users (role: {role_key})", False, 
+                                  f"Erreur {response.status_code}: {response.text}")
+            except Exception as e:
+                self.log_result(f"POST /admin/users (role: {role_key})", False, f"Exception: {str(e)}")
+        
+        # Stocker les utilisateurs créés pour les tests suivants
+        self.created_test_users = created_users
+        
+        if len(created_users) == 5:
+            self.log_result("Création utilisateurs tous rôles", True, 
+                          f"5 utilisateurs créés avec tous les rôles RBAC")
+        else:
+            self.log_result("Création utilisateurs tous rôles", False, 
+                          f"Seulement {len(created_users)} utilisateurs créés sur 5")
+    
+    def test_user_listing_retrieval(self):
+        """Test récupération et listage des utilisateurs"""
+        print("\n--- Test listage utilisateurs ---")
+        
+        try:
+            response = requests.get(f"{BASE_URL}/admin/users")
+            if response.status_code == 200:
+                users = response.json()
+                if isinstance(users, list):
+                    # Vérifier qu'on a au moins l'admin par défaut + nos utilisateurs de test
+                    expected_min_users = 6  # 1 admin + 5 test users
+                    if len(users) >= expected_min_users:
+                        self.log_result("GET /admin/users", True, 
+                                      f"{len(users)} utilisateurs récupérés")
+                        
+                        # Vérifier la structure des données utilisateur
+                        if len(users) > 0:
+                            user = users[0]
+                            required_fields = ["id", "username", "email", "role", "is_active", "created_at"]
+                            if all(field in user for field in required_fields):
+                                # Vérifier que les mots de passe ne sont pas exposés
+                                if not any(field in user for field in ["password", "password_hash"]):
+                                    self.log_result("Structure données utilisateurs", True, 
+                                                  "Tous champs requis présents, mots de passe sécurisés")
+                                else:
+                                    self.log_result("Structure données utilisateurs", False, 
+                                                  "Mots de passe exposés dans la liste")
+                            else:
+                                missing = [f for f in required_fields if f not in user]
+                                self.log_result("Structure données utilisateurs", False, 
+                                              f"Champs manquants: {missing}")
+                        
+                        # Vérifier que tous les rôles sont représentés
+                        roles_found = set(user["role"] for user in users)
+                        expected_roles = {"super_admin", "gerant", "chef_cuisine", "barman", "caissier"}
+                        if expected_roles.issubset(roles_found):
+                            self.log_result("Validation rôles utilisateurs", True, 
+                                          f"Tous les rôles RBAC présents: {sorted(roles_found)}")
+                        else:
+                            missing_roles = expected_roles - roles_found
+                            self.log_result("Validation rôles utilisateurs", False, 
+                                          f"Rôles manquants: {missing_roles}")
+                    else:
+                        self.log_result("GET /admin/users", False, 
+                                      f"Nombre d'utilisateurs insuffisant: {len(users)} < {expected_min_users}")
+                else:
+                    self.log_result("GET /admin/users", False, "Format de réponse incorrect (non-liste)")
+            else:
+                self.log_result("GET /admin/users", False, f"Erreur {response.status_code}: {response.text}")
+        except Exception as e:
+            self.log_result("GET /admin/users", False, f"Exception: {str(e)}")
+    
+    def test_user_deletion(self):
+        """Test suppression d'utilisateurs"""
+        print("\n--- Test suppression utilisateurs ---")
+        
+        if not hasattr(self, 'created_test_users') or not self.created_test_users:
+            self.log_result("DELETE /admin/users", False, "Pas d'utilisateurs de test à supprimer")
+            return
+        
+        # Tester la suppression d'un utilisateur
+        user_to_delete = self.created_test_users[0]  # Prendre le premier utilisateur créé
+        user_id = user_to_delete["id"]
+        
+        try:
+            response = requests.delete(f"{BASE_URL}/admin/users/{user_id}")
+            if response.status_code == 200:
+                result = response.json()
+                if "supprimé" in result.get("message", "").lower() or "deleted" in result.get("message", "").lower():
+                    self.log_result("DELETE /admin/users/{user_id}", True, 
+                                  f"Utilisateur {user_to_delete['username']} supprimé")
+                    
+                    # Vérifier que l'utilisateur n'existe plus
+                    time.sleep(0.5)
+                    check_response = requests.get(f"{BASE_URL}/admin/users")
+                    if check_response.status_code == 200:
+                        remaining_users = check_response.json()
+                        deleted_user_still_exists = any(u["id"] == user_id for u in remaining_users)
+                        if not deleted_user_still_exists:
+                            self.log_result("Validation suppression utilisateur", True, 
+                                          "Utilisateur bien supprimé de la base")
+                        else:
+                            self.log_result("Validation suppression utilisateur", False, 
+                                          "Utilisateur encore présent après suppression")
+                else:
+                    self.log_result("DELETE /admin/users/{user_id}", False, 
+                                  f"Message de suppression inattendu: {result.get('message')}")
+            elif response.status_code == 404:
+                self.log_result("DELETE /admin/users/{user_id}", False, "Utilisateur non trouvé")
+            else:
+                self.log_result("DELETE /admin/users/{user_id}", False, 
+                              f"Erreur {response.status_code}: {response.text}")
+        except Exception as e:
+            self.log_result("DELETE /admin/users/{user_id}", False, f"Exception: {str(e)}")
+        
+        # Test suppression utilisateur inexistant
+        try:
+            fake_user_id = "fake-user-id-12345"
+            response = requests.delete(f"{BASE_URL}/admin/users/{fake_user_id}")
+            if response.status_code == 404:
+                self.log_result("DELETE utilisateur inexistant", True, "Erreur 404 correcte pour utilisateur inexistant")
+            else:
+                self.log_result("DELETE utilisateur inexistant", False, 
+                              f"Code de statut incorrect: {response.status_code}")
+        except Exception as e:
+            self.log_result("DELETE utilisateur inexistant", False, f"Exception: {str(e)}")
+    
+    def test_password_hashing_bcrypt(self):
+        """Test validation du hachage des mots de passe avec bcrypt"""
+        print("\n--- Test hachage mots de passe bcrypt ---")
+        
+        # Créer un utilisateur de test pour vérifier le hachage
+        test_user_data = {
+            "username": "test_password_hash",
+            "email": "test.hash@la-table-augustine.fr",
+            "password": "TestPassword123!",
+            "role": "caissier",
+            "full_name": "Test Password Hash User"
+        }
+        
+        try:
+            response = requests.post(f"{BASE_URL}/admin/users", json=test_user_data, headers=HEADERS)
+            if response.status_code == 200:
+                created_user = response.json()
+                
+                # Vérifier que le mot de passe n'est pas stocké en clair
+                if "password" not in created_user:
+                    self.log_result("Sécurité mot de passe", True, "Mot de passe non exposé dans la réponse")
+                else:
+                    self.log_result("Sécurité mot de passe", False, "Mot de passe exposé en clair")
+                
+                # Vérifier que l'utilisateur a été créé (indique que le hachage fonctionne)
+                if created_user.get("username") == test_user_data["username"]:
+                    self.log_result("Validation hachage bcrypt", True, 
+                                  "Utilisateur créé avec succès (hachage bcrypt fonctionnel)")
+                else:
+                    self.log_result("Validation hachage bcrypt", False, "Problème lors de la création utilisateur")
+                
+                # Nettoyer l'utilisateur de test
+                user_id = created_user["id"]
+                requests.delete(f"{BASE_URL}/admin/users/{user_id}")
+                
+            else:
+                self.log_result("Test hachage bcrypt", False, 
+                              f"Erreur création utilisateur: {response.status_code}")
+        except Exception as e:
+            self.log_result("Test hachage bcrypt", False, f"Exception: {str(e)}")
+    
+    def test_email_username_uniqueness(self):
+        """Test validation unicité email et nom d'utilisateur"""
+        print("\n--- Test unicité email/username ---")
+        
+        # Créer un utilisateur de référence
+        base_user_data = {
+            "username": "unique_test_user",
+            "email": "unique.test@la-table-augustine.fr",
+            "password": "UniqueTest123!",
+            "role": "barman",
+            "full_name": "Unique Test User"
+        }
+        
+        created_user_id = None
+        
+        try:
+            # Créer l'utilisateur de base
+            response = requests.post(f"{BASE_URL}/admin/users", json=base_user_data, headers=HEADERS)
+            if response.status_code == 200:
+                created_user = response.json()
+                created_user_id = created_user["id"]
+                self.log_result("Création utilisateur de base", True, "Utilisateur de référence créé")
+                
+                # Test 1: Tenter de créer un utilisateur avec le même username
+                duplicate_username_data = base_user_data.copy()
+                duplicate_username_data["email"] = "different.email@la-table-augustine.fr"
+                
+                dup_response = requests.post(f"{BASE_URL}/admin/users", json=duplicate_username_data, headers=HEADERS)
+                if dup_response.status_code == 400:
+                    error_message = dup_response.json().get("detail", "").lower()
+                    if "username" in error_message or "existe" in error_message:
+                        self.log_result("Validation unicité username", True, "Username dupliqué correctement rejeté")
+                    else:
+                        self.log_result("Validation unicité username", False, f"Message d'erreur incorrect: {error_message}")
+                else:
+                    self.log_result("Validation unicité username", False, 
+                                  f"Username dupliqué accepté (erreur): {dup_response.status_code}")
+                
+                # Test 2: Tenter de créer un utilisateur avec le même email
+                duplicate_email_data = base_user_data.copy()
+                duplicate_email_data["username"] = "different_username"
+                
+                dup_response = requests.post(f"{BASE_URL}/admin/users", json=duplicate_email_data, headers=HEADERS)
+                if dup_response.status_code == 400:
+                    error_message = dup_response.json().get("detail", "").lower()
+                    if "email" in error_message or "existe" in error_message:
+                        self.log_result("Validation unicité email", True, "Email dupliqué correctement rejeté")
+                    else:
+                        self.log_result("Validation unicité email", False, f"Message d'erreur incorrect: {error_message}")
+                else:
+                    self.log_result("Validation unicité email", False, 
+                                  f"Email dupliqué accepté (erreur): {dup_response.status_code}")
+                
+            else:
+                self.log_result("Création utilisateur de base", False, 
+                              f"Erreur {response.status_code}: {response.text}")
+        except Exception as e:
+            self.log_result("Test unicité email/username", False, f"Exception: {str(e)}")
+        finally:
+            # Nettoyer l'utilisateur de test
+            if created_user_id:
+                try:
+                    requests.delete(f"{BASE_URL}/admin/users/{created_user_id}")
+                except:
+                    pass
+    
+    def test_role_validation(self):
+        """Test validation des rôles RBAC"""
+        print("\n--- Test validation rôles RBAC ---")
+        
+        # Tester chaque rôle valide
+        valid_roles = ["super_admin", "gerant", "chef_cuisine", "barman", "caissier"]
+        
+        for role in valid_roles:
+            user_data = {
+                "username": f"role_test_{role}",
+                "email": f"role.test.{role}@la-table-augustine.fr",
+                "password": f"RoleTest{role}123!",
+                "role": role,
+                "full_name": f"Role Test {role}"
+            }
+            
+            try:
+                response = requests.post(f"{BASE_URL}/admin/users", json=user_data, headers=HEADERS)
+                if response.status_code == 200:
+                    created_user = response.json()
+                    if created_user["role"] == role:
+                        self.log_result(f"Validation rôle {role}", True, f"Rôle {role} accepté et assigné")
+                        # Nettoyer
+                        requests.delete(f"{BASE_URL}/admin/users/{created_user['id']}")
+                    else:
+                        self.log_result(f"Validation rôle {role}", False, 
+                                      f"Rôle assigné incorrect: {created_user['role']}")
+                else:
+                    self.log_result(f"Validation rôle {role}", False, 
+                                  f"Rôle {role} rejeté: {response.status_code}")
+            except Exception as e:
+                self.log_result(f"Validation rôle {role}", False, f"Exception: {str(e)}")
+    
+    def test_invalid_role_rejection(self):
+        """Test rejet des rôles invalides"""
+        print("\n--- Test rejet rôles invalides ---")
+        
+        invalid_roles = ["admin", "user", "manager", "invalid_role", "super_user", ""]
+        
+        for invalid_role in invalid_roles:
+            user_data = {
+                "username": f"invalid_role_test_{invalid_role or 'empty'}",
+                "email": f"invalid.role.{invalid_role or 'empty'}@la-table-augustine.fr",
+                "password": "InvalidRoleTest123!",
+                "role": invalid_role,
+                "full_name": f"Invalid Role Test {invalid_role}"
+            }
+            
+            try:
+                response = requests.post(f"{BASE_URL}/admin/users", json=user_data, headers=HEADERS)
+                if response.status_code == 400:
+                    error_message = response.json().get("detail", "").lower()
+                    if "role" in error_message or "invalid" in error_message:
+                        self.log_result(f"Rejet rôle invalide '{invalid_role}'", True, 
+                                      "Rôle invalide correctement rejeté")
+                    else:
+                        self.log_result(f"Rejet rôle invalide '{invalid_role}'", False, 
+                                      f"Message d'erreur incorrect: {error_message}")
+                else:
+                    self.log_result(f"Rejet rôle invalide '{invalid_role}'", False, 
+                                  f"Rôle invalide accepté (erreur): {response.status_code}")
+            except Exception as e:
+                self.log_result(f"Rejet rôle invalide '{invalid_role}'", False, f"Exception: {str(e)}")
+    
+    def test_user_model_structure(self):
+        """Test structure du modèle User avec tous les champs requis"""
+        print("\n--- Test structure modèle User ---")
+        
+        # Créer un utilisateur complet pour tester la structure
+        complete_user_data = {
+            "username": "structure_test_user",
+            "email": "structure.test@la-table-augustine.fr",
+            "password": "StructureTest123!",
+            "role": "gerant",
+            "full_name": "Structure Test User Manager"
+        }
+        
+        try:
+            response = requests.post(f"{BASE_URL}/admin/users", json=complete_user_data, headers=HEADERS)
+            if response.status_code == 200:
+                created_user = response.json()
+                
+                # Vérifier tous les champs requis du modèle User
+                required_fields = {
+                    "id": str,
+                    "username": str,
+                    "email": str,
+                    "role": str,
+                    "full_name": str,
+                    "is_active": bool,
+                    "created_at": str,
+                    "last_login": (str, type(None))  # Peut être null
+                }
+                
+                all_fields_valid = True
+                missing_fields = []
+                invalid_types = []
+                
+                for field, expected_type in required_fields.items():
+                    if field not in created_user:
+                        missing_fields.append(field)
+                        all_fields_valid = False
+                    else:
+                        field_value = created_user[field]
+                        if isinstance(expected_type, tuple):
+                            # Champ peut être de plusieurs types (ex: str ou None)
+                            if not any(isinstance(field_value, t) for t in expected_type):
+                                invalid_types.append(f"{field}: {type(field_value)} (attendu: {expected_type})")
+                                all_fields_valid = False
+                        else:
+                            if not isinstance(field_value, expected_type):
+                                invalid_types.append(f"{field}: {type(field_value)} (attendu: {expected_type})")
+                                all_fields_valid = False
+                
+                if all_fields_valid:
+                    self.log_result("Structure modèle User", True, 
+                                  "Tous les champs requis présents avec types corrects")
+                else:
+                    error_details = []
+                    if missing_fields:
+                        error_details.append(f"Champs manquants: {missing_fields}")
+                    if invalid_types:
+                        error_details.append(f"Types incorrects: {invalid_types}")
+                    self.log_result("Structure modèle User", False, "; ".join(error_details))
+                
+                # Vérifier les valeurs par défaut
+                if created_user.get("is_active") is True:
+                    self.log_result("Valeur par défaut is_active", True, "is_active défini à True par défaut")
+                else:
+                    self.log_result("Valeur par défaut is_active", False, 
+                                  f"is_active incorrect: {created_user.get('is_active')}")
+                
+                if created_user.get("last_login") is None:
+                    self.log_result("Valeur par défaut last_login", True, "last_login défini à null par défaut")
+                else:
+                    self.log_result("Valeur par défaut last_login", False, 
+                                  f"last_login devrait être null: {created_user.get('last_login')}")
+                
+                # Nettoyer
+                requests.delete(f"{BASE_URL}/admin/users/{created_user['id']}")
+                
+            else:
+                self.log_result("Structure modèle User", False, 
+                              f"Erreur création utilisateur: {response.status_code}")
+        except Exception as e:
+            self.log_result("Structure modèle User", False, f"Exception: {str(e)}")
+    
+    def test_user_response_model_security(self):
+        """Test que le modèle UserResponse exclut les données sensibles"""
+        print("\n--- Test sécurité modèle UserResponse ---")
+        
+        # Créer un utilisateur et vérifier que les données sensibles ne sont pas exposées
+        user_data = {
+            "username": "security_test_user",
+            "email": "security.test@la-table-augustine.fr",
+            "password": "SecurityTest123!",
+            "role": "chef_cuisine",
+            "full_name": "Security Test Chef"
+        }
+        
+        try:
+            response = requests.post(f"{BASE_URL}/admin/users", json=user_data, headers=HEADERS)
+            if response.status_code == 200:
+                created_user = response.json()
+                
+                # Vérifier que les champs sensibles ne sont pas présents
+                sensitive_fields = ["password", "password_hash"]
+                exposed_sensitive = [field for field in sensitive_fields if field in created_user]
+                
+                if not exposed_sensitive:
+                    self.log_result("Sécurité UserResponse (POST)", True, 
+                                  "Aucune donnée sensible exposée lors de la création")
+                else:
+                    self.log_result("Sécurité UserResponse (POST)", False, 
+                                  f"Données sensibles exposées: {exposed_sensitive}")
+                
+                # Tester aussi avec GET (liste des utilisateurs)
+                list_response = requests.get(f"{BASE_URL}/admin/users")
+                if list_response.status_code == 200:
+                    users_list = list_response.json()
+                    if users_list:
+                        # Vérifier le premier utilisateur de la liste
+                        first_user = users_list[0]
+                        exposed_in_list = [field for field in sensitive_fields if field in first_user]
+                        
+                        if not exposed_in_list:
+                            self.log_result("Sécurité UserResponse (GET)", True, 
+                                          "Aucune donnée sensible exposée dans la liste")
+                        else:
+                            self.log_result("Sécurité UserResponse (GET)", False, 
+                                          f"Données sensibles exposées dans liste: {exposed_in_list}")
+                
+                # Nettoyer
+                requests.delete(f"{BASE_URL}/admin/users/{created_user['id']}")
+                
+            else:
+                self.log_result("Sécurité UserResponse", False, 
+                              f"Erreur création utilisateur: {response.status_code}")
+        except Exception as e:
+            self.log_result("Sécurité UserResponse", False, f"Exception: {str(e)}")
+    
+    def test_default_admin_user_creation(self):
+        """Test que l'utilisateur admin par défaut a été créé lors de la migration V3"""
+        print("\n--- Test utilisateur admin par défaut ---")
+        
+        try:
+            response = requests.get(f"{BASE_URL}/admin/users")
+            if response.status_code == 200:
+                users = response.json()
+                
+                # Chercher l'utilisateur admin par défaut
+                admin_user = next((u for u in users if u["username"] == "admin"), None)
+                
+                if admin_user:
+                    # Vérifier les propriétés de l'admin par défaut
+                    if admin_user["role"] == "super_admin":
+                        self.log_result("Admin par défaut - rôle", True, "Admin a le rôle super_admin")
+                    else:
+                        self.log_result("Admin par défaut - rôle", False, 
+                                      f"Rôle admin incorrect: {admin_user['role']}")
+                    
+                    if admin_user["email"] == "admin@restaurantla-table-augustine.fr":
+                        self.log_result("Admin par défaut - email", True, "Email admin correct")
+                    else:
+                        self.log_result("Admin par défaut - email", False, 
+                                      f"Email admin incorrect: {admin_user['email']}")
+                    
+                    if admin_user["full_name"] == "Administrateur Système":
+                        self.log_result("Admin par défaut - nom complet", True, "Nom complet admin correct")
+                    else:
+                        self.log_result("Admin par défaut - nom complet", False, 
+                                      f"Nom complet incorrect: {admin_user['full_name']}")
+                    
+                    if admin_user["is_active"] is True:
+                        self.log_result("Admin par défaut - statut actif", True, "Admin actif par défaut")
+                    else:
+                        self.log_result("Admin par défaut - statut actif", False, 
+                                      f"Admin non actif: {admin_user['is_active']}")
+                    
+                    self.log_result("Utilisateur admin par défaut", True, 
+                                  "Utilisateur admin par défaut trouvé et validé")
+                else:
+                    self.log_result("Utilisateur admin par défaut", False, 
+                                  "Utilisateur admin par défaut non trouvé")
+            else:
+                self.log_result("Utilisateur admin par défaut", False, 
+                              f"Erreur récupération utilisateurs: {response.status_code}")
+        except Exception as e:
+            self.log_result("Utilisateur admin par défaut", False, f"Exception: {str(e)}")
+    
+    def test_user_creation_database_updates(self):
+        """Test que la création d'utilisateur met à jour correctement la base de données"""
+        print("\n--- Test mise à jour base de données ---")
+        
+        # Compter les utilisateurs avant création
+        try:
+            initial_response = requests.get(f"{BASE_URL}/admin/users")
+            initial_count = len(initial_response.json()) if initial_response.status_code == 200 else 0
+            
+            # Créer un nouvel utilisateur
+            user_data = {
+                "username": "db_update_test",
+                "email": "db.update.test@la-table-augustine.fr",
+                "password": "DbUpdateTest123!",
+                "role": "barman",
+                "full_name": "Database Update Test User"
+            }
+            
+            create_response = requests.post(f"{BASE_URL}/admin/users", json=user_data, headers=HEADERS)
+            if create_response.status_code == 200:
+                created_user = create_response.json()
+                
+                # Vérifier que le nombre d'utilisateurs a augmenté
+                time.sleep(0.5)  # Petite pause pour la persistance
+                final_response = requests.get(f"{BASE_URL}/admin/users")
+                if final_response.status_code == 200:
+                    final_count = len(final_response.json())
+                    
+                    if final_count == initial_count + 1:
+                        self.log_result("Mise à jour compteur utilisateurs", True, 
+                                      f"Nombre d'utilisateurs passé de {initial_count} à {final_count}")
+                    else:
+                        self.log_result("Mise à jour compteur utilisateurs", False, 
+                                      f"Compteur incorrect: {initial_count} -> {final_count}")
+                    
+                    # Vérifier que l'utilisateur est bien persisté avec toutes ses données
+                    new_user = next((u for u in final_response.json() if u["id"] == created_user["id"]), None)
+                    if new_user:
+                        if (new_user["username"] == user_data["username"] and 
+                            new_user["email"] == user_data["email"] and
+                            new_user["role"] == user_data["role"] and
+                            new_user["full_name"] == user_data["full_name"]):
+                            self.log_result("Persistance données utilisateur", True, 
+                                          "Toutes les données utilisateur correctement persistées")
+                        else:
+                            self.log_result("Persistance données utilisateur", False, 
+                                          "Données utilisateur incorrectes après persistance")
+                    else:
+                        self.log_result("Persistance données utilisateur", False, 
+                                      "Utilisateur créé non trouvé dans la base")
+                
+                # Nettoyer
+                requests.delete(f"{BASE_URL}/admin/users/{created_user['id']}")
+                
+            else:
+                self.log_result("Mise à jour base de données", False, 
+                              f"Erreur création utilisateur: {create_response.status_code}")
+        except Exception as e:
+            self.log_result("Mise à jour base de données", False, f"Exception: {str(e)}")
+    
+    def test_user_deletion_complete_removal(self):
+        """Test que la suppression d'utilisateur le retire complètement"""
+        print("\n--- Test suppression complète utilisateur ---")
+        
+        # Créer un utilisateur à supprimer
+        user_data = {
+            "username": "deletion_test_user",
+            "email": "deletion.test@la-table-augustine.fr",
+            "password": "DeletionTest123!",
+            "role": "caissier",
+            "full_name": "Deletion Test User"
+        }
+        
+        try:
+            create_response = requests.post(f"{BASE_URL}/admin/users", json=user_data, headers=HEADERS)
+            if create_response.status_code == 200:
+                created_user = create_response.json()
+                user_id = created_user["id"]
+                
+                # Vérifier que l'utilisateur existe
+                initial_response = requests.get(f"{BASE_URL}/admin/users")
+                initial_users = initial_response.json() if initial_response.status_code == 200 else []
+                user_exists_before = any(u["id"] == user_id for u in initial_users)
+                
+                if user_exists_before:
+                    self.log_result("Utilisateur existe avant suppression", True, "Utilisateur trouvé avant suppression")
+                    
+                    # Supprimer l'utilisateur
+                    delete_response = requests.delete(f"{BASE_URL}/admin/users/{user_id}")
+                    if delete_response.status_code == 200:
+                        # Vérifier que l'utilisateur n'existe plus
+                        time.sleep(0.5)
+                        final_response = requests.get(f"{BASE_URL}/admin/users")
+                        final_users = final_response.json() if final_response.status_code == 200 else []
+                        user_exists_after = any(u["id"] == user_id for u in final_users)
+                        
+                        if not user_exists_after:
+                            self.log_result("Suppression complète utilisateur", True, 
+                                          "Utilisateur complètement supprimé de la base")
+                        else:
+                            self.log_result("Suppression complète utilisateur", False, 
+                                          "Utilisateur encore présent après suppression")
+                        
+                        # Vérifier que le nombre total d'utilisateurs a diminué
+                        if len(final_users) == len(initial_users) - 1:
+                            self.log_result("Mise à jour compteur après suppression", True, 
+                                          f"Nombre d'utilisateurs réduit de {len(initial_users)} à {len(final_users)}")
+                        else:
+                            self.log_result("Mise à jour compteur après suppression", False, 
+                                          f"Compteur incorrect: {len(initial_users)} -> {len(final_users)}")
+                    else:
+                        self.log_result("Suppression complète utilisateur", False, 
+                                      f"Erreur suppression: {delete_response.status_code}")
+                else:
+                    self.log_result("Utilisateur existe avant suppression", False, 
+                                  "Utilisateur non trouvé après création")
+            else:
+                self.log_result("Suppression complète utilisateur", False, 
+                              f"Erreur création utilisateur: {create_response.status_code}")
+        except Exception as e:
+            self.log_result("Suppression complète utilisateur", False, f"Exception: {str(e)}")
+    
+    def test_user_timestamps_metadata(self):
+        """Test validation des timestamps et métadonnées utilisateur"""
+        print("\n--- Test timestamps et métadonnées ---")
+        
+        user_data = {
+            "username": "timestamp_test_user",
+            "email": "timestamp.test@la-table-augustine.fr",
+            "password": "TimestampTest123!",
+            "role": "gerant",
+            "full_name": "Timestamp Test Manager"
+        }
+        
+        try:
+            # Enregistrer l'heure avant création
+            before_creation = datetime.utcnow()
+            
+            response = requests.post(f"{BASE_URL}/admin/users", json=user_data, headers=HEADERS)
+            if response.status_code == 200:
+                created_user = response.json()
+                
+                # Enregistrer l'heure après création
+                after_creation = datetime.utcnow()
+                
+                # Vérifier le timestamp created_at
+                if "created_at" in created_user:
+                    try:
+                        created_at_str = created_user["created_at"]
+                        # Gérer différents formats de timestamp
+                        if created_at_str.endswith('Z'):
+                            created_at = datetime.fromisoformat(created_at_str.replace('Z', '+00:00'))
+                        else:
+                            created_at = datetime.fromisoformat(created_at_str)
+                        
+                        # Vérifier que le timestamp est dans la plage attendue
+                        if before_creation <= created_at <= after_creation:
+                            self.log_result("Timestamp created_at", True, 
+                                          f"Timestamp correct: {created_at_str}")
+                        else:
+                            self.log_result("Timestamp created_at", False, 
+                                          f"Timestamp hors plage: {created_at_str}")
+                    except ValueError as e:
+                        self.log_result("Timestamp created_at", False, 
+                                      f"Format timestamp invalide: {created_user['created_at']}")
+                else:
+                    self.log_result("Timestamp created_at", False, "Champ created_at manquant")
+                
+                # Vérifier que last_login est null pour un nouvel utilisateur
+                if created_user.get("last_login") is None:
+                    self.log_result("Timestamp last_login initial", True, 
+                                  "last_login correctement null pour nouvel utilisateur")
+                else:
+                    self.log_result("Timestamp last_login initial", False, 
+                                  f"last_login devrait être null: {created_user.get('last_login')}")
+                
+                # Vérifier l'ID UUID
+                user_id = created_user.get("id", "")
+                if len(user_id) > 20 and "-" in user_id:  # Format UUID basique
+                    self.log_result("Format ID utilisateur", True, "ID au format UUID")
+                else:
+                    self.log_result("Format ID utilisateur", False, f"Format ID incorrect: {user_id}")
+                
+                # Nettoyer
+                requests.delete(f"{BASE_URL}/admin/users/{created_user['id']}")
+                
+            else:
+                self.log_result("Timestamps et métadonnées", False, 
+                              f"Erreur création utilisateur: {response.status_code}")
+        except Exception as e:
+            self.log_result("Timestamps et métadonnées", False, f"Exception: {str(e)}")
+    
+    def test_user_management_system_integration(self):
+        """Test intégration du système de gestion des utilisateurs avec le système existant"""
+        print("\n--- Test intégration système ---")
+        
+        try:
+            # Vérifier que les endpoints User Management n'interfèrent pas avec les autres APIs
+            
+            # Test 1: Vérifier que les APIs existantes fonctionnent toujours
+            dashboard_response = requests.get(f"{BASE_URL}/dashboard/stats")
+            if dashboard_response.status_code == 200:
+                self.log_result("Intégration - APIs existantes", True, 
+                              "APIs existantes fonctionnent avec User Management")
+            else:
+                self.log_result("Intégration - APIs existantes", False, 
+                              f"APIs existantes affectées: {dashboard_response.status_code}")
+            
+            # Test 2: Vérifier que la création d'utilisateurs n'affecte pas les autres collections
+            initial_products_response = requests.get(f"{BASE_URL}/produits")
+            initial_products_count = len(initial_products_response.json()) if initial_products_response.status_code == 200 else 0
+            
+            # Créer un utilisateur
+            user_data = {
+                "username": "integration_test",
+                "email": "integration.test@la-table-augustine.fr",
+                "password": "IntegrationTest123!",
+                "role": "chef_cuisine",
+                "full_name": "Integration Test Chef"
+            }
+            
+            user_response = requests.post(f"{BASE_URL}/admin/users", json=user_data, headers=HEADERS)
+            if user_response.status_code == 200:
+                created_user = user_response.json()
+                
+                # Vérifier que les produits n'ont pas été affectés
+                final_products_response = requests.get(f"{BASE_URL}/produits")
+                final_products_count = len(final_products_response.json()) if final_products_response.status_code == 200 else 0
+                
+                if final_products_count == initial_products_count:
+                    self.log_result("Intégration - isolation collections", True, 
+                                  "Création utilisateur n'affecte pas les autres collections")
+                else:
+                    self.log_result("Intégration - isolation collections", False, 
+                                  f"Collections affectées: produits {initial_products_count} -> {final_products_count}")
+                
+                # Nettoyer
+                requests.delete(f"{BASE_URL}/admin/users/{created_user['id']}")
+            else:
+                self.log_result("Intégration système", False, 
+                              f"Erreur création utilisateur: {user_response.status_code}")
+        except Exception as e:
+            self.log_result("Intégration système", False, f"Exception: {str(e)}")
+    
+    def test_mongodb_collection_storage(self):
+        """Test que les utilisateurs sont stockés dans la bonne collection MongoDB"""
+        print("\n--- Test stockage collection MongoDB ---")
+        
+        # Créer un utilisateur et vérifier qu'il est accessible
+        user_data = {
+            "username": "mongodb_test_user",
+            "email": "mongodb.test@la-table-augustine.fr",
+            "password": "MongoTest123!",
+            "role": "barman",
+            "full_name": "MongoDB Test Barman"
+        }
+        
+        try:
+            create_response = requests.post(f"{BASE_URL}/admin/users", json=user_data, headers=HEADERS)
+            if create_response.status_code == 200:
+                created_user = create_response.json()
+                
+                # Vérifier que l'utilisateur est récupérable via l'API (indique un stockage correct)
+                list_response = requests.get(f"{BASE_URL}/admin/users")
+                if list_response.status_code == 200:
+                    users_list = list_response.json()
+                    found_user = next((u for u in users_list if u["id"] == created_user["id"]), None)
+                    
+                    if found_user:
+                        # Vérifier que toutes les données sont cohérentes
+                        if (found_user["username"] == user_data["username"] and
+                            found_user["email"] == user_data["email"] and
+                            found_user["role"] == user_data["role"]):
+                            self.log_result("Stockage MongoDB correct", True, 
+                                          "Utilisateur correctement stocké et récupérable")
+                        else:
+                            self.log_result("Stockage MongoDB correct", False, 
+                                          "Données utilisateur incohérentes après stockage")
+                    else:
+                        self.log_result("Stockage MongoDB correct", False, 
+                                      "Utilisateur créé non trouvé dans la liste")
+                else:
+                    self.log_result("Stockage MongoDB correct", False, 
+                                  f"Erreur récupération liste: {list_response.status_code}")
+                
+                # Test de persistance après redémarrage simulé (via nouvelle requête)
+                time.sleep(1)
+                persistence_response = requests.get(f"{BASE_URL}/admin/users")
+                if persistence_response.status_code == 200:
+                    persistent_users = persistence_response.json()
+                    persistent_user = next((u for u in persistent_users if u["id"] == created_user["id"]), None)
+                    
+                    if persistent_user:
+                        self.log_result("Persistance MongoDB", True, 
+                                      "Utilisateur persiste correctement dans MongoDB")
+                    else:
+                        self.log_result("Persistance MongoDB", False, 
+                                      "Utilisateur non persisté")
+                
+                # Nettoyer
+                requests.delete(f"{BASE_URL}/admin/users/{created_user['id']}")
+                
+            else:
+                self.log_result("Stockage MongoDB", False, 
+                              f"Erreur création utilisateur: {create_response.status_code}")
+        except Exception as e:
+            self.log_result("Stockage MongoDB", False, f"Exception: {str(e)}")
+    
+    def test_user_operations_isolation(self):
+        """Test que les opérations utilisateur n'affectent pas les autres collections"""
+        print("\n--- Test isolation opérations utilisateur ---")
+        
+        try:
+            # Capturer l'état initial des autres collections
+            initial_states = {}
+            collections_to_check = ["fournisseurs", "produits", "stocks", "recettes"]
+            
+            for collection in collections_to_check:
+                response = requests.get(f"{BASE_URL}/{collection}")
+                if response.status_code == 200:
+                    initial_states[collection] = len(response.json())
+                else:
+                    initial_states[collection] = 0
+            
+            # Effectuer plusieurs opérations utilisateur
+            users_created = []
+            
+            # Créer plusieurs utilisateurs
+            for i in range(3):
+                user_data = {
+                    "username": f"isolation_test_user_{i}",
+                    "email": f"isolation.test.{i}@la-table-augustine.fr",
+                    "password": f"IsolationTest{i}123!",
+                    "role": ["gerant", "chef_cuisine", "barman"][i],
+                    "full_name": f"Isolation Test User {i}"
+                }
+                
+                response = requests.post(f"{BASE_URL}/admin/users", json=user_data, headers=HEADERS)
+                if response.status_code == 200:
+                    users_created.append(response.json())
+            
+            # Supprimer un utilisateur
+            if users_created:
+                requests.delete(f"{BASE_URL}/admin/users/{users_created[0]['id']}")
+            
+            # Vérifier que les autres collections n'ont pas été affectées
+            all_collections_stable = True
+            affected_collections = []
+            
+            for collection in collections_to_check:
+                response = requests.get(f"{BASE_URL}/{collection}")
+                if response.status_code == 200:
+                    final_count = len(response.json())
+                    if final_count != initial_states[collection]:
+                        all_collections_stable = False
+                        affected_collections.append(f"{collection}: {initial_states[collection]} -> {final_count}")
+            
+            if all_collections_stable:
+                self.log_result("Isolation opérations utilisateur", True, 
+                              "Opérations utilisateur n'affectent pas les autres collections")
+            else:
+                self.log_result("Isolation opérations utilisateur", False, 
+                              f"Collections affectées: {affected_collections}")
+            
+            # Nettoyer les utilisateurs restants
+            for user in users_created[1:]:  # Le premier a déjà été supprimé
+                try:
+                    requests.delete(f"{BASE_URL}/admin/users/{user['id']}")
+                except:
+                    pass
+                    
+        except Exception as e:
+            self.log_result("Isolation opérations utilisateur", False, f"Exception: {str(e)}")
+    
+    def test_user_data_format_validation(self):
+        """Test validation du format et de la structure des données utilisateur"""
+        print("\n--- Test validation format données ---")
+        
+        # Test avec données valides
+        valid_user_data = {
+            "username": "format_test_user",
+            "email": "format.test@la-table-augustine.fr",
+            "password": "FormatTest123!",
+            "role": "caissier",
+            "full_name": "Format Test Cashier"
+        }
+        
+        try:
+            response = requests.post(f"{BASE_URL}/admin/users", json=valid_user_data, headers=HEADERS)
+            if response.status_code == 200:
+                created_user = response.json()
+                self.log_result("Validation données valides", True, "Données valides acceptées")
+                
+                # Test avec données invalides
+                invalid_test_cases = [
+                    # Email invalide
+                    {
+                        "data": {**valid_user_data, "email": "invalid-email", "username": "invalid_email_test"},
+                        "test_name": "Email invalide"
+                    },
+                    # Username vide
+                    {
+                        "data": {**valid_user_data, "username": "", "email": "empty.username@test.fr"},
+                        "test_name": "Username vide"
+                    },
+                    # Mot de passe trop court
+                    {
+                        "data": {**valid_user_data, "password": "123", "username": "short_pass", "email": "short.pass@test.fr"},
+                        "test_name": "Mot de passe trop court"
+                    },
+                    # Rôle manquant
+                    {
+                        "data": {k: v for k, v in valid_user_data.items() if k != "role"},
+                        "test_name": "Rôle manquant"
+                    }
+                ]
+                
+                for test_case in invalid_test_cases:
+                    test_data = test_case["data"]
+                    test_name = test_case["test_name"]
+                    
+                    invalid_response = requests.post(f"{BASE_URL}/admin/users", json=test_data, headers=HEADERS)
+                    if invalid_response.status_code in [400, 422]:  # Erreurs de validation
+                        self.log_result(f"Validation - {test_name}", True, 
+                                      f"Données invalides correctement rejetées ({invalid_response.status_code})")
+                    else:
+                        self.log_result(f"Validation - {test_name}", False, 
+                                      f"Données invalides acceptées: {invalid_response.status_code}")
+                
+                # Nettoyer
+                requests.delete(f"{BASE_URL}/admin/users/{created_user['id']}")
+                
+            else:
+                self.log_result("Validation format données", False, 
+                              f"Erreur avec données valides: {response.status_code}")
+        except Exception as e:
+            self.log_result("Validation format données", False, f"Exception: {str(e)}")
+
     def run_all_tests(self):
         """Exécute tous les tests"""
         print("🚀 DÉBUT DES TESTS BACKEND - GESTION STOCKS RESTAURANT + OCR")
