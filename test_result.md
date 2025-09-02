@@ -477,8 +477,7 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Verify OCR History 'Aperçu' button opens side-by-side preview modal"
-    - "Backend OCR endpoints remain stable after preview fetch (GET /api/ocr/document/{id})"
+    - "OCR Preview Flow Backend Validation Complete"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
