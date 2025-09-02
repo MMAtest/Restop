@@ -19,6 +19,8 @@ import pytesseract
 import cv2
 import numpy as np
 from PIL import Image
+import PyPDF2
+import pdfplumber
 import base64
 import re
 
