@@ -1571,15 +1571,12 @@ def parse_z_report_enhanced(texte_ocr: str) -> StructuredZReportData:
                 break
         
         # Enhanced item extraction with better pattern recognition
+        # New tighter parsing is handled by try_parse_item_line; keep legacy patterns for fallback only
         item_patterns = [
-            # Format: "(x14) Linguine aux palourdes"
-            r'\([x]?(\d{1,3})\)\s+([A-Za-zÀ-ÿ][A-Za-zÀ-ÿ\s\'\-\.\,]{3,50})',
-            # Format: "14x Linguine aux palourdes" or "14 Linguine"
-            r'(\d{1,3})[x\s]+([A-Za-zÀ-ÿ][A-Za-zÀ-ÿ\s\'\-\.\,]{3,50})',
-            # Format: "Linguine aux palourdes: 14"
-            r'([A-Za-zÀ-ÿ][A-Za-zÀ-ÿ\s\'\-\.\,]{3,50})\s*:?\s*(\d{1,3})',
-            # Format: "Linguine aux palourdes €28.00 x 14"
-            r'([A-Za-zÀ-ÿ][A-Za-zÀ-ÿ\s\'\-\.\,]{3,50})\s*€?(\d+[,.]?\d*)\s*x?\s*(\d{1,3})'
+            r'\([x]?(\d{1,3})\)\s+([A-Za-zÀ-ÿ][A-Za-zÀ-ÿ\s\'\-\.\,]{3,80})',
+            r'(\d{1,3})[x\s]+([A-Za-zÀ-ÿ][A-Za-zÀ-ÿ\s\'\-\.\,]{3,80})',
+            r'([A-Za-zÀ-ÿ][A-Za-zÀ-ÿ\s\'\-\.\,]{3,80})\s*:?\s*(\d{1,3})',
+            r'([A-Za-zÀ-ÿ][A-Za-zÀ-ÿ\s\'\-\.\,]{3,80})\s*€?(\d+[,.]?\d*)\s*x?\s*(\d{1,3})'
         ]
         
         raw_items = []
