@@ -925,6 +925,347 @@ def extract_text_from_image(image_base64: str) -> str:
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Erreur lors de l'extraction OCR: {str(e)}")
 
+def parse_z_report_enhanced(texte_ocr: str) -> StructuredZReportData:
+    """Enhanced Z report parser with structured data extraction and categorization"""
+    structured_data = StructuredZReportData()
+    
+    try:
+        # Extract report date
+        date_patterns = [
+            r'(\d{1,2}[/\-.]\d{1,2}[/\-.]\d{2,4})',
+            r'(\d{2,4}[/\-.]\d{1,2}[/\-.]\d{1,2})'
+        ]
+        
+        for pattern in date_patterns:
+            date_match = re.search(pattern, texte_ocr)
+            if date_match:
+                structured_data.report_date = date_match.group(1)
+                break
+        
+        # Extract service (Midi, Soir, etc.)
+        service_patterns = [
+            r'service\s+(midi|soir|matin|après-midi)',
+            r'(midi|soir|matin|après-midi)\s+service',
+            r'(déjeuner|dîner|petit-déjeuner)'
+        ]
+        
+        for pattern in service_patterns:
+            service_match = re.search(pattern, texte_ocr, re.IGNORECASE)
+            if service_match:
+                service_text = service_match.group(1).lower()
+                # Normalize service names
+                if service_text in ['midi', 'déjeuner']:
+                    structured_data.service = "Midi"
+                elif service_text in ['soir', 'dîner']:
+                    structured_data.service = "Soir"
+                elif service_text in ['matin', 'petit-déjeuner']:
+                    structured_data.service = "Matin"
+                elif service_text == 'après-midi':
+                    structured_data.service = "Après-midi"
+                break
+        
+        # Enhanced item extraction with better pattern recognition
+        item_patterns = [
+            # Format: "(x14) Linguine aux palourdes"
+            r'\([x]?(\d{1,3})\)\s+([A-Za-zÀ-ÿ][A-Za-zÀ-ÿ\s\'\-\.\,]{3,50})',
+            # Format: "14x Linguine aux palourdes" or "14 Linguine"
+            r'(\d{1,3})[x\s]+([A-Za-zÀ-ÿ][A-Za-zÀ-ÿ\s\'\-\.\,]{3,50})',
+            # Format: "Linguine aux palourdes: 14"
+            r'([A-Za-zÀ-ÿ][A-Za-zÀ-ÿ\s\'\-\.\,]{3,50})\s*:?\s*(\d{1,3})',
+            # Format: "Linguine aux palourdes €28.00 x 14"
+            r'([A-Za-zÀ-ÿ][A-Za-zÀ-ÿ\s\'\-\.\,]{3,50})\s*€?(\d+[,.]?\d*)\s*x?\s*(\d{1,3})'
+        ]
+        
+        raw_items = []
+        lines = texte_ocr.split('\n')
+        
+        # Extract grand total
+        total_patterns = [
+            r'total\s*:?\s*€?(\d+[,.]?\d*)',
+            r'montant\s*total\s*:?\s*€?(\d+[,.]?\d*)',
+            r'ca\s*total\s*:?\s*€?(\d+[,.]?\d*)'
+        ]
+        
+        for line in lines:
+            line = line.strip()
+            for pattern in total_patterns:
+                total_match = re.search(pattern, line.lower())
+                if total_match:
+                    try:
+                        structured_data.grand_total_sales = float(total_match.group(1).replace(',', '.'))
+                    except ValueError:
+                        pass
+        
+        # Process each line for items
+        for line in lines:
+            line = line.strip()
+            if not line or len(line) < 5:
+                continue
+            
+            # Skip lines that are clearly totals, dates, or headers
+            if re.search(r'total|somme|ca\s|date|rapport|couverts?|service', line.lower()):
+                continue
+            
+            # Try each pattern
+            for pattern_index, pattern in enumerate(item_patterns):
+                match = re.search(pattern, line, re.IGNORECASE)
+                if match:
+                    groups = match.groups()
+                    
+                    if pattern_index == 3:  # Special case for price pattern
+                        if len(groups) >= 3:
+                            name = groups[0].strip()
+                            price = float(groups[1].replace(',', '.'))
+                            quantity = int(groups[2])
+                        else:
+                            continue
+                    else:
+                        # Determine quantity and name based on pattern
+                        if groups[0].isdigit():
+                            quantity = int(groups[0])
+                            name = groups[1].strip()
+                        else:
+                            name = groups[0].strip()
+                            try:
+                                quantity = int(groups[1]) if len(groups) > 1 and groups[1].isdigit() else 1
+                            except (ValueError, IndexError):
+                                quantity = 1
+                        price = None
+                    
+                    # Clean up the name
+                    name = re.sub(r'\s+', ' ', name)
+                    name = name.strip('.,;:-')
+                    
+                    if len(name) >= 3 and quantity > 0:
+                        # Categorize the item
+                        category = categorize_menu_item(name)
+                        
+                        item = {
+                            "name": name,
+                            "quantity_sold": quantity,
+                            "category": category,
+                            "unit_price": price,
+                            "total_price": price * quantity if price else None,
+                            "raw_line": line
+                        }
+                        raw_items.append(item)
+                        break
+        
+        # Group items by category
+        structured_data.items_by_category = {
+            "Bar": [],
+            "Entrées": [],
+            "Plats": [],
+            "Desserts": []
+        }
+        
+        for item in raw_items:
+            category = item["category"]
+            structured_item = StructuredZReportItem(
+                name=item["name"],
+                quantity_sold=item["quantity_sold"],
+                category=category,
+                unit_price=item.get("unit_price"),
+                total_price=item.get("total_price")
+            )
+            structured_data.items_by_category[category].append(structured_item.dict())
+        
+        structured_data.raw_items = raw_items
+        
+        return structured_data
+        
+    except Exception as e:
+        print(f"Erreur lors du parsing structuré Z-report: {str(e)}")
+        # Return empty structured data in case of error
+        return StructuredZReportData()
+
+def categorize_menu_item(item_name: str) -> str:
+    """Categorize menu items based on name patterns"""
+    name_lower = item_name.lower()
+    
+    # Bar/Beverages
+    bar_keywords = [
+        'vin', 'wine', 'bière', 'beer', 'cocktail', 'apéritif', 'digestif',
+        'whisky', 'vodka', 'gin', 'rhum', 'champagne', 'prosecco', 'kir',
+        'pastis', 'ricard', 'mojito', 'sangria', 'eau', 'soda', 'coca',
+        'jus', 'café', 'thé', 'expresso', 'cappuccino', 'alcool'
+    ]
+    
+    # Entrées
+    entree_keywords = [
+        'entrée', 'salade', 'soupe', 'velouté', 'tartare', 'carpaccio',
+        'toast', 'bruschetta', 'antipasti', 'terrine', 'foie gras',
+        'escargot', 'huître', 'crevette', 'saumon fumé', 'charcuterie'
+    ]
+    
+    # Desserts
+    dessert_keywords = [
+        'dessert', 'tarte', 'gâteau', 'mousse', 'tiramisu', 'panna cotta',
+        'glace', 'sorbet', 'crème', 'flan', 'fondant', 'mille-feuille',
+        'éclair', 'profiterole', 'macaron', 'fruit', 'café gourmand'
+    ]
+    
+    # Check categories
+    for keyword in bar_keywords:
+        if keyword in name_lower:
+            return "Bar"
+    
+    for keyword in entree_keywords:
+        if keyword in name_lower:
+            return "Entrées"
+    
+    for keyword in dessert_keywords:
+        if keyword in name_lower:
+            return "Desserts"
+    
+    # Default to "Plats" (main dishes)
+    return "Plats"
+
+async def calculate_stock_deductions(structured_report: StructuredZReportData) -> ZReportValidationResult:
+    """Calculate proposed stock deductions based on sold items and recipe ingredients"""
+    result = ZReportValidationResult(
+        can_validate=True,
+        proposed_deductions=[],
+        total_deductions=0,
+        warnings=[],
+        errors=[]
+    )
+    
+    try:
+        # Get all recipes for matching
+        recipes = await db.recettes.find().to_list(1000)
+        recipe_dict = {recipe["nom"].lower(): recipe for recipe in recipes}
+        
+        # Process each sold item
+        all_items = []
+        for category, items in structured_report.items_by_category.items():
+            all_items.extend(items)
+        
+        for item in all_items:
+            item_name = item["name"].lower()
+            quantity_sold = item["quantity_sold"]
+            
+            # Try to find matching recipe
+            matching_recipe = None
+            best_match_ratio = 0
+            
+            for recipe_name, recipe in recipe_dict.items():
+                # Direct match
+                if item_name == recipe_name:
+                    matching_recipe = recipe
+                    break
+                # Partial match (simple fuzzy matching)
+                elif item_name in recipe_name or recipe_name in item_name:
+                    # Calculate simple match ratio
+                    match_ratio = len(set(item_name.split()) & set(recipe_name.split())) / max(len(item_name.split()), len(recipe_name.split()))
+                    if match_ratio > best_match_ratio and match_ratio > 0.3:
+                        best_match_ratio = match_ratio
+                        matching_recipe = recipe
+            
+            if matching_recipe:
+                # Calculate ingredient deductions
+                ingredient_deductions = []
+                warnings = []
+                recipe_portions = matching_recipe.get("portions", 1)
+                
+                for ingredient in matching_recipe.get("ingredients", []):
+                    # Get current stock
+                    stock = await db.stocks.find_one({"produit_id": ingredient["produit_id"]})
+                    if stock:
+                        # Calculate required quantity per sold portion
+                        qty_per_portion = ingredient["quantite"] / recipe_portions
+                        total_deduction = qty_per_portion * quantity_sold
+                        
+                        current_stock = stock["quantite_actuelle"]
+                        new_stock = current_stock - total_deduction
+                        
+                        ingredient_deductions.append({
+                            "product_id": ingredient["produit_id"],
+                            "product_name": ingredient.get("produit_nom", "Produit inconnu"),
+                            "current_stock": current_stock,
+                            "deduction": total_deduction,
+                            "new_stock": max(0, new_stock),
+                            "unit": ingredient.get("unite", "")
+                        })
+                        
+                        # Check for insufficient stock
+                        if new_stock < 0:
+                            warnings.append(f"Stock insuffisant pour {ingredient.get('produit_nom', 'Produit')}: {current_stock} disponible, {total_deduction:.2f} requis")
+                            result.can_validate = False
+                    else:
+                        warnings.append(f"Stock non trouvé pour {ingredient.get('produit_nom', 'Produit')}")
+                
+                proposal = StockDeductionProposal(
+                    recipe_name=matching_recipe["nom"],
+                    quantity_sold=quantity_sold,
+                    ingredient_deductions=ingredient_deductions,
+                    warnings=warnings
+                )
+                result.proposed_deductions.append(proposal)
+                result.total_deductions += len(ingredient_deductions)
+            else:
+                result.warnings.append(f"Aucune recette trouvée pour '{item['name']}'")
+        
+        if not result.proposed_deductions:
+            result.warnings.append("Aucune déduction de stock possible - aucune recette correspondante trouvée")
+        
+        return result
+        
+    except Exception as e:
+        result.errors.append(f"Erreur lors du calcul des déductions: {str(e)}")
+        result.can_validate = False
+        return result
+
+async def apply_stock_deductions(validation_result: ZReportValidationResult) -> dict:
+    """Apply the proposed stock deductions to the database"""
+    if not validation_result.can_validate:
+        return {"success": False, "message": "Validation impossible - vérifiez les alertes"}
+    
+    applied_deductions = 0
+    errors = []
+    
+    try:
+        for proposal in validation_result.proposed_deductions:
+            for deduction in proposal.ingredient_deductions:
+                # Update stock
+                result = await db.stocks.update_one(
+                    {"produit_id": deduction["product_id"]},
+                    {
+                        "$set": {
+                            "quantite_actuelle": deduction["new_stock"],
+                            "derniere_maj": datetime.utcnow()
+                        }
+                    }
+                )
+                
+                if result.modified_count > 0:
+                    # Create stock movement record
+                    mouvement = MouvementStock(
+                        produit_id=deduction["product_id"],
+                        produit_nom=deduction["product_name"],
+                        type="sortie",
+                        quantite=deduction["deduction"],
+                        commentaire=f"Déduction automatique - vente {proposal.recipe_name} (x{proposal.quantity_sold})"
+                    )
+                    await db.mouvements_stock.insert_one(mouvement.dict())
+                    applied_deductions += 1
+                else:
+                    errors.append(f"Impossible de mettre à jour le stock pour {deduction['product_name']}")
+        
+        return {
+            "success": True,
+            "message": f"{applied_deductions} déductions appliquées avec succès",
+            "applied_deductions": applied_deductions,
+            "errors": errors
+        }
+        
+    except Exception as e:
+        return {
+            "success": False,
+            "message": f"Erreur lors de l'application des déductions: {str(e)}",
+            "errors": [str(e)]
+        }
+
 def parse_z_report(texte_ocr: str) -> ZReportData:
     """Parser les données d'un rapport Z avec adaptation aux formats réels La Table d'Augustine"""
     data = ZReportData()
