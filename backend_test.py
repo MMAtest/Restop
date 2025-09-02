@@ -4837,6 +4837,247 @@ Nombre de couverts: 26"""
         except Exception as e:
             self.log_result("Validation format données", False, f"Exception: {str(e)}")
 
+    def test_ocr_with_unknown_items(self):
+        """Test OCR behavior with NEW items that don't exist in the database yet"""
+        print("\n=== TEST OCR AVEC ITEMS INCONNUS (NOUVEAUX) ===")
+        
+        # Créer un rapport Z simulé avec un mélange d'items existants et nouveaux
+        mixed_z_report_content = """RAPPORT Z - LA TABLE D'AUGUSTINE
+15/01/2025 - Service: Soir
+
+VENTES PAR CATÉGORIE:
+
+BAR:
+Vin rouge Côtes du Rhône: 2
+Cocktail Maison Augustine: 3
+Pastis Ricard: 1
+
+ENTRÉES:
+Supions en persillade: 4
+Salade César Nouvelle: 2
+Fleurs de courgettes: 3
+
+PLATS:
+Linguine aux palourdes: 5
+Pizza Margherita Spéciale: 3
+Bœuf Wellington: 2
+Risotto aux Champignons Sauvages: 1
+
+DESSERTS:
+Tiramisu: 3
+Tarte aux Pommes Bio: 4
+Crème Brûlée Vanille Madagascar: 2
+
+TOTAL CA: 687.50€
+Nombre de couverts: 32"""
+        
+        # Créer un PDF simulé avec ce contenu
+        pdf_content = self.create_mock_pdf_content(mixed_z_report_content)
+        
+        try:
+            # Test 1: Upload du document avec items mixtes (existants + nouveaux)
+            files = {
+                'file': ('z_report_mixed_items.pdf', pdf_content, 'application/pdf')
+            }
+            data = {'document_type': 'z_report'}
+            
+            response = requests.post(f"{BASE_URL}/ocr/upload-document", files=files, data=data)
+            if response.status_code in [200, 201]:
+                result = response.json()
+                document_id = result.get("document_id")
+                extracted_text = result.get("texte_extrait", "")
+                
+                # Vérifier que TOUS les items sont extraits (existants + nouveaux)
+                expected_items = [
+                    "Vin rouge Côtes du Rhône", "Cocktail Maison Augustine", "Pastis Ricard",
+                    "Supions en persillade", "Salade César Nouvelle", "Fleurs de courgettes",
+                    "Linguine aux palourdes", "Pizza Margherita Spéciale", "Bœuf Wellington",
+                    "Risotto aux Champignons Sauvages", "Tiramisu", "Tarte aux Pommes Bio",
+                    "Crème Brûlée Vanille Madagascar"
+                ]
+                
+                extracted_items_count = sum(1 for item in expected_items if item.lower() in extracted_text.lower())
+                
+                if extracted_items_count >= 10:  # Au moins 10 des 13 items
+                    self.log_result("OCR Text Extraction - ALL Items", True, 
+                                  f"Extraction réussie: {extracted_items_count}/13 items détectés dans le texte")
+                else:
+                    self.log_result("OCR Text Extraction - ALL Items", False, 
+                                  f"Extraction insuffisante: seulement {extracted_items_count}/13 items détectés")
+                
+                # Test 2: Parse Z Report Enhanced pour vérifier la catégorisation
+                if document_id:
+                    parse_response = requests.post(f"{BASE_URL}/ocr/parse-z-report-enhanced?document_id={document_id}", 
+                                                 headers=HEADERS)
+                    
+                    if parse_response.status_code == 200:
+                        structured_data = parse_response.json()
+                        items_by_category = structured_data.get("items_by_category", {})
+                        
+                        # Vérifier que TOUS les items sont catégorisés (existants + nouveaux)
+                        total_categorized_items = 0
+                        for category, items in items_by_category.items():
+                            total_categorized_items += len(items)
+                        
+                        if total_categorized_items >= 10:
+                            self.log_result("OCR Categorization - ALL Items", True, 
+                                          f"Catégorisation réussie: {total_categorized_items} items catégorisés")
+                        else:
+                            self.log_result("OCR Categorization - ALL Items", False, 
+                                          f"Catégorisation insuffisante: seulement {total_categorized_items} items")
+                        
+                        # Vérifier la catégorisation spécifique des nouveaux items
+                        bar_items = [item["name"] for item in items_by_category.get("Bar", [])]
+                        entrees_items = [item["name"] for item in items_by_category.get("Entrées", [])]
+                        plats_items = [item["name"] for item in items_by_category.get("Plats", [])]
+                        desserts_items = [item["name"] for item in items_by_category.get("Desserts", [])]
+                        
+                        # Vérifier les nouveaux items dans chaque catégorie
+                        new_bar_item = any("Cocktail Maison Augustine" in item for item in bar_items)
+                        new_entree_item = any("Salade César" in item for item in entrees_items)
+                        new_plat_item = any("Pizza Margherita" in item for item in plats_items)
+                        new_dessert_item = any("Tarte aux Pommes" in item for item in desserts_items)
+                        
+                        categorization_score = sum([new_bar_item, new_entree_item, new_plat_item, new_dessert_item])
+                        
+                        if categorization_score >= 3:
+                            self.log_result("New Items Categorization", True, 
+                                          f"Nouveaux items correctement catégorisés: {categorization_score}/4 catégories")
+                        else:
+                            self.log_result("New Items Categorization", False, 
+                                          f"Catégorisation des nouveaux items insuffisante: {categorization_score}/4")
+                        
+                        # Test 3: Calcul des déductions de stock (doit fonctionner pour items existants seulement)
+                        deduction_response = requests.post(f"{BASE_URL}/ocr/calculate-stock-deductions", 
+                                                         json=structured_data, headers=HEADERS)
+                        
+                        if deduction_response.status_code == 200:
+                            deduction_result = deduction_response.json()
+                            proposed_deductions = deduction_result.get("proposed_deductions", [])
+                            warnings = deduction_result.get("warnings", [])
+                            
+                            # Vérifier qu'il y a des déductions pour les items existants
+                            existing_items_with_deductions = [
+                                "Linguine aux palourdes", "Supions en persillade", "Bœuf Wellington"
+                            ]
+                            
+                            deductions_for_existing = [
+                                d for d in proposed_deductions 
+                                if any(existing in d.get("recipe_name", "") for existing in existing_items_with_deductions)
+                            ]
+                            
+                            if len(deductions_for_existing) > 0:
+                                self.log_result("Stock Deductions - Existing Items", True, 
+                                              f"Déductions calculées pour {len(deductions_for_existing)} items existants")
+                            else:
+                                self.log_result("Stock Deductions - Existing Items", False, 
+                                              "Aucune déduction calculée pour les items existants")
+                            
+                            # Vérifier qu'il y a des warnings pour les nouveaux items
+                            new_items_warnings = [
+                                "Pizza Margherita Spéciale", "Cocktail Maison Augustine", 
+                                "Tarte aux Pommes Bio", "Salade César Nouvelle"
+                            ]
+                            
+                            warnings_for_new_items = [
+                                w for w in warnings 
+                                if any(new_item in w for new_item in new_items_warnings)
+                            ]
+                            
+                            if len(warnings_for_new_items) >= 2:
+                                self.log_result("Warnings - New Items", True, 
+                                              f"Warnings générés pour {len(warnings_for_new_items)} nouveaux items")
+                            else:
+                                self.log_result("Warnings - New Items", False, 
+                                              f"Warnings insuffisants pour nouveaux items: {len(warnings_for_new_items)}")
+                            
+                            # Vérifier le message spécifique "Aucune recette trouvée pour..."
+                            unmatched_warnings = [w for w in warnings if "Aucune recette trouvée pour" in w]
+                            
+                            if len(unmatched_warnings) >= 2:
+                                self.log_result("Unmatched Items Warnings", True, 
+                                              f"Messages d'alerte pour items non trouvés: {len(unmatched_warnings)}")
+                            else:
+                                self.log_result("Unmatched Items Warnings", False, 
+                                              "Messages d'alerte insuffisants pour items non trouvés")
+                        
+                        # Test 4: Vérifier le stockage des données structurées (donnees_parsees)
+                        # Récupérer le document pour vérifier les données parsées
+                        doc_response = requests.get(f"{BASE_URL}/ocr/document/{document_id}")
+                        if doc_response.status_code == 200:
+                            doc_data = doc_response.json()
+                            donnees_parsees = doc_data.get("donnees_parsees", {})
+                            
+                            if donnees_parsees and "items_by_category" in donnees_parsees:
+                                stored_items_count = sum(
+                                    len(items) for items in donnees_parsees["items_by_category"].values()
+                                )
+                                
+                                if stored_items_count >= 10:
+                                    self.log_result("Data Storage - All Items", True, 
+                                                  f"Tous les items stockés dans donnees_parsees: {stored_items_count} items")
+                                else:
+                                    self.log_result("Data Storage - All Items", False, 
+                                                  f"Stockage incomplet: {stored_items_count} items seulement")
+                                
+                                # Vérifier que le grand total est stocké
+                                grand_total = donnees_parsees.get("grand_total_sales")
+                                if grand_total == 687.50:
+                                    self.log_result("Grand Total Storage", True, 
+                                                  f"Grand total correctement stocké: {grand_total}€")
+                                else:
+                                    self.log_result("Grand Total Storage", False, 
+                                                  f"Grand total incorrect: {grand_total}€")
+                            else:
+                                self.log_result("Data Storage - All Items", False, 
+                                              "Données parsées manquantes ou incomplètes")
+                        
+                        # Test 5: Workflow complet - Vérifier que les nouveaux items sont visibles mais sans impact stock
+                        preview_response = requests.get(f"{BASE_URL}/ocr/z-report-preview/{document_id}")
+                        if preview_response.status_code == 200:
+                            preview_data = preview_response.json()
+                            preview_structured = preview_data.get("structured_data", {})
+                            preview_validation = preview_data.get("validation_result", {})
+                            
+                            # Vérifier que tous les items sont visibles dans l'interface
+                            preview_items_count = sum(
+                                len(items) for items in preview_structured.get("items_by_category", {}).values()
+                            )
+                            
+                            if preview_items_count >= 10:
+                                self.log_result("Interface Visibility - All Items", True, 
+                                              f"Tous les items visibles dans l'interface: {preview_items_count} items")
+                            else:
+                                self.log_result("Interface Visibility - All Items", False, 
+                                              f"Visibilité insuffisante: {preview_items_count} items")
+                            
+                            # Vérifier que seuls les items existants ont un impact sur le stock
+                            preview_deductions = preview_validation.get("proposed_deductions", [])
+                            deductions_count = len(preview_deductions)
+                            
+                            # Il devrait y avoir moins de déductions que d'items totaux
+                            if deductions_count < preview_items_count and deductions_count > 0:
+                                self.log_result("Stock Impact - Existing Only", True, 
+                                              f"Impact stock limité aux items existants: {deductions_count} déductions sur {preview_items_count} items")
+                            else:
+                                self.log_result("Stock Impact - Existing Only", False, 
+                                              f"Impact stock incorrect: {deductions_count} déductions")
+                        
+                        # Stocker l'ID du document pour cleanup
+                        self.created_document_id = document_id
+                        
+                    else:
+                        self.log_result("Parse Z Report Enhanced - Mixed Items", False, 
+                                      f"Erreur parsing: {parse_response.status_code}")
+                else:
+                    self.log_result("Document Upload - Mixed Items", False, "Document ID manquant")
+            else:
+                self.log_result("Document Upload - Mixed Items", False, 
+                              f"Erreur upload: {response.status_code}")
+        
+        except Exception as e:
+            self.log_result("OCR Unknown Items Test", False, f"Exception: {str(e)}")
+
     def run_all_tests(self):
         """Exécute tous les tests"""
         print("🚀 DÉBUT DES TESTS BACKEND - GESTION STOCKS RESTAURANT + OCR")
