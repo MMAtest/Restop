@@ -555,6 +555,16 @@ function App() {
     }
   };
 
+  const handlePreviewDocument = (document) => {
+    setPreviewDocument(document);
+    setShowPreviewModal(true);
+  };
+
+  const closePreviewModal = () => {
+    setShowPreviewModal(false);
+    setPreviewDocument(null);
+  };
+
   const handleOcrUpload = async () => {
     if (!ocrFile) {
       alert('Veuillez sélectionner un fichier');
