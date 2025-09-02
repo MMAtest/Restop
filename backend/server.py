@@ -298,6 +298,35 @@ class DocumentUploadResponse(BaseModel):
     donnees_parsees: dict
     message: str
 
+# ✅ Version 3 Feature #2 - Enhanced OCR Models for Structured Parsing
+class StructuredZReportItem(BaseModel):
+    name: str
+    quantity_sold: int
+    category: str  # "Bar", "Entrées", "Plats", "Desserts"
+    unit_price: Optional[float] = None
+    total_price: Optional[float] = None
+
+class StructuredZReportData(BaseModel):
+    report_date: Optional[str] = None
+    service: Optional[str] = None  # "Midi", "Soir", etc.
+    items_by_category: dict = {}  # {"Bar": [...], "Entrées": [...], etc.}
+    grand_total_sales: Optional[float] = None
+    raw_items: List[dict] = []  # Original parsed items for reference
+
+class StockDeductionProposal(BaseModel):
+    recipe_name: str
+    quantity_sold: int
+    ingredient_deductions: List[dict]  # [{"product_name": "", "current_stock": 0, "deduction": 0, "new_stock": 0}]
+    warnings: List[str] = []  # Warnings about insufficient stock, etc.
+
+class ZReportValidationResult(BaseModel):
+    can_validate: bool
+    proposed_deductions: List[StockDeductionProposal]
+    total_deductions: int
+    warnings: List[str] = []
+    errors: List[str] = []
+
+# Backward compatibility - Legacy ZReportData model
 class ZReportData(BaseModel):
     date: Optional[str] = None
     plats_vendus: List[dict] = []
