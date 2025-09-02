@@ -1435,8 +1435,22 @@ function App() {
                         <span style={{color: '#38a169', fontWeight: 'bold'}}>✅ Validée</span>
                       </span>
                       <div>
-                        <button className="button" style={{fontSize: '0.7rem', padding: '4px 8px'}}>👁️ Voir</button>
-                        <button className="button" style={{fontSize: '0.7rem', padding: '4px 8px'}}>📄 PDF</button>
+                        <button 
+                          className="button" 
+                          style={{fontSize: '0.7rem', padding: '4px 8px', marginRight: '5px'}}
+                          onClick={() => handlePreviewDocument(doc)}
+                        >
+                          👁️ Aperçu
+                        </button>
+                        {doc.type_document === 'z_report' && (
+                          <button 
+                            className="button" 
+                            style={{fontSize: '0.7rem', padding: '4px 8px'}}
+                            onClick={() => handleProcessZReport(doc.id)}
+                          >
+                            ⚡ Traiter
+                          </button>
+                        )}
                       </div>
                     </div>
                   ))}
