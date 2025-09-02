@@ -390,7 +390,7 @@ const AnalyticsPage = () => {
                   {alertCenter.price_anomalies.map((anomaly, index) => (
                     <div key={index} className="p-4 bg-purple-50 border-l-4 border-purple-400 rounded-lg">
                       <div className="flex justify-between items-center">
-                        <div>
+                        <div className="flex-1">
                           <p className="font-medium">{anomaly.product_name}</p>
                           <p className="text-sm text-gray-600">
                             Fournisseur: {anomaly.supplier_name} • Prix référence: {formatCurrency(anomaly.reference_price)}
@@ -399,9 +399,17 @@ const AnalyticsPage = () => {
                             Prix facturé: {formatCurrency(anomaly.actual_price)}
                           </p>
                         </div>
-                        <span className="px-3 py-1 bg-red-100 text-red-800 rounded-full text-xs font-medium">
-                          +{formatPercentage(anomaly.difference_percentage)}
-                        </span>
+                        <div className="flex items-center space-x-2">
+                          <span className="px-3 py-1 bg-red-100 text-red-800 rounded-full text-xs font-medium">
+                            +{formatPercentage(anomaly.difference_percentage)}
+                          </span>
+                          <button
+                            onClick={() => handleResolveAlert('price_anomaly', anomaly.alert_id)}
+                            className="px-3 py-1 bg-purple-500 text-white rounded text-xs hover:bg-purple-600"
+                          >
+                            Résoudre
+                          </button>
+                        </div>
                       </div>
                     </div>
                   ))}
