@@ -1920,13 +1920,16 @@ function App() {
             </div>
 
             <div className="form-group">
-              <label className="form-label">Fichier image</label>
+              <label className="form-label">Fichier (Image ou PDF)</label>
               <input
                 type="file"
-                accept="image/*"
+                accept="image/*,.pdf"
                 className="form-input"
                 onChange={handleOcrFileSelect}
               />
+              <p className="form-help">
+                📷 Images: JPG, PNG, GIF, etc. • 📄 PDF: Factures et rapports Z
+              </p>
             </div>
 
             {ocrPreview && (
