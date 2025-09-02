@@ -27,8 +27,14 @@ load_dotenv(ROOT_DIR / '.env')
 
 # MongoDB connection
 
-# ✅ Roles utilisateurs
-ROLES = ["super_admin", "gerant", "cuisinier", "caissier"]
+# ✅ Version 3 - Enhanced RBAC System
+ROLES = {
+    "super_admin": "Super Admin",
+    "gerant": "Gérant (Manager)", 
+    "chef_cuisine": "Chef de cuisine (Head Chef)",
+    "barman": "Barman (Bartender)",
+    "caissier": "Caissier (Cashier)"
+}
 
 mongo_url = os.environ['MONGO_URL']
 client = AsyncIOMotorClient(mongo_url)
