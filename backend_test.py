@@ -1914,6 +1914,521 @@ class StockTestSuite:
         except Exception as e:
             self.log_result("Test intégration Analytics", False, "Exception", str(e))
 
+    def test_enhanced_ocr_parsing_apis(self):
+        """Test complet des nouvelles APIs Enhanced OCR Parsing - Version 3 Feature #2"""
+        print("\n=== TEST VERSION 3 ENHANCED OCR PARSING APIs ===")
+        
+        # Créer un document OCR de test pour les tests Enhanced
+        enhanced_z_report_text = """
+        RAPPORT Z - Service Soir - 06/01/2025
+        
+        === BAR ===
+        (x3) Vin rouge Côtes du Rhône
+        (x2) Kir Royal
+        (x1) Digestif Armagnac
+        
+        === ENTRÉES ===
+        (x4) Supions en persillade de Mamie
+        (x2) Salade de tomates anciennes
+        
+        === PLATS ===
+        (x3) Linguine aux palourdes & sauce à l'ail
+        (x2) Rigatoni à la truffe fraîche de Forcalquier
+        (x1) Bœuf Wellington à la truffe
+        
+        === DESSERTS ===
+        (x2) Tiramisu maison
+        (x1) Tarte aux figues
+        
+        TOTAL CA: 285.50€
+        Couverts: 12
+        """
+        
+        # Créer et uploader le document de test
+        mock_image_base64 = self.create_mock_base64_image(enhanced_z_report_text)
+        test_document_id = None
+        
+        try:
+            files = {
+                'file': ('enhanced_z_report_test.jpg', base64.b64decode(mock_image_base64), 'image/jpeg')
+            }
+            data = {'document_type': 'z_report'}
+            
+            response = requests.post(f"{BASE_URL}/ocr/upload-document", files=files, data=data)
+            if response.status_code == 200 or response.status_code == 201:
+                result = response.json()
+                test_document_id = result.get("document_id")
+                self.log_result("Setup Enhanced OCR Document", True, f"Document créé pour tests Enhanced: {test_document_id[:8]}...")
+            else:
+                self.log_result("Setup Enhanced OCR Document", False, f"Erreur {response.status_code}")
+                return
+        except Exception as e:
+            self.log_result("Setup Enhanced OCR Document", False, f"Exception: {str(e)}")
+            return
+        
+        # Test 1: POST /api/ocr/parse-z-report-enhanced
+        print("\n--- Test Enhanced Z Report Parsing ---")
+        try:
+            response = requests.post(f"{BASE_URL}/ocr/parse-z-report-enhanced", 
+                                   json={"document_id": test_document_id}, headers=HEADERS)
+            if response.status_code == 200:
+                structured_data = response.json()
+                
+                # Vérifier la structure StructuredZReportData
+                required_fields = ["report_date", "service", "items_by_category", "grand_total_sales", "raw_items"]
+                if all(field in structured_data for field in required_fields):
+                    self.log_result("POST /ocr/parse-z-report-enhanced - Structure", True, "Tous les champs StructuredZReportData présents")
+                    
+                    # Vérifier la catégorisation automatique
+                    categories = structured_data.get("items_by_category", {})
+                    expected_categories = ["Bar", "Entrées", "Plats", "Desserts"]
+                    if all(cat in categories for cat in expected_categories):
+                        self.log_result("Catégorisation automatique", True, f"4 catégories détectées: {list(categories.keys())}")
+                        
+                        # Vérifier le contenu des catégories
+                        total_items = sum(len(items) for items in categories.values())
+                        if total_items > 0:
+                            self.log_result("Items catégorisés", True, f"{total_items} items répartis dans les catégories")
+                            
+                            # Vérifier la structure des items
+                            for category, items in categories.items():
+                                if items:  # Si la catégorie a des items
+                                    item = items[0]
+                                    item_fields = ["name", "quantity_sold", "category"]
+                                    if all(field in item for field in item_fields):
+                                        self.log_result(f"Structure items {category}", True, f"Structure StructuredZReportItem correcte")
+                                        break
+                        else:
+                            self.log_result("Items catégorisés", False, "Aucun item détecté")
+                    else:
+                        missing_cats = [cat for cat in expected_categories if cat not in categories]
+                        self.log_result("Catégorisation automatique", False, f"Catégories manquantes: {missing_cats}")
+                    
+                    # Vérifier l'extraction du service
+                    if structured_data.get("service"):
+                        self.log_result("Extraction service", True, f"Service détecté: {structured_data['service']}")
+                    else:
+                        self.log_result("Extraction service", False, "Service non détecté")
+                    
+                    # Vérifier l'extraction du total
+                    if structured_data.get("grand_total_sales"):
+                        self.log_result("Extraction total CA", True, f"Total CA: {structured_data['grand_total_sales']}€")
+                    else:
+                        self.log_result("Extraction total CA", False, "Total CA non détecté")
+                        
+                else:
+                    missing = [f for f in required_fields if f not in structured_data]
+                    self.log_result("POST /ocr/parse-z-report-enhanced - Structure", False, f"Champs manquants: {missing}")
+            else:
+                self.log_result("POST /ocr/parse-z-report-enhanced", False, f"Erreur {response.status_code}: {response.text}")
+        except Exception as e:
+            self.log_result("POST /ocr/parse-z-report-enhanced", False, f"Exception: {str(e)}")
+        
+        # Test 2: POST /api/ocr/calculate-stock-deductions
+        print("\n--- Test Stock Deductions Calculation ---")
+        try:
+            # Utiliser des données structurées simulées pour le test
+            test_structured_data = {
+                "report_date": "06/01/2025",
+                "service": "Soir",
+                "items_by_category": {
+                    "Bar": [
+                        {"name": "Vin rouge Côtes du Rhône", "quantity_sold": 3, "category": "Bar"},
+                        {"name": "Kir Royal", "quantity_sold": 2, "category": "Bar"}
+                    ],
+                    "Entrées": [
+                        {"name": "Supions en persillade de Mamie", "quantity_sold": 4, "category": "Entrées"}
+                    ],
+                    "Plats": [
+                        {"name": "Linguine aux palourdes", "quantity_sold": 3, "category": "Plats"},
+                        {"name": "Rigatoni à la truffe", "quantity_sold": 2, "category": "Plats"}
+                    ],
+                    "Desserts": [
+                        {"name": "Tiramisu maison", "quantity_sold": 2, "category": "Desserts"}
+                    ]
+                },
+                "grand_total_sales": 285.50,
+                "raw_items": []
+            }
+            
+            response = requests.post(f"{BASE_URL}/ocr/calculate-stock-deductions", 
+                                   json=test_structured_data, headers=HEADERS)
+            if response.status_code == 200:
+                validation_result = response.json()
+                
+                # Vérifier la structure ZReportValidationResult
+                required_fields = ["can_validate", "proposed_deductions", "total_deductions", "warnings", "errors"]
+                if all(field in validation_result for field in required_fields):
+                    self.log_result("POST /ocr/calculate-stock-deductions - Structure", True, "Structure ZReportValidationResult correcte")
+                    
+                    # Vérifier les déductions proposées
+                    deductions = validation_result.get("proposed_deductions", [])
+                    if isinstance(deductions, list):
+                        self.log_result("Calcul déductions stock", True, f"{len(deductions)} propositions de déduction calculées")
+                        
+                        # Vérifier la structure des déductions
+                        if deductions:
+                            deduction = deductions[0]
+                            deduction_fields = ["recipe_name", "quantity_sold", "ingredient_deductions", "warnings"]
+                            if all(field in deduction for field in deduction_fields):
+                                self.log_result("Structure StockDeductionProposal", True, "Structure déduction correcte")
+                                
+                                # Vérifier les déductions d'ingrédients
+                                ingredient_deductions = deduction.get("ingredient_deductions", [])
+                                if ingredient_deductions:
+                                    ingredient = ingredient_deductions[0]
+                                    ingredient_fields = ["product_name", "current_stock", "deduction", "new_stock"]
+                                    if all(field in ingredient for field in ingredient_fields):
+                                        self.log_result("Calcul déductions ingrédients", True, "Calculs par ingrédient corrects")
+                                    else:
+                                        self.log_result("Calcul déductions ingrédients", False, "Structure ingrédient incorrecte")
+                            else:
+                                self.log_result("Structure StockDeductionProposal", False, "Champs déduction manquants")
+                    else:
+                        self.log_result("Calcul déductions stock", False, "Format déductions incorrect")
+                        
+                    # Vérifier la gestion des avertissements
+                    warnings = validation_result.get("warnings", [])
+                    if isinstance(warnings, list):
+                        self.log_result("Gestion avertissements", True, f"{len(warnings)} avertissement(s) générés")
+                    else:
+                        self.log_result("Gestion avertissements", False, "Format avertissements incorrect")
+                        
+                else:
+                    missing = [f for f in required_fields if f not in validation_result]
+                    self.log_result("POST /ocr/calculate-stock-deductions - Structure", False, f"Champs manquants: {missing}")
+            else:
+                self.log_result("POST /ocr/calculate-stock-deductions", False, f"Erreur {response.status_code}: {response.text}")
+        except Exception as e:
+            self.log_result("POST /ocr/calculate-stock-deductions", False, f"Exception: {str(e)}")
+        
+        # Test 3: GET /api/ocr/z-report-preview/{document_id}
+        print("\n--- Test Z Report Preview ---")
+        if test_document_id:
+            try:
+                response = requests.get(f"{BASE_URL}/ocr/z-report-preview/{test_document_id}")
+                if response.status_code == 200:
+                    preview_data = response.json()
+                    
+                    # Vérifier la structure de prévisualisation
+                    required_fields = ["document_id", "structured_data", "validation_result", "can_apply", "preview_only"]
+                    if all(field in preview_data for field in required_fields):
+                        self.log_result("GET /ocr/z-report-preview - Structure", True, "Structure prévisualisation correcte")
+                        
+                        # Vérifier que c'est bien en mode preview
+                        if preview_data.get("preview_only") is True:
+                            self.log_result("Mode preview", True, "Mode preview_only activé")
+                        else:
+                            self.log_result("Mode preview", False, "Mode preview incorrect")
+                            
+                        # Vérifier la présence des données structurées
+                        if preview_data.get("structured_data") and preview_data.get("validation_result"):
+                            self.log_result("Données preview complètes", True, "Données structurées et validation présentes")
+                        else:
+                            self.log_result("Données preview complètes", False, "Données preview incomplètes")
+                    else:
+                        missing = [f for f in required_fields if f not in preview_data]
+                        self.log_result("GET /ocr/z-report-preview - Structure", False, f"Champs manquants: {missing}")
+                else:
+                    self.log_result("GET /ocr/z-report-preview", False, f"Erreur {response.status_code}: {response.text}")
+            except Exception as e:
+                self.log_result("GET /ocr/z-report-preview", False, f"Exception: {str(e)}")
+        
+        # Test 4: POST /api/ocr/validate-z-report (sans application)
+        print("\n--- Test Z Report Validation (Preview Mode) ---")
+        if test_document_id:
+            try:
+                response = requests.post(f"{BASE_URL}/ocr/validate-z-report", 
+                                       json={"document_id": test_document_id, "apply_deductions": False}, 
+                                       headers=HEADERS)
+                if response.status_code == 200:
+                    validation_response = response.json()
+                    
+                    # Vérifier la structure de validation
+                    required_fields = ["document_id", "structured_data", "validation_result", "applied"]
+                    if all(field in validation_response for field in required_fields):
+                        self.log_result("POST /ocr/validate-z-report (preview)", True, "Structure validation correcte")
+                        
+                        # Vérifier que les déductions ne sont pas appliquées
+                        if validation_response.get("applied") is False:
+                            self.log_result("Mode validation preview", True, "Déductions non appliquées en mode preview")
+                        else:
+                            self.log_result("Mode validation preview", False, "Déductions appliquées incorrectement")
+                    else:
+                        missing = [f for f in required_fields if f not in validation_response]
+                        self.log_result("POST /ocr/validate-z-report (preview)", False, f"Champs manquants: {missing}")
+                else:
+                    self.log_result("POST /ocr/validate-z-report (preview)", False, f"Erreur {response.status_code}: {response.text}")
+            except Exception as e:
+                self.log_result("POST /ocr/validate-z-report (preview)", False, f"Exception: {str(e)}")
+        
+        # Test 5: Fuzzy Matching et Pattern Recognition
+        print("\n--- Test Enhanced Parsing Logic ---")
+        
+        # Test avec différents formats de noms de plats
+        test_formats = [
+            "(x2) Linguine aux palourdes",  # Format standard
+            "3x Supions persillade",        # Format alternatif
+            "Rigatoni truffe: 1",          # Format avec deux points
+            "Bœuf Wellington €56.00 x 1"   # Format avec prix
+        ]
+        
+        for test_format in test_formats:
+            test_text = f"RAPPORT Z - 06/01/2025\n{test_format}\nTotal: 50.00€"
+            mock_image = self.create_mock_base64_image(test_text)
+            
+            try:
+                files = {
+                    'file': ('pattern_test.jpg', base64.b64decode(mock_image), 'image/jpeg')
+                }
+                data = {'document_type': 'z_report'}
+                
+                upload_response = requests.post(f"{BASE_URL}/ocr/upload-document", files=files, data=data)
+                if upload_response.status_code in [200, 201]:
+                    doc_id = upload_response.json().get("document_id")
+                    
+                    parse_response = requests.post(f"{BASE_URL}/ocr/parse-z-report-enhanced", 
+                                                 json={"document_id": doc_id}, headers=HEADERS)
+                    if parse_response.status_code == 200:
+                        parsed_data = parse_response.json()
+                        total_items = sum(len(items) for items in parsed_data.get("items_by_category", {}).values())
+                        if total_items > 0:
+                            self.log_result(f"Pattern Recognition: {test_format[:20]}...", True, f"{total_items} item(s) détecté(s)")
+                        else:
+                            self.log_result(f"Pattern Recognition: {test_format[:20]}...", False, "Aucun item détecté")
+                    else:
+                        self.log_result(f"Pattern Recognition: {test_format[:20]}...", False, f"Erreur parsing {parse_response.status_code}")
+                else:
+                    self.log_result(f"Pattern Recognition: {test_format[:20]}...", False, f"Erreur upload {upload_response.status_code}")
+            except Exception as e:
+                self.log_result(f"Pattern Recognition: {test_format[:20]}...", False, f"Exception: {str(e)}")
+        
+        # Test 6: Integration avec recettes existantes
+        print("\n--- Test Integration avec Recettes Existantes ---")
+        try:
+            # Récupérer les recettes existantes pour tester le matching
+            recettes_response = requests.get(f"{BASE_URL}/recettes")
+            if recettes_response.status_code == 200:
+                recettes = recettes_response.json()
+                if recettes:
+                    # Utiliser une recette existante pour tester le fuzzy matching
+                    test_recipe = recettes[0]
+                    recipe_name = test_recipe["nom"]
+                    
+                    # Créer un Z-report avec le nom de la recette (légèrement modifié)
+                    modified_name = recipe_name.replace("aux", "").strip()  # Simplifier le nom
+                    integration_test_text = f"""
+                    RAPPORT Z - 06/01/2025
+                    (x2) {modified_name}
+                    Total: 50.00€
+                    """
+                    
+                    mock_image = self.create_mock_base64_image(integration_test_text)
+                    files = {
+                        'file': ('integration_test.jpg', base64.b64decode(mock_image), 'image/jpeg')
+                    }
+                    data = {'document_type': 'z_report'}
+                    
+                    upload_response = requests.post(f"{BASE_URL}/ocr/upload-document", files=files, data=data)
+                    if upload_response.status_code in [200, 201]:
+                        doc_id = upload_response.json().get("document_id")
+                        
+                        # Tester le calcul des déductions avec une vraie recette
+                        parse_response = requests.post(f"{BASE_URL}/ocr/parse-z-report-enhanced", 
+                                                     json={"document_id": doc_id}, headers=HEADERS)
+                        if parse_response.status_code == 200:
+                            structured_data = parse_response.json()
+                            
+                            deduction_response = requests.post(f"{BASE_URL}/ocr/calculate-stock-deductions", 
+                                                             json=structured_data, headers=HEADERS)
+                            if deduction_response.status_code == 200:
+                                deduction_result = deduction_response.json()
+                                proposed_deductions = deduction_result.get("proposed_deductions", [])
+                                
+                                if proposed_deductions:
+                                    self.log_result("Fuzzy Matching avec recettes", True, 
+                                                  f"Recette '{recipe_name}' matchée avec déductions calculées")
+                                    
+                                    # Vérifier que les ingrédients sont correctement traités
+                                    first_deduction = proposed_deductions[0]
+                                    ingredient_deductions = first_deduction.get("ingredient_deductions", [])
+                                    if ingredient_deductions:
+                                        self.log_result("Calcul ingrédients recette réelle", True, 
+                                                      f"{len(ingredient_deductions)} ingrédient(s) traités")
+                                    else:
+                                        self.log_result("Calcul ingrédients recette réelle", False, "Aucun ingrédient traité")
+                                else:
+                                    self.log_result("Fuzzy Matching avec recettes", False, "Aucune déduction proposée")
+                            else:
+                                self.log_result("Fuzzy Matching avec recettes", False, f"Erreur calcul déductions {deduction_response.status_code}")
+                        else:
+                            self.log_result("Fuzzy Matching avec recettes", False, f"Erreur parsing {parse_response.status_code}")
+                    else:
+                        self.log_result("Fuzzy Matching avec recettes", False, f"Erreur upload {upload_response.status_code}")
+                else:
+                    self.log_result("Fuzzy Matching avec recettes", False, "Aucune recette disponible pour le test")
+            else:
+                self.log_result("Fuzzy Matching avec recettes", False, f"Erreur récupération recettes {recettes_response.status_code}")
+        except Exception as e:
+            self.log_result("Fuzzy Matching avec recettes", False, f"Exception: {str(e)}")
+        
+        print(f"\n=== FIN TEST VERSION 3 ENHANCED OCR PARSING APIs ===")
+
+    def test_enhanced_ocr_stock_integration(self):
+        """Test intégration complète Enhanced OCR avec gestion des stocks"""
+        print("\n=== TEST INTÉGRATION ENHANCED OCR - STOCKS ===")
+        
+        # Ce test nécessite des données La Table d'Augustine pour fonctionner correctement
+        # Vérifier d'abord que nous avons des recettes et des stocks
+        try:
+            recettes_response = requests.get(f"{BASE_URL}/recettes")
+            stocks_response = requests.get(f"{BASE_URL}/stocks")
+            
+            if recettes_response.status_code != 200 or stocks_response.status_code != 200:
+                self.log_result("Prérequis intégration OCR-Stocks", False, "Impossible d'accéder aux recettes ou stocks")
+                return
+                
+            recettes = recettes_response.json()
+            stocks = stocks_response.json()
+            
+            if not recettes or not stocks:
+                self.log_result("Prérequis intégration OCR-Stocks", False, "Pas de recettes ou stocks disponibles")
+                return
+                
+            self.log_result("Prérequis intégration OCR-Stocks", True, f"{len(recettes)} recettes, {len(stocks)} stocks disponibles")
+            
+            # Sélectionner une recette avec des ingrédients pour le test
+            test_recipe = None
+            for recipe in recettes:
+                if recipe.get("ingredients") and len(recipe["ingredients"]) > 0:
+                    test_recipe = recipe
+                    break
+            
+            if not test_recipe:
+                self.log_result("Sélection recette test", False, "Aucune recette avec ingrédients trouvée")
+                return
+                
+            self.log_result("Sélection recette test", True, f"Recette sélectionnée: {test_recipe['nom']}")
+            
+            # Créer un Z-report réaliste avec cette recette
+            realistic_z_report = f"""
+            RAPPORT Z - Service Soir - 06/01/2025
+            
+            === PLATS ===
+            (x3) {test_recipe['nom']}
+            
+            TOTAL CA: {test_recipe.get('prix_vente', 25) * 3:.2f}€
+            Couverts: 3
+            """
+            
+            # Uploader et traiter le document
+            mock_image = self.create_mock_base64_image(realistic_z_report)
+            files = {
+                'file': ('integration_stock_test.jpg', base64.b64decode(mock_image), 'image/jpeg')
+            }
+            data = {'document_type': 'z_report'}
+            
+            upload_response = requests.post(f"{BASE_URL}/ocr/upload-document", files=files, data=data)
+            if upload_response.status_code not in [200, 201]:
+                self.log_result("Upload document intégration", False, f"Erreur upload {upload_response.status_code}")
+                return
+                
+            doc_id = upload_response.json().get("document_id")
+            self.log_result("Upload document intégration", True, f"Document créé: {doc_id[:8]}...")
+            
+            # Sauvegarder les stocks actuels pour comparaison
+            initial_stocks = {}
+            for ingredient in test_recipe["ingredients"]:
+                product_id = ingredient["produit_id"]
+                stock_response = requests.get(f"{BASE_URL}/stocks/{product_id}")
+                if stock_response.status_code == 200:
+                    stock_data = stock_response.json()
+                    initial_stocks[product_id] = stock_data["quantite_actuelle"]
+            
+            # Test validation avec application des déductions
+            try:
+                validation_response = requests.post(f"{BASE_URL}/ocr/validate-z-report", 
+                                                  json={"document_id": doc_id, "apply_deductions": True}, 
+                                                  headers=HEADERS)
+                if validation_response.status_code == 200:
+                    validation_result = validation_response.json()
+                    
+                    if validation_result.get("applied"):
+                        self.log_result("Application déductions stocks", True, "Déductions appliquées avec succès")
+                        
+                        # Vérifier que les stocks ont été mis à jour
+                        stocks_updated = 0
+                        for ingredient in test_recipe["ingredients"]:
+                            product_id = ingredient["produit_id"]
+                            stock_response = requests.get(f"{BASE_URL}/stocks/{product_id}")
+                            if stock_response.status_code == 200:
+                                new_stock = stock_response.json()["quantite_actuelle"]
+                                initial_stock = initial_stocks.get(product_id, 0)
+                                
+                                if new_stock != initial_stock:
+                                    stocks_updated += 1
+                        
+                        if stocks_updated > 0:
+                            self.log_result("Mise à jour stocks automatique", True, f"{stocks_updated} stock(s) mis à jour")
+                        else:
+                            self.log_result("Mise à jour stocks automatique", False, "Aucun stock mis à jour")
+                        
+                        # Vérifier la création de mouvements de stock
+                        mouvements_response = requests.get(f"{BASE_URL}/mouvements")
+                        if mouvements_response.status_code == 200:
+                            mouvements = mouvements_response.json()
+                            # Chercher les mouvements récents avec commentaire de déduction automatique
+                            recent_deductions = [m for m in mouvements if 
+                                               "Déduction automatique" in m.get("commentaire", "") and
+                                               m.get("type") == "sortie"]
+                            
+                            if recent_deductions:
+                                self.log_result("Création mouvements automatiques", True, 
+                                              f"{len(recent_deductions)} mouvement(s) de déduction créés")
+                            else:
+                                self.log_result("Création mouvements automatiques", False, "Aucun mouvement de déduction trouvé")
+                        
+                        # Vérifier la création du RapportZ
+                        if validation_result.get("rapport_z_created"):
+                            rapports_response = requests.get(f"{BASE_URL}/rapports_z")
+                            if rapports_response.status_code == 200:
+                                rapports = rapports_response.json()
+                                # Chercher le rapport le plus récent
+                                if rapports:
+                                    latest_rapport = rapports[0]  # Supposé trié par date décroissante
+                                    expected_ca = test_recipe.get('prix_vente', 25) * 3
+                                    if abs(latest_rapport.get("ca_total", 0) - expected_ca) < 0.01:
+                                        self.log_result("Création RapportZ automatique", True, 
+                                                      f"RapportZ créé avec CA {latest_rapport['ca_total']}€")
+                                    else:
+                                        self.log_result("Création RapportZ automatique", False, "CA incorrect dans RapportZ")
+                                else:
+                                    self.log_result("Création RapportZ automatique", False, "Aucun RapportZ trouvé")
+                        else:
+                            self.log_result("Création RapportZ automatique", False, "RapportZ non créé")
+                            
+                    else:
+                        self.log_result("Application déductions stocks", False, "Déductions non appliquées")
+                        
+                        # Vérifier les raisons (warnings/errors)
+                        validation_data = validation_result.get("validation_result", {})
+                        warnings = validation_data.get("warnings", [])
+                        errors = validation_data.get("errors", [])
+                        
+                        if warnings or errors:
+                            self.log_result("Analyse échec déductions", True, 
+                                          f"{len(warnings)} warning(s), {len(errors)} erreur(s) détectées")
+                        else:
+                            self.log_result("Analyse échec déductions", False, "Aucune explication d'échec")
+                else:
+                    self.log_result("Application déductions stocks", False, f"Erreur validation {validation_response.status_code}")
+                    
+            except Exception as e:
+                self.log_result("Application déductions stocks", False, f"Exception: {str(e)}")
+                
+        except Exception as e:
+            self.log_result("Test intégration OCR-Stocks", False, f"Exception générale: {str(e)}")
+
     def run_all_tests(self):
         """Exécute tous les tests"""
         print("🚀 DÉBUT DES TESTS BACKEND - GESTION STOCKS RESTAURANT + OCR")
