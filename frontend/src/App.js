@@ -916,7 +916,7 @@ function App() {
                             </div>
                             <div className="table-row">
                               <span><strong>🍽️ Plats vendus:</strong> {
-                                (selectedDocument.donnees_parsees.items_by_category ? Object.values(selectedDocument.donnees_parsees.items_by_category).reduce((acc, arr) => acc + arr.length, 0) : (selectedDocument.donnees_parsees.plats_vendus?.length || 0))
+                                (selectedDocument.donnees_parsees.items_by_category ? Object.values(selectedDocument.donnees_parsees.items_by_category).reduce((acc, arr) => acc + arr.reduce((s, it) => s + (Number(it.quantity_sold) || 0), 0), 0) : (selectedDocument.donnees_parsees.plats_vendus?.reduce((s, it) => s + (Number(it.quantite) || 0), 0) || 0))
                               } plats</span>
                             </div>
                           </>
