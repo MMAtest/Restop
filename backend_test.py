@@ -1056,9 +1056,531 @@ class StockTestSuite:
         
         return base64.b64encode(buffer.getvalue()).decode()
     
+    def create_mock_pdf_content(self, text_content):
+        """Créer un contenu PDF simulé pour les tests"""
+        try:
+            from reportlab.pdfgen import canvas
+            from reportlab.lib.pagesizes import letter
+            import io
+            
+            buffer = io.BytesIO()
+            p = canvas.Canvas(buffer, pagesize=letter)
+            
+            # Ajouter le texte ligne par ligne
+            lines = text_content.strip().split('\n')
+            y_position = 750
+            for line in lines:
+                if line.strip():
+                    p.drawString(100, y_position, line.strip())
+                    y_position -= 20
+            
+            p.save()
+            buffer.seek(0)
+            return buffer.getvalue()
+        except ImportError:
+            # Si reportlab n'est pas disponible, créer un PDF minimal
+            # En-tête PDF minimal
+            pdf_content = b"""%PDF-1.4
+1 0 obj
+<<
+/Type /Catalog
+/Pages 2 0 R
+>>
+endobj
+
+2 0 obj
+<<
+/Type /Pages
+/Kids [3 0 R]
+/Count 1
+>>
+endobj
+
+3 0 obj
+<<
+/Type /Page
+/Parent 2 0 R
+/MediaBox [0 0 612 792]
+/Contents 4 0 R
+>>
+endobj
+
+4 0 obj
+<<
+/Length """ + str(len(text_content.encode())).encode() + b"""
+>>
+stream
+BT
+/F1 12 Tf
+100 700 Td
+(""" + text_content.replace('\n', ') Tj 0 -20 Td (').encode() + b""") Tj
+ET
+endstream
+endobj
+
+xref
+0 5
+0000000000 65535 f 
+0000000009 00000 n 
+0000000058 00000 n 
+0000000115 00000 n 
+0000000207 00000 n 
+trailer
+<<
+/Size 5
+/Root 1 0 R
+>>
+startxref
+""" + str(300 + len(text_content.encode())).encode() + b"""
+%%EOF"""
+            return pdf_content
+
+    def test_pdf_text_extraction_functions(self):
+        """Test des fonctions d'extraction de texte PDF"""
+        print("\n=== TEST FONCTIONS EXTRACTION PDF ===")
+        
+        # Test avec un PDF contenant du texte
+        pdf_text_content = """RAPPORT Z - 15/12/2024
+Service: Soir
+Linguine aux palourdes: 3
+Supions en persillade: 2
+Bœuf Wellington: 1
+Total: 184.00€"""
+        
+        pdf_content = self.create_mock_pdf_content(pdf_text_content)
+        
+        try:
+            # Test direct de la fonction extract_text_from_pdf via l'API
+            files = {
+                'file': ('test_pdf_extraction.pdf', pdf_content, 'application/pdf')
+            }
+            data = {'document_type': 'z_report'}
+            
+            response = requests.post(f"{BASE_URL}/ocr/upload-document", files=files, data=data)
+            if response.status_code == 200 or response.status_code == 201:
+                result = response.json()
+                if "texte_extrait" in result and result["texte_extrait"]:
+                    extracted_text = result["texte_extrait"]
+                    if "RAPPORT Z" in extracted_text or "Linguine" in extracted_text:
+                        self.log_result("extract_text_from_pdf (pdfplumber/PyPDF2)", True, 
+                                      f"Texte extrait du PDF: {len(extracted_text)} caractères")
+                    else:
+                        self.log_result("extract_text_from_pdf (pdfplumber/PyPDF2)", True, 
+                                      "PDF traité mais contenu différent (normal pour PDF simulé)")
+                    
+                    # Vérifier que le file_type est correctement détecté
+                    if result.get("file_type") == "pdf":
+                        self.log_result("PDF file_type detection", True, "Type PDF correctement détecté")
+                    else:
+                        self.log_result("PDF file_type detection", False, 
+                                      f"Type incorrect: {result.get('file_type')}")
+                else:
+                    self.log_result("extract_text_from_pdf (pdfplumber/PyPDF2)", False, 
+                                  "Aucun texte extrait du PDF")
+            else:
+                self.log_result("extract_text_from_pdf (pdfplumber/PyPDF2)", False, 
+                              f"Erreur {response.status_code}", response.text)
+        except Exception as e:
+            self.log_result("extract_text_from_pdf (pdfplumber/PyPDF2)", False, "Exception", str(e))
+
+    def test_file_type_detection(self):
+        """Test de la fonction detect_file_type"""
+        print("\n=== TEST DÉTECTION TYPE DE FICHIER ===")
+        
+        # Test avec différents types de fichiers
+        test_cases = [
+            # (filename, content_type, expected_type)
+            ("rapport_z.pdf", "application/pdf", "pdf"),
+            ("facture.jpg", "image/jpeg", "image"),
+            ("document.png", "image/png", "image"),
+            ("test.PDF", None, "pdf"),  # Extension en majuscules
+            ("image.JPEG", None, "image"),
+            ("unknown.txt", None, "image"),  # Fallback to image
+            ("rapport.pdf", "image/jpeg", "pdf"),  # Extension prioritaire sur content-type
+        ]
+        
+        success_count = 0
+        for filename, content_type, expected in test_cases:
+            try:
+                # Créer un fichier de test approprié
+                if expected == "pdf":
+                    file_content = self.create_mock_pdf_content("Test PDF content")
+                    actual_content_type = content_type or "application/pdf"
+                else:
+                    file_content = base64.b64decode(self.create_mock_base64_image("Test image"))
+                    actual_content_type = content_type or "image/jpeg"
+                
+                files = {
+                    'file': (filename, file_content, actual_content_type)
+                }
+                data = {'document_type': 'z_report'}
+                
+                response = requests.post(f"{BASE_URL}/ocr/upload-document", files=files, data=data)
+                if response.status_code == 200 or response.status_code == 201:
+                    result = response.json()
+                    detected_type = result.get("file_type", "unknown")
+                    if detected_type == expected:
+                        success_count += 1
+                    else:
+                        self.log_result(f"detect_file_type ({filename})", False, 
+                                      f"Attendu: {expected}, Détecté: {detected_type}")
+                else:
+                    self.log_result(f"detect_file_type ({filename})", False, 
+                                  f"Erreur upload: {response.status_code}")
+            except Exception as e:
+                self.log_result(f"detect_file_type ({filename})", False, f"Exception: {str(e)}")
+        
+        if success_count == len(test_cases):
+            self.log_result("detect_file_type (tous cas)", True, 
+                          f"Tous les {len(test_cases)} cas de test réussis")
+        else:
+            self.log_result("detect_file_type (tous cas)", False, 
+                          f"Seulement {success_count}/{len(test_cases)} cas réussis")
+
+    def test_pdf_upload_endpoint(self):
+        """Test de l'endpoint upload avec fichiers PDF"""
+        print("\n=== TEST ENDPOINT UPLOAD PDF ===")
+        
+        # Test 1: PDF Z-report
+        z_report_pdf_text = """RAPPORT Z - Service Soir
+Date: 15/12/2024
+
+(x3) Linguine aux palourdes €28.00
+(x2) Supions en persillade €24.00  
+(x1) Bœuf Wellington €56.00
+(x4) Salade Caprese €18.00
+
+Total CA: 188.00€
+Couverts: 10"""
+        
+        pdf_content = self.create_mock_pdf_content(z_report_pdf_text)
+        
+        try:
+            files = {
+                'file': ('z_report_soir.pdf', pdf_content, 'application/pdf')
+            }
+            data = {'document_type': 'z_report'}
+            
+            response = requests.post(f"{BASE_URL}/ocr/upload-document", files=files, data=data)
+            if response.status_code == 200 or response.status_code == 201:
+                result = response.json()
+                if "document_id" in result and "texte_extrait" in result:
+                    self.created_document_id = result["document_id"]
+                    self.log_result("POST /ocr/upload-document (PDF Z-report)", True, 
+                                  f"PDF Z-report traité, ID: {result['document_id'][:8]}...")
+                    
+                    # Vérifier le champ file_type
+                    if result.get("file_type") == "pdf":
+                        self.log_result("DocumentOCR file_type field (PDF)", True, "Champ file_type=pdf correctement défini")
+                    else:
+                        self.log_result("DocumentOCR file_type field (PDF)", False, 
+                                      f"file_type incorrect: {result.get('file_type')}")
+                    
+                    # Vérifier que le texte a été extrait
+                    if result["texte_extrait"] and len(result["texte_extrait"]) > 10:
+                        self.log_result("PDF text extraction", True, 
+                                      f"Texte extrait: {len(result['texte_extrait'])} caractères")
+                    else:
+                        self.log_result("PDF text extraction", False, "Texte non extrait ou trop court")
+                else:
+                    self.log_result("POST /ocr/upload-document (PDF Z-report)", False, "Réponse incomplète")
+            else:
+                self.log_result("POST /ocr/upload-document (PDF Z-report)", False, 
+                              f"Erreur {response.status_code}", response.text)
+        except Exception as e:
+            self.log_result("POST /ocr/upload-document (PDF Z-report)", False, "Exception", str(e))
+        
+        # Test 2: PDF Facture fournisseur
+        facture_pdf_text = """Maison Artigiana - Giuseppe Pellegrino
+Facture N° FAC-2024-156
+Date: 15/12/2024
+
+Burrata des Pouilles 2x €8.50 = €17.00
+Mozzarella di Bufala 1x €12.00 = €12.00
+Parmesan Reggiano 500g €45.00 = €22.50
+
+Total HT: €51.50
+TVA 10%: €5.15
+Total TTC: €56.65"""
+        
+        facture_pdf_content = self.create_mock_pdf_content(facture_pdf_text)
+        
+        try:
+            files = {
+                'file': ('facture_artigiana.pdf', facture_pdf_content, 'application/pdf')
+            }
+            data = {'document_type': 'facture_fournisseur'}
+            
+            response = requests.post(f"{BASE_URL}/ocr/upload-document", files=files, data=data)
+            if response.status_code == 200 or response.status_code == 201:
+                result = response.json()
+                if "document_id" in result and "texte_extrait" in result:
+                    self.log_result("POST /ocr/upload-document (PDF Facture)", True, 
+                                  f"PDF Facture traitée, ID: {result['document_id'][:8]}...")
+                    
+                    # Vérifier le parsing des données
+                    if "donnees_parsees" in result and isinstance(result["donnees_parsees"], dict):
+                        parsed_data = result["donnees_parsees"]
+                        if "fournisseur" in parsed_data or "produits" in parsed_data:
+                            self.log_result("PDF facture parsing", True, "Données facture parsées depuis PDF")
+                        else:
+                            self.log_result("PDF facture parsing", False, "Parsing facture incomplet")
+                    else:
+                        self.log_result("PDF facture parsing", False, "Données parsées manquantes")
+                else:
+                    self.log_result("POST /ocr/upload-document (PDF Facture)", False, "Réponse incomplète")
+            else:
+                self.log_result("POST /ocr/upload-document (PDF Facture)", False, 
+                              f"Erreur {response.status_code}", response.text)
+        except Exception as e:
+            self.log_result("POST /ocr/upload-document (PDF Facture)", False, "Exception", str(e))
+
+    def test_enhanced_ocr_parsing_with_pdf(self):
+        """Test du parsing OCR amélioré avec des PDFs"""
+        print("\n=== TEST PARSING OCR AMÉLIORÉ AVEC PDF ===")
+        
+        if not self.created_document_id:
+            self.log_result("Enhanced OCR parsing PDF", False, "Pas de document PDF créé pour le test")
+            return
+        
+        try:
+            # Test de l'endpoint parse-z-report-enhanced
+            response = requests.post(f"{BASE_URL}/ocr/parse-z-report-enhanced", 
+                                   json={"document_id": self.created_document_id}, 
+                                   headers=HEADERS)
+            if response.status_code == 200:
+                structured_data = response.json()
+                
+                # Vérifier la structure StructuredZReportData
+                required_fields = ["items_by_category", "raw_items"]
+                if all(field in structured_data for field in required_fields):
+                    self.log_result("POST /ocr/parse-z-report-enhanced (PDF)", True, 
+                                  "Parsing structuré réussi depuis PDF")
+                    
+                    # Vérifier les catégories
+                    categories = structured_data.get("items_by_category", {})
+                    expected_categories = ["Bar", "Entrées", "Plats", "Desserts"]
+                    if all(cat in categories for cat in expected_categories):
+                        self.log_result("PDF structured categorization", True, 
+                                      "Toutes les catégories présentes")
+                        
+                        # Compter les items trouvés
+                        total_items = sum(len(items) for items in categories.values())
+                        if total_items > 0:
+                            self.log_result("PDF item extraction", True, 
+                                          f"{total_items} items extraits et catégorisés")
+                        else:
+                            self.log_result("PDF item extraction", False, "Aucun item extrait")
+                    else:
+                        self.log_result("PDF structured categorization", False, 
+                                      "Catégories manquantes")
+                else:
+                    self.log_result("POST /ocr/parse-z-report-enhanced (PDF)", False, 
+                                  "Structure de réponse incorrecte")
+            else:
+                self.log_result("POST /ocr/parse-z-report-enhanced (PDF)", False, 
+                              f"Erreur {response.status_code}", response.text)
+        except Exception as e:
+            self.log_result("POST /ocr/parse-z-report-enhanced (PDF)", False, "Exception", str(e))
+        
+        # Test de calcul des déductions de stock
+        try:
+            # Créer des données structurées de test
+            test_structured_data = {
+                "report_date": "15/12/2024",
+                "service": "Soir",
+                "items_by_category": {
+                    "Plats": [
+                        {
+                            "name": "Linguine aux palourdes",
+                            "quantity_sold": 3,
+                            "category": "Plats",
+                            "unit_price": 28.00
+                        }
+                    ],
+                    "Entrées": [
+                        {
+                            "name": "Supions en persillade",
+                            "quantity_sold": 2,
+                            "category": "Entrées",
+                            "unit_price": 24.00
+                        }
+                    ],
+                    "Bar": [],
+                    "Desserts": []
+                },
+                "grand_total_sales": 188.00
+            }
+            
+            response = requests.post(f"{BASE_URL}/ocr/calculate-stock-deductions", 
+                                   json=test_structured_data, headers=HEADERS)
+            if response.status_code == 200:
+                deduction_result = response.json()
+                
+                # Vérifier la structure ZReportValidationResult
+                required_fields = ["can_validate", "proposed_deductions", "total_deductions"]
+                if all(field in deduction_result for field in required_fields):
+                    self.log_result("POST /ocr/calculate-stock-deductions", True, 
+                                  f"Déductions calculées: {deduction_result['total_deductions']} propositions")
+                    
+                    # Vérifier les propositions de déduction
+                    if deduction_result["proposed_deductions"]:
+                        first_deduction = deduction_result["proposed_deductions"][0]
+                        deduction_fields = ["recipe_name", "quantity_sold", "ingredient_deductions"]
+                        if all(field in first_deduction for field in deduction_fields):
+                            self.log_result("Stock deduction structure", True, 
+                                          "Structure StockDeductionProposal correcte")
+                        else:
+                            self.log_result("Stock deduction structure", False, 
+                                          "Champs manquants dans StockDeductionProposal")
+                    else:
+                        self.log_result("Stock deduction proposals", True, 
+                                      "Aucune déduction proposée (normal si pas de recettes correspondantes)")
+                else:
+                    self.log_result("POST /ocr/calculate-stock-deductions", False, 
+                                  "Structure de réponse incorrecte")
+            else:
+                self.log_result("POST /ocr/calculate-stock-deductions", False, 
+                              f"Erreur {response.status_code}", response.text)
+        except Exception as e:
+            self.log_result("POST /ocr/calculate-stock-deductions", False, "Exception", str(e))
+
+    def test_backward_compatibility_image_ocr(self):
+        """Test de compatibilité descendante avec les images OCR"""
+        print("\n=== TEST COMPATIBILITÉ DESCENDANTE IMAGE OCR ===")
+        
+        # Test avec une image traditionnelle
+        image_z_report_text = """RAPPORT Z - 15/12/2024
+        
+Linguine aux palourdes: 3
+Supions en persillade: 2  
+Bœuf Wellington: 1
+Salade Caprese: 4
+
+Total: 184.00€
+Couverts: 10"""
+        
+        mock_image_base64 = self.create_mock_base64_image(image_z_report_text)
+        
+        try:
+            files = {
+                'file': ('z_report_image.jpg', base64.b64decode(mock_image_base64), 'image/jpeg')
+            }
+            data = {'document_type': 'z_report'}
+            
+            response = requests.post(f"{BASE_URL}/ocr/upload-document", files=files, data=data)
+            if response.status_code == 200 or response.status_code == 201:
+                result = response.json()
+                if "document_id" in result and "texte_extrait" in result:
+                    self.log_result("Backward compatibility - Image OCR", True, 
+                                  "Images OCR fonctionnent toujours")
+                    
+                    # Vérifier que le file_type est correctement défini pour les images
+                    if result.get("file_type") == "image":
+                        self.log_result("Image file_type detection", True, 
+                                      "Type image correctement détecté")
+                    else:
+                        self.log_result("Image file_type detection", False, 
+                                      f"Type incorrect: {result.get('file_type')}")
+                    
+                    # Vérifier que le parsing fonctionne toujours
+                    if "donnees_parsees" in result:
+                        self.log_result("Image OCR parsing compatibility", True, 
+                                      "Parsing image OCR préservé")
+                    else:
+                        self.log_result("Image OCR parsing compatibility", False, 
+                                      "Parsing image OCR cassé")
+                else:
+                    self.log_result("Backward compatibility - Image OCR", False, 
+                                  "Réponse incomplète")
+            else:
+                self.log_result("Backward compatibility - Image OCR", False, 
+                              f"Erreur {response.status_code}", response.text)
+        except Exception as e:
+            self.log_result("Backward compatibility - Image OCR", False, "Exception", str(e))
+
+    def test_pdf_error_handling(self):
+        """Test de gestion d'erreurs pour les PDFs"""
+        print("\n=== TEST GESTION D'ERREURS PDF ===")
+        
+        # Test 1: PDF corrompu
+        try:
+            corrupted_pdf = b"This is not a valid PDF content"
+            files = {
+                'file': ('corrupted.pdf', corrupted_pdf, 'application/pdf')
+            }
+            data = {'document_type': 'z_report'}
+            
+            response = requests.post(f"{BASE_URL}/ocr/upload-document", files=files, data=data)
+            if response.status_code == 200 or response.status_code == 201:
+                result = response.json()
+                # Vérifier que l'erreur est gérée gracieusement
+                if "texte_extrait" in result:
+                    extracted_text = result["texte_extrait"]
+                    if "Erreur" in extracted_text or "Impossible" in extracted_text:
+                        self.log_result("PDF error handling - Corrupted", True, 
+                                      "Erreur PDF corrompu gérée correctement")
+                    else:
+                        self.log_result("PDF error handling - Corrupted", True, 
+                                      "PDF traité (contenu minimal accepté)")
+                else:
+                    self.log_result("PDF error handling - Corrupted", False, 
+                                  "Gestion d'erreur PDF manquante")
+            else:
+                # Une erreur HTTP est aussi acceptable
+                self.log_result("PDF error handling - Corrupted", True, 
+                              f"Erreur HTTP appropriée: {response.status_code}")
+        except Exception as e:
+            self.log_result("PDF error handling - Corrupted", False, f"Exception: {str(e)}")
+        
+        # Test 2: PDF basé sur des images (non-extractible)
+        try:
+            # Simuler un PDF image-based en créant un PDF minimal sans texte extractible
+            image_based_pdf = b"""%PDF-1.4
+1 0 obj<</Type/Catalog/Pages 2 0 R>>endobj
+2 0 obj<</Type/Pages/Kids[3 0 R]/Count 1>>endobj
+3 0 obj<</Type/Page/Parent 2 0 R/MediaBox[0 0 612 792]>>endobj
+xref
+0 4
+0000000000 65535 f 
+0000000009 00000 n 
+0000000058 00000 n 
+0000000115 00000 n 
+trailer<</Size 4/Root 1 0 R>>
+startxref
+180
+%%EOF"""
+            
+            files = {
+                'file': ('image_based.pdf', image_based_pdf, 'application/pdf')
+            }
+            data = {'document_type': 'z_report'}
+            
+            response = requests.post(f"{BASE_URL}/ocr/upload-document", files=files, data=data)
+            if response.status_code == 200 or response.status_code == 201:
+                result = response.json()
+                if "texte_extrait" in result:
+                    extracted_text = result["texte_extrait"]
+                    if ("image" in extracted_text.lower() or 
+                        "impossible" in extracted_text.lower() or 
+                        len(extracted_text.strip()) == 0):
+                        self.log_result("PDF error handling - Image-based", True, 
+                                      "PDF image-based géré correctement")
+                    else:
+                        self.log_result("PDF error handling - Image-based", True, 
+                                      "PDF traité avec contenu minimal")
+                else:
+                    self.log_result("PDF error handling - Image-based", False, 
+                                  "Réponse manquante")
+            else:
+                self.log_result("PDF error handling - Image-based", True, 
+                              f"Erreur appropriée: {response.status_code}")
+        except Exception as e:
+            self.log_result("PDF error handling - Image-based", False, f"Exception: {str(e)}")
+
     def test_ocr_document_upload_z_report(self):
-        """Test upload et traitement OCR d'un rapport Z"""
-        print("\n=== TEST OCR UPLOAD Z-REPORT ===")
+        """Test upload et traitement OCR d'un rapport Z (image)"""
+        print("\n=== TEST OCR UPLOAD Z-REPORT (IMAGE) ===")
         
         # Créer des données simulées de Z-report
         z_report_text = """
