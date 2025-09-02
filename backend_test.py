@@ -1597,6 +1597,17 @@ class StockTestSuite:
         
         self.test_rapports_z_crud()
         
+        # 🎯 NOUVEAUX TESTS ANALYTICS & PROFITABILITY VERSION 3
+        print("\n" + "="*60)
+        print("🎯 TESTS ANALYTICS & PROFITABILITY VERSION 3")
+        print("="*60)
+        
+        self.test_analytics_profitability()
+        self.test_analytics_sales_performance()
+        self.test_analytics_alerts()
+        self.test_analytics_cost_analysis()
+        self.test_analytics_integration_with_data()
+        
         # Test de suppression en cascade à la fin
         self.test_cascade_delete()
         
