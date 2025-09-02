@@ -750,6 +750,12 @@ function App() {
           📋 Grilles Données
         </button>
         <button 
+          className={`nav-tab ${activeTab === "orders" ? "active" : ""}`}
+          onClick={() => setActiveTab("orders")}
+        >
+          🛒 Commandes
+        </button>
+        <button 
           className={`nav-tab ${activeTab === "ocr" ? "active" : ""}`}
           onClick={() => setActiveTab("ocr")}
         >
