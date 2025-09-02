@@ -4467,9 +4467,32 @@ startxref
         self.test_recettes_excel_import()
         self.test_recette_delete()
         
-        # Tests OCR - Système de traitement de documents
+        # ✅ NOUVEAUX TESTS ENHANCED OCR AVEC SUPPORT PDF - PRIORITÉ 1-4
         print("\n" + "=" * 60)
-        print("🔍 TESTS SYSTÈME OCR - TRAITEMENT DOCUMENTS RESTAURANT")
+        print("🔥 TESTS ENHANCED OCR AVEC SUPPORT PDF - VERSION 3 🔥")
+        print("=" * 60)
+        
+        # PRIORITÉ 1 - PDF Support APIs
+        print("\n📄 PRIORITÉ 1 - PDF SUPPORT APIs")
+        self.test_pdf_text_extraction_functions()
+        self.test_file_type_detection()
+        self.test_pdf_upload_endpoint()
+        
+        # PRIORITÉ 2 - Enhanced OCR Processing
+        print("\n🔧 PRIORITÉ 2 - ENHANCED OCR PROCESSING")
+        self.test_enhanced_ocr_parsing_with_pdf()
+        
+        # PRIORITÉ 3 - Integration Testing
+        print("\n🔗 PRIORITÉ 3 - INTEGRATION TESTING")
+        self.test_backward_compatibility_image_ocr()
+        
+        # PRIORITÉ 4 - Edge Cases
+        print("\n⚠️ PRIORITÉ 4 - EDGE CASES")
+        self.test_pdf_error_handling()
+        
+        # Tests OCR traditionnels (images) - Compatibilité descendante
+        print("\n" + "=" * 60)
+        print("🔍 TESTS OCR TRADITIONNELS (IMAGES) - COMPATIBILITÉ")
         print("=" * 60)
         
         self.test_ocr_document_upload_z_report()
