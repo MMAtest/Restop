@@ -729,6 +729,12 @@ function App() {
           📊 Dashboard
         </button>
         <button 
+          className={`nav-tab ${activeTab === "analytics" ? "active" : ""}`}
+          onClick={() => setActiveTab("analytics")}
+        >
+          📈 Analytics
+        </button>
+        <button 
           className={`nav-tab ${activeTab === "ocr" ? "active" : ""}`}
           onClick={() => setActiveTab("ocr")}
         >
