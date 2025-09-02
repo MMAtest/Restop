@@ -1031,8 +1031,8 @@ Nombre de couverts: 18"""
                 
                 # Test 2: Parse Z Report Enhanced pour vérifier les corrections
                 if document_id:
-                    parse_response = requests.post(f"{BASE_URL}/ocr/parse-z-report-enhanced", 
-                                                 json={"document_id": document_id}, headers=HEADERS)
+                    parse_response = requests.post(f"{BASE_URL}/ocr/parse-z-report-enhanced?document_id={document_id}", 
+                                                 headers=HEADERS)
                     
                     if parse_response.status_code == 200:
                         structured_data = parse_response.json()
