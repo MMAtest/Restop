@@ -3001,6 +3001,13 @@ class StockTestSuite:
         
         self.test_advanced_stock_management_apis()
         
+        # 🆕 NOUVEAUX TESTS VERSION 3 FEATURE #4 - USER MANAGEMENT RBAC
+        print("\n" + "="*60)
+        print("🆕 TESTS VERSION 3 USER MANAGEMENT RBAC APIs")
+        print("="*60)
+        
+        self.test_user_management_rbac_apis()
+        
         # Test de suppression en cascade à la fin
         self.test_cascade_delete()
         
