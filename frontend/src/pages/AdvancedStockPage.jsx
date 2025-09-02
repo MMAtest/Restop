@@ -118,7 +118,7 @@ const AdvancedStockPage = () => {
   };
 
   return (
-    <div className="p-6 bg-gradient-to-br from-cream-50 to-cream-100 min-h-screen">
+    <div className="p-6 bg-gradient-to-br from-white to-gray-50 min-h-screen">
       {/* Header */}
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-800 mb-2">
