@@ -543,11 +543,311 @@ async def resolve_price_anomaly(alert_id: str, resolution_note: str = ""):
         raise HTTPException(status_code=404, detail="Alert not found")
     return {"message": "Alert resolved successfully"}
 
+# ✅ Version 3 - Analytics & Profitability Models
+class RecipeProfitability(BaseModel):
+    recipe_id: str
+    recipe_name: str
+    selling_price: Optional[float] = None
+    ingredient_cost: float
+    profit_margin: float
+    profit_percentage: float
+    portions_sold: int = 0
+    total_revenue: float = 0
+    total_profit: float = 0
+
+class SalesPerformance(BaseModel):
+    period: str  # "daily", "weekly", "monthly"
+    total_sales: float
+    total_orders: int
+    average_order_value: float
+    top_recipes: List[dict]
+    sales_by_category: dict
+    growth_percentage: Optional[float] = None
+
+class AlertCenter(BaseModel):
+    expiring_products: List[dict]  # Products with short DLC
+    price_anomalies: List[dict]    # Price deviations
+    low_stock_items: List[dict]    # Items below minimum stock
+    unused_stock: List[dict]       # Items with no recent movement
+    total_alerts: int
+
+class CostAnalysis(BaseModel):
+    total_inventory_value: float
+    avg_cost_per_recipe: float
+    most_expensive_ingredients: List[dict]
+    cost_trends: dict
+    waste_analysis: dict
+
 # Migration endpoint
 @api_router.post("/admin/migrate/v3")
 async def run_migration_v3():
     """Run Version 3 data migration (Super Admin only)"""
     return await migrate_to_v3()
+
+# ✅ Version 3 - Analytics & Profitability API Endpoints
+
+@api_router.get("/analytics/profitability", response_model=List[RecipeProfitability])
+async def get_recipe_profitability():
+    """Calculate profitability for all recipes"""
+    recipes = await db.recettes.find().to_list(1000)
+    profitability_data = []
+    
+    for recipe in recipes:
+        # Calculate ingredient cost
+        ingredient_cost = 0.0
+        for ingredient in recipe.get("ingredients", []):
+            # Get product price from supplier info or reference price
+            product = await db.produits.find_one({"id": ingredient["produit_id"]})
+            if product:
+                # Try to get best supplier price, fallback to reference price
+                supplier_info = await db.supplier_product_info.find_one({
+                    "product_id": ingredient["produit_id"],
+                    "is_preferred": True
+                })
+                unit_price = supplier_info["price"] if supplier_info else product.get("reference_price", 0)
+                ingredient_cost += (ingredient["quantite"] / recipe["portions"]) * unit_price
+        
+        # Calculate profitability
+        selling_price = recipe.get("prix_vente", 0) or 0
+        profit_margin = selling_price - ingredient_cost
+        profit_percentage = (profit_margin / selling_price * 100) if selling_price > 0 else 0
+        
+        # Get sales data from Rapports Z (simplified for now)
+        portions_sold = 0
+        rapports = await db.rapports_z.find().to_list(1000)
+        for rapport in rapports:
+            for produit in rapport.get("produits", []):
+                if recipe["nom"].lower() in produit.get("nom", "").lower():
+                    portions_sold += produit.get("quantite", 0)
+        
+        total_revenue = portions_sold * selling_price
+        total_profit = portions_sold * profit_margin
+        
+        profitability_data.append(RecipeProfitability(
+            recipe_id=recipe["id"],
+            recipe_name=recipe["nom"],
+            selling_price=selling_price,
+            ingredient_cost=ingredient_cost,
+            profit_margin=profit_margin,
+            profit_percentage=profit_percentage,
+            portions_sold=portions_sold,
+            total_revenue=total_revenue,
+            total_profit=total_profit
+        ))
+    
+    # Sort by profit percentage descending
+    profitability_data.sort(key=lambda x: x.profit_percentage, reverse=True)
+    return profitability_data
+
+@api_router.get("/analytics/sales-performance", response_model=SalesPerformance)
+async def get_sales_performance(period: str = "monthly"):
+    """Get sales performance analysis"""
+    # Get all Rapports Z
+    rapports = await db.rapports_z.find().to_list(1000)
+    
+    if not rapports:
+        return SalesPerformance(
+            period=period,
+            total_sales=0,
+            total_orders=0,
+            average_order_value=0,
+            top_recipes=[],
+            sales_by_category={}
+        )
+    
+    # Calculate totals
+    total_sales = sum(rapport.get("ca_total", 0) for rapport in rapports)
+    total_orders = len(rapports)
+    average_order_value = total_sales / total_orders if total_orders > 0 else 0
+    
+    # Calculate top recipes
+    recipe_sales = {}
+    category_sales = {"Bar": 0, "Entrées": 0, "Plats": 0, "Desserts": 0}
+    
+    for rapport in rapports:
+        for produit in rapport.get("produits", []):
+            recipe_name = produit.get("nom", "")
+            quantity = produit.get("quantite", 0)
+            price = produit.get("prix", 0)
+            
+            if recipe_name not in recipe_sales:
+                recipe_sales[recipe_name] = {"quantity": 0, "revenue": 0}
+            
+            recipe_sales[recipe_name]["quantity"] += quantity
+            recipe_sales[recipe_name]["revenue"] += quantity * price
+            
+            # Categorize (simplified logic)
+            if any(word in recipe_name.lower() for word in ["vin", "bière", "cocktail", "apéritif"]):
+                category_sales["Bar"] += quantity * price
+            elif any(word in recipe_name.lower() for word in ["entrée", "salade", "soup"]):
+                category_sales["Entrées"] += quantity * price
+            elif any(word in recipe_name.lower() for word in ["dessert", "glace", "tarte", "gâteau"]):
+                category_sales["Desserts"] += quantity * price
+            else:
+                category_sales["Plats"] += quantity * price
+    
+    # Get top 5 recipes
+    top_recipes = sorted(
+        [{"name": name, **data} for name, data in recipe_sales.items()],
+        key=lambda x: x["revenue"],
+        reverse=True
+    )[:5]
+    
+    return SalesPerformance(
+        period=period,
+        total_sales=total_sales,
+        total_orders=total_orders,
+        average_order_value=average_order_value,
+        top_recipes=top_recipes,
+        sales_by_category=category_sales
+    )
+
+@api_router.get("/analytics/alerts", response_model=AlertCenter)
+async def get_alert_center():
+    """Get all alerts for management dashboard"""
+    alerts = AlertCenter(
+        expiring_products=[],
+        price_anomalies=[],
+        low_stock_items=[],
+        unused_stock=[],
+        total_alerts=0
+    )
+    
+    # Get expiring products (next 7 days)
+    from datetime import datetime, timedelta
+    expiry_threshold = datetime.utcnow() + timedelta(days=7)
+    
+    expiring_batches = await db.product_batches.find({
+        "expiry_date": {"$lte": expiry_threshold, "$ne": None},
+        "is_consumed": False
+    }).to_list(1000)
+    
+    for batch in expiring_batches:
+        product = await db.produits.find_one({"id": batch["product_id"]})
+        if product:
+            days_to_expiry = (batch["expiry_date"] - datetime.utcnow()).days
+            alerts.expiring_products.append({
+                "product_name": product["nom"],
+                "batch_id": batch["id"],
+                "quantity": batch["quantity"],
+                "expiry_date": batch["expiry_date"].isoformat(),
+                "days_to_expiry": days_to_expiry,
+                "urgency": "critical" if days_to_expiry <= 2 else "warning"
+            })
+    
+    # Get price anomalies
+    price_anomalies = await db.price_anomaly_alerts.find({"is_resolved": False}).to_list(1000)
+    for anomaly in price_anomalies:
+        alerts.price_anomalies.append({
+            "product_name": anomaly["product_name"],
+            "supplier_name": anomaly["supplier_name"],
+            "reference_price": anomaly["reference_price"],
+            "actual_price": anomaly["actual_price"],
+            "difference_percentage": anomaly["difference_percentage"],
+            "alert_date": anomaly["alert_date"].isoformat()
+        })
+    
+    # Get low stock items
+    stocks = await db.stocks.find().to_list(1000)
+    for stock in stocks:
+        if stock["quantite_actuelle"] <= stock["quantite_min"] and stock["quantite_min"] > 0:
+            product = await db.produits.find_one({"id": stock["produit_id"]})
+            alerts.low_stock_items.append({
+                "product_name": product["nom"] if product else "Produit inconnu",
+                "current_quantity": stock["quantite_actuelle"],
+                "minimum_quantity": stock["quantite_min"],
+                "shortage": stock["quantite_min"] - stock["quantite_actuelle"]
+            })
+    
+    # Get unused stock (no movements in last 30 days)
+    thirty_days_ago = datetime.utcnow() - timedelta(days=30)
+    recent_movements = await db.mouvements_stock.find({
+        "date": {"$gte": thirty_days_ago}
+    }).to_list(1000)
+    
+    moved_product_ids = set(mov["produit_id"] for mov in recent_movements)
+    
+    for stock in stocks:
+        if stock["produit_id"] not in moved_product_ids and stock["quantite_actuelle"] > 0:
+            product = await db.produits.find_one({"id": stock["produit_id"]})
+            alerts.unused_stock.append({
+                "product_name": product["nom"] if product else "Produit inconnu",
+                "quantity": stock["quantite_actuelle"],
+                "last_update": stock["derniere_maj"].isoformat(),
+                "days_unused": (datetime.utcnow() - stock["derniere_maj"]).days
+            })
+    
+    alerts.total_alerts = (len(alerts.expiring_products) + len(alerts.price_anomalies) + 
+                          len(alerts.low_stock_items) + len(alerts.unused_stock))
+    
+    return alerts
+
+@api_router.get("/analytics/cost-analysis", response_model=CostAnalysis)
+async def get_cost_analysis():
+    """Get comprehensive cost analysis"""
+    # Calculate total inventory value
+    stocks = await db.stocks.find().to_list(1000)
+    total_inventory_value = 0.0
+    
+    for stock in stocks:
+        product = await db.produits.find_one({"id": stock["produit_id"]})
+        if product:
+            unit_price = product.get("reference_price", 0)
+            total_inventory_value += stock["quantite_actuelle"] * unit_price
+    
+    # Calculate average cost per recipe
+    recipes = await db.recettes.find().to_list(1000)
+    total_recipe_cost = 0.0
+    recipe_count = 0
+    
+    expensive_ingredients = []
+    
+    for recipe in recipes:
+        recipe_cost = 0.0
+        for ingredient in recipe.get("ingredients", []):
+            product = await db.produits.find_one({"id": ingredient["produit_id"]})
+            if product:
+                unit_price = product.get("reference_price", 0)
+                ingredient_cost = (ingredient["quantite"] / recipe["portions"]) * unit_price
+                recipe_cost += ingredient_cost
+                
+                expensive_ingredients.append({
+                    "name": product["nom"],
+                    "unit_price": unit_price,
+                    "category": product.get("categorie", "Non classé")
+                })
+        
+        total_recipe_cost += recipe_cost
+        recipe_count += 1
+    
+    avg_cost_per_recipe = total_recipe_cost / recipe_count if recipe_count > 0 else 0
+    
+    # Get most expensive ingredients (top 10)
+    expensive_ingredients.sort(key=lambda x: x["unit_price"], reverse=True)
+    most_expensive = expensive_ingredients[:10]
+    
+    # Simple cost trends (mock data for now)
+    cost_trends = {
+        "monthly_change": 2.5,  # +2.5% this month
+        "quarterly_change": 7.8,  # +7.8% this quarter
+        "highest_cost_category": "Viandes et Poissons",
+        "lowest_cost_category": "Épices et Assaisonnements"
+    }
+    
+    # Simple waste analysis
+    waste_analysis = {
+        "estimated_waste_percentage": 8.5,
+        "estimated_waste_value": total_inventory_value * 0.085,
+        "main_waste_sources": ["Produits périssables", "Surproduction", "Erreurs de préparation"]
+    }
+    
+    return CostAnalysis(
+        total_inventory_value=total_inventory_value,
+        avg_cost_per_recipe=avg_cost_per_recipe,
+        most_expensive_ingredients=most_expensive,
+        cost_trends=cost_trends,
+        waste_analysis=waste_analysis
+    )
 
 # Configuration OCR
 pytesseract.pytesseract.tesseract_cmd = '/usr/bin/tesseract'
