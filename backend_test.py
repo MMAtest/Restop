@@ -2138,8 +2138,7 @@ class StockTestSuite:
         print("\n--- Test Z Report Validation (Preview Mode) ---")
         if test_document_id:
             try:
-                response = requests.post(f"{BASE_URL}/ocr/validate-z-report", 
-                                       json={"document_id": test_document_id, "apply_deductions": False}, 
+                response = requests.post(f"{BASE_URL}/ocr/validate-z-report?document_id={test_document_id}&apply_deductions=false", 
                                        headers=HEADERS)
                 if response.status_code == 200:
                     validation_response = response.json()
