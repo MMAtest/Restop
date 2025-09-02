@@ -607,11 +607,130 @@ class CostAnalysis(BaseModel):
     cost_trends: dict
     waste_analysis: dict
 
-# Migration endpoint
-@api_router.post("/admin/migrate/v3")
-async def run_migration_v3():
-    """Run Version 3 data migration (Super Admin only)"""
-    return await migrate_to_v3()
+# ✅ Version 3 Feature #2 - Enhanced OCR API Endpoints
+
+@api_router.post("/ocr/parse-z-report-enhanced", response_model=StructuredZReportData)
+async def parse_z_report_enhanced_endpoint(document_id: str):
+    """Parse Z report with enhanced structured extraction"""
+    try:
+        document = await db.documents_ocr.find_one({"id": document_id})
+        if not document:
+            raise HTTPException(status_code=404, detail="Document non trouvé")
+        
+        if document["type_document"] != "z_report":
+            raise HTTPException(status_code=400, detail="Le document doit être un rapport Z")
+        
+        if not document.get("texte_extrait"):
+            raise HTTPException(status_code=400, detail="Aucun texte extrait disponible")
+        
+        # Parse with enhanced function
+        structured_data = parse_z_report_enhanced(document["texte_extrait"])
+        
+        # Update document with structured data
+        await db.documents_ocr.update_one(
+            {"id": document_id},
+            {"$set": {"donnees_parsees": structured_data.dict(), "statut": "traite"}}
+        )
+        
+        return structured_data
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Erreur lors du parsing: {str(e)}")
+
+@api_router.post("/ocr/calculate-stock-deductions", response_model=ZReportValidationResult)
+async def calculate_stock_deductions_endpoint(structured_data: StructuredZReportData):
+    """Calculate proposed stock deductions based on structured Z report data"""
+    try:
+        validation_result = await calculate_stock_deductions(structured_data)
+        return validation_result
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Erreur lors du calcul des déductions: {str(e)}")
+
+@api_router.post("/ocr/validate-z-report")
+async def validate_z_report_endpoint(document_id: str, apply_deductions: bool = False):
+    """Validate Z report and optionally apply stock deductions"""
+    try:
+        # Get the document
+        document = await db.documents_ocr.find_one({"id": document_id})
+        if not document:
+            raise HTTPException(status_code=404, detail="Document non trouvé")
+        
+        # Parse with enhanced function
+        structured_data = parse_z_report_enhanced(document["texte_extrait"])
+        
+        # Calculate deductions
+        validation_result = await calculate_stock_deductions(structured_data)
+        
+        response = {
+            "document_id": document_id,
+            "structured_data": structured_data.dict(),
+            "validation_result": validation_result.dict(),
+            "applied": False
+        }
+        
+        # Apply deductions if requested and validation is successful
+        if apply_deductions and validation_result.can_validate:
+            deduction_result = await apply_stock_deductions(validation_result)
+            response["deduction_result"] = deduction_result
+            response["applied"] = deduction_result.get("success", False)
+            
+            # Create RapportZ entry if deductions were applied successfully
+            if deduction_result.get("success"):
+                rapport_z = RapportZ(
+                    date=datetime.utcnow(),
+                    ca_total=structured_data.grand_total_sales or 0,
+                    produits=[
+                        {
+                            "nom": item["name"],
+                            "quantite": item["quantity_sold"],
+                            "prix": item.get("unit_price", 0),
+                            "categorie": item["category"]
+                        }
+                        for category_items in structured_data.items_by_category.values()
+                        for item in category_items
+                    ]
+                )
+                await db.rapports_z.insert_one(rapport_z.dict())
+                response["rapport_z_created"] = True
+        
+        return response
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Erreur lors de la validation: {str(e)}")
+
+@api_router.get("/ocr/z-report-preview/{document_id}", response_model=dict)
+async def get_z_report_preview(document_id: str):
+    """Get a preview of structured Z report data without applying changes"""
+    try:
+        document = await db.documents_ocr.find_one({"id": document_id})
+        if not document:
+            raise HTTPException(status_code=404, detail="Document non trouvé")
+        
+        if document["type_document"] != "z_report":
+            raise HTTPException(status_code=400, detail="Le document doit être un rapport Z")
+        
+        # Parse with enhanced function
+        structured_data = parse_z_report_enhanced(document["texte_extrait"])
+        
+        # Calculate potential deductions
+        validation_result = await calculate_stock_deductions(structured_data)
+        
+        return {
+            "document_id": document_id,
+            "structured_data": structured_data.dict(),
+            "validation_result": validation_result.dict(),
+            "can_apply": validation_result.can_validate,
+            "preview_only": True
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Erreur lors de l'aperçu: {str(e)}")
 
 # ✅ Version 3 - Analytics & Profitability API Endpoints
 
