@@ -704,6 +704,10 @@ function App() {
       } else {
         detailsDonnees += `🏪 Fournisseur: ${donnees.fournisseur || 'Non trouvé'}\n`;
         detailsDonnees += `📅 Date: ${donnees.date || 'Non trouvée'}\n`;
+    setPreviewDocFull(null);
+    setPreviewLoading(false);
+    setPreviewTab('overview');
+
         detailsDonnees += `🔢 N° facture: ${donnees.numero_facture || 'Non trouvé'}\n`;
         detailsDonnees += `💰 Total: ${donnees.total_ttc || donnees.total_ht || 'Non trouvé'}€\n`;
         detailsDonnees += `📦 Produits: ${donnees.produits?.length || 0}\n`;
