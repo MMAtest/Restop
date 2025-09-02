@@ -121,7 +121,7 @@ class ProduitCreate(BaseModel):
     description: Optional[str] = None
     categorie: Optional[str] = None
     unite: str
-    reference_price: float  # ✅ Required for V3
+    reference_price: Optional[float] = None  # ✅ Optional for backward compatibility
     main_supplier_id: Optional[str] = None
     secondary_supplier_ids: List[str] = []
     # Legacy fields for backward compatibility
