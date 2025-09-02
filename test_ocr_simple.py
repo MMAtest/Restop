@@ -3,7 +3,7 @@
 import requests
 import time
 
-BACKEND_URL = "https://7fcf5492-aee5-4565-92a6-393f60236120.preview.emergentagent.com/api"
+BACKEND_URL = "https://resto-inventory-10.preview.emergentagent.com/api"
 
 def test_simple_ocr():
     """Test simple de l'interface OCR"""
