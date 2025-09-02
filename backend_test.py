@@ -972,6 +972,163 @@ class StockTestSuite:
         except Exception as e:
             self.log_result("POST /demo/init-table-augustine-data", False, "Exception", str(e))
 
+    def test_enhanced_ocr_pdf_parsing(self):
+        """Test Enhanced OCR PDF parsing avec corrections spécifiques"""
+        print("\n=== TEST ENHANCED OCR PDF PARSING - CORRECTIONS VALIDÉES ===")
+        
+        # Simuler le contenu du fichier ztableauaugustinedigital.pdf avec les problèmes identifiés
+        pdf_text_content = """RAPPORT Z - LA TABLE D'AUGUSTINE
+15/12/2024 - Service: Soir
+
+VENTES PAR CATÉGORIE:
+
+BAR:
+Vin rouge Côtes du Rhône: 2
+Pastis Ricard: 1
+
+ENTRÉES:
+Supions en persillade: 4
+Fleurs de courgettes: 3
+
+PLATS:
+Linguine aux palourdes: 5
+Bœuf Wellington: 2
+
+DESSERTS:
+Tiramisu: 3
+
+TOTAL CA: 456.50€
+Nombre de couverts: 18"""
+        
+        # Créer un PDF simulé avec ce contenu
+        pdf_content = self.create_mock_pdf_content(pdf_text_content)
+        
+        try:
+            # Test 1: Upload PDF et vérification file_type
+            files = {
+                'file': ('ztableauaugustinedigital.pdf', pdf_content, 'application/pdf')
+            }
+            data = {'document_type': 'z_report'}
+            
+            response = requests.post(f"{BASE_URL}/ocr/upload-document", files=files, data=data)
+            if response.status_code in [200, 201]:
+                result = response.json()
+                document_id = result.get("document_id")
+                
+                # CORRECTION 3: Vérifier que file_type est correctement assigné à "pdf"
+                if result.get("file_type") == "pdf":
+                    self.log_result("FIXED: File Type Assignment", True, "file_type correctement défini à 'pdf'")
+                else:
+                    self.log_result("FIXED: File Type Assignment", False, 
+                                  f"file_type incorrect: {result.get('file_type')} au lieu de 'pdf'")
+                
+                # Vérifier l'extraction de texte
+                extracted_text = result.get("texte_extrait", "")
+                if len(extracted_text) > 100:
+                    self.log_result("PDF Text Extraction", True, f"Texte extrait: {len(extracted_text)} caractères")
+                else:
+                    self.log_result("PDF Text Extraction", False, "Texte insuffisant extrait")
+                
+                # Test 2: Parse Z Report Enhanced pour vérifier les corrections
+                if document_id:
+                    parse_response = requests.post(f"{BASE_URL}/ocr/parse-z-report-enhanced", 
+                                                 json={"document_id": document_id}, headers=HEADERS)
+                    
+                    if parse_response.status_code == 200:
+                        structured_data = parse_response.json()
+                        
+                        # CORRECTION 1: Vérifier que grand_total_sales est correctement calculé
+                        grand_total = structured_data.get("grand_total_sales")
+                        if grand_total == 456.50:
+                            self.log_result("FIXED: CA Total Calculation", True, 
+                                          f"grand_total_sales correctement extrait: {grand_total}€")
+                        else:
+                            self.log_result("FIXED: CA Total Calculation", False, 
+                                          f"grand_total_sales incorrect: {grand_total} au lieu de 456.50€")
+                        
+                        # CORRECTION 2: Vérifier la catégorisation des items
+                        items_by_category = structured_data.get("items_by_category", {})
+                        
+                        # Vérifier que "Supions en persillade" est dans "Entrées" (pas "Plats")
+                        entrees_items = items_by_category.get("Entrées", [])
+                        supions_in_entrees = any("Supions" in item.get("name", "") for item in entrees_items)
+                        
+                        if supions_in_entrees:
+                            self.log_result("FIXED: Supions Categorization", True, 
+                                          "Supions en persillade correctement catégorisé dans Entrées")
+                        else:
+                            self.log_result("FIXED: Supions Categorization", False, 
+                                          "Supions en persillade mal catégorisé")
+                        
+                        # Vérifier que "Fleurs de courgettes" est dans "Entrées"
+                        fleurs_in_entrees = any("Fleurs" in item.get("name", "") for item in entrees_items)
+                        
+                        if fleurs_in_entrees:
+                            self.log_result("FIXED: Fleurs de courgettes Categorization", True, 
+                                          "Fleurs de courgettes correctement catégorisées dans Entrées")
+                        else:
+                            self.log_result("FIXED: Fleurs de courgettes Categorization", False, 
+                                          "Fleurs de courgettes mal catégorisées")
+                        
+                        # Vérifier que toutes les 4 catégories sont présentes
+                        expected_categories = ["Bar", "Entrées", "Plats", "Desserts"]
+                        all_categories_present = all(cat in items_by_category for cat in expected_categories)
+                        
+                        if all_categories_present:
+                            self.log_result("Categories Structure", True, "Toutes les 4 catégories présentes")
+                        else:
+                            missing_cats = [cat for cat in expected_categories if cat not in items_by_category]
+                            self.log_result("Categories Structure", False, f"Catégories manquantes: {missing_cats}")
+                        
+                        # Vérifier l'extraction de la date et du service
+                        report_date = structured_data.get("report_date")
+                        service = structured_data.get("service")
+                        
+                        if report_date and "15/12/2024" in report_date:
+                            self.log_result("Date Extraction", True, f"Date correctement extraite: {report_date}")
+                        else:
+                            self.log_result("Date Extraction", False, f"Date incorrecte: {report_date}")
+                        
+                        if service == "Soir":
+                            self.log_result("Service Extraction", True, f"Service correctement extrait: {service}")
+                        else:
+                            self.log_result("Service Extraction", False, f"Service incorrect: {service}")
+                        
+                        # Test 3: Calcul des déductions de stock
+                        deduction_response = requests.post(f"{BASE_URL}/ocr/calculate-stock-deductions", 
+                                                         json=structured_data, headers=HEADERS)
+                        
+                        if deduction_response.status_code == 200:
+                            deduction_result = deduction_response.json()
+                            
+                            if deduction_result.get("can_validate"):
+                                proposed_deductions = deduction_result.get("proposed_deductions", [])
+                                if len(proposed_deductions) > 0:
+                                    self.log_result("Stock Deduction Calculation", True, 
+                                                  f"{len(proposed_deductions)} propositions de déduction calculées")
+                                else:
+                                    self.log_result("Stock Deduction Calculation", False, 
+                                                  "Aucune proposition de déduction")
+                            else:
+                                self.log_result("Stock Deduction Validation", False, 
+                                              "Validation des déductions échouée")
+                        else:
+                            self.log_result("Stock Deduction Calculation", False, 
+                                          f"Erreur calcul déductions: {deduction_response.status_code}")
+                        
+                        # Stocker l'ID du document pour les tests suivants
+                        self.created_document_id = document_id
+                        
+                    else:
+                        self.log_result("Parse Z Report Enhanced", False, 
+                                      f"Erreur parsing: {parse_response.status_code}")
+                else:
+                    self.log_result("Document ID", False, "Pas d'ID de document retourné")
+            else:
+                self.log_result("PDF Upload", False, f"Erreur upload: {response.status_code}")
+                
+        except Exception as e:
+            self.log_result("Enhanced OCR PDF Parsing", False, "Exception", str(e))
     def test_cascade_delete(self):
         """Test suppression en cascade"""
         print("\n=== TEST SUPPRESSION EN CASCADE ===")
