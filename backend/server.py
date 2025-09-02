@@ -905,6 +905,10 @@ async def delete_fournisseur(fournisseur_id: str):
 async def create_produit(produit: ProduitCreate):
     produit_dict = produit.dict()
     
+    # ✅ V3 Enhancement: Set reference_price if not provided (backward compatibility)
+    if not produit_dict.get("reference_price"):
+        produit_dict["reference_price"] = produit_dict.get("prix_achat", 10.0) or 10.0
+    
     # Récupérer le nom du fournisseur si spécifié
     if produit.fournisseur_id:
         fournisseur = await db.fournisseurs.find_one({"id": produit.fournisseur_id})
