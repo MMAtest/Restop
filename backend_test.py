@@ -2994,6 +2994,13 @@ class StockTestSuite:
         self.test_analytics_cost_analysis()
         self.test_analytics_integration_with_data()
         
+        # 🆕 NOUVEAUX TESTS VERSION 3 FEATURE #3 - ADVANCED STOCK MANAGEMENT
+        print("\n" + "="*60)
+        print("🆕 TESTS VERSION 3 ADVANCED STOCK MANAGEMENT APIs")
+        print("="*60)
+        
+        self.test_advanced_stock_management_apis()
+        
         # Test de suppression en cascade à la fin
         self.test_cascade_delete()
         
