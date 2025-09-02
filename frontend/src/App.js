@@ -530,19 +530,26 @@ function App() {
   const handleOcrFileSelect = (event) => {
     const file = event.target.files[0];
     if (file) {
-      if (!file.type.startsWith('image/')) {
-        alert('Veuillez sélectionner un fichier image');
+      // Vérifier si c'est une image ou un PDF
+      if (!file.type.startsWith('image/') && file.type !== 'application/pdf') {
+        alert('Veuillez sélectionner un fichier image ou PDF');
         return;
       }
       
       setOcrFile(file);
       
-      // Créer un aperçu
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        setOcrPreview(e.target.result);
-      };
-      reader.readAsDataURL(file);
+      // Créer un aperçu selon le type de fichier
+      if (file.type === 'application/pdf') {
+        // Pour les PDF, afficher une icône et le nom du fichier
+        setOcrPreview(`PDF: ${file.name}`);
+      } else {
+        // Pour les images, créer un aperçu visuel
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          setOcrPreview(e.target.result);
+        };
+        reader.readAsDataURL(file);
+      }
     }
   };
 
