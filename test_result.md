@@ -459,7 +459,7 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Version 3 Analytics & Profitability APIs Testing Complete"
+    - "Version 3 Feature #2: Enhanced OCR Parsing APIs Testing Complete"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
