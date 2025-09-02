@@ -459,9 +459,9 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Complete Frontend Testing Post-V3 Backend"
+    - "Version 3 Analytics & Profitability APIs Testing Complete"
   stuck_tasks: []
-  test_all: true
+  test_all: false
   test_priority: "high_first"
 
   - task: "Nouvelle Interface OCR Module Complet"
