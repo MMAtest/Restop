@@ -1969,8 +1969,8 @@ class StockTestSuite:
         # Test 1: POST /api/ocr/parse-z-report-enhanced
         print("\n--- Test Enhanced Z Report Parsing ---")
         try:
-            response = requests.post(f"{BASE_URL}/ocr/parse-z-report-enhanced", 
-                                   json={"document_id": test_document_id}, headers=HEADERS)
+            response = requests.post(f"{BASE_URL}/ocr/parse-z-report-enhanced?document_id={test_document_id}", 
+                                   headers=HEADERS)
             if response.status_code == 200:
                 structured_data = response.json()
                 
