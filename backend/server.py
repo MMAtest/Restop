@@ -1465,11 +1465,15 @@ def parse_z_report_enhanced(texte_ocr: str) -> StructuredZReportData:
         raw_items = []
         lines = texte_ocr.split('\n')
         
-        # Extract grand total
+        # Extract grand total - Patterns améliorés pour tous formats
         total_patterns = [
-            r'total\s*:?\s*€?(\d+[,.]?\d*)',
-            r'montant\s*total\s*:?\s*€?(\d+[,.]?\d*)',
-            r'ca\s*total\s*:?\s*€?(\d+[,.]?\d*)'
+            r'total\s*ca\s*:?\s*€?(\d+[,.]?\d*)',  # "TOTAL CA: 456.50€"  
+            r'ca\s*total\s*:?\s*€?(\d+[,.]?\d*)',  # "CA TOTAL: 456.50€"
+            r'total\s*:?\s*€?(\d+[,.]?\d*)',       # "TOTAL: 456.50€"
+            r'montant\s*total\s*:?\s*€?(\d+[,.]?\d*)', # "MONTANT TOTAL: 456.50€"
+            r'grand\s*total\s*:?\s*€?(\d+[,.]?\d*)',   # "GRAND TOTAL: 456.50€"
+            r'€\s*(\d+[,.]?\d*)\s*total',          # "€ 456.50 TOTAL"
+            r'(\d+[,.]?\d*)\s*€\s*total'           # "456.50 € TOTAL"
         ]
         
         for line in lines:
