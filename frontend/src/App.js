@@ -4,6 +4,7 @@ import axios from "axios";
 import HistoriqueZPage from "./pages/HistoriqueZPage";
 import AnalyticsPage from "./pages/AnalyticsPage";
 import UserManagementPage from "./pages/UserManagementPage";
+import DataGridsPage from "./pages/DataGridsPage";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
