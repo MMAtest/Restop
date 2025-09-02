@@ -353,15 +353,23 @@ const AnalyticsPage = () => {
                   {alertCenter.low_stock_items.map((item, index) => (
                     <div key={index} className="p-4 bg-orange-50 border-l-4 border-orange-400 rounded-lg">
                       <div className="flex justify-between items-center">
-                        <div>
+                        <div className="flex-1">
                           <p className="font-medium">{item.product_name}</p>
                           <p className="text-sm text-gray-600">
                             Stock actuel: {item.current_quantity} • Minimum: {item.minimum_quantity}
                           </p>
                         </div>
-                        <span className="px-3 py-1 bg-orange-100 text-orange-800 rounded-full text-xs font-medium">
-                          Manque {item.shortage.toFixed(1)}
-                        </span>
+                        <div className="flex items-center space-x-2">
+                          <span className="px-3 py-1 bg-orange-100 text-orange-800 rounded-full text-xs font-medium">
+                            Manque {item.shortage.toFixed(1)}
+                          </span>
+                          <button
+                            onClick={() => handleResolveAlert('low_stock', item.product_name)}
+                            className="px-3 py-1 bg-green-500 text-white rounded text-xs hover:bg-green-600"
+                          >
+                            Ajuster Stock
+                          </button>
+                        </div>
                       </div>
                     </div>
                   ))}
