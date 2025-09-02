@@ -343,6 +343,72 @@ class FactureFournisseurData(BaseModel):
     total_ht: Optional[float] = None
     total_ttc: Optional[float] = None
 
+def extract_text_from_pdf(pdf_content: bytes) -> str:
+    """Extract text from PDF using multiple methods for best results"""
+    extracted_text = ""
+    
+    try:
+        # Method 1: Try pdfplumber first (better for complex layouts)
+        import io
+        pdf_file = io.BytesIO(pdf_content)
+        
+        with pdfplumber.open(pdf_file) as pdf:
+            for page in pdf.pages:
+                page_text = page.extract_text()
+                if page_text:
+                    extracted_text += page_text + "\n"
+        
+        if extracted_text.strip():
+            print(f"✅ PDF text extracted with pdfplumber: {len(extracted_text)} characters")
+            return extracted_text
+            
+    except Exception as e:
+        print(f"⚠️ pdfplumber failed: {str(e)}")
+    
+    try:
+        # Method 2: Fallback to PyPDF2
+        pdf_file = io.BytesIO(pdf_content)
+        pdf_reader = PyPDF2.PdfReader(pdf_file)
+        
+        for page_num in range(len(pdf_reader.pages)):
+            page = pdf_reader.pages[page_num]
+            page_text = page.extract_text()
+            if page_text:
+                extracted_text += page_text + "\n"
+        
+        if extracted_text.strip():
+            print(f"✅ PDF text extracted with PyPDF2: {len(extracted_text)} characters")
+            return extracted_text
+            
+    except Exception as e:
+        print(f"⚠️ PyPDF2 failed: {str(e)}")
+    
+    if not extracted_text.strip():
+        print("❌ No text could be extracted from PDF - might be image-based PDF")
+        return "Erreur: Impossible d'extraire le texte du PDF. Il s'agit peut-être d'un PDF contenant uniquement des images."
+    
+    return extracted_text
+
+def detect_file_type(filename: str, content_type: str = None) -> str:
+    """Detect if file is image or PDF"""
+    filename_lower = filename.lower() if filename else ""
+    
+    # Check by content type first
+    if content_type:
+        if content_type.startswith('image/'):
+            return 'image'
+        elif content_type == 'application/pdf':
+            return 'pdf'
+    
+    # Check by file extension
+    if filename_lower.endswith(('.pdf',)):
+        return 'pdf'
+    elif filename_lower.endswith(('.jpg', '.jpeg', '.png', '.gif', '.bmp', '.tiff', '.webp')):
+        return 'image'
+    
+    # Default to image for backward compatibility
+    return 'image'
+
 # Configuration OCR
 # ✅ Version 3 - Data Migration System
 class MigrationStatus(BaseModel):
