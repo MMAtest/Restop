@@ -549,6 +549,9 @@ async def run_migration_v3():
     """Run Version 3 data migration (Super Admin only)"""
     return await migrate_to_v3()
 
+# Configuration OCR
+pytesseract.pytesseract.tesseract_cmd = '/usr/bin/tesseract'
+
 # Configuration de la base de données
 MONGO_URL = os.environ.get('MONGO_URL', 'mongodb://localhost:27017')
 client = AsyncIOMotorClient(MONGO_URL)
