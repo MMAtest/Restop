@@ -457,9 +457,24 @@ metadata:
   test_sequence: 0
   run_ui: false
 
+  - task: "Version 3 Feature #3: Advanced Stock Management APIs"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "✅ ADVANCED STOCK MANAGEMENT COMPLETE - Backend: 5 new API endpoints implemented (stock/advanced-adjustment, stock/adjustments-history, stock/batch-info, stock/batch-summary, stock/consume-batch) with comprehensive dual adjustment types (ingredient/prepared_dish), automatic ingredient deduction calculations, batch tracking with expiry status, complete audit trail with user tracking. Models: AdvancedStockAdjustment, StockAdjustmentRequest, BatchStockInfo with 7-day critical threshold for batch status categorization."
+      - working: true
+        agent: "testing"
+        comment: "🎉 VERSION 3 ADVANCED STOCK MANAGEMENT APIs - 100% RÉUSSITE ! Validation complète des nouvelles APIs Advanced Stock Management demandées dans Version 3 Feature #3 : ✅ PRIORITY 1 - ADVANCED STOCK ADJUSTMENT APIs : POST /api/stock/advanced-adjustment fonctionne parfaitement pour les 2 types (ingredient: ajustement direct avec quantités positives/négatives, prepared_dish: déduction automatique ingrédients basée sur portions recette), GET /api/stock/adjustments-history récupère historique complet avec tracking utilisateur ✅ PRIORITY 2 - BATCH MANAGEMENT APIs : GET /api/stock/batch-info/{product_id} retourne informations lots avec statut expiration (good/critical/expired), GET /api/stock/batch-summary liste tous produits avec gestion lots, PUT /api/stock/consume-batch/{batch_id} met à jour quantités avec marquage consommation complète ✅ PRIORITY 3 - INTEGRATION TESTING : Intégration parfaite avec données La Table d'Augustine (43 produits, recettes authentiques), ajustements mettent à jour stocks correctement, déductions ingrédients plats préparés fonctionnent avec données recettes réelles, création audit trail avec tracking utilisateur et motifs ✅ PRIORITY 4 - ADVANCED FEATURES : Calculs déduction ingrédients automatiques par portion recette précis, création mouvements stock avec commentaires détaillés, catégorisation statuts lots avec seuil critique 7 jours, intégrité base données maintenue après ajustements ✅ RÉSULTATS CLÉS : Dual adjustment types opérationnels (ingredient/prepared_dish), batch tracking avec statuts expiration, déductions automatiques ingrédients calculées correctement, audit trail complet avec utilisateurs/motifs, intégration données La Table d'Augustine validée. Module Advanced Stock Management Version 3 Feature #3 entièrement opérationnel pour production avec gestion avancée stocks et traçabilité complète !"
+
 test_plan:
   current_focus:
-    - "Version 3 Feature #2: Enhanced OCR Parsing APIs Testing Complete"
+    - "Version 3 Feature #3: Advanced Stock Management APIs Testing Complete"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
