@@ -2826,6 +2826,8 @@ async def upload_and_process_document(
             # Utiliser le parser enhanced pour les rapports Z
             z_data = parse_z_report_enhanced(texte_extrait)
             donnees_parsees = z_data.dict()
+            # Enrichir les prix manquants à partir des recettes en base
+            donnees_parsees = await enrich_z_report_prices(donnees_parsees)
         elif document_type == "facture_fournisseur":
             facture_data = parse_facture_fournisseur(texte_extrait)
             donnees_parsees = facture_data.dict()
