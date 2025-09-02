@@ -3,7 +3,7 @@
 /* Import de la police Inter */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
-/* CSS Custom Properties selon la charte - Version ultra-claire pour lisibilité */
+/* CSS Custom Properties selon la charte - Version équilibrée pour contraste optimal */
 :root {
   --color-primary-light: #E8F5E8; /* Vert très clair pour arrière-plans */
   --color-primary-lighter: #F0F8F0; /* Vert ultra-clair pour arrière-plans */
@@ -11,10 +11,10 @@
   --color-primary-dark: #1F4A08; /* Vert foncé original */
   --color-accent: #D4AF37;
   --color-accent-light: #F4C430;
-  --color-secondary: rgba(139, 21, 56, 0.1); /* Rouge bordeaux ultra-léger 10% */
-  --color-secondary-light: rgba(160, 41, 61, 0.1); /* Rouge bordeaux clair ultra-léger 10% */
-  --color-background: #FDFCF7; /* Beige ultra-clair */
-  --color-background-light: #FFFEF9; /* Crème ultra-clair */
+  --color-secondary: rgba(139, 21, 56, 0.15); /* Rouge bordeaux léger 15% */
+  --color-secondary-light: rgba(160, 41, 61, 0.12); /* Rouge bordeaux clair léger 12% */
+  --color-background: #F8F6F0; /* Beige clair avec contraste */
+  --color-background-light: #FBF9F4; /* Crème clair avec contraste */
   --color-white: #FFFFFF;
   --color-gray-light: #F8F9FA;
   --color-gray-medium: #6C757D;
@@ -31,7 +31,7 @@
   
   --gradient-primary: linear-gradient(135deg, #F0F8F0 0%, #F8FBF8 100%);
   --gradient-accent: linear-gradient(45deg, #D4AF37 0%, #F4C430 100%);
-  --gradient-background: linear-gradient(135deg, #FDFCF7 0%, #FFFEF9 50%, #F8FBF8 100%); /* Dégradé ultra-clair */
+  --gradient-background: linear-gradient(135deg, #F8F6F0 0%, #F2F0E8 30%, #F0F8F0 100%); /* Dégradé avec contraste subtil */
 }
 
 /* Reset et Base */
