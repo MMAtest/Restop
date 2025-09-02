@@ -1603,6 +1603,35 @@ def parse_z_report_enhanced(texte_ocr: str) -> StructuredZReportData:
                     except ValueError:
                         pass
         
+        # Pass 2.5: Try robust price/qty parser on each line
+        enhanced_items = []
+        for line in lines:
+            parsed = try_parse_item_line(line)
+            if parsed:
+                name, qty, price = parsed
+                cat = categorize_menu_item(name)
+                enhanced_items.append({
+                    "name": name,
+                    "quantity_sold": qty,
+                    "category": cat,
+                    "unit_price": price,
+                    "total_price": (price * qty) if (price is not None) else None,
+                    "raw_line": line
+                })
+        # Merge enhanced_items with raw_items, deduplicate by (name, qty) preferring entries with price
+        def item_key(it):
+            return (it["name"].lower(), it["quantity_sold"]) 
+        merged = {}
+        for it in raw_items + enhanced_items:
+            key = item_key(it)
+            if key not in merged:
+                merged[key] = it
+            else:
+                # Prefer the one with price
+                if merged[key].get("unit_price") is None and it.get("unit_price") is not None:
+                    merged[key] = it
+        raw_items = list(merged.values())
+
         # Process each line for items
         for line in lines:
             line = line.strip()
