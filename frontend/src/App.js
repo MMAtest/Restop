@@ -1942,11 +1942,29 @@ function App() {
             {ocrPreview && (
               <div className="form-group">
                 <label className="form-label">Aperçu</label>
-                <img
-                  src={ocrPreview}
-                  alt="Aperçu du document"
-                  style={{maxWidth: '100%', maxHeight: '200px', objectFit: 'contain', border: '1px solid #ddd', borderRadius: '5px'}}
-                />
+                {ocrPreview.startsWith('PDF:') ? (
+                  <div style={{
+                    padding: '20px',
+                    border: '2px dashed #ddd',
+                    borderRadius: '5px',
+                    textAlign: 'center',
+                    backgroundColor: '#f9f9f9'
+                  }}>
+                    <div style={{fontSize: '48px', marginBottom: '10px'}}>📄</div>
+                    <div style={{fontWeight: 'bold', color: '#666'}}>
+                      {ocrPreview.replace('PDF: ', '')}
+                    </div>
+                    <div style={{fontSize: '12px', color: '#999', marginTop: '5px'}}>
+                      Fichier PDF sélectionné
+                    </div>
+                  </div>
+                ) : (
+                  <img
+                    src={ocrPreview}
+                    alt="Aperçu du document"
+                    style={{maxWidth: '100%', maxHeight: '200px', objectFit: 'contain', border: '1px solid #ddd', borderRadius: '5px'}}
+                  />
+                )}
               </div>
             )}
 
