@@ -29,6 +29,8 @@ function App() {
   const [showMouvementModal, setShowMouvementModal] = useState(false);
   const [showRecetteModal, setShowRecetteModal] = useState(false);
   const [showOcrModal, setShowOcrModal] = useState(false);
+  const [showPreviewModal, setShowPreviewModal] = useState(false); // Nouvelle modal d'aperçu
+  const [previewDocument, setPreviewDocument] = useState(null); // Document en cours d'aperçu
   const [editingItem, setEditingItem] = useState(null);
   const [selectedRecette, setSelectedRecette] = useState(null);
   const [productionCapacity, setProductionCapacity] = useState(null);
