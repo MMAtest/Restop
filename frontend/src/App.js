@@ -828,12 +828,8 @@ function App() {
                 {mouvements.length === 0 && <li>Aucune activité récente</li>}
               </ul>
             </div>
-          </div>
-        </div>
-      </div>
-
-      {/* ANALYTICS & PROFITABILITY */}
-      <div id="analytics" className={`wireframe-section ${activeTab === "analytics" ? "active" : ""}`}>
+      {/* DASHBOARD - Analytics & Profitability */}
+      <div id="dashboard" className={`wireframe-section ${activeTab === "dashboard" ? "active" : ""}`}>
         <AnalyticsPage />
       </div>
 
