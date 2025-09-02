@@ -841,6 +841,11 @@ function App() {
         <UserManagementPage />
       </div>
 
+      {/* PROFESSIONAL DATA GRIDS */}
+      <div id="datagrids" className={`wireframe-section ${activeTab === "datagrids" ? "active" : ""}`}>
+        <DataGridsPage />
+      </div>
+
       {/* OCR */}
       <div id="ocr" className={`wireframe-section ${activeTab === "ocr" ? "active" : ""}`}>
         <div className="wireframe">
