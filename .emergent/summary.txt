@@ -1,0 +1,141 @@
+<analysis>
+The trajectory details the transformation of the ResTop restaurant stock management application from an MVP to a feature-rich Version 3. Initially, the AI engineer established core CRUD, Excel, OCR, and recipe functionalities, followed by an extensive UI redesign to the Alderobase graphic charter. The recent work involved implementing six major Version 3 features: enhanced data models with RBAC, Analytics & Profitability, Enhanced OCR Parsing (including PDF support), Advanced Stock Management, User Management Interface, Professional Data Grids, and Purchase Order Workflow. Throughout this, the AI meticulously addressed user feedback, correcting UI elements, refining OCR parsing logic, and ensuring data integrity. The current focus is on a user-requested side-by-side document and extracted data preview for the OCR module, actively troubleshooting its frontend integration and display.
+</analysis>
+<product_requirements>
+The goal is to provide a comprehensive restaurant stock management solution, solving manual inventory and inefficient data entry. Key existing features include CRUD for products/suppliers, a React UI, FastAPI backend, MongoDB, recipe management, Tesseract OCR for Z reports/invoices, POS integration, backoffice for technical sheets, and data access. The application recently received a major overhaul to Version 3, introducing:
+1.  **Core Data Model Evolution:** Product , , ;  linking model; price anomaly alerts;  for granular stock with , , ; and  vs.  logic for sales.
+2.  **Role-Based Access Control (RBAC):** Super Admin (User Management), Gérant (Analytics default), Chef de cuisine (Stock/Production/Orders), Barman (Bar stock), Caissier (OCR).
+3.  **Feature Modules:**
+    *   **Enhanced OCR:** , , categorized items (, ),  from Z reports, automatic stock deduction, and PDF support.
+    *   **Advanced Stock Management:** Manual adjustment (ingredient/dish), batch tracking, logging.
+    *   **New Purchase Order Workflow:** Supplier selection,  pricing, item addition.
+    *   **Analytics & Profitability:** Default for Gérant, profitability/recipe, sales analysis, alert center.
+4.  **UI/UX:** Professional data grids with sorting/filtering. Recent focus on correcting UI issues in the Analytics dashboard and OCR module.
+</product_requirements>
+<key_technical_concepts>
+-   **Full-stack Architecture:** React.js (Frontend), FastAPI (Backend), MongoDB (Database).
+-   **Styling:** Tailwind CSS, custom CSS (Alderobase charter).
+-   **OCR & PDF Processing:** Tesseract (pytesseract, Pillow, opencv-python), PyPDF2, pdfplumber.
+-   **Data Manipulation:** Pandas (Excel), Pydantic for data models.
+-   **Authentication:** Passlib (password hashing).
+-   **UI Components:** AG-Grid for professional data tables.
+-   **Deployment:** Kubernetes, Supervisor.
+</key_technical_concepts>
+<code_architecture>
+The application employs a standard full-stack setup: React frontend, FastAPI backend, and MongoDB.
+
+
+
+-   ****
+    -   **Importance**: Defines backend API logic and database interactions.
+    -   **Changes Made**: Extensively modified for V3: added Pydantic models (Product, SupplierProductInfo, ProductBatch, User, Role), implemented migration system. New CRUD endpoints for V3 models. Implemented analytics APIs (). Enhanced OCR parsing logic with PDF support (PyPDF2, pdfplumber integration, file_type in DocumentOCR model), improved  regex, and category classification. Backend endpoints for advanced stock management, user management.
+-   ****
+    -   **Importance**: Main React component managing UI, state, and routing.
+    -   **Changes Made**: Underwent significant restructuring to integrate 6 new V3 pages (Analytics, Advanced Stock, User Management, DataGrids, Purchase Order) into navigation. Logic updated to make Analytics the default Dashboard. Added state and functions for OCR document preview modal. Modified OCR file input to accept PDFs and updated preview handling.
+-   ****
+    -   **Importance**: Global and component styling.
+    -   **Changes Made**: Refined Alderobase charter colors to improve readability and contrast as per user feedback; adjusted background gradients (bordeaux, beige, green) and specific page backgrounds (e.g.,  to ).
+-   ****
+    -   **Importance**: Displays a list of processed Z reports.
+    -   **Changes Made**: No direct changes in the trajectory, but its data is impacted by enhanced OCR.
+-   **** (New)
+    -   **Importance**: Provides analytics and profitability insights.
+    -   **Changes Made**: Created with tabbed interface, real-time data fetching, and responsive design. Fixed UI bugs: removed duplicated icons in internal tabs, made alert card clickable with detailed alert display and action buttons.
+-   **** (New)
+    -   **Importance**: UI for advanced stock adjustments and batch tracking.
+    -   **Changes Made**: Created to support advanced stock features.
+-   **** (New)
+    -   **Importance**: Super Admin interface for user creation/management with RBAC.
+    -   **Changes Made**: Created for user and role management.
+-   **, , , ** (New)
+    -   **Importance**: Reusable and specialized AG-Grid components for professional data display.
+    -   **Changes Made**: Created for professional data table functionalities.
+-   **** (New)
+    -   **Importance**: Showcases the new professional data grids.
+    -   **Changes Made**: Created to integrate and display various  components.
+-   **** (New)
+    -   **Importance**: UI for the new purchase order workflow.
+    -   **Changes Made**: Created to manage supplier selection and order creation.
+-   ****
+    -   **Importance**: Python dependencies.
+    -   **Changes Made**: Added , , , , , , , usage: pdfplumber [-h] [--structure | --structure-text]
+                  [--format {csv,json,text}] [--types TYPES [TYPES ...]]
+                  [--include-attrs INCLUDE_ATTRS [INCLUDE_ATTRS ...]]
+                  [--exclude-attrs EXCLUDE_ATTRS [EXCLUDE_ATTRS ...]]
+                  [--laparams LAPARAMS] [--precision PRECISION]
+                  [--pages PAGES [PAGES ...]] [--indent INDENT]
+                  [infile]
+
+positional arguments:
+  infile
+
+options:
+  -h, --help            show this help message and exit
+  --structure           Write the structure tree as JSON. All other arguments
+                        except --pages, --laparams, and --indent will be
+                        ignored
+  --structure-text      Write the structure tree as JSON including text
+                        contents. All other arguments except --pages,
+                        --laparams, and --indent will be ignored
+  --format {csv,json,text}
+  --types TYPES [TYPES ...]
+  --include-attrs INCLUDE_ATTRS [INCLUDE_ATTRS ...]
+                        Include *only* these object attributes in output.
+  --exclude-attrs EXCLUDE_ATTRS [EXCLUDE_ATTRS ...]
+                        Exclude these object attributes from output.
+  --laparams LAPARAMS
+  --precision PRECISION
+  --pages PAGES [PAGES ...]
+  --indent INDENT       Indent level for JSON pretty-printing..
+-   ****
+    -   **Importance**: Node.js dependencies.
+    -   **Changes Made**: Added , .
+-   ****
+    -   **Importance**: Development log.
+    -   **Changes Made**: Regularly updated to track V3 feature implementation, bug fixes, and testing results.
+</code_architecture>
+<pending_tasks>
+-   Backoffice: Implement comprehensive backoffice functionalities for managing technical sheets and automations.
+-   Data Access: Develop more advanced data access, filtering, and reporting capabilities for suppliers and products.
+-   OCR Enhancement: Implement a feature to manage new items (either auto-create simple recipes or provide a validation interface) detected by OCR.
+</pending_tasks>
+<current_work>
+The application has just completed a series of significant Version 3 feature implementations and bug fixes based on user feedback.
+The most recent work focused on enhancing the OCR module:
+1.  **PDF Support:** The backend () now robustly extracts text from PDF invoices and Z reports using  and usage: pdfplumber [-h] [--structure | --structure-text]
+                  [--format {csv,json,text}] [--types TYPES [TYPES ...]]
+                  [--include-attrs INCLUDE_ATTRS [INCLUDE_ATTRS ...]]
+                  [--exclude-attrs EXCLUDE_ATTRS [EXCLUDE_ATTRS ...]]
+                  [--laparams LAPARAMS] [--precision PRECISION]
+                  [--pages PAGES [PAGES ...]] [--indent INDENT]
+                  [infile]
+
+positional arguments:
+  infile
+
+options:
+  -h, --help            show this help message and exit
+  --structure           Write the structure tree as JSON. All other arguments
+                        except --pages, --laparams, and --indent will be
+                        ignored
+  --structure-text      Write the structure tree as JSON including text
+                        contents. All other arguments except --pages,
+                        --laparams, and --indent will be ignored
+  --format {csv,json,text}
+  --types TYPES [TYPES ...]
+  --include-attrs INCLUDE_ATTRS [INCLUDE_ATTRS ...]
+                        Include *only* these object attributes in output.
+  --exclude-attrs EXCLUDE_ATTRS [EXCLUDE_ATTRS ...]
+                        Exclude these object attributes from output.
+  --laparams LAPARAMS
+  --precision PRECISION
+  --pages PAGES [PAGES ...]
+  --indent INDENT       Indent level for JSON pretty-printing.. The  model includes . The frontend () accepts PDF uploads and provides an icon-based preview.
+2.  **OCR Parsing Fixes:** Specific bugs in  processing were resolved. The  extraction regex was fixed, categorization logic for items like Supions en persillade was corrected, and the  assignment was ensured. All these fixes were confirmed with 100% success.
+3.  **OCR Preview Modal:** An interface to display the uploaded document side-by-side with its extracted, categorized data has been implemented in . This modal shows general info, items by category, a complete item list, and raw extracted text. The pop-up automatically closes after processing.
+
+The *immediate* current state is that the AI has confirmed the backend OCR fixes and the implementation of the preview modal. However, the screenshot tool indicates that the Aperçu button in the OCR history on the frontend is not yet visually confirmed to be present and functional to open this new modal. The AI is awaiting user confirmation on whether to test the full frontend OCR preview or proceed.
+</current_work>
+<optional_next_step>
+Verify the visibility and functionality of the Aperçu button in the OCR history to open the document preview modal.
+</optional_next_step>
