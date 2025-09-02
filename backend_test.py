@@ -2233,8 +2233,8 @@ class StockTestSuite:
                         doc_id = upload_response.json().get("document_id")
                         
                         # Tester le calcul des déductions avec une vraie recette
-                        parse_response = requests.post(f"{BASE_URL}/ocr/parse-z-report-enhanced", 
-                                                     json={"document_id": doc_id}, headers=HEADERS)
+                        parse_response = requests.post(f"{BASE_URL}/ocr/parse-z-report-enhanced?document_id={doc_id}", 
+                                                     headers=HEADERS)
                         if parse_response.status_code == 200:
                             structured_data = parse_response.json()
                             
