@@ -261,6 +261,24 @@ class RecetteUpdate(BaseModel):
     instructions: Optional[str] = None
     ingredients: Optional[List[RecetteIngredient]] = None
 
+# ✅ Enhanced Recipe Model - Products vs Recipes Logic
+class Recipe(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    nom: str
+    description: Optional[str] = None
+    categorie: Optional[str] = None  # "Bar", "Entrées", "Plats", "Desserts"
+    portions: int  # Number of portions this recipe produces
+    temps_preparation: Optional[int] = None  # in minutes
+    instructions: Optional[str] = None
+    prix_vente: Optional[float] = None
+    ingredients: List[RecetteIngredient] = []
+    is_simple_recipe: bool = False  # ✅ True for direct-sale items (beverages, etc.)
+    cost_analysis: Optional[dict] = None  # Auto-calculated cost breakdown
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+
+# Maintain backward compatibility
+Recette = Recipe
+
 # Modèles pour l'OCR et traitement de documents
 class DocumentOCR(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
