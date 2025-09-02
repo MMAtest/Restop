@@ -2033,6 +2033,229 @@ function App() {
           </div>
         </div>
       )}
+
+      {/* Modal d'Aperçu des Documents OCR */}
+      {showPreviewModal && previewDocument && (
+        <div className="modal-overlay">
+          <div className="modal-content" style={{ maxWidth: '90vw', maxHeight: '90vh' }}>
+            <div className="modal-header">
+              <h3>📄 Aperçu et Données Extraites</h3>
+              <button 
+                className="close-button"
+                onClick={closePreviewModal}
+              >
+                ✕
+              </button>
+            </div>
+            
+            <div className="modal-body" style={{ padding: '20px', display: 'flex', gap: '20px', height: '70vh' }}>
+              {/* Colonne Gauche - Aperçu du Document */}
+              <div style={{ flex: '1', borderRight: '1px solid #ddd', paddingRight: '20px' }}>
+                <h4 style={{ marginBottom: '15px', color: '#2D5016' }}>
+                  📎 Document Source
+                </h4>
+                <div style={{ 
+                  border: '2px solid #ddd', 
+                  borderRadius: '8px', 
+                  padding: '15px',
+                  backgroundColor: '#f9f9f9',
+                  height: '100%',
+                  overflow: 'auto'
+                }}>
+                  {previewDocument.file_type === 'pdf' ? (
+                    <div style={{ textAlign: 'center', padding: '40px' }}>
+                      <div style={{ fontSize: '64px', marginBottom: '20px' }}>📄</div>
+                      <h3 style={{ color: '#666', marginBottom: '10px' }}>
+                        {previewDocument.nom_fichier}
+                      </h3>
+                      <p style={{ color: '#999', fontSize: '14px' }}>
+                        Fichier PDF • Type: {previewDocument.type_document}
+                      </p>
+                      <p style={{ color: '#666', fontSize: '12px', marginTop: '20px' }}>
+                        Traité le {new Date(previewDocument.date_traitement).toLocaleString('fr-FR')}
+                      </p>
+                      
+                      {/* Texte extrait du PDF */}
+                      <div style={{ 
+                        marginTop: '20px', 
+                        padding: '15px', 
+                        backgroundColor: '#fff',
+                        border: '1px solid #ddd',
+                        borderRadius: '5px',
+                        textAlign: 'left',
+                        maxHeight: '300px',
+                        overflow: 'auto',
+                        fontSize: '12px',
+                        fontFamily: 'monospace',
+                        whiteSpace: 'pre-wrap'
+                      }}>
+                        <strong>Texte extrait du PDF :</strong><br />
+                        {previewDocument.texte_extrait || 'Aucun texte extrait'}
+                      </div>
+                    </div>
+                  ) : (
+                    <img
+                      src={previewDocument.image_base64}
+                      alt="Aperçu du document"
+                      style={{
+                        maxWidth: '100%',
+                        maxHeight: '100%',
+                        objectFit: 'contain',
+                        border: '1px solid #ccc',
+                        borderRadius: '5px'
+                      }}
+                    />
+                  )}
+                </div>
+              </div>
+
+              {/* Colonne Droite - Données Extraites */}
+              <div style={{ flex: '1', paddingLeft: '20px' }}>
+                <h4 style={{ marginBottom: '15px', color: '#2D5016' }}>
+                  🔍 Données Extraites et Organisées
+                </h4>
+                <div style={{ 
+                  border: '2px solid #ddd', 
+                  borderRadius: '8px', 
+                  padding: '15px',
+                  backgroundColor: '#f9f9f9',
+                  height: '100%',
+                  overflow: 'auto'
+                }}>
+                  {previewDocument.donnees_parsees ? (
+                    <div>
+                      {/* Informations générales */}
+                      <div style={{ marginBottom: '20px', padding: '10px', backgroundColor: '#e8f5e8', borderRadius: '5px' }}>
+                        <h5 style={{ margin: '0 0 10px 0', color: '#2D5016' }}>📊 Informations Générales</h5>
+                        <div style={{ fontSize: '14px' }}>
+                          {previewDocument.donnees_parsees.report_date && (
+                            <p><strong>📅 Date :</strong> {previewDocument.donnees_parsees.report_date}</p>
+                          )}
+                          {previewDocument.donnees_parsees.service && (
+                            <p><strong>🕐 Service :</strong> {previewDocument.donnees_parsees.service}</p>
+                          )}
+                          {previewDocument.donnees_parsees.grand_total_sales !== null && (
+                            <p><strong>💰 CA Total :</strong> {previewDocument.donnees_parsees.grand_total_sales}€</p>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Articles par catégorie */}
+                      {previewDocument.donnees_parsees.items_by_category && (
+                        <div>
+                          <h5 style={{ margin: '0 0 15px 0', color: '#2D5016' }}>🍽️ Articles par Catégorie</h5>
+                          {Object.entries(previewDocument.donnees_parsees.items_by_category).map(([category, items]) => (
+                            <div key={category} style={{ marginBottom: '15px' }}>
+                              <div style={{ 
+                                backgroundColor: '#f0f0f0', 
+                                padding: '8px 12px', 
+                                borderRadius: '5px',
+                                fontWeight: 'bold',
+                                marginBottom: '8px'
+                              }}>
+                                {category === 'Bar' && '🍷'} 
+                                {category === 'Entrées' && '🥗'} 
+                                {category === 'Plats' && '🍽️'} 
+                                {category === 'Desserts' && '🍰'} 
+                                {category} ({items.length} article{items.length > 1 ? 's' : ''})
+                              </div>
+                              {items.length > 0 ? (
+                                <div style={{ paddingLeft: '10px' }}>
+                                  {items.map((item, index) => (
+                                    <div key={index} style={{ 
+                                      display: 'flex', 
+                                      justifyContent: 'space-between',
+                                      padding: '5px 0',
+                                      borderBottom: '1px solid #eee',
+                                      fontSize: '13px'
+                                    }}>
+                                      <span>{item.name}</span>
+                                      <div>
+                                        <span style={{ fontWeight: 'bold' }}>×{item.quantity_sold}</span>
+                                        {item.unit_price && (
+                                          <span style={{ marginLeft: '10px', color: '#666' }}>
+                                            {item.unit_price}€
+                                          </span>
+                                        )}
+                                      </div>
+                                    </div>
+                                  ))}
+                                </div>
+                              ) : (
+                                <div style={{ fontStyle: 'italic', color: '#999', paddingLeft: '10px' }}>
+                                  Aucun article dans cette catégorie
+                                </div>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      )}
+
+                      {/* Articles bruts (fallback si pas de catégorisation) */}
+                      {previewDocument.donnees_parsees.raw_items && previewDocument.donnees_parsees.raw_items.length > 0 && (
+                        <div style={{ marginTop: '20px' }}>
+                          <h5 style={{ margin: '0 0 10px 0', color: '#2D5016' }}>📋 Tous les Articles Détectés</h5>
+                          <div style={{ fontSize: '12px' }}>
+                            {previewDocument.donnees_parsees.raw_items.map((item, index) => (
+                              <div key={index} style={{ 
+                                padding: '5px 0',
+                                borderBottom: '1px solid #eee'
+                              }}>
+                                <strong>{item.name}</strong> - Quantité: {item.quantity_sold}
+                                {item.category && <span style={{ color: '#666' }}> (Catégorie: {item.category})</span>}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Texte brut extrait */}
+                      <div style={{ marginTop: '20px', padding: '10px', backgroundColor: '#f5f5f5', borderRadius: '5px' }}>
+                        <h5 style={{ margin: '0 0 10px 0', color: '#2D5016' }}>📝 Texte Brut Extrait</h5>
+                        <div style={{ 
+                          fontSize: '11px', 
+                          fontFamily: 'monospace',
+                          maxHeight: '150px',
+                          overflow: 'auto',
+                          whiteSpace: 'pre-wrap',
+                          color: '#555'
+                        }}>
+                          {previewDocument.texte_extrait || 'Aucun texte extrait'}
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <div style={{ textAlign: 'center', padding: '40px', color: '#999' }}>
+                      <div style={{ fontSize: '48px', marginBottom: '15px' }}>⚠️</div>
+                      <p>Aucune donnée parsée disponible</p>
+                      <p style={{ fontSize: '12px' }}>
+                        Le document n'a peut-être pas été traité correctement
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+            
+            <div className="modal-footer">
+              <button className="button secondary" onClick={closePreviewModal}>
+                Fermer
+              </button>
+              {previewDocument.type_document === 'z_report' && (
+                <button 
+                  className="button primary"
+                  onClick={() => {
+                    handleProcessZReport(previewDocument.id);
+                    closePreviewModal();
+                  }}
+                >
+                  ⚡ Traiter ce Rapport Z
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
