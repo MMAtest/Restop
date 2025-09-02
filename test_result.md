@@ -540,6 +540,10 @@ test_plan:
         agent: "main"
         comment: "Nouvelle fonctionnalité Historique Rapports Z implémentée avec composant HistoriqueZPage.jsx intégré dans App.js. Interface complète avec navigation, tableau des rapports, cartes statistiques, boutons d'action (Actualiser, Exporter Excel), gestion état vide, affichage détails rapports. Prêt pour tests complets."
       - working: true
+        agent: "main"
+        comment: "🆕 OCR Preview Modal wired up: 'Aperçu' button now fetches full document via GET /api/ocr/document/{id} and opens a side-by-side modal with tabs (Résumé, Document + Données, Liste complète, Texte brut). PDF shows simplified icon preview; images render from base64."
+
+      - working: true
         agent: "testing"
         comment: "✅ HISTORIQUE RAPPORTS Z - 100% RÉUSSITE ! Nouvelle fonctionnalité entièrement fonctionnelle et validée : ✅ NAVIGATION : Onglet '📊 Rapports Z' présent dans sous-navigation Historique, navigation fluide depuis section Ventes via lien '📊 Voir Historique Rapports Z' ✅ INTERFACE COMPLÈTE : Titre '📊 Historique des Rapports Z' affiché, tableau avec headers 'Date | CA Total | Nombre de Plats | Actions', boutons '🔄 Actualiser' et '📊 Exporter Excel' fonctionnels ✅ GESTION DONNÉES : 3 rapports Z affichés avec données réelles (6 janvier 2025, €2,150.75, 3 plats), boutons '👁️ Détails' présents sur chaque ligne pour affichage popup informations ✅ CARTES STATISTIQUES : 3 cartes avec calculs automatiques corrects (CA Moyen: 2,150.75€, Total Rapports: 3, Dernier Rapport: 6 janvier 2025) ✅ DESIGN UX : Charte graphique Alderobase respectée (couleurs vert/or), design responsive mobile validé, formatage français dates/montants, animations et transitions présentes. Interface moderne, intuitive et prête pour production !"
 
