@@ -5177,6 +5177,13 @@ Nombre de couverts: 32"""
         
         self.test_user_management_rbac_apis()
         
+        # 🔥 TEST SPÉCIFIQUE: OCR AVEC ITEMS INCONNUS (NOUVEAUX)
+        print("\n" + "="*60)
+        print("🔥 TEST SPÉCIFIQUE: OCR AVEC ITEMS INCONNUS (NOUVEAUX)")
+        print("="*60)
+        
+        self.test_ocr_with_unknown_items()
+        
         # 🔥 TEST SPÉCIFIQUE POUR LE DEBUG PDF PARSING
         print("\n" + "="*60)
         print("🔥 DEBUG PDF PARSING - ztableauaugustinedigital.pdf")
