@@ -817,6 +817,11 @@ function App() {
         </div>
       </div>
 
+      {/* ANALYTICS & PROFITABILITY */}
+      <div id="analytics" className={`wireframe-section ${activeTab === "analytics" ? "active" : ""}`}>
+        <AnalyticsPage />
+      </div>
+
       {/* OCR */}
       <div id="ocr" className={`wireframe-section ${activeTab === "ocr" ? "active" : ""}`}>
         <div className="wireframe">
