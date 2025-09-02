@@ -588,6 +588,13 @@ function App() {
       alert('Document traité avec succès !');
       fetchDocumentsOcr();
       
+      // Fermer la pop-up d'aperçu si elle est ouverte
+      if (showPreviewModal) {
+        setTimeout(() => {
+          closePreviewModal();
+        }, 1000); // Délai de 1 seconde pour que l'utilisateur voie le succès
+      }
+      
     } catch (error) {
       console.error('Erreur lors du traitement OCR:', error);
       alert(`Erreur: ${error.response?.data?.detail || 'Erreur lors du traitement'}`);
