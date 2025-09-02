@@ -910,10 +910,14 @@ function App() {
                         {selectedDocument.type_document === 'z_report' && (
                           <>
                             <div className="table-row">
-                              <span><strong>💰 CA Total:</strong> {selectedDocument.donnees_parsees.total_ca || 'Non calculé'}€</span>
+                              <span><strong>💰 CA Total:</strong> {
+                                (selectedDocument.donnees_parsees.grand_total_sales ?? selectedDocument.donnees_parsees.total_ca ?? 'Non calculé')
+                              }{(selectedDocument.donnees_parsees.grand_total_sales ?? selectedDocument.donnees_parsees.total_ca) ? '€' : ''}</span>
                             </div>
                             <div className="table-row">
-                              <span><strong>🍽️ Plats vendus:</strong> {selectedDocument.donnees_parsees.plats_vendus?.length || 0} plats</span>
+                              <span><strong>🍽️ Plats vendus:</strong> {
+                                (selectedDocument.donnees_parsees.items_by_category ? Object.values(selectedDocument.donnees_parsees.items_by_category).reduce((acc, arr) => acc + arr.length, 0) : (selectedDocument.donnees_parsees.plats_vendus?.length || 0))
+                              } plats</span>
                             </div>
                           </>
                         )}
