@@ -314,17 +314,25 @@ const AnalyticsPage = () => {
                       product.urgency === 'critical' ? 'bg-red-50 border-red-400' : 'bg-yellow-50 border-yellow-400'
                     }`}>
                       <div className="flex justify-between items-center">
-                        <div>
+                        <div className="flex-1">
                           <p className="font-medium">{product.product_name}</p>
                           <p className="text-sm text-gray-600">
                             Quantité: {product.quantity} • Expire dans {product.days_to_expiry} jour(s)
                           </p>
                         </div>
-                        <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                          product.urgency === 'critical' ? 'bg-red-100 text-red-800' : 'bg-yellow-100 text-yellow-800'
-                        }`}>
-                          {product.urgency === 'critical' ? 'CRITIQUE' : 'ATTENTION'}
-                        </span>
+                        <div className="flex items-center space-x-2">
+                          <span className={`px-3 py-1 rounded-full text-xs font-medium ${
+                            product.urgency === 'critical' ? 'bg-red-100 text-red-800' : 'bg-yellow-100 text-yellow-800'
+                          }`}>
+                            {product.urgency === 'critical' ? 'CRITIQUE' : 'ATTENTION'}
+                          </span>
+                          <button
+                            onClick={() => handleResolveAlert('expiring', product.batch_id)}
+                            className="px-3 py-1 bg-blue-500 text-white rounded text-xs hover:bg-blue-600"
+                          >
+                            Vérifier
+                          </button>
+                        </div>
                       </div>
                     </div>
                   ))}
