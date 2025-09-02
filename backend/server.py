@@ -2593,36 +2593,52 @@ async def upload_and_process_document(
     file: UploadFile = File(...),
     document_type: str = "z_report"  # "z_report" ou "facture_fournisseur"
 ):
-    """Upload et traitement OCR d'un document (photo Z report ou facture)"""
+    """Upload et traitement OCR d'un document (image ou PDF) - Rapport Z ou facture"""
     
     if document_type not in ["z_report", "facture_fournisseur"]:
         raise HTTPException(status_code=400, detail="Type de document invalide. Utilisez 'z_report' ou 'facture_fournisseur'")
     
-    # Vérifier le format de fichier
-    if file.content_type and not file.content_type.startswith('image/'):
-        raise HTTPException(status_code=400, detail="Le fichier doit être une image (JPG, PNG, etc.)")
+    # Détecter le type de fichier
+    file_type = detect_file_type(file.filename, file.content_type)
     
-    # Si content_type est None, vérifier l'extension du fichier
-    if not file.content_type:
+    # Vérifier le format de fichier (accepter images ET PDF)
+    if file.content_type:
+        if not (file.content_type.startswith('image/') or file.content_type == 'application/pdf'):
+            raise HTTPException(status_code=400, detail="Le fichier doit être une image (JPG, PNG, etc.) ou un PDF")
+    else:
+        # Si content_type est None, vérifier l'extension du fichier
         filename_lower = file.filename.lower() if file.filename else ""
-        if not any(filename_lower.endswith(ext) for ext in ['.jpg', '.jpeg', '.png', '.gif', '.bmp', '.tiff']):
-            raise HTTPException(status_code=400, detail="Le fichier doit avoir une extension image valide (.jpg, .png, etc.)")
+        if not any(filename_lower.endswith(ext) for ext in ['.jpg', '.jpeg', '.png', '.gif', '.bmp', '.tiff', '.pdf']):
+            raise HTTPException(status_code=400, detail="Le fichier doit avoir une extension valide (.jpg, .png, .pdf, etc.)")
     
     try:
         # Lire le contenu du fichier
-        image_content = await file.read()
-        image_base64 = base64.b64encode(image_content).decode('utf-8')
+        file_content = await file.read()
         
-        # Extraire le texte avec OCR
-        texte_extrait = extract_text_from_image(image_base64)
+        # Extraire le texte selon le type de fichier
+        if file_type == 'pdf':
+            print(f"📄 Processing PDF file: {file.filename}")
+            texte_extrait = extract_text_from_pdf(file_content)
+            # Pour les PDF, on stocke le contenu comme base64 mais avec prefix PDF
+            content_base64 = base64.b64encode(file_content).decode('utf-8')
+            data_uri = f"data:application/pdf;base64,{content_base64}"
+        else:
+            print(f"🖼️ Processing image file: {file.filename}")
+            image_base64 = base64.b64encode(file_content).decode('utf-8')
+            texte_extrait = extract_text_from_image(image_base64)
+            data_uri = f"data:{file.content_type or 'image/jpeg'};base64,{image_base64}"
         
         if not texte_extrait or len(texte_extrait.strip()) < 10:
-            raise HTTPException(status_code=400, detail="Impossible d'extraire du texte de l'image. Vérifiez la qualité de l'image.")
+            error_msg = "Impossible d'extraire du texte du PDF. Vérifiez que le PDF contient du texte." if file_type == 'pdf' else "Impossible d'extraire du texte de l'image. Vérifiez la qualité de l'image."
+            raise HTTPException(status_code=400, detail=error_msg)
+        
+        print(f"✅ Text extracted successfully: {len(texte_extrait)} characters from {file_type}")
         
         # Parser selon le type de document
         donnees_parsees = {}
         if document_type == "z_report":
-            z_data = parse_z_report(texte_extrait)
+            # Utiliser le parser enhanced pour les rapports Z
+            z_data = parse_z_report_enhanced(texte_extrait)
             donnees_parsees = z_data.dict()
         elif document_type == "facture_fournisseur":
             facture_data = parse_facture_fournisseur(texte_extrait)
@@ -2632,11 +2648,12 @@ async def upload_and_process_document(
         document = DocumentOCR(
             type_document=document_type,
             nom_fichier=file.filename,
-            image_base64=f"data:{file.content_type};base64,{image_base64}",
+            image_base64=data_uri,  # Peut être une image ou un PDF encodé
             texte_extrait=texte_extrait,
             donnees_parsees=donnees_parsees,
             statut="traite",
-            date_traitement=datetime.utcnow()
+            date_traitement=datetime.utcnow(),
+            file_type=file_type  # Nouveau champ pour identifier le type
         )
         
         await db.documents_ocr.insert_one(document.dict())
