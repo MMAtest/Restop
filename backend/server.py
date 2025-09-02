@@ -300,6 +300,7 @@ class DocumentUploadResponse(BaseModel):
     texte_extrait: str
     donnees_parsees: dict
     message: str
+    file_type: str  # Add file_type to response
 
 # ✅ Version 3 Feature #2 - Enhanced OCR Models for Structured Parsing
 class StructuredZReportItem(BaseModel):
