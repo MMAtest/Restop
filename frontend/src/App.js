@@ -1670,6 +1670,63 @@ function App() {
                     </div>
                   )}
 
+                  {/* Analyse */}
+                  {previewTab==='analyse' && (
+                    <div className="card">
+                      <div className="card-title">Analyse du rapport</div>
+                      <div className="card-content">
+                        {(() => {
+                          const za = previewDocFull?.donnees_parsees?.z_analysis;
+                          if (!za) return (<div>Aucune analyse disponible pour ce document.</div>);
+                          const families = ['Bar','Entrées','Plats','Desserts','Autres'];
+                          const totalCalc = za?.verification?.total_calculated;
+                          const totalAff = za?.verification?.displayed_total;
+                          const delta = za?.verification?.delta_eur;
+                          const deltaPct = za?.verification?.delta_pct;
+                          return (
+                            <div>
+                              <div style={{marginBottom:'10px'}}>
+                                <div><strong>Date:</strong> {previewDocFull?.donnees_parsees?.report_date || '—'}</div>
+                                <div><strong>Nombre de couverts:</strong> {za?.covers ?? '—'}</div>
+                                <div><strong>CA Total affiché (TTC):</strong> {formatEuro(totalAff)}</div>
+                              </div>
+                              <div className="layout two-column" style={{gap:'12px'}}>
+                                {families.map(f => (
+                                  <div key={f} className="card">
+                                    <div className="card-title">{f}</div>
+                                    <div className="card-content">
+                                      <div>Articles vendus: {za?.analysis?.[f]?.articles ?? 0}</div>
+                                      <div>CA: {formatEuro(za?.analysis?.[f]?.ca)}</div>
+                                      {za?.analysis?.[f]?.details?.length > 0 && (
+                                        <details style={{marginTop:'6px'}}>
+                                          <summary className="cursor-pointer text-sm">Détail sous-catégories</summary>
+                                          <ul style={{marginLeft:'16px'}}>
+                                            {za.analysis[f].details.map((d, i) => (
+                                              <li key={i}>{d.name}: {d.quantity} articles – {formatEuro(d.amount)}</li>
+                                            ))}
+                                          </ul>
+                                        </details>
+                                      )}
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                              <div className="card" style={{marginTop:'10px'}}>
+                                <div className="card-title">Vérification</div>
+                                <div className="card-content">
+                                  <div>Total calculé: {formatEuro(totalCalc)}</div>
+                                  <div>Total affiché: {formatEuro(totalAff)}</div>
+                                  <div>Écart: {delta !== null && delta !== undefined ? `${formatEuro(delta)} (${deltaPct ?? '—'}%)` : '—'}</div>
+                                  <div>Status: {(delta !== null && Math.abs(delta) < 0.01) ? '✅ Cohérent' : '⚠️ À vérifier'}</div>
+                                </div>
+                              </div>
+                            </div>
+                          );
+                        })()}
+                      </div>
+                    </div>
+                  )}
+
                   {/* Raw text */}
                   {previewTab==='raw' && (
                     <div className="card">
