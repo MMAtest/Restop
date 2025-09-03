@@ -2954,6 +2954,9 @@ async def upload_and_process_document(
             donnees_parsees = z_data.dict()
             # Enrichir les prix manquants à partir des recettes en base
             donnees_parsees = await enrich_z_report_prices(donnees_parsees)
+            # Ajouter l'analyse catégories → familles et vérification
+            z_summary = analyze_z_report_categories(texte_extrait)
+            donnees_parsees["z_analysis"] = z_summary
         elif document_type == "facture_fournisseur":
             facture_data = parse_facture_fournisseur(texte_extrait)
             donnees_parsees = facture_data.dict()
