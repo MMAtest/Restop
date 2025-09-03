@@ -583,6 +583,16 @@ function App() {
     setPreviewDocument(null);
   };
 
+  // Utilitaires d'affichage
+  const formatEuro = (amount) => {
+    if (amount === undefined || amount === null || isNaN(amount)) return '—';
+    try {
+      return new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format(Number(amount));
+    } catch {
+      return `${amount}€`;
+    }
+  };
+
   const handleOcrUpload = async () => {
     if (!ocrFile) {
       alert('Veuillez sélectionner un fichier');
