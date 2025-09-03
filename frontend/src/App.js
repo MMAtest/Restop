@@ -1552,6 +1552,7 @@ function App() {
                 {id:'sidebyside', label:'Document + Données'},
                 {id:'items', label:'Liste complète'},
                 {id:'raw', label:'Texte brut'},
+                {id:'analyse', label:'Analyse'},
               ].map(tab => (
                 <button key={tab.id} onClick={() => setPreviewTab(tab.id)} className="button" style={{
                   background: previewTab===tab.id ? 'var(--color-primary-solid)' : 'var(--color-beige)',
