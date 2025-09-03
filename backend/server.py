@@ -345,6 +345,132 @@ class FactureFournisseurData(BaseModel):
     total_ht: Optional[float] = None
     total_ttc: Optional[float] = None
 
+# ===== Helpers for FR numeric parsing and Z analysis =====
+number_separators = re.compile(r"[\s\u00A0\u202F]")  # spaces incl. NBSP, NNBSP
+
+def parse_number_fr(val: str) -> Optional[float]:
+    try:
+        if val is None:
+            return None
+        s = str(val)
+        s = s.replace('€', '')
+        s = number_separators.sub('', s)
+        # Replace comma decimal with dot if needed
+        if s.count(',') == 1 and s.count('.') == 0:
+            s = s.replace(',', '.')
+        # Remove any trailing non-numeric
+        s = re.sub(r"[^0-9\.-]", '', s)
+        if s in ('', '-', '.', ','):
+            return None
+        return float(s)
+    except Exception:
+        return None
+
+BAR_REGEXES = [
+    r"boissons?\s*(chaudes?|fra[iî]ches?)",
+    r"pago",
+    r"cocktails?",
+    r"bi[eè]re?s?\s*pression",
+    r"ap[ée]ritifs?",
+    r"digestifs?",
+    r"alcools?\s*forts?",
+    r"verres?\s*pichets?\s*(?:de\s*)?(rouge|rose|blanc)",
+    r"bouteilles?\s*(rouge|rose|blanc)",
+    r"verres?\s*pichets",  # sans "de"
+    r"bouteille\b"         # singulier
+]
+ENTREE_REGEXES = [r"entr[éee]es?"]
+PLAT_REGEXES = [r"plats?", r"plat\b"]
+DESSERT_REGEXES = [r"desserts?"]
+
+CATEGORY_FAMILIES = [
+    ("Bar", BAR_REGEXES),
+    ("Entrées", ENTREE_REGEXES),
+    ("Plats", PLAT_REGEXES),
+    ("Desserts", DESSERT_REGEXES)
+]
+
+def normalize_family(cat_name: str) -> str:
+    n = (cat_name or '').lower()
+    for fam, patterns in CATEGORY_FAMILIES:
+        for pat in patterns:
+            if re.search(pat, n, re.IGNORECASE):
+                return fam
+    return "Autres"
+
+def analyze_z_report_categories(texte_ocr: str) -> dict:
+    """Extract covers, total_ttc, category headers and aggregate in 4 families.
+    Only category header lines are used (per user choice A)."""
+    lines = [l.strip() for l in (texte_ocr or '').split('\n') if l and len(l.strip()) > 0]
+
+    # Extract covers and total TTC
+    covers = None
+    total_ttc = None
+    for ln in lines:
+        m_cov = re.search(r"nombre\s+de\s+couverts\s+([0-9]+(?:[\.,][0-9]{1,2})?)", ln, re.IGNORECASE)
+        if m_cov and covers is None:
+            covers = parse_number_fr(m_cov.group(1))
+        m_ttc = re.search(r"total\s+ttc\s+([0-9]+(?:[\.,][0-9]{1,2})?)", ln, re.IGNORECASE)
+        if m_ttc and total_ttc is None:
+            total_ttc = parse_number_fr(m_ttc.group(1))
+
+    # Category header pattern: (xNB) NAME AMOUNT
+    # Avoid lines starting with '_' (those are sub-items)
+    cat_headers = []
+    header_pat = re.compile(r"^\(x?(\d{1,4})\)\s*([^_][A-Za-zÀ-ÿ0-9\s'\-]+?)\s+([0-9]+(?:[\.,][0-9]{2}))$", re.IGNORECASE)
+
+    for i, ln in enumerate(lines):
+        if ln.startswith('_'):
+            continue
+        m = header_pat.match(ln)
+        if m:
+            qty = int(m.group(1))
+            name = m.group(2).strip()
+            amount = parse_number_fr(m.group(3)) or 0.0
+            family = normalize_family(name)
+            cat_headers.append({
+                "quantity": qty,
+                "category_name": name,
+                "amount": amount,
+                "family": family,
+                "raw_line": ln
+            })
+
+    # Aggregate per family
+    analysis = {
+        "Bar": {"articles": 0, "ca": 0.0, "details": []},
+        "Entrées": {"articles": 0, "ca": 0.0, "details": []},
+        "Plats": {"articles": 0, "ca": 0.0, "details": []},
+        "Desserts": {"articles": 0, "ca": 0.0, "details": []},
+        "Autres": {"articles": 0, "ca": 0.0, "details": []}
+    }
+
+    for h in cat_headers:
+        fam = h["family"]
+        analysis[fam]["articles"] += h["quantity"]
+        analysis[fam]["ca"] += h["amount"] or 0.0
+        analysis[fam]["details"].append({
+            "name": h["category_name"],
+            "quantity": h["quantity"],
+            "amount": h["amount"]
+        })
+
+    total_calc = sum(analysis[k]["ca"] for k in analysis)
+    verification = {
+        "total_calculated": round(total_calc, 2),
+        "displayed_total": total_ttc,
+        "delta_eur": (round(total_calc - total_ttc, 2) if (total_ttc is not None) else None),
+        "delta_pct": (round(((total_calc - total_ttc) / total_ttc) * 100, 2) if (total_ttc and total_ttc != 0) else None)
+    }
+
+    return {
+        "covers": covers,
+        "total_ttc": total_ttc,
+        "category_headers": cat_headers,
+        "analysis": analysis,
+        "verification": verification
+    }
+
 def extract_text_from_pdf(pdf_content: bytes) -> str:
     """Extract text from PDF using a robust multi-pass strategy for completeness"""
     import io
