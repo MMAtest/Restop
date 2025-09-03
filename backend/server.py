@@ -3011,7 +3011,7 @@ async def get_processed_documents(document_type: Optional[str] = None, limit: in
 
 @api_router.get("/ocr/document/{document_id}")
 async def get_document_by_id(document_id: str):
-    """Récupérer un document spécifique par son ID. Enrichit les prix manquants pour les Z-reports."""
+    """Récupérer un document spécifique par son ID. Enrichit les prix manquants et ajoute l'analyse Z si absente."""
     document = await db.documents_ocr.find_one({"id": document_id})
     if not document:
         raise HTTPException(status_code=404, detail="Document non trouvé")
@@ -3032,14 +3032,21 @@ async def get_document_by_id(document_id: str):
                     break
             if missing_prices:
                 enriched = await enrich_z_report_prices(parsed)
-                # Si enrichissement a apporté des prix, mettre à jour
                 if enriched != parsed:
                     await db.documents_ocr.update_one(
                         {"id": document_id}, {"$set": {"donnees_parsees": enriched}}
                     )
                     document["donnees_parsees"] = enriched
+            # Ajouter analyse si absente
+            if not parsed.get("z_analysis") and document.get("texte_extrait"):
+                z_summary = analyze_z_report_categories(document["texte_extrait"])
+                parsed["z_analysis"] = z_summary
+                await db.documents_ocr.update_one(
+                    {"id": document_id}, {"$set": {"donnees_parsees": parsed}}
+                )
+                document["donnees_parsees"] = parsed
     except Exception as e:
-        print(f"⚠️ Enrichment on GET failed: {str(e)}")
+        print(f"⚠️ Enrichment/analysis on GET failed: {str(e)}")
     
     # Supprimer l'_id MongoDB pour éviter les problèmes de sérialisation
     if "_id" in document:
