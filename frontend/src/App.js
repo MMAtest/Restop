@@ -1709,30 +1709,6 @@ function App() {
         </div>
       )}
 
-              <div className="card full-width">
-                <div className="table-mockup">
-                  <div className="table-header">Date/Heure | Utilisateur | Section | Élément | Action | Détails</div>
-                  <div className="table-row">
-                    <span>{new Date().toLocaleDateString('fr-FR')} 14:30 | Chef Antoine | <span style={{color: '#9f7aea', fontWeight: 'bold'}}>🍽️ Produits</span> | Salade Augustine | <span style={{color: '#3182ce'}}>Modification prix</span> | Prix mis à jour</span>
-                  </div>
-                  <div className="table-row">
-                    <span>{new Date(Date.now() - 24*60*60*1000).toLocaleDateString('fr-FR')} 10:15 | Marie | <span style={{color: '#38a169', fontWeight: 'bold'}}>📝 Recettes</span> | Nouvelle recette | <span style={{color: '#38a169'}}>Ajout recette</span> | Recette créée</span>
-                  </div>
-                  <div className="table-row">
-                    <span>{new Date(Date.now() - 2*24*60*60*1000).toLocaleDateString('fr-FR')} 16:45 | Pierre | <span style={{color: '#d69e2e', fontWeight: 'bold'}}>🚚 Fournisseurs</span> | Contact modifié | <span style={{color: '#3182ce'}}>Modification contact</span> | Coordonnées mises à jour</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* HISTORIQUE RAPPORTS Z */}
-          <div className={`historique-tab ${activeHistoriqueTab === 'rapports_z' ? 'active' : ''}`}>
-            <HistoriqueZPage />
-          </div>
-        </div>
-      </div>
-
       {/* Modal Produit */}
       {showProduitModal && (
         <div className="modal-overlay">
