@@ -1235,7 +1235,7 @@ function App() {
       {/* PRODUCTION */}
       <div id="production" className={`wireframe-section ${activeTab === "production" ? "active" : ""}`}>
         <div className="wireframe">
-          <h2>🍳 Module Production</h2>
+          <h2>🍳 Production & Historique</h2>
           
           {/* Sous-navigation Production */}
           <div className="sub-nav-tabs">
