@@ -1269,6 +1269,16 @@ function App() {
             >
               📝 Plats/Recettes
             </button>
+            <button 
+              className="button" 
+              onClick={() => setActiveProductionTab('historique')}
+              style={{
+                background: activeProductionTab === 'historique' ? 'linear-gradient(135deg, #2d5016, #4a7c59)' : 'linear-gradient(135deg, #d4af37, #f4d03f)',
+                color: activeProductionTab === 'historique' ? '#f5f3f0' : '#2d5016'
+              }}
+            >
+              📊 Historique
+            </button>
           </div>
 
           {/* PRODUITS */}
