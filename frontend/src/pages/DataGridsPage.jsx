@@ -76,21 +76,43 @@ const DataGridsPage = () => {
     setSelectedItem({ type: 'recipe', data: recipe });
   };
 
-  const handleEdit = (item) => {
+  const handleEdit = async (item) => {
     alert(`Édition de: ${item.nom}`);
-    // Here you would open edit modal
+    // Ici vous pouvez ouvrir un modal d'édition
+    // Puis rafraîchir les données après modification
+    await fetchAllData();
   };
 
-  const handleDelete = (item) => {
+  const handleDelete = async (item) => {
     if (window.confirm(`Confirmer la suppression de "${item.nom}" ?`)) {
-      alert(`Suppression de: ${item.nom}`);
-      // Here you would handle deletion
+      try {
+        if (selectedItem?.type === 'product') {
+          await axios.delete(`${API}/produits/${item.id}`);
+        } else if (selectedItem?.type === 'supplier') {
+          await axios.delete(`${API}/fournisseurs/${item.id}`);
+        } else if (selectedItem?.type === 'recipe') {
+          await axios.delete(`${API}/recettes/${item.id}`);
+        }
+        alert(`${item.nom} supprimé avec succès`);
+        await fetchAllData(); // Rafraîchir les données
+      } catch (error) {
+        console.error('Erreur lors de la suppression:', error);
+        alert('Erreur lors de la suppression');
+      }
     }
   };
 
-  const handleCalculateCosts = (recipe) => {
-    alert(`Calcul des coûts pour: ${recipe === 'all' ? 'toutes les recettes' : recipe.nom}`);
-    // Here you would handle cost calculations
+  const handleCalculateCosts = async (recipe) => {
+    try {
+      const response = await axios.get(`${API}/recettes/calculer-couts`);
+      if (response.data.success) {
+        alert(`Coûts calculés avec succès !\n\nRésumé:\n- ${response.data.recettes_calculees} recettes mises à jour\n- Coût moyen: ${response.data.cout_moyen}€\n- Marge moyenne: ${response.data.marge_moyenne}%`);
+        await fetchRecipes(); // Rafraîchir les recettes
+      }
+    } catch (error) {
+      console.error('Erreur lors du calcul des coûts:', error);
+      alert('Erreur lors du calcul des coûts');
+    }
   };
 
   return (
