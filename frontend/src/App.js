@@ -1709,8 +1709,6 @@ function App() {
         </div>
       )}
 
-              </div>
-              
               <div className="card full-width">
                 <div className="table-mockup">
                   <div className="table-header">Date/Heure | Utilisateur | Section | Élément | Action | Détails</div>
