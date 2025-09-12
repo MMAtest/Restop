@@ -1,11 +1,68 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import ProductsDataGrid from '../components/ProductsDataGrid';
 import SuppliersDataGrid from '../components/SuppliersDataGrid';
 import RecipesDataGrid from '../components/RecipesDataGrid';
+import axios from 'axios';
 
 const DataGridsPage = () => {
   const [activeGrid, setActiveGrid] = useState('products');
   const [selectedItem, setSelectedItem] = useState(null);
+  
+  // États pour les données réelles
+  const [products, setProducts] = useState([]);
+  const [suppliers, setSuppliers] = useState([]);
+  const [recipes, setRecipes] = useState([]);
+  const [loading, setLoading] = useState(false);
+
+  const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
+  const API = `${BACKEND_URL}/api`;
+
+  // Charger les données au montage du composant
+  useEffect(() => {
+    fetchAllData();
+  }, []);
+
+  const fetchAllData = async () => {
+    setLoading(true);
+    try {
+      await Promise.all([
+        fetchProducts(),
+        fetchSuppliers(), 
+        fetchRecipes()
+      ]);
+    } catch (error) {
+      console.error('Erreur lors du chargement des données:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchProducts = async () => {
+    try {
+      const response = await axios.get(`${API}/produits`);
+      setProducts(response.data);
+    } catch (error) {
+      console.error('Erreur lors du chargement des produits:', error);
+    }
+  };
+
+  const fetchSuppliers = async () => {
+    try {
+      const response = await axios.get(`${API}/fournisseurs`);
+      setSuppliers(response.data);
+    } catch (error) {
+      console.error('Erreur lors du chargement des fournisseurs:', error);
+    }
+  };
+
+  const fetchRecipes = async () => {
+    try {
+      const response = await axios.get(`${API}/recettes`);
+      setRecipes(response.data);
+    } catch (error) {
+      console.error('Erreur lors du chargement des recettes:', error);
+    }
+  };
 
   const handleProductSelect = (product) => {
     setSelectedItem({ type: 'product', data: product });
