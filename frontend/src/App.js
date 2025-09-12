@@ -836,30 +836,6 @@ function App() {
           📊 Dashboard
         </button>
         <button 
-          className={`nav-tab ${activeTab === "users" ? "active" : ""}`}
-          onClick={() => setActiveTab("users")}
-        >
-          👑 Utilisateurs
-        </button>
-        <button 
-          className={`nav-tab ${activeTab === "datagrids" ? "active" : ""}`}
-          onClick={() => setActiveTab("datagrids")}
-        >
-          📋 Grilles Données
-        </button>
-        <button 
-          className={`nav-tab ${activeTab === "orders" ? "active" : ""}`}
-          onClick={() => setActiveTab("orders")}
-        >
-          🛒 Commandes
-        </button>
-        <button 
-          className={`nav-tab ${activeTab === "ocr" ? "active" : ""}`}
-          onClick={() => setActiveTab("ocr")}
-        >
-          📱 OCR
-        </button>
-        <button 
           className={`nav-tab ${activeTab === "stocks" ? "active" : ""}`}
           onClick={() => setActiveTab("stocks")}
         >
@@ -872,10 +848,10 @@ function App() {
           🍳 Production
         </button>
         <button 
-          className={`nav-tab ${activeTab === "historique" ? "active" : ""}`}
-          onClick={() => setActiveTab("historique")}
+          className={`nav-tab ${activeTab === "orders" ? "active" : ""}`}
+          onClick={() => setActiveTab("orders")}
         >
-          📊 Historique
+          🛒 Commandes
         </button>
       </div>
 
