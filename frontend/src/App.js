@@ -781,6 +781,50 @@ function App() {
       {/* Header */}
       <div className="header">
         <h1>ResTop : Gestion de La Table d'Augustine</h1>
+        {/* Menu Burger */}
+        <div className="relative">
+          <button 
+            className="button"
+            onClick={() => setShowBurgerMenu(!showBurgerMenu)}
+            style={{
+              position: 'absolute',
+              right: '0',
+              top: '50%',
+              transform: 'translateY(-50%)',
+              padding: '8px 12px',
+              fontSize: '20px'
+            }}
+          >
+            ☰
+          </button>
+          
+          {/* Menu déroulant */}
+          {showBurgerMenu && (
+            <div 
+              className="modal-content"
+              style={{
+                position: 'absolute',
+                right: '0',
+                top: '100%',
+                marginTop: '8px',
+                minWidth: '200px',
+                zIndex: 1000,
+                padding: '16px'
+              }}
+            >
+              <button 
+                className="button" 
+                onClick={() => {
+                  setActiveTab("users");
+                  setShowBurgerMenu(false);
+                }}
+                style={{width: '100%', marginBottom: '8px'}}
+              >
+                👑 Utilisateurs
+              </button>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Navigation */}
