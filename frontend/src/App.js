@@ -15,7 +15,6 @@ function App() {
   const [activeProductionTab, setActiveProductionTab] = useState("produits");
   const [activeHistoriqueTab, setActiveHistoriqueTab] = useState("ventes");
   const [activeStockTab, setActiveStockTab] = useState("stocks");
-  const [showBurgerMenu, setShowBurgerMenu] = useState(false);
   const [dashboardStats, setDashboardStats] = useState({});
   const [produits, setProduits] = useState([]);
   const [fournisseurs, setFournisseurs] = useState([]);
