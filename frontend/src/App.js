@@ -1101,6 +1101,134 @@ function App() {
             </div>
           </div>
           </div>
+
+          {/* ONGLET OCR */}
+          <div className={`production-tab ${activeStockTab === 'ocr' ? 'active' : ''}`}>
+            <div className="layout two-column">
+              <div className="sidebar">
+                <h3 style={{color: '#d4af37', marginBottom: '15px'}}>Actions</h3>
+                <button className="button" onClick={() => setShowOcrModal(true)}>📁 Importer Document</button>
+                <button className="button" onClick={handleTraitementAuto} disabled={loading}>🔄 Traitement Auto</button>
+                <h4 style={{color: '#d4af37', margin: '20px 0 10px'}}>Historique (Cliquez pour détails)</h4>
+                <div style={{fontSize: '0.9rem'}}>
+                  {documentsOcr.slice(0, 5).map((doc, index) => (
+                    <div 
+                      key={index} 
+                      style={{
+                        padding: '8px', 
+                        margin: '5px 0', 
+                        background: selectedDocument?.id === doc.id ? 'rgba(212, 175, 55, 0.3)' : 'rgba(255,255,255,0.2)', 
+                        borderRadius: '5px',
+                        cursor: 'pointer',
+                        border: selectedDocument?.id === doc.id ? '2px solid #d4af37' : 'none'
+                      }}
+                      onClick={() => handleSelectDocument(doc)}
+                    >
+                      <div style={{fontWeight: 'bold'}}>{doc.nom_fichier}</div>
+                      <div style={{fontSize: '0.8rem', opacity: 0.8}}>
+                        {doc.type_document === 'z_report' ? '📊 Rapport Z' : '🧾 Facture'} - 
+                        {new Date(doc.date_upload).toLocaleDateString('fr-FR')}
+                      </div>
+                    </div>
+                  ))}
+                  {documentsOcr.length === 0 && (
+                    <div style={{padding: '8px', margin: '5px 0', background: 'rgba(255,255,255,0.2)', borderRadius: '5px'}}>
+                      Aucun document traité
+                    </div>
+                  )}
+                </div>
+              </div>
+              <div className="main-content">
+                <input type="text" className="search-bar" placeholder="🔍 Rechercher une facture..."/>
+                
+                <div className="card">
+                  <div className="card-title">📄 Zone de Prévisualisation</div>
+                  <div style={{height: '200px', background: '#f8f7f4', border: '2px dashed #d4af37', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '15px 0'}}>
+                    <span style={{color: '#4a5568'}}>Glissez votre facture ici ou cliquez pour sélectionner</span>
+                  </div>
+                </div>
+                
+                <div className="table-mockup">
+                  <div className="table-header">Données Extraites - Document Sélectionné</div>
+                  {selectedDocument ? (
+                    <div>
+                      <div className="table-row">
+                        <span><strong>📁 Fichier:</strong> {selectedDocument.nom_fichier}</span>
+                      </div>
+                      <div className="table-row">
+                        <span><strong>📝 Type:</strong> {selectedDocument.type_document === 'z_report' ? 'Rapport Z' : 'Facture Fournisseur'}</span>
+                      </div>
+                      <div className="table-row">
+                        <span><strong>📅 Date upload:</strong> {new Date(selectedDocument.date_upload).toLocaleDateString('fr-FR')}</span>
+                      </div>
+                      
+                      {selectedDocument.donnees_parsees && Object.keys(selectedDocument.donnees_parsees).length > 0 ? (
+                        <>
+                          {selectedDocument.type_document === 'z_report' && (
+                            <>
+                              <div className="table-row">
+                                <span><strong>💰 CA Total:</strong> {
+                                  (selectedDocument.donnees_parsees.grand_total_sales ?? selectedDocument.donnees_parsees.total_ca ?? 'Non calculé')
+                                }{(selectedDocument.donnees_parsees.grand_total_sales ?? selectedDocument.donnees_parsees.total_ca) ? '€' : ''}</span>
+                              </div>
+                              <div className="table-row">
+                                <span><strong>🍽️ Plats vendus:</strong> {
+                                  (selectedDocument.donnees_parsees.items_by_category ? Object.values(selectedDocument.donnees_parsees.items_by_category).reduce((acc, arr) => acc + arr.reduce((s, it) => s + (Number(it.quantity_sold) || 0), 0), 0) : (selectedDocument.donnees_parsees.plats_vendus?.reduce((s, it) => s + (Number(it.quantite) || 0), 0) || 0))
+                                } plats</span>
+                              </div>
+                            </>
+                          )}
+                          
+                          {selectedDocument.type_document === 'facture_fournisseur' && (
+                            <>
+                              <div className="table-row">
+                                <span><strong>🏪 Fournisseur:</strong> {selectedDocument.donnees_parsees.fournisseur || 'Non identifié'}</span>
+                              </div>
+                              <div className="table-row">
+                                <span><strong>💰 Total:</strong> {selectedDocument.donnees_parsees.total_ttc || selectedDocument.donnees_parsees.total_ht || 'Non calculé'}€</span>
+                              </div>
+                              <div className="table-row">
+                                <span><strong>📦 Produits:</strong> {selectedDocument.donnees_parsees.produits?.length || 0} produits</span>
+                              </div>
+                            </>
+                          )}
+                        </>
+                      ) : (
+                        <div className="table-row">
+                          <span style={{color: '#e53e3e'}}>❌ Aucune donnée extraite - Document nécessite un retraitement</span>
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="table-row">
+                      <span style={{fontStyle: 'italic', color: '#4a5568'}}>
+                        👆 Sélectionnez un document dans l'historique pour voir les données extraites
+                      </span>
+                    </div>
+                  )}
+                </div>
+                
+                <div style={{textAlign: 'center', marginTop: '20px'}}>
+                  <button className="button" onClick={() => setShowOcrModal(true)}>✅ Valider</button>
+                  <button className="button" onClick={async () => {
+                    if (!selectedDocument) {
+                      alert('Veuillez d\'abord sélectionner un document dans l\'historique.');
+                      return;
+                    }
+                    // Ouvrir l'aperçu côté OCR pour corriger
+                    await handlePreviewDocument(selectedDocument);
+                    setPreviewTab('sidebyside');
+                  }}>✏️ Corriger</button>
+                  <button className="button">💾 Enregistrer</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* ONGLET GRILLES DE DONNÉES */}
+          <div className={`production-tab ${activeStockTab === 'datagrids' ? 'active' : ''}`}>
+            <DataGridsPage />
+          </div>
         </div>
       </div>
 
