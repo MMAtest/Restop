@@ -180,6 +180,16 @@ const DataGridsPage = () => {
               {selectedItem.data.description && (
                 <p className="text-blue-600 text-sm mt-1">{selectedItem.data.description}</p>
               )}
+              {/* Informations supplémentaires */}
+              {selectedItem.type === 'product' && selectedItem.data.prix_achat && (
+                <p className="text-blue-600 text-sm">Prix d'achat: {selectedItem.data.prix_achat}€</p>
+              )}
+              {selectedItem.type === 'supplier' && selectedItem.data.email && (
+                <p className="text-blue-600 text-sm">Email: {selectedItem.data.email}</p>
+              )}
+              {selectedItem.type === 'recipe' && selectedItem.data.prix_vente && (
+                <p className="text-blue-600 text-sm">Prix de vente: {selectedItem.data.prix_vente}€</p>
+              )}
             </div>
             <button
               onClick={() => setSelectedItem(null)}
@@ -191,30 +201,44 @@ const DataGridsPage = () => {
         </div>
       )}
 
+      {/* Loading State */}
+      {loading && (
+        <div className="text-center py-8">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-500 mx-auto mb-2"></div>
+          <p className="text-gray-600">Chargement des données...</p>
+        </div>
+      )}
+
       {/* Data Grids */}
       <div className="space-y-6">
         {activeGrid === 'products' && (
           <ProductsDataGrid
+            products={products}
             onProductSelect={handleProductSelect}
             onProductEdit={handleEdit}
             onProductDelete={handleDelete}
+            loading={loading}
           />
         )}
 
         {activeGrid === 'suppliers' && (
           <SuppliersDataGrid
+            suppliers={suppliers}
             onSupplierSelect={handleSupplierSelect}
             onSupplierEdit={handleEdit}
             onSupplierDelete={handleDelete}
+            loading={loading}
           />
         )}
 
         {activeGrid === 'recipes' && (
           <RecipesDataGrid
+            recipes={recipes}
             onRecipeSelect={handleRecipeSelect}
             onRecipeEdit={handleEdit}
             onRecipeDelete={handleDelete}
             onCalculateCosts={handleCalculateCosts}
+            loading={loading}
           />
         )}
       </div>
