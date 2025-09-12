@@ -1001,10 +1001,47 @@ function App() {
         </div>
       </div>
 
-      {/* STOCKS */}
+      {/* GESTION DE STOCKS - avec OCR et Grilles de données */}
       <div id="stocks" className={`wireframe-section ${activeTab === "stocks" ? "active" : ""}`}>
         <div className="wireframe">
-          <h2>📦 Gestion de Stocks</h2>
+          <h2>📦 Gestion de Stocks Complète</h2>
+          
+          {/* Sous-navigation Stocks */}
+          <div className="sub-nav-tabs">
+            <button 
+              className="button" 
+              onClick={() => setActiveStockTab('stocks')}
+              style={{
+                background: activeStockTab === 'stocks' ? 'linear-gradient(135deg, var(--color-primary-solid), var(--color-primary-dark))' : 'var(--gradient-accent)',
+                color: activeStockTab === 'stocks' ? 'var(--color-white)' : 'var(--color-primary-solid)'
+              }}
+            >
+              📦 Stocks
+            </button>
+            <button 
+              className="button" 
+              onClick={() => setActiveStockTab('ocr')}
+              style={{
+                background: activeStockTab === 'ocr' ? 'linear-gradient(135deg, var(--color-primary-solid), var(--color-primary-dark))' : 'var(--gradient-accent)',
+                color: activeStockTab === 'ocr' ? 'var(--color-white)' : 'var(--color-primary-solid)'
+              }}
+            >
+              📱 OCR
+            </button>
+            <button 
+              className="button" 
+              onClick={() => setActiveStockTab('datagrids')}
+              style={{
+                background: activeStockTab === 'datagrids' ? 'linear-gradient(135deg, var(--color-primary-solid), var(--color-primary-dark))' : 'var(--gradient-accent)',
+                color: activeStockTab === 'datagrids' ? 'var(--color-white)' : 'var(--color-primary-solid)'
+              }}
+            >
+              📋 Grilles Données
+            </button>
+          </div>
+
+          {/* ONGLET STOCKS */}
+          <div className={`production-tab ${activeStockTab === 'stocks' ? 'active' : ''}`}>
           <div className="layout">
             <div className="card full-width">
               <input type="text" className="search-bar" placeholder="🔍 Rechercher un produit..."/>
