@@ -1800,7 +1800,6 @@ function App() {
                     <option>Pierre</option>
                   </select>
                   <button className="button">🔍 Filtrer</button>
-                </div>
       {/* PREVIEW MODAL OCR */}
       {showPreviewModal && (
         <div style={{position:'fixed', inset:0, background:'rgba(0,0,0,0.5)', display:'flex', alignItems:'center', justifyContent:'center', zIndex:1000}}>
