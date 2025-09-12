@@ -1498,7 +1498,6 @@ function App() {
       </div>
 
       {/* PREVIEW MODAL OCR */}
-      {/* PREVIEW MODAL OCR */}
       {showPreviewModal && (
         <div style={{position:'fixed', inset:0, background:'rgba(0,0,0,0.5)', display:'flex', alignItems:'center', justifyContent:'center', zIndex:1000}}>
           <div style={{width:'90%', maxWidth:'1200px', maxHeight:'85vh', background:'#fff', borderRadius:'12px', overflow:'hidden', boxShadow:'0 10px 30px rgba(0,0,0,0.3)'}}>
