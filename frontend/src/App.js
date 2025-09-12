@@ -1042,7 +1042,7 @@ function App() {
 
           {/* ONGLET STOCKS */}
           <div className={`production-tab ${activeStockTab === 'stocks' ? 'active' : ''}`}>
-          <div className="layout">
+            <div className="layout">
             <div className="card full-width">
               <input type="text" className="search-bar" placeholder="🔍 Rechercher un produit..."/>
               <div style={{display: 'flex', justifyContent: 'center', gap: '10px', marginTop: '15px', flexWrap: 'wrap'}}>
