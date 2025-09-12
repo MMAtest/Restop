@@ -1420,6 +1420,80 @@ function App() {
               </div>
             </div>
           </div>
+
+          {/* ONGLET HISTORIQUE */}
+          <div className={`production-tab ${activeProductionTab === 'historique' ? 'active' : ''}`}>
+            <div className="wireframe">
+              <h2>📊 Gestion de l'Historique</h2>
+              
+              {/* Sous-navigation Historique */}
+              <div className="sub-nav-tabs">
+                <button 
+                  className="button" 
+                  onClick={() => setActiveHistoriqueTab('ventes')}
+                  style={{
+                    background: activeHistoriqueTab === 'ventes' ? 'linear-gradient(135deg, var(--color-primary-solid), var(--color-primary-dark))' : 'var(--gradient-accent)',
+                    color: activeHistoriqueTab === 'ventes' ? 'var(--color-white)' : 'var(--color-primary-solid)'
+                  }}
+                >
+                  💰 Ventes
+                </button>
+                <button 
+                  className="button" 
+                  onClick={() => setActiveHistoriqueTab('rapports_z')}
+                  style={{
+                    background: activeHistoriqueTab === 'rapports_z' ? 'linear-gradient(135deg, var(--color-primary-solid), var(--color-primary-dark))' : 'var(--gradient-accent)',
+                    color: activeHistoriqueTab === 'rapports_z' ? 'var(--color-white)' : 'var(--color-primary-solid)'
+                  }}
+                >
+                  📊 Rapports Z
+                </button>
+                <button 
+                  className="button" 
+                  onClick={() => setActiveHistoriqueTab('stocks')}
+                  style={{
+                    background: activeHistoriqueTab === 'stocks' ? 'linear-gradient(135deg, var(--color-primary-solid), var(--color-primary-dark))' : 'var(--gradient-accent)',
+                    color: activeHistoriqueTab === 'stocks' ? 'var(--color-white)' : 'var(--color-primary-solid)'
+                  }}
+                >
+                  📦 Mouvements Stock
+                </button>
+                <button 
+                  className="button" 
+                  onClick={() => setActiveHistoriqueTab('commandes')}
+                  style={{
+                    background: activeHistoriqueTab === 'commandes' ? 'linear-gradient(135deg, var(--color-primary-solid), var(--color-primary-dark))' : 'var(--gradient-accent)',
+                    color: activeHistoriqueTab === 'commandes' ? 'var(--color-white)' : 'var(--color-primary-solid)'
+                  }}
+                >
+                  🛒 Commandes
+                </button>
+                <button 
+                  className="button" 
+                  onClick={() => setActiveHistoriqueTab('factures')}
+                  style={{
+                    background: activeHistoriqueTab === 'factures' ? 'linear-gradient(135deg, var(--color-primary-solid), var(--color-primary-dark))' : 'var(--gradient-accent)',
+                    color: activeHistoriqueTab === 'factures' ? 'var(--color-white)' : 'var(--color-primary-solid)'
+                  }}
+                >
+                  📄 Factures
+                </button>
+                <button 
+                  className="button" 
+                  onClick={() => setActiveHistoriqueTab('modifications')}
+                  style={{
+                    background: activeHistoriqueTab === 'modifications' ? 'linear-gradient(135deg, var(--color-primary-solid), var(--color-primary-dark))' : 'var(--gradient-accent)',
+                    color: activeHistoriqueTab === 'modifications' ? 'var(--color-white)' : 'var(--color-primary-solid)'
+                  }}
+                >
+                  ✏️ Modifications
+                </button>
+              </div>
+
+              {/* Contenu de l'historique */}
+              <HistoriqueZPage />
+            </div>
+          </div>
         </div>
       </div>
 
