@@ -787,41 +787,19 @@ function App() {
   };
 
   return (
-    <div className="container">
-      {/* Header */}
+    <div className="App">
+      {/* Header Mobile */}
       <div className="header">
-        <h1>ResTop : Gestion de La Table d'Augustine</h1>
+        <h1>ResTop : La Table d'Augustine</h1>
         {/* Menu Burger */}
-        <div className="relative">
-          <button 
-            className="button"
-            onClick={() => setShowBurgerMenu(!showBurgerMenu)}
-            style={{
-              position: 'absolute',
-              right: '0',
-              top: '50%',
-              transform: 'translateY(-50%)',
-              padding: '8px 12px',
-              fontSize: '20px'
-            }}
-          >
+        <div className="burger-menu">
+          <button onClick={() => setShowBurgerMenu(!showBurgerMenu)}>
             ☰
           </button>
           
           {/* Menu déroulant */}
           {showBurgerMenu && (
-            <div 
-              className="modal-content"
-              style={{
-                position: 'absolute',
-                right: '0',
-                top: '100%',
-                marginTop: '8px',
-                minWidth: '200px',
-                zIndex: 1000,
-                padding: '16px'
-              }}
-            >
+            <div className="burger-dropdown">
               <button 
                 className="button" 
                 onClick={() => {
@@ -837,33 +815,15 @@ function App() {
         </div>
       </div>
 
-      {/* Navigation */}
-      <div className="nav-tabs">
-        <button 
-          className={`nav-tab ${activeTab === "dashboard" ? "active" : ""}`}
-          onClick={() => setActiveTab("dashboard")}
-        >
-          📊 Dashboard
-        </button>
-        <button 
-          className={`nav-tab ${activeTab === "stocks" ? "active" : ""}`}
-          onClick={() => setActiveTab("stocks")}
-        >
-          📦 Gestion de Stocks
-        </button>
-        <button 
-          className={`nav-tab ${activeTab === "production" ? "active" : ""}`}
-          onClick={() => setActiveTab("production")}
-        >
-          🍳 Production
-        </button>
-        <button 
-          className={`nav-tab ${activeTab === "orders" ? "active" : ""}`}
-          onClick={() => setActiveTab("orders")}
-        >
-          🛒 Commandes
-        </button>
-      </div>
+      {/* Top Navigation Tabs (Analytics) */}
+      {activeTab === "dashboard" && (
+        <div className="top-nav-tabs">
+          <button className="top-nav-tab active">VENTES</button>
+          <button className="top-nav-tab">ALERTES</button>
+          <button className="top-nav-tab">COÛTS</button>
+          <button className="top-nav-tab">RENTABILITÉ</button>
+        </div>
+      )}
 
       {/* DASHBOARD - Analytics & Profitability */}
       <div id="dashboard" className={`wireframe-section ${activeTab === "dashboard" ? "active" : ""}`}>
