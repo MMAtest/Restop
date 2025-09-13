@@ -827,8 +827,9 @@ function App() {
 
       {/* Content Wrapper */}
       <div className="content-wrapper">
-      <div id="dashboard" className={`wireframe-section ${activeTab === "dashboard" ? "active" : ""}`}>
-        <AnalyticsPage />
+        <div id="dashboard" className={`wireframe-section ${activeTab === "dashboard" ? "active" : ""}`}>
+          <AnalyticsPage />
+        </div>
       </div>
 
       {/* USER MANAGEMENT */}
