@@ -1096,7 +1096,8 @@ function App() {
                         {produit?.categorie === 'légumes' ? '🍅' : produit?.categorie === 'épices' ? '🧄' : produit?.categorie === 'huiles' ? '🫒' : produit?.categorie === 'fromages' ? '🧀' : '📦'} {stock.produit_nom} | {formatQuantity(stock.quantite_actuelle, unite)} | {formatQuantity(stock.quantite_min, unite)} | {isLowStock ? '⚠️ Critique' : '✅ OK'}
                       </span>
                       <div>
-                        <button className="button" style={{fontSize: '0.7rem', padding: '4px 8px'}} onClick={() => handleEdit(produit, 'produit')}>✏️ Éditer</button>
+                        <button className="button" style={{fontSize: '0.7rem', padding: '4px 8px'}} onClick={() => handleEdit(produit, 'produit')}>✏️ Produit</button>
+                        <button className="button" style={{fontSize: '0.7rem', padding: '4px 8px'}} onClick={() => handleAjusterStock(stock)}>📊 Ajuster</button>
                         <button className="button" style={{fontSize: '0.7rem', padding: '4px 8px'}} onClick={() => setShowMouvementModal(true)}>🛒 Commander</button>
                       </div>
                     </div>
