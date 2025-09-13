@@ -1680,10 +1680,10 @@ function App() {
       </div>
 
 
-      {/* PRODUCTION */}
-      <div id="production" className={`wireframe-section ${activeTab === "production" ? "active" : ""}`}>
+      {/* PRODUCTION DUPLIQUÉE - DÉSACTIVÉE */}
+      <div style={{display: 'none'}} className={`wireframe-section`}>
         <div className="wireframe">
-          <h2>🍳 Production & Historique</h2>
+          <h2>🍳 Production & Historique (DÉSACTIVÉ)</h2>
           
           {/* Sous-navigation Production */}
           <div className="sub-nav-tabs">
