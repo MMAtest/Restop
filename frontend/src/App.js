@@ -3,6 +3,7 @@ import "./App.css";
 import axios from "axios";
 import HistoriqueZPage from "./pages/HistoriqueZPage";
 import AnalyticsPage from "./pages/AnalyticsPage";
+import AdvancedStockPage from "./pages/AdvancedStockPage";
 import UserManagementPage from "./pages/UserManagementPage";
 import DataGridsPage from "./pages/DataGridsPage";
 import PurchaseOrderPage from "./pages/PurchaseOrderPage";
