@@ -1264,9 +1264,6 @@ function App() {
         <div id="production" className={`wireframe-section ${activeTab === "production" ? "active" : ""}`}>
           <div className="section-card">
             <div className="section-title">🍳 Production & Historique</div>
-            <div style={{background: 'red', color: 'white', padding: '10px', marginBottom: '10px'}}>
-              DEBUG: activeTab = {activeTab}, activeProductionTab = {activeProductionTab}
-            </div>
             
             {/* Sous-navigation Production */}
             <div className="sub-nav-tabs">
