@@ -820,10 +820,30 @@ function App() {
       {/* Top Navigation Tabs (Analytics) */}
       {activeTab === "dashboard" && (
         <div className="top-nav-tabs">
-          <button className="top-nav-tab active">VENTES</button>
-          <button className="top-nav-tab">ALERTES</button>
-          <button className="top-nav-tab">COÛTS</button>
-          <button className="top-nav-tab">RENTABILITÉ</button>
+          <button 
+            className={`top-nav-tab ${activeDashboardTab === "ventes" ? "active" : ""}`}
+            onClick={() => setActiveDashboardTab("ventes")}
+          >
+            VENTES
+          </button>
+          <button 
+            className={`top-nav-tab ${activeDashboardTab === "alertes" ? "active" : ""}`}
+            onClick={() => setActiveDashboardTab("alertes")}
+          >
+            ALERTES
+          </button>
+          <button 
+            className={`top-nav-tab ${activeDashboardTab === "couts" ? "active" : ""}`}
+            onClick={() => setActiveDashboardTab("couts")}
+          >
+            COÛTS
+          </button>
+          <button 
+            className={`top-nav-tab ${activeDashboardTab === "rentabilite" ? "active" : ""}`}
+            onClick={() => setActiveDashboardTab("rentabilite")}
+          >
+            RENTABILITÉ
+          </button>
         </div>
       )}
 
