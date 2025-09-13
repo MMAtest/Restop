@@ -830,7 +830,6 @@ function App() {
         <div id="dashboard" className={`wireframe-section ${activeTab === "dashboard" ? "active" : ""}`}>
           <AnalyticsPage />
         </div>
-      </div>
 
         {/* GESTION DE STOCKS - avec OCR et Grilles de données */}
         <div id="stocks" className={`wireframe-section ${activeTab === "stocks" ? "active" : ""}`}>
