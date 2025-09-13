@@ -446,7 +446,17 @@ function App() {
     event.target.value = '';
   };
 
-  // Gestion Alertes Stocks
+  // Fonction pour ajuster le stock d'un produit spécifique
+  const handleAjusterStock = (stock) => {
+    setMouvementForm({
+      produit_id: stock.produit_id,
+      type: "ajustement",
+      quantite: "",
+      reference: `ADJ-${Date.now()}`,
+      commentaire: `Ajustement stock pour ${stock.produit_nom}`
+    });
+    setShowMouvementModal(true);
+  };
   const handleVoirAlertes = () => {
     const stocksCritiques = stocks.filter(stock => {
       const produit = produits.find(p => p.id === stock.produit_id);
