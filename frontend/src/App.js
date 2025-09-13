@@ -832,7 +832,212 @@ function App() {
         </div>
       </div>
 
-      {/* USER MANAGEMENT */}
+        {/* GESTION DE STOCKS - avec OCR et Grilles de données */}
+        <div id="stocks" className={`wireframe-section ${activeTab === "stocks" ? "active" : ""}`}>
+          <div className="wireframe">
+            <h2>📦 Gestion de Stocks Complète</h2>
+            
+            {/* Sous-navigation Stocks */}
+            <div className="sub-nav-tabs">
+              <button 
+                className="button" 
+                onClick={() => setActiveStockTab('stocks')}
+                style={{
+                  background: activeStockTab === 'stocks' ? 'var(--color-primary-blue)' : 'var(--color-background-card-light)',
+                  color: activeStockTab === 'stocks' ? 'white' : 'var(--color-text-secondary)'
+                }}
+              >
+                📦 Stocks
+              </button>
+              <button 
+                className="button" 
+                onClick={() => setActiveStockTab('ocr')}
+                style={{
+                  background: activeStockTab === 'ocr' ? 'var(--color-primary-blue)' : 'var(--color-background-card-light)',
+                  color: activeStockTab === 'ocr' ? 'white' : 'var(--color-text-secondary)'
+                }}
+              >
+                📱 OCR
+              </button>
+              <button 
+                className="button" 
+                onClick={() => setActiveStockTab('datagrids')}
+                style={{
+                  background: activeStockTab === 'datagrids' ? 'var(--color-primary-blue)' : 'var(--color-background-card-light)',
+                  color: activeStockTab === 'datagrids' ? 'white' : 'var(--color-text-secondary)'
+                }}
+              >
+                📋 Grilles Données
+              </button>
+            </div>
+
+            {/* ONGLET STOCKS */}
+            <div className={`production-tab ${activeStockTab === 'stocks' ? 'active' : ''}`}>
+              <AdvancedStockPage />
+            </div>
+
+            {/* ONGLET OCR */}
+            <div className={`production-tab ${activeStockTab === 'ocr' ? 'active' : ''}`}>
+              <div className="section-card">
+                <div className="section-title">📱 Module OCR</div>
+                
+                {/* Actions OCR */}
+                <div style={{display: 'flex', gap: '10px', marginBottom: '20px', flexWrap: 'wrap'}}>
+                  <button className="button" onClick={() => setShowOcrModal(true)}>📁 Importer Document</button>
+                  <button className="button" onClick={handleTraitementAuto} disabled={loading}>🔄 Traitement Auto</button>
+                </div>
+
+                {/* Historique des documents */}
+                <div className="item-list">
+                  <div className="section-title">📄 Historique des Documents</div>
+                  {documentsOcr.slice(0, 5).map((doc, index) => (
+                    <div key={index} className="item-row">
+                      <div className="item-info">
+                        <div className="item-name">{doc.nom_fichier}</div>
+                        <div className="item-details">
+                          {doc.type_document === 'z_report' ? '📊 Rapport Z' : '🧾 Facture'} - 
+                          {new Date(doc.date_upload).toLocaleDateString('fr-FR')}
+                        </div>
+                      </div>
+                      <div className="item-actions">
+                        <button 
+                          className="button small"
+                          onClick={() => handlePreviewDocument(doc)}
+                        >
+                          👁️ Aperçu
+                        </button>
+                        {doc.type_document === 'z_report' && (
+                          <button 
+                            className="button small"
+                            onClick={() => handleProcessZReport(doc.id)}
+                          >
+                            ⚡ Traiter
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* ONGLET GRILLES DE DONNÉES */}
+            <div className={`production-tab ${activeStockTab === 'datagrids' ? 'active' : ''}`}>
+              <DataGridsPage />
+            </div>
+          </div>
+        </div>
+
+        {/* PRODUCTION - avec Historique */}
+        <div id="production" className={`wireframe-section ${activeTab === "production" ? "active" : ""}`}>
+          <div className="wireframe">
+            <h2>🍳 Production & Historique</h2>
+            
+            {/* Sous-navigation Production */}
+            <div className="sub-nav-tabs">
+              <button 
+                className="button" 
+                onClick={() => setActiveProductionTab('produits')}
+                style={{
+                  background: activeProductionTab === 'produits' ? 'var(--color-primary-blue)' : 'var(--color-background-card-light)',
+                  color: activeProductionTab === 'produits' ? 'white' : 'var(--color-text-secondary)'
+                }}
+              >
+                🥕 Ingrédients
+              </button>
+              <button 
+                className="button" 
+                onClick={() => setActiveProductionTab('fournisseurs')}
+                style={{
+                  background: activeProductionTab === 'fournisseurs' ? 'var(--color-primary-blue)' : 'var(--color-background-card-light)',
+                  color: activeProductionTab === 'fournisseurs' ? 'white' : 'var(--color-text-secondary)'
+                }}
+              >
+                🚚 Fournisseurs
+              </button>
+              <button 
+                className="button" 
+                onClick={() => setActiveProductionTab('recettes')}
+                style={{
+                  background: activeProductionTab === 'recettes' ? 'var(--color-primary-blue)' : 'var(--color-background-card-light)',
+                  color: activeProductionTab === 'recettes' ? 'white' : 'var(--color-text-secondary)'
+                }}
+              >
+                📝 Plats & Recettes
+              </button>
+              <button 
+                className="button" 
+                onClick={() => setActiveProductionTab('historique')}
+                style={{
+                  background: activeProductionTab === 'historique' ? 'var(--color-primary-blue)' : 'var(--color-background-card-light)',
+                  color: activeProductionTab === 'historique' ? 'white' : 'var(--color-text-secondary)'
+                }}
+              >
+                📊 Historique
+              </button>
+            </div>
+
+            {/* ONGLET HISTORIQUE */}
+            <div className={`production-tab ${activeProductionTab === 'historique' ? 'active' : ''}`}>
+              <HistoriqueZPage />
+            </div>
+
+            {/* Autres onglets de production... */}
+            <div className={`production-tab ${activeProductionTab === 'produits' ? 'active' : ''}`}>
+              <div className="section-card">
+                <div className="section-title">🥕 Gestion des Ingrédients</div>
+                <p>Interface de gestion des ingrédients...</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* COMMANDES */}
+        <div id="orders" className={`wireframe-section ${activeTab === "orders" ? "active" : ""}`}>
+          <PurchaseOrderPage />
+        </div>
+
+        {/* USER MANAGEMENT */}
+        <div id="users" className={`wireframe-section ${activeTab === "users" ? "active" : ""}`}>
+          <UserManagementPage />
+        </div>
+
+      </div>
+
+      {/* Bottom Navigation */}
+      <div className="bottom-navigation">
+        <button 
+          className={`bottom-nav-item ${activeTab === "dashboard" ? "active" : ""}`}
+          onClick={() => setActiveTab("dashboard")}
+        >
+          <div className="bottom-nav-icon">🏠</div>
+          <div className="bottom-nav-label">Home</div>
+        </button>
+        
+        <button 
+          className={`bottom-nav-item ${activeTab === "stocks" ? "active" : ""}`}
+          onClick={() => setActiveTab("stocks")}
+        >
+          <div className="bottom-nav-icon">📦</div>
+          <div className="bottom-nav-label">Stock</div>
+        </button>
+        
+        <button 
+          className={`bottom-nav-item ${activeTab === "production" ? "active" : ""}`}
+          onClick={() => setActiveTab("production")}
+        >
+          <div className="bottom-nav-icon">🍳</div>
+          <div className="bottom-nav-label">Production</div>
+        </button>
+        
+        <button 
+          className={`bottom-nav-item ${activeTab === "orders" ? "active" : ""}`}
+          onClick={() => setActiveTab("orders")}
+        >
+          <div className="bottom-nav-icon">🛒</div>
+          <div className="bottom-nav-label">Orders</div>
+        </button>
+      </div>
       <div id="users" className={`wireframe-section ${activeTab === "users" ? "active" : ""}`}>
         <UserManagementPage />
       </div>
