@@ -1683,10 +1683,7 @@ function App() {
       </div>
 
 
-      {/* PRODUCTION DUPLIQUÉE - DÉSACTIVÉE */}
-      <div id="production-disabled" style={{display: 'none'}} className={`wireframe-section`}>
-        <div className="wireframe">
-          <h2>🍳 Production & Historique (DÉSACTIVÉ)</h2>
+      {/* SECTION PRODUCTION DUPLIQUÉE SUPPRIMÉE */}
           
           {/* Sous-navigation Production */}
           <div className="sub-nav-tabs">
