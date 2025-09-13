@@ -1513,7 +1513,11 @@ function App() {
         
         <button 
           className={`bottom-nav-item ${activeTab === "stocks" ? "active" : ""}`}
-          onClick={() => setActiveTab("stocks")}
+          onClick={() => {
+            console.log("Clic sur STOCK, activeTab actuel:", activeTab);
+            setActiveTab("stocks");
+            console.log("activeTab changé vers: stocks");
+          }}
         >
           <div className="bottom-nav-icon">📦</div>
           <div className="bottom-nav-label">Stock</div>
