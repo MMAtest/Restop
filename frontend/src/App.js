@@ -1904,7 +1904,9 @@ function App() {
       {showMouvementModal && (
         <div className="modal-overlay">
           <div className="modal-content">
-            <h3 className="modal-header">Nouveau mouvement de stock</h3>
+            <h3 className="modal-header">
+              {mouvementForm.type === 'ajustement' ? 'Ajuster le stock' : 'Nouveau mouvement de stock'}
+            </h3>
             <form onSubmit={handleMouvementSubmit}>
               <div className="form-group">
                 <label className="form-label">Produit</label>
@@ -1917,7 +1919,13 @@ function App() {
                   <option value="">Sélectionnez un produit</option>
                   {produits.map((produit) => (
                     <option key={produit.id} value={produit.id}>
-                      {produit.nom}
+                      {produit.nom} - {
+                        (() => {
+                          const stock = stocks.find(s => s.produit_id === produit.id);
+                          const unite = getDisplayUnit(produit.unite);
+                          return stock ? `Stock actuel: ${formatQuantity(stock.quantite_actuelle, unite)}` : 'Pas de stock';
+                        })()
+                      }
                     </option>
                   ))}
                 </select>
@@ -1930,19 +1938,27 @@ function App() {
                   onChange={(e) => setMouvementForm({...mouvementForm, type: e.target.value})}
                   required
                 >
-                  <option value="entree">Entrée</option>
-                  <option value="sortie">Sortie</option>
-                  <option value="ajustement">Ajustement</option>
+                  <option value="entree">➕ Entrée (Augmenter le stock)</option>
+                  <option value="sortie">➖ Sortie (Diminuer le stock)</option>
+                  <option value="ajustement">🔄 Ajustement (Corriger le stock)</option>
                 </select>
               </div>
               <div className="form-group">
-                <label className="form-label">Quantité</label>
+                <label className="form-label">
+                  Quantité 
+                  {mouvementForm.type === 'ajustement' && (
+                    <span style={{fontSize: '0.8rem', color: '#666', marginLeft: '8px'}}>
+                      (quantité à ajouter/retirer, ex: -5 pour retirer 5 unités)
+                    </span>
+                  )}
+                </label>
                 <input
                   type="number"
                   step="0.01"
                   className="form-input"
                   value={mouvementForm.quantite}
                   onChange={(e) => setMouvementForm({...mouvementForm, quantite: e.target.value})}
+                  placeholder={mouvementForm.type === 'ajustement' ? 'Ex: -5 ou +10' : 'Quantité'}
                   required
                 />
               </div>
