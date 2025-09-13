@@ -1,37 +1,50 @@
-/* ===== ResTop La Table d'Augustine - Charte Alderobase ===== */
+/* ===== ResTop La Table d'Augustine - Mobile Dark Theme ===== */
 
 /* Import de la police Inter */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
-/* CSS Custom Properties selon la charte - Version équilibrée pour contraste optimal */
+/* CSS Custom Properties - Dark Theme Mobile */
 :root {
-  --color-primary-light: #E8F5E8; /* Vert très clair pour arrière-plans */
-  --color-primary-lighter: #F0F8F0; /* Vert ultra-clair pour arrière-plans */
-  --color-primary-solid: #2D5016; /* Vert original pour textes */
-  --color-primary-dark: #1F4A08; /* Vert foncé original */
-  --color-accent: #D4AF37;
-  --color-accent-light: #F4C430;
-  --color-secondary: rgba(139, 21, 56, 0.15); /* Rouge bordeaux léger 15% */
-  --color-secondary-light: rgba(160, 41, 61, 0.12); /* Rouge bordeaux clair léger 12% */
-  --color-background: #F8F6F0; /* Beige clair avec contraste */
-  --color-background-light: #FBF9F4; /* Crème clair avec contraste */
-  --color-white: #FFFFFF;
-  --color-gray-light: #F8F9FA;
-  --color-gray-medium: #6C757D;
-  --color-gray-dark: #343A40;
+  /* Dark Theme Colors */
+  --color-background-dark: #1A1D23;
+  --color-background-card: #2A2D35;
+  --color-background-card-light: #323742;
+  --color-primary-blue: #3B82F6;
+  --color-primary-blue-light: #60A5FA;
+  --color-accent-gold: #F59E0B;
+  --color-accent-yellow: #FBBF24;
+  --color-success-green: #10B981;
+  --color-danger-red: #EF4444;
+  --color-warning-orange: #F97316;
   
+  /* Text Colors */
+  --color-text-primary: #F8FAFC;
+  --color-text-secondary: #CBD5E1;
+  --color-text-muted: #94A3B8;
+  --color-text-accent: #FBBF24;
+  
+  /* Border & Dividers */
+  --color-border: #374151;
+  --color-border-light: #4B5563;
+  --color-divider: rgba(255, 255, 255, 0.1);
+  
+  /* Shadows */
+  --shadow-card: 0 4px 16px rgba(0, 0, 0, 0.3);
+  --shadow-card-hover: 0 8px 24px rgba(0, 0, 0, 0.4);
+  --shadow-bottom: 0 -4px 16px rgba(0, 0, 0, 0.2);
+  
+  /* Border Radius */
   --border-radius-sm: 8px;
   --border-radius-md: 12px;
   --border-radius-lg: 16px;
-  --border-radius-xl: 25px;
+  --border-radius-xl: 20px;
   
-  --shadow-sm: 0px 2px 4px rgba(0, 0, 0, 0.1);
-  --shadow-md: 0px 4px 12px rgba(0, 0, 0, 0.15);
-  --shadow-lg: 0px 8px 24px rgba(0, 0, 0, 0.2);
-  
-  --gradient-primary: linear-gradient(135deg, #F0F8F0 0%, #F8FBF8 100%);
-  --gradient-accent: linear-gradient(45deg, #D4AF37 0%, #F4C430 100%);
-  --gradient-background: linear-gradient(135deg, #F8F6F0 0%, #F2F0E8 30%, #F0F8F0 100%); /* Dégradé avec contraste subtil */
+  /* Spacing */
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-md: 16px;
+  --spacing-lg: 24px;
+  --spacing-xl: 32px;
 }
 
 /* Reset et Base */
@@ -43,11 +56,13 @@
 
 body {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
-  background: var(--gradient-background);
-  color: var(--color-gray-dark);
+  background: var(--color-background-dark);
+  color: var(--color-text-primary);
   line-height: 1.6;
   font-size: 16px;
   font-weight: 400;
+  min-height: 100vh;
+}
   min-height: 100vh;
 }
 
