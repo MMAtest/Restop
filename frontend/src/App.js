@@ -1064,7 +1064,78 @@ function App() {
 
             {/* ONGLET STOCKS */}
             <div className={`production-tab ${activeStockTab === 'stocks' ? 'active' : ''}`}>
-              <AdvancedStockPage />
+              <div className="section-card">
+                <div className="section-title">📦 Gestion des Stocks</div>
+                
+                {/* Actions rapides */}
+                <div style={{display: 'flex', gap: '10px', marginBottom: '20px', flexWrap: 'wrap'}}>
+                  <button className="button">➕ Nouveau Produit</button>
+                  <button className="button">📊 Rapport Stock</button>
+                  <button className="button warning">⚠️ Alertes</button>
+                  <button className="button">📱 Inventaire</button>
+                </div>
+
+                {/* KPIs Stocks */}
+                <div className="kpi-grid">
+                  <div className="kpi-card">
+                    <div className="icon">📈</div>
+                    <div className="title">Stock Total</div>
+                    <div className="value">385 produits</div>
+                  </div>
+                  
+                  <div className="kpi-card">
+                    <div className="icon">⚠️</div>
+                    <div className="title">Stocks Critiques</div>
+                    <div className="value warning">42 alertes</div>
+                  </div>
+                  
+                  <div className="kpi-card">
+                    <div className="icon">💰</div>
+                    <div className="title">Valeur Totale</div>
+                    <div className="value">16 326,05 €</div>
+                  </div>
+                </div>
+
+                {/* Liste des produits en stock */}
+                <div className="item-list">
+                  <div className="section-title">📋 Produits en Stock</div>
+                  
+                  {stocks.slice(0, 5).map((stock, index) => {
+                    const isLowStock = stock.quantite_actuelle <= stock.quantite_min;
+                    const produit = produits.find(p => p.id === stock.produit_id);
+                    const unite = getDisplayUnit(produit?.unite);
+                    
+                    return (
+                      <div key={index} className="item-row">
+                        <div className="item-info">
+                          <div className="item-name">
+                            {produit?.categorie === 'légumes' ? '🍅' : 
+                             produit?.categorie === 'épices' ? '🧄' : 
+                             produit?.categorie === 'huiles' ? '🫒' : 
+                             produit?.categorie === 'fromages' ? '🧀' : '📦'} {stock.produit_nom}
+                          </div>
+                          <div className="item-details">
+                            Stock: {formatQuantity(stock.quantite_actuelle, unite)} / Min: {formatQuantity(stock.quantite_min, unite)}
+                            {isLowStock && <span style={{color: 'var(--color-danger-red)', marginLeft: '8px'}}>⚠️ Critique</span>}
+                          </div>
+                        </div>
+                        <div className="item-actions">
+                          <button className="button small" onClick={() => handleEdit(produit, 'produit')}>✏️ Produit</button>
+                          <button className="button small success" onClick={() => handleAjusterStock(stock)}>📊 Ajuster</button>
+                          <button className="button small" onClick={() => setShowMouvementModal(true)}>🛒 Commander</button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                  
+                  {stocks.length === 0 && (
+                    <div style={{textAlign: 'center', padding: '40px', color: 'var(--color-text-muted)'}}>
+                      <div style={{fontSize: '48px', marginBottom: '15px'}}>📦</div>
+                      <p>Aucun stock disponible</p>
+                    </div>
+                  )}
+                </div>
+              </div>
             </div>
 
             {/* ONGLET OCR */}
