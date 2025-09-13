@@ -1192,8 +1192,8 @@ function App() {
 
         {/* PRODUCTION - avec Historique */}
         <div id="production" className={`wireframe-section ${activeTab === "production" ? "active" : ""}`}>
-          <div className="wireframe">
-            <h2>🍳 Production & Historique</h2>
+          <div className="section-card">
+            <div className="section-title">🍳 Production & Historique</div>
             
             {/* Sous-navigation Production */}
             <div className="sub-nav-tabs">
@@ -1239,18 +1239,123 @@ function App() {
               </button>
             </div>
 
-            {/* ONGLET HISTORIQUE */}
-            <div className={`production-tab ${activeProductionTab === 'historique' ? 'active' : ''}`}>
-              <HistoriqueZPage />
-            </div>
-
-            {/* Autres onglets de production... */}
-            <div className={`production-tab ${activeProductionTab === 'produits' ? 'active' : ''}`}>
-              <div className="section-card">
+            {/* ONGLET PRODUITS */}
+            {activeProductionTab === 'produits' && (
+              <div className="item-list">
                 <div className="section-title">🥕 Gestion des Ingrédients</div>
-                <p>Interface de gestion des ingrédients...</p>
+                
+                <div style={{display: 'flex', gap: '10px', marginBottom: '20px', flexWrap: 'wrap'}}>
+                  <button className="button">➕ Nouvel Ingrédient</button>
+                  <button className="button">📊 Analyse Ingrédients</button>
+                  <button className="button">🏷️ Étiquettes</button>
+                </div>
+
+                {produits.slice(0, 6).map((produit, index) => (
+                  <div key={index} className="item-row">
+                    <div className="item-info">
+                      <div className="item-name">
+                        {produit.categorie === 'entrée' ? '🥗' : 
+                         produit.categorie === 'plats' ? '🍽️' : 
+                         produit.categorie === 'desserts' ? '🍰' : 
+                         produit.categorie === 'boissons' ? '🍷' : '📦'} {produit.nom}
+                      </div>
+                      <div className="item-details">
+                        {produit.description} • Prix: {produit.prix_achat}€
+                      </div>
+                    </div>
+                    <div className="item-actions">
+                      <button className="button small" onClick={() => handleEdit(produit, 'produit')}>✏️ Éditer</button>
+                    </div>
+                  </div>
+                ))}
               </div>
-            </div>
+            )}
+
+            {/* ONGLET FOURNISSEURS */}
+            {activeProductionTab === 'fournisseurs' && (
+              <div className="item-list">
+                <div className="section-title">🚚 Gestion des Fournisseurs</div>
+                
+                <div style={{display: 'flex', gap: '10px', marginBottom: '20px', flexWrap: 'wrap'}}>
+                  <button className="button">➕ Nouveau Fournisseur</button>
+                  <button className="button">📊 Évaluation</button>
+                </div>
+
+                {fournisseurs.slice(0, 4).map((fournisseur, index) => (
+                  <div key={index} className="item-row">
+                    <div className="item-info">
+                      <div className="item-name">🏪 {fournisseur.nom}</div>
+                      <div className="item-details">
+                        {fournisseur.email} • Tel: {fournisseur.telephone}
+                      </div>
+                    </div>
+                    <div className="item-actions">
+                      <button className="button small" onClick={() => handleEdit(fournisseur, 'fournisseur')}>✏️ Éditer</button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* ONGLET RECETTES */}
+            {activeProductionTab === 'recettes' && (
+              <div className="item-list">
+                <div className="section-title">📝 Plats & Recettes</div>
+                
+                <div style={{display: 'flex', gap: '10px', marginBottom: '20px', flexWrap: 'wrap'}}>
+                  <button className="button">➕ Nouvelle Recette</button>
+                  <button className="button">💰 Calculer Coûts</button>
+                </div>
+
+                {recettes.slice(0, 5).map((recette, index) => (
+                  <div key={index} className="item-row">
+                    <div className="item-info">
+                      <div className="item-name">
+                        {recette.categorie === 'entrée' ? '🥗' : 
+                         recette.categorie === 'plats' ? '🍽️' : 
+                         recette.categorie === 'desserts' ? '🍰' : '📝'} {recette.nom}
+                      </div>
+                      <div className="item-details">
+                        Prix: {recette.prix_vente}€ • Marge: {recette.marge_beneficiaire || 'N/A'}%
+                      </div>
+                    </div>
+                    <div className="item-actions">
+                      <button className="button small" onClick={() => handleEdit(recette, 'recette')}>✏️ Éditer</button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* ONGLET HISTORIQUE */}
+            {activeProductionTab === 'historique' && (
+              <div>
+                <div className="section-title">📊 Historique des Opérations</div>
+                <div className="item-list">
+                  <div className="item-row">
+                    <div className="item-info">
+                      <div className="item-name">📊 Rapport Z - Service Déjeuner</div>
+                      <div className="item-details">Aujourd'hui 12:30 • CA: 2 418,00€ • 78 couverts</div>
+                    </div>
+                    <div className="item-value positive">✅ Traité</div>
+                  </div>
+                  <div className="item-row">
+                    <div className="item-info">
+                      <div className="item-name">🛒 Commande Rungis</div>
+                      <div className="item-details">Hier 14:20 • 247,30€ • 15 produits</div>
+                    </div>
+                    <div className="item-value">🚚 En cours</div>
+                  </div>
+                  <div className="item-row">
+                    <div className="item-info">
+                      <div className="item-name">📝 Nouvelle recette</div>
+                      <div className="item-details">2 jours • Risotto aux champignons</div>
+                    </div>
+                    <div className="item-value positive">✅ Validée</div>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         </div>
 
