@@ -850,7 +850,177 @@ function App() {
       {/* Content Wrapper */}
       <div className="content-wrapper">
         <div id="dashboard" className={`wireframe-section ${activeTab === "dashboard" ? "active" : ""}`}>
-          <AnalyticsPage />
+          
+          {/* ONGLET VENTES */}
+          {activeDashboardTab === "ventes" && (
+            <AnalyticsPage />
+          )}
+
+          {/* ONGLET ALERTES */}
+          {activeDashboardTab === "alertes" && (
+            <div className="section-card">
+              <div className="section-title">⚠️ Alertes & Notifications</div>
+              
+              {/* Alertes de stock faible */}
+              <div className="alert-section">
+                <div className="alert-header">
+                  <div className="alert-title">Stock Faible</div>
+                  <div className="alert-count">3</div>
+                </div>
+                
+                <div className="alert-card">
+                  <div className="alert-item">
+                    <div className="product-info">
+                      <div className="product-name">🍅 Tomates cerises</div>
+                      <div className="stock-info">
+                        Stock: <span className="stock-current">1.2 kg</span> / Min: <span className="stock-min">5.0 kg</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="alert-card">
+                  <div className="alert-item">
+                    <div className="product-info">
+                      <div className="product-name">🥬 Salade verte</div>
+                      <div className="stock-info">
+                        Stock: <span className="stock-current">5.3 kg</span> / Min: <span className="stock-min">10.0 kg</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="alert-card warning">
+                  <div className="alert-item">
+                    <div className="product-info">
+                      <div className="product-name">🧀 Fromage de chèvre</div>
+                      <div className="stock-info">
+                        Stock: <span className="stock-current">3.3 kg</span> / Min: <span className="stock-min">8.0 kg</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Alertes d'expiration */}
+              <div className="alert-section">
+                <div className="alert-header">
+                  <div className="alert-title">Produits Expirés</div>
+                  <div className="alert-count">0</div>
+                </div>
+                <div className="section-card">
+                  <p style={{color: 'var(--color-success-green)', textAlign: 'center', padding: '20px'}}>
+                    ✅ Aucun produit expiré actuellement
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* ONGLET COÛTS */}
+          {activeDashboardTab === "couts" && (
+            <div className="section-card">
+              <div className="section-title">💰 Analyse des Coûts</div>
+              
+              <div className="kpi-grid">
+                <div className="kpi-card">
+                  <div className="icon">💰</div>
+                  <div className="title">Valeur Stock</div>
+                  <div className="value">16 326,05 €</div>
+                </div>
+                
+                <div className="kpi-card">
+                  <div className="icon">📊</div>
+                  <div className="title">Coût Moyen</div>
+                  <div className="value">42,30 €</div>
+                </div>
+                
+                <div className="kpi-card">
+                  <div className="icon">📉</div>
+                  <div className="title">Déchets</div>
+                  <div className="value warning">127,50 €</div>
+                </div>
+              </div>
+
+              <div className="item-list">
+                <div className="section-title">Plus Coûteux</div>
+                <div className="item-row">
+                  <div className="item-info">
+                    <div className="item-name">🥩 Côte de bœuf</div>
+                    <div className="item-details">Viandes Premium</div>
+                  </div>
+                  <div className="item-value">847,20 €</div>
+                </div>
+                <div className="item-row">
+                  <div className="item-info">
+                    <div className="item-name">🍄 Truffe noire</div>
+                    <div className="item-details">Épices & Aromates</div>
+                  </div>
+                  <div className="item-value">692,80 €</div>
+                </div>
+                <div className="item-row">
+                  <div className="item-info">
+                    <div className="item-name">🦞 Homard</div>
+                    <div className="item-details">Fruits de mer</div>
+                  </div>
+                  <div className="item-value">543,15 €</div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* ONGLET RENTABILITÉ */}
+          {activeDashboardTab === "rentabilite" && (
+            <div className="section-card">
+              <div className="section-title">📈 Analyse de Rentabilité</div>
+              
+              <div className="kpi-grid">
+                <div className="kpi-card">
+                  <div className="icon">💹</div>
+                  <div className="title">Marge Globale</div>
+                  <div className="value positive">68,5%</div>
+                </div>
+                
+                <div className="kpi-card">
+                  <div className="icon">🎯</div>
+                  <div className="title">ROI Mensuel</div>
+                  <div className="value positive">+12,3%</div>
+                </div>
+                
+                <div className="kpi-card">
+                  <div className="icon">📊</div>
+                  <div className="title">Profit Net</div>
+                  <div className="value positive">19 147,21 €</div>
+                </div>
+              </div>
+
+              <div className="item-list">
+                <div className="section-title">Top Plats Rentables</div>
+                <div className="item-row">
+                  <div className="item-info">
+                    <div className="item-name">🍝 Rigatoni à la truffe</div>
+                    <div className="item-details">Marge: 76% • 78 portions vendues</div>
+                  </div>
+                  <div className="item-value positive">2 418,00 €</div>
+                </div>
+                <div className="item-row">
+                  <div className="item-info">
+                    <div className="item-name">🌸 Fleurs de courgettes</div>
+                    <div className="item-details">Marge: 82% • 91 portions vendues</div>
+                  </div>
+                  <div className="item-value positive">1 911,00 €</div>
+                </div>
+                <div className="item-row">
+                  <div className="item-info">
+                    <div className="item-name">🐑 Souris d'agneau</div>
+                    <div className="item-details">Marge: 71% • 52 portions vendues</div>
+                  </div>
+                  <div className="item-value positive">1 872,00 €</div>
+                </div>
+              </div>
+            </div>
+          )}
+
         </div>
 
         {/* GESTION DE STOCKS - avec OCR et Grilles de données */}
