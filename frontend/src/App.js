@@ -1681,7 +1681,7 @@ function App() {
 
 
       {/* PRODUCTION DUPLIQUÉE - DÉSACTIVÉE */}
-      <div style={{display: 'none'}} className={`wireframe-section`}>
+      <div id="production-disabled" style={{display: 'none'}} className={`wireframe-section`}>
         <div className="wireframe">
           <h2>🍳 Production & Historique (DÉSACTIVÉ)</h2>
           
