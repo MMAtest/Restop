@@ -825,7 +825,8 @@ function App() {
         </div>
       )}
 
-      {/* DASHBOARD - Analytics & Profitability */}
+      {/* Content Wrapper */}
+      <div className="content-wrapper">
       <div id="dashboard" className={`wireframe-section ${activeTab === "dashboard" ? "active" : ""}`}>
         <AnalyticsPage />
       </div>
