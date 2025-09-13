@@ -853,7 +853,77 @@ function App() {
           
           {/* ONGLET VENTES */}
           {activeDashboardTab === "ventes" && (
-            <AnalyticsPage />
+            <div className="section-card">
+              <div className="section-title">💰 Analyse des Ventes</div>
+              
+              {/* KPIs Ventes */}
+              <div className="kpi-grid">
+                <div className="kpi-card">
+                  <div className="icon">💰</div>
+                  <div className="title">CA Total</div>
+                  <div className="value">27 959,75 €</div>
+                </div>
+                
+                <div className="kpi-card">
+                  <div className="icon">🛒</div>
+                  <div className="title">Commandes</div>
+                  <div className="value">21</div>
+                </div>
+                
+                <div className="kpi-card">
+                  <div className="icon">🧾</div>
+                  <div className="title">Panier Moyen</div>
+                  <div className="value">1331,42 €</div>
+                </div>
+              </div>
+
+              {/* Top Recettes */}
+              <div className="item-list">
+                <div className="section-title">🍽️ Top Recettes</div>
+                <div className="item-row">
+                  <div className="item-info">
+                    <div className="item-name">🍝 Rigatoni à la truffe</div>
+                    <div className="item-details">78 portions vendues</div>
+                  </div>
+                  <div className="item-value">2 418,00 €</div>
+                </div>
+                <div className="item-row">
+                  <div className="item-info">
+                    <div className="item-name">🌸 Fleurs de courgettes</div>
+                    <div className="item-details">91 portions vendues</div>
+                  </div>
+                  <div className="item-value">1 911,00 €</div>
+                </div>
+                <div className="item-row">
+                  <div className="item-info">
+                    <div className="item-name">🐑 Souris d'agneau</div>
+                    <div className="item-details">52 portions vendues</div>
+                  </div>
+                  <div className="item-value">1 872,00 €</div>
+                </div>
+              </div>
+
+              {/* Ventes par catégorie */}
+              <div className="kpi-grid">
+                <div className="kpi-card">
+                  <div className="icon">🍽️</div>
+                  <div className="title">Plats</div>
+                  <div className="value">6 201,00 €</div>
+                </div>
+                
+                <div className="kpi-card">
+                  <div className="icon">🍷</div>
+                  <div className="title">Boissons</div>
+                  <div className="value">4 987,00 €</div>
+                </div>
+                
+                <div className="kpi-card">
+                  <div className="icon">🍰</div>
+                  <div className="title">Desserts</div>
+                  <div className="value">2 156,00 €</div>
+                </div>
+              </div>
+            </div>
           )}
 
           {/* ONGLET ALERTES */}
