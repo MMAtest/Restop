@@ -751,26 +751,30 @@ function App() {
       formData.append('file', ocrFile);
       formData.append('document_type', ocrType);
 
-      const response = await axios.post(`${API}/ocr/upload-document?document_type=${ocrType}`, formData, {
+      const response = await axios.post(`${API}/ocr/upload-document`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data'
-        }
+        },
+        timeout: 30000 // 30 secondes timeout pour OCR
       });
 
       setOcrResult(response.data);
       alert('Document traité avec succès !');
       fetchDocumentsOcr();
       
-      // Fermer la pop-up d'aperçu si elle est ouverte
-      if (showPreviewModal) {
-        setTimeout(() => {
-          closePreviewModal();
-        }, 1000); // Délai de 1 seconde pour que l'utilisateur voie le succès
-      }
+      // Réinitialiser le formulaire OCR
+      resetOcrModal();
+      
+      // Fermer le modal OCR
+      setShowOcrModal(false);
       
     } catch (error) {
       console.error('Erreur lors du traitement OCR:', error);
-      alert(`Erreur: ${error.response?.data?.detail || 'Erreur lors du traitement'}`);
+      if (error.code === 'ECONNABORTED') {
+        alert('Timeout: Le traitement OCR prend trop de temps. Veuillez réessayer avec un fichier plus petit.');
+      } else {
+        alert(`Erreur: ${error.response?.data?.detail || error.message || 'Erreur lors du traitement'}`);
+      }
     } finally {
       setProcessingOcr(false);
     }
