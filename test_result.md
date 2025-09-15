@@ -489,9 +489,9 @@ metadata:
 
 test_plan:
   current_focus:
-    - "OCR PDF extraction completeness validated for existing documents"
-    - "Backend OCR endpoints stable after extraction improvements"
-    - "Multi-line Z-report category detection working correctly"
+    - "Corrections menus intermédiaires ResTop validées"
+    - "Terminologie 'Top Plats' vs 'Top Recettes' corrigée"
+    - "Boutons onClick handlers fonctionnels dans sections STOCK et PRODUCTION"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
