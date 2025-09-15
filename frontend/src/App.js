@@ -1040,7 +1040,19 @@ function App() {
           {/* ONGLET ALERTES */}
           {activeDashboardTab === "alertes" && (
             <div className="section-card">
-              <div className="section-title">⚠️ Alertes & Notifications</div>
+              <div className="section-title">
+                ⚠️ Alertes & Notifications
+                {selectedDateRange && (
+                  <span style={{ 
+                    fontSize: '12px', 
+                    color: 'var(--color-text-muted)',
+                    fontWeight: 'normal',
+                    marginLeft: 'var(--spacing-sm)'
+                  }}>
+                    - {selectedDateRange.label}
+                  </span>
+                )}
+              </div>
               
               {/* Alertes de stock faible */}
               <div className="alert-section">
@@ -1081,6 +1093,32 @@ function App() {
                     </div>
                   </div>
                 </div>
+              </div>
+
+              {/* Alertes basées sur la période */}
+              <div className="alert-section">
+                <div className="alert-header">
+                  <div className="alert-title">Problèmes Période</div>
+                  <div className="alert-count">{filteredAnalytics.commandes < 10 ? '1' : '0'}</div>
+                </div>
+                {filteredAnalytics.commandes < 10 ? (
+                  <div className="alert-card">
+                    <div className="alert-item">
+                      <div className="product-info">
+                        <div className="product-name">📉 Activité Faible</div>
+                        <div className="stock-info">
+                          Seulement {filteredAnalytics.commandes} commandes sur la période
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="section-card">
+                    <p style={{color: 'var(--color-success-green)', textAlign: 'center', padding: '20px'}}>
+                      ✅ Activité normale pour la période
+                    </p>
+                  </div>
+                )}
               </div>
 
               {/* Alertes d'expiration */}
