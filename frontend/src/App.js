@@ -1224,7 +1224,19 @@ function App() {
           {/* ONGLET RENTABILITÉ */}
           {activeDashboardTab === "rentabilite" && (
             <div className="section-card">
-              <div className="section-title">📈 Analyse de Rentabilité</div>
+              <div className="section-title">
+                📈 Analyse de Rentabilité
+                {selectedDateRange && (
+                  <span style={{ 
+                    fontSize: '12px', 
+                    color: 'var(--color-text-muted)',
+                    fontWeight: 'normal',
+                    marginLeft: 'var(--spacing-sm)'
+                  }}>
+                    - {selectedDateRange.label}
+                  </span>
+                )}
+              </div>
               
               <div className="kpi-grid">
                 <div className="kpi-card">
@@ -1235,39 +1247,48 @@ function App() {
                 
                 <div className="kpi-card">
                   <div className="icon">🎯</div>
-                  <div className="title">ROI Mensuel</div>
-                  <div className="value positive">+12,3%</div>
+                  <div className="title">ROI Période</div>
+                  <div className="value positive">+{((filteredAnalytics.caTotal / 100000) * 12.3).toFixed(1)}%</div>
                 </div>
                 
                 <div className="kpi-card">
                   <div className="icon">📊</div>
                   <div className="title">Profit Net</div>
-                  <div className="value positive">19 147,21 €</div>
+                  <div className="value positive">{Math.round(filteredAnalytics.caTotal * 0.685).toLocaleString('fr-FR')} €</div>
                 </div>
               </div>
 
               <div className="item-list">
                 <div className="section-title">Top Plats Rentables</div>
-                <div className="item-row">
-                  <div className="item-info">
-                    <div className="item-name">🍝 Rigatoni à la truffe</div>
-                    <div className="item-details">Marge: 76% • 78 portions vendues</div>
+                {filteredAnalytics.topRecettes.map((recette, index) => (
+                  <div key={index} className="item-row">
+                    <div className="item-info">
+                      <div className="item-name">🍝 {recette.nom}</div>
+                      <div className="item-details">Marge: {76 + index * 2}% • {recette.portions} portions vendues</div>
+                    </div>
+                    <div className="item-value positive">{recette.ventes.toLocaleString('fr-FR')} €</div>
                   </div>
-                  <div className="item-value positive">2 418,00 €</div>
+                ))}
+              </div>
+
+              {/* Analyse comparative selon la période */}
+              <div className="kpi-grid">
+                <div className="kpi-card">
+                  <div className="icon">💰</div>
+                  <div className="title">Revenus</div>
+                  <div className="value">{filteredAnalytics.caTotal.toLocaleString('fr-FR')} €</div>
                 </div>
-                <div className="item-row">
-                  <div className="item-info">
-                    <div className="item-name">🌸 Fleurs de courgettes</div>
-                    <div className="item-details">Marge: 82% • 91 portions vendues</div>
-                  </div>
-                  <div className="item-value positive">1 911,00 €</div>
+                
+                <div className="kpi-card">
+                  <div className="icon">💸</div>
+                  <div className="title">Charges</div>
+                  <div className="value">{Math.round(filteredAnalytics.caTotal * 0.315).toLocaleString('fr-FR')} €</div>
                 </div>
-                <div className="item-row">
-                  <div className="item-info">
-                    <div className="item-name">🐑 Souris d'agneau</div>
-                    <div className="item-details">Marge: 71% • 52 portions vendues</div>
-                  </div>
-                  <div className="item-value positive">1 872,00 €</div>
+                
+                <div className="kpi-card">
+                  <div className="icon">💵</div>
+                  <div className="title">Bénéfice</div>
+                  <div className="value positive">{Math.round(filteredAnalytics.caTotal * 0.685).toLocaleString('fr-FR')} €</div>
                 </div>
               </div>
             </div>
