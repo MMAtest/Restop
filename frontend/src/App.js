@@ -465,8 +465,13 @@ function App() {
   const toggleTheme = () => {
     const newTheme = !isDarkMode;
     setIsDarkMode(newTheme);
-    document.documentElement.setAttribute('data-theme', newTheme ? 'dark' : 'light');
-    localStorage.setItem('theme', newTheme ? 'dark' : 'light');
+    if (newTheme) {
+      document.documentElement.setAttribute('data-theme', 'dark');
+      localStorage.setItem('theme', 'dark');
+    } else {
+      document.documentElement.removeAttribute('data-theme');
+      localStorage.setItem('theme', 'light');
+    }
   };
 
   // Initialiser le thème au chargement
@@ -475,10 +480,15 @@ function App() {
     if (savedTheme) {
       const isDark = savedTheme === 'dark';
       setIsDarkMode(isDark);
-      document.documentElement.setAttribute('data-theme', savedTheme);
+      if (isDark) {
+        document.documentElement.setAttribute('data-theme', 'dark');
+      } else {
+        document.documentElement.removeAttribute('data-theme');
+      }
     } else {
-      // Par défaut : mode sombre
-      document.documentElement.setAttribute('data-theme', 'dark');
+      // Par défaut : mode light
+      document.documentElement.removeAttribute('data-theme');
+      setIsDarkMode(false);
     }
   }, []);
   const handleVoirAlertes = () => {
