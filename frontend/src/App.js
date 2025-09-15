@@ -485,7 +485,57 @@ function App() {
     }
   };
 
-  // Initialiser le thème au chargement
+  // Fonction pour calculer les données selon la période sélectionnée
+  const calculateAnalyticsForPeriod = (dateRange) => {
+    if (!dateRange) return;
+
+    // Simuler des données différentes selon la période
+    const daysDiff = Math.ceil((dateRange.endDate - dateRange.startDate) / (1000 * 60 * 60 * 24)) + 1;
+    
+    // Données de base (pour une journée)
+    const baseDayData = {
+      caTotal: 27959.75,
+      commandes: 21,
+      panierMoyen: 1331.42,
+      topRecettes: [
+        { nom: "Rigatoni à la truffe", ventes: 2418, portions: 78 },
+        { nom: "Fleurs de courgettes", ventes: 1911, portions: 91 },
+        { nom: "Souris d'agneau", ventes: 1872, portions: 52 }
+      ],
+      ventesParCategorie: {
+        plats: 6201,
+        boissons: 4987,
+        desserts: 2156
+      }
+    };
+
+    // Calculer les données selon la période avec variations réalistes
+    const periodMultiplier = daysDiff === 1 ? 1 : daysDiff * (0.85 + Math.random() * 0.3); // Variation réaliste
+    
+    const analytics = {
+      caTotal: Math.round(baseDayData.caTotal * periodMultiplier * 100) / 100,
+      commandes: Math.round(baseDayData.commandes * periodMultiplier),
+      panierMoyen: Math.round((baseDayData.caTotal * periodMultiplier) / (baseDayData.commandes * periodMultiplier) * 100) / 100,
+      topRecettes: baseDayData.topRecettes.map(recette => ({
+        ...recette,
+        ventes: Math.round(recette.ventes * periodMultiplier),
+        portions: Math.round(recette.portions * periodMultiplier)
+      })),
+      ventesParCategorie: {
+        plats: Math.round(baseDayData.ventesParCategorie.plats * periodMultiplier),
+        boissons: Math.round(baseDayData.ventesParCategorie.boissons * periodMultiplier),
+        desserts: Math.round(baseDayData.ventesParCategorie.desserts * periodMultiplier)
+      }
+    };
+
+    setFilteredAnalytics(analytics);
+  };
+
+  // Gérer le changement de période
+  const handleDateRangeChange = (dateRange) => {
+    setSelectedDateRange(dateRange);
+    calculateAnalyticsForPeriod(dateRange);
+  };
   useEffect(() => {
     const savedTheme = localStorage.getItem('theme');
     if (savedTheme) {
