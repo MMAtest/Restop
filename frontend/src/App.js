@@ -834,6 +834,17 @@ function App() {
               >
                 👑 Utilisateurs
               </button>
+              
+              <button 
+                className="button secondary" 
+                onClick={() => {
+                  toggleTheme();
+                  setShowBurgerMenu(false);
+                }}
+                style={{width: '100%', marginBottom: '8px'}}
+              >
+                {isDarkMode ? '☀️ Mode Clair' : '🌙 Mode Sombre'}
+              </button>
             </div>
           )}
         </div>
