@@ -1551,7 +1551,7 @@ function App() {
             {/* ONGLET PRODUITS */}
             {activeProductionTab === 'produits' && (
               <div className="item-list">
-                <div className="section-title">🥕 Gestion des Ingrédients</div>
+                <div className="section-title">🥕 Gestion des Produits</div>
                 
                 <div style={{display: 'flex', gap: '10px', marginBottom: '20px', flexWrap: 'wrap'}}>
                   <button className="button" onClick={() => setShowProduitModal(true)}>➕ Nouveau Produit</button>
