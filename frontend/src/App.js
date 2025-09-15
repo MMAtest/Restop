@@ -20,6 +20,16 @@ function App() {
   const [activeDashboardTab, setActiveDashboardTab] = useState("ventes"); // Nouveau state pour les onglets dashboard
   const [showBurgerMenu, setShowBurgerMenu] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(false); // State pour le thème (false = light par défaut)
+  
+  // États pour la sélection de dates et données filtrées
+  const [selectedDateRange, setSelectedDateRange] = useState(null);
+  const [filteredAnalytics, setFilteredAnalytics] = useState({
+    caTotal: 0,
+    commandes: 0,
+    panierMoyen: 0,
+    topRecettes: [],
+    ventesParCategorie: {}
+  });
   const [dashboardStats, setDashboardStats] = useState({});
   const [produits, setProduits] = useState([]);
   const [fournisseurs, setFournisseurs] = useState([]);
