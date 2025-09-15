@@ -1042,7 +1042,7 @@ function App() {
 
               {/* Top Recettes */}
               <div className="item-list">
-                <div className="section-title">🍽️ Top Recettes</div>
+                <div className="section-title">🍽️ Top Plats</div>
                 {filteredAnalytics.topRecettes.map((recette, index) => (
                   <div key={index} className="item-row">
                     <div className="item-info">
