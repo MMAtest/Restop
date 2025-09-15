@@ -1586,7 +1586,7 @@ function App() {
                 <div className="section-title">🚚 Gestion des Fournisseurs</div>
                 
                 <div style={{display: 'flex', gap: '10px', marginBottom: '20px', flexWrap: 'wrap'}}>
-                  <button className="button">➕ Nouveau Fournisseur</button>
+                  <button className="button" onClick={() => setShowFournisseurModal(true)}>➕ Nouveau Fournisseur</button>
                   <button className="button">📊 Évaluation</button>
                 </div>
 
