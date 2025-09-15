@@ -9,10 +9,10 @@
   --color-background-dark: #FFFFFF;
   --color-background-card: #F8F9FA;
   --color-background-card-light: #E9ECEF;
-  --color-primary-blue: #ffc06c;
-  --color-primary-blue-light: #ffcf8a;
-  --color-accent-gold: #075428;
-  --color-accent-yellow: #0a6b32;
+  --color-primary-blue: #075428;
+  --color-primary-blue-light: #0a6b32;
+  --color-accent-gold: #ffc06c;
+  --color-accent-yellow: #ffcf8a;
   --color-success-green: #075428;
   --color-danger-red: #DC3545;
   --color-warning-orange: #fd7e14;
@@ -21,7 +21,7 @@
   --color-text-primary: #212529;
   --color-text-secondary: #495057;
   --color-text-muted: #6C757D;
-  --color-text-accent: #075428;
+  --color-text-accent: #ffc06c;
   
   /* Border & Dividers */
   --color-border: #DEE2E6;
