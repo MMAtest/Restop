@@ -1514,7 +1514,7 @@ function App() {
                   color: activeProductionTab === 'produits' ? 'white' : 'var(--color-text-secondary)'
                 }}
               >
-                🥕 Ingrédients
+                🥕 Produits
               </button>
               <button 
                 className="button" 
