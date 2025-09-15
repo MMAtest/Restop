@@ -1612,8 +1612,9 @@ function App() {
                 <div className="section-title">📝 Plats & Recettes</div>
                 
                 <div style={{display: 'flex', gap: '10px', marginBottom: '20px', flexWrap: 'wrap'}}>
-                  <button className="button">➕ Nouvelle Recette</button>
-                  <button className="button">💰 Calculer Coûts</button>
+                  <button className="button" onClick={() => setShowRecetteModal(true)}>➕ Nouveau Plat</button>
+                  <button className="button" onClick={handleCalculerCouts}>💰 Calculer Coûts</button>
+                  <button className="button" onClick={handleExportRecettes}>📖 Export Excel</button>
                 </div>
 
                 {recettes.slice(0, 5).map((recette, index) => (
