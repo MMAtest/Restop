@@ -24,11 +24,19 @@ function App() {
   // États pour la sélection de dates et données filtrées
   const [selectedDateRange, setSelectedDateRange] = useState(null);
   const [filteredAnalytics, setFilteredAnalytics] = useState({
-    caTotal: 0,
-    commandes: 0,
-    panierMoyen: 0,
-    topRecettes: [],
-    ventesParCategorie: {}
+    caTotal: 27959.75,
+    commandes: 21,
+    panierMoyen: 1331.42,
+    topRecettes: [
+      { nom: "Rigatoni à la truffe", ventes: 2418, portions: 78 },
+      { nom: "Fleurs de courgettes", ventes: 1911, portions: 91 },
+      { nom: "Souris d'agneau", ventes: 1872, portions: 52 }
+    ],
+    ventesParCategorie: {
+      plats: 6201,
+      boissons: 4987,
+      desserts: 2156
+    }
   });
   const [dashboardStats, setDashboardStats] = useState({});
   const [produits, setProduits] = useState([]);
