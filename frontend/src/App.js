@@ -18,6 +18,7 @@ function App() {
   const [activeStockTab, setActiveStockTab] = useState("stocks");
   const [activeDashboardTab, setActiveDashboardTab] = useState("ventes"); // Nouveau state pour les onglets dashboard
   const [showBurgerMenu, setShowBurgerMenu] = useState(false);
+  const [isDarkMode, setIsDarkMode] = useState(true); // State pour le thème
   const [dashboardStats, setDashboardStats] = useState({});
   const [produits, setProduits] = useState([]);
   const [fournisseurs, setFournisseurs] = useState([]);
