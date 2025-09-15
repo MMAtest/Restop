@@ -959,74 +959,81 @@ function App() {
           
           {/* ONGLET VENTES */}
           {activeDashboardTab === "ventes" && (
-            <div className="section-card">
-              <div className="section-title">💰 Analyse des Ventes</div>
+            <div>
+              {/* Sélecteur de période */}
+              <DateRangePicker 
+                onDateRangeChange={handleDateRangeChange}
+              />
               
-              {/* KPIs Ventes */}
-              <div className="kpi-grid">
-                <div className="kpi-card">
-                  <div className="icon">💰</div>
-                  <div className="title">CA Total</div>
-                  <div className="value">27 959,75 €</div>
+              <div className="section-card">
+                <div className="section-title">
+                  💰 Analyse des Ventes
+                  {selectedDateRange && (
+                    <span style={{ 
+                      fontSize: '12px', 
+                      color: 'var(--color-text-muted)',
+                      fontWeight: 'normal',
+                      marginLeft: 'var(--spacing-sm)'
+                    }}>
+                      - {selectedDateRange.label}
+                    </span>
+                  )}
                 </div>
                 
-                <div className="kpi-card">
-                  <div className="icon">🛒</div>
-                  <div className="title">Commandes</div>
-                  <div className="value">21</div>
+                {/* KPIs Ventes */}
+                <div className="kpi-grid">
+                  <div className="kpi-card">
+                    <div className="icon">💰</div>
+                    <div className="title">CA Total</div>
+                    <div className="value">{filteredAnalytics.caTotal.toLocaleString('fr-FR')} €</div>
+                  </div>
+                  
+                  <div className="kpi-card">
+                    <div className="icon">🛒</div>
+                    <div className="title">Commandes</div>
+                    <div className="value">{filteredAnalytics.commandes}</div>
+                  </div>
+                  
+                  <div className="kpi-card">
+                    <div className="icon">🧾</div>
+                    <div className="title">Panier Moyen</div>
+                    <div className="value">{filteredAnalytics.panierMoyen.toLocaleString('fr-FR')} €</div>
+                  </div>
                 </div>
-                
-                <div className="kpi-card">
-                  <div className="icon">🧾</div>
-                  <div className="title">Panier Moyen</div>
-                  <div className="value">1331,42 €</div>
-                </div>
-              </div>
 
-              {/* Top Recettes */}
-              <div className="item-list">
-                <div className="section-title">🍽️ Top Recettes</div>
-                <div className="item-row">
-                  <div className="item-info">
-                    <div className="item-name">🍝 Rigatoni à la truffe</div>
-                    <div className="item-details">78 portions vendues</div>
-                  </div>
-                  <div className="item-value">2 418,00 €</div>
+                {/* Top Recettes */}
+                <div className="item-list">
+                  <div className="section-title">🍽️ Top Recettes</div>
+                  {filteredAnalytics.topRecettes.map((recette, index) => (
+                    <div key={index} className="item-row">
+                      <div className="item-info">
+                        <div className="item-name">🍝 {recette.nom}</div>
+                        <div className="item-details">{recette.portions} portions vendues</div>
+                      </div>
+                      <div className="item-value">{recette.ventes.toLocaleString('fr-FR')} €</div>
+                    </div>
+                  ))}
                 </div>
-                <div className="item-row">
-                  <div className="item-info">
-                    <div className="item-name">🌸 Fleurs de courgettes</div>
-                    <div className="item-details">91 portions vendues</div>
-                  </div>
-                  <div className="item-value">1 911,00 €</div>
-                </div>
-                <div className="item-row">
-                  <div className="item-info">
-                    <div className="item-name">🐑 Souris d'agneau</div>
-                    <div className="item-details">52 portions vendues</div>
-                  </div>
-                  <div className="item-value">1 872,00 €</div>
-                </div>
-              </div>
 
-              {/* Ventes par catégorie */}
-              <div className="kpi-grid">
-                <div className="kpi-card">
-                  <div className="icon">🍽️</div>
-                  <div className="title">Plats</div>
-                  <div className="value">6 201,00 €</div>
-                </div>
-                
-                <div className="kpi-card">
-                  <div className="icon">🍷</div>
-                  <div className="title">Boissons</div>
-                  <div className="value">4 987,00 €</div>
-                </div>
-                
-                <div className="kpi-card">
-                  <div className="icon">🍰</div>
-                  <div className="title">Desserts</div>
-                  <div className="value">2 156,00 €</div>
+                {/* Ventes par catégorie */}
+                <div className="kpi-grid">
+                  <div className="kpi-card">
+                    <div className="icon">🍽️</div>
+                    <div className="title">Plats</div>
+                    <div className="value">{filteredAnalytics.ventesParCategorie.plats.toLocaleString('fr-FR')} €</div>
+                  </div>
+                  
+                  <div className="kpi-card">
+                    <div className="icon">🍷</div>
+                    <div className="title">Boissons</div>
+                    <div className="value">{filteredAnalytics.ventesParCategorie.boissons.toLocaleString('fr-FR')} €</div>
+                  </div>
+                  
+                  <div className="kpi-card">
+                    <div className="icon">🍰</div>
+                    <div className="title">Desserts</div>
+                    <div className="value">{filteredAnalytics.ventesParCategorie.desserts.toLocaleString('fr-FR')} €</div>
+                  </div>
                 </div>
               </div>
             </div>
