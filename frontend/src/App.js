@@ -1139,7 +1139,19 @@ function App() {
           {/* ONGLET COÛTS */}
           {activeDashboardTab === "couts" && (
             <div className="section-card">
-              <div className="section-title">💰 Analyse des Coûts</div>
+              <div className="section-title">
+                💰 Analyse des Coûts
+                {selectedDateRange && (
+                  <span style={{ 
+                    fontSize: '12px', 
+                    color: 'var(--color-text-muted)',
+                    fontWeight: 'normal',
+                    marginLeft: 'var(--spacing-sm)'
+                  }}>
+                    - {selectedDateRange.label}
+                  </span>
+                )}
+              </div>
               
               <div className="kpi-grid">
                 <div className="kpi-card">
@@ -1151,13 +1163,13 @@ function App() {
                 <div className="kpi-card">
                   <div className="icon">📊</div>
                   <div className="title">Coût Moyen</div>
-                  <div className="value">42,30 €</div>
+                  <div className="value">{(filteredAnalytics.caTotal / filteredAnalytics.commandes * 0.32).toFixed(2)} €</div>
                 </div>
                 
                 <div className="kpi-card">
                   <div className="icon">📉</div>
                   <div className="title">Déchets</div>
-                  <div className="value warning">127,50 €</div>
+                  <div className="value warning">{Math.round(filteredAnalytics.caTotal * 0.045)} €</div>
                 </div>
               </div>
 
@@ -1183,6 +1195,27 @@ function App() {
                     <div className="item-details">Fruits de mer</div>
                   </div>
                   <div className="item-value">543,15 €</div>
+                </div>
+              </div>
+
+              {/* Analyse des coûts basée sur la période */}
+              <div className="kpi-grid">
+                <div className="kpi-card">
+                  <div className="icon">💸</div>
+                  <div className="title">Coûts Totaux</div>
+                  <div className="value">{Math.round(filteredAnalytics.caTotal * 0.35).toLocaleString('fr-FR')} €</div>
+                </div>
+                
+                <div className="kpi-card">
+                  <div className="icon">📈</div>
+                  <div className="title">Ratio Coûts/CA</div>
+                  <div className="value">35%</div>
+                </div>
+                
+                <div className="kpi-card">
+                  <div className="icon">⚖️</div>
+                  <div className="title">Économies</div>
+                  <div className="value positive">{Math.round(filteredAnalytics.caTotal * 0.08).toLocaleString('fr-FR')} €</div>
                 </div>
               </div>
             </div>
