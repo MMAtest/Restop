@@ -536,6 +536,8 @@ function App() {
     setSelectedDateRange(dateRange);
     calculateAnalyticsForPeriod(dateRange);
   };
+
+  // Initialiser le thème au chargement
   useEffect(() => {
     const savedTheme = localStorage.getItem('theme');
     if (savedTheme) {
