@@ -47,6 +47,37 @@
   --spacing-xl: 32px;
 }
 
+/* Light Theme Colors */
+:root[data-theme="light"] {
+  /* Light Theme Colors */
+  --color-background-dark: #FFFFFF;
+  --color-background-card: #F8F9FA;
+  --color-background-card-light: #E9ECEF;
+  --color-primary-blue: #ffc06c;
+  --color-primary-blue-light: #ffcf8a;
+  --color-accent-gold: #075428;
+  --color-accent-yellow: #0a6b32;
+  --color-success-green: #075428;
+  --color-danger-red: #DC3545;
+  --color-warning-orange: #fd7e14;
+  
+  /* Text Colors */
+  --color-text-primary: #212529;
+  --color-text-secondary: #495057;
+  --color-text-muted: #6C757D;
+  --color-text-accent: #075428;
+  
+  /* Border & Dividers */
+  --color-border: #DEE2E6;
+  --color-border-light: #E9ECEF;
+  --color-divider: rgba(0, 0, 0, 0.1);
+  
+  /* Shadows */
+  --shadow-card: 0 4px 16px rgba(0, 0, 0, 0.1);
+  --shadow-card-hover: 0 8px 24px rgba(0, 0, 0, 0.15);
+  --shadow-bottom: 0 -4px 16px rgba(0, 0, 0, 0.1);
+}
+
 /* Reset et Base */
 * {
   margin: 0;
