@@ -460,6 +460,27 @@ function App() {
     });
     setShowMouvementModal(true);
   };
+
+  // Fonction pour basculer entre dark/light mode
+  const toggleTheme = () => {
+    const newTheme = !isDarkMode;
+    setIsDarkMode(newTheme);
+    document.documentElement.setAttribute('data-theme', newTheme ? 'dark' : 'light');
+    localStorage.setItem('theme', newTheme ? 'dark' : 'light');
+  };
+
+  // Initialiser le thème au chargement
+  useEffect(() => {
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme) {
+      const isDark = savedTheme === 'dark';
+      setIsDarkMode(isDark);
+      document.documentElement.setAttribute('data-theme', savedTheme);
+    } else {
+      // Par défaut : mode sombre
+      document.documentElement.setAttribute('data-theme', 'dark');
+    }
+  }, []);
   const handleVoirAlertes = () => {
     const stocksCritiques = stocks.filter(stock => {
       const produit = produits.find(p => p.id === stock.produit_id);
