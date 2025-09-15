@@ -1554,9 +1554,9 @@ function App() {
                 <div className="section-title">🥕 Gestion des Ingrédients</div>
                 
                 <div style={{display: 'flex', gap: '10px', marginBottom: '20px', flexWrap: 'wrap'}}>
-                  <button className="button">➕ Nouvel Ingrédient</button>
-                  <button className="button">📊 Analyse Ingrédients</button>
-                  <button className="button">🏷️ Étiquettes</button>
+                  <button className="button" onClick={() => setShowProduitModal(true)}>➕ Nouveau Produit</button>
+                  <button className="button" onClick={handleAnalyseProduits}>📊 Analyse Produits</button>
+                  <button className="button" onClick={handleGenererEtiquettes}>🏷️ Étiquettes</button>
                 </div>
 
                 {produits.slice(0, 6).map((produit, index) => (
