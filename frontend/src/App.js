@@ -7,6 +7,7 @@ import AdvancedStockPage from "./pages/AdvancedStockPage";
 import UserManagementPage from "./pages/UserManagementPage";
 import DataGridsPage from "./pages/DataGridsPage";
 import PurchaseOrderPage from "./pages/PurchaseOrderPage";
+import DateRangePicker from "./components/DateRangePicker";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
