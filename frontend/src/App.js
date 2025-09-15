@@ -957,83 +957,81 @@ function App() {
       <div className="content-wrapper">
         <div id="dashboard" className={`wireframe-section ${activeTab === "dashboard" ? "active" : ""}`}>
           
+          {/* Sélecteur de période - visible sur tous les onglets */}
+          <DateRangePicker 
+            onDateRangeChange={handleDateRangeChange}
+          />
+
           {/* ONGLET VENTES */}
           {activeDashboardTab === "ventes" && (
-            <div>
-              {/* Sélecteur de période */}
-              <DateRangePicker 
-                onDateRangeChange={handleDateRangeChange}
-              />
+            <div className="section-card">
+              <div className="section-title">
+                💰 Analyse des Ventes
+                {selectedDateRange && (
+                  <span style={{ 
+                    fontSize: '12px', 
+                    color: 'var(--color-text-muted)',
+                    fontWeight: 'normal',
+                    marginLeft: 'var(--spacing-sm)'
+                  }}>
+                    - {selectedDateRange.label}
+                  </span>
+                )}
+              </div>
               
-              <div className="section-card">
-                <div className="section-title">
-                  💰 Analyse des Ventes
-                  {selectedDateRange && (
-                    <span style={{ 
-                      fontSize: '12px', 
-                      color: 'var(--color-text-muted)',
-                      fontWeight: 'normal',
-                      marginLeft: 'var(--spacing-sm)'
-                    }}>
-                      - {selectedDateRange.label}
-                    </span>
-                  )}
+              {/* KPIs Ventes */}
+              <div className="kpi-grid">
+                <div className="kpi-card">
+                  <div className="icon">💰</div>
+                  <div className="title">CA Total</div>
+                  <div className="value">{filteredAnalytics.caTotal.toLocaleString('fr-FR')} €</div>
                 </div>
                 
-                {/* KPIs Ventes */}
-                <div className="kpi-grid">
-                  <div className="kpi-card">
-                    <div className="icon">💰</div>
-                    <div className="title">CA Total</div>
-                    <div className="value">{filteredAnalytics.caTotal.toLocaleString('fr-FR')} €</div>
-                  </div>
-                  
-                  <div className="kpi-card">
-                    <div className="icon">🛒</div>
-                    <div className="title">Commandes</div>
-                    <div className="value">{filteredAnalytics.commandes}</div>
-                  </div>
-                  
-                  <div className="kpi-card">
-                    <div className="icon">🧾</div>
-                    <div className="title">Panier Moyen</div>
-                    <div className="value">{filteredAnalytics.panierMoyen.toLocaleString('fr-FR')} €</div>
-                  </div>
+                <div className="kpi-card">
+                  <div className="icon">🛒</div>
+                  <div className="title">Commandes</div>
+                  <div className="value">{filteredAnalytics.commandes}</div>
                 </div>
+                
+                <div className="kpi-card">
+                  <div className="icon">🧾</div>
+                  <div className="title">Panier Moyen</div>
+                  <div className="value">{filteredAnalytics.panierMoyen.toLocaleString('fr-FR')} €</div>
+                </div>
+              </div>
 
-                {/* Top Recettes */}
-                <div className="item-list">
-                  <div className="section-title">🍽️ Top Recettes</div>
-                  {filteredAnalytics.topRecettes.map((recette, index) => (
-                    <div key={index} className="item-row">
-                      <div className="item-info">
-                        <div className="item-name">🍝 {recette.nom}</div>
-                        <div className="item-details">{recette.portions} portions vendues</div>
-                      </div>
-                      <div className="item-value">{recette.ventes.toLocaleString('fr-FR')} €</div>
+              {/* Top Recettes */}
+              <div className="item-list">
+                <div className="section-title">🍽️ Top Recettes</div>
+                {filteredAnalytics.topRecettes.map((recette, index) => (
+                  <div key={index} className="item-row">
+                    <div className="item-info">
+                      <div className="item-name">🍝 {recette.nom}</div>
+                      <div className="item-details">{recette.portions} portions vendues</div>
                     </div>
-                  ))}
-                </div>
+                    <div className="item-value">{recette.ventes.toLocaleString('fr-FR')} €</div>
+                  </div>
+                ))}
+              </div>
 
-                {/* Ventes par catégorie */}
-                <div className="kpi-grid">
-                  <div className="kpi-card">
-                    <div className="icon">🍽️</div>
-                    <div className="title">Plats</div>
-                    <div className="value">{filteredAnalytics.ventesParCategorie.plats.toLocaleString('fr-FR')} €</div>
-                  </div>
-                  
-                  <div className="kpi-card">
-                    <div className="icon">🍷</div>
-                    <div className="title">Boissons</div>
-                    <div className="value">{filteredAnalytics.ventesParCategorie.boissons.toLocaleString('fr-FR')} €</div>
-                  </div>
-                  
-                  <div className="kpi-card">
-                    <div className="icon">🍰</div>
-                    <div className="title">Desserts</div>
-                    <div className="value">{filteredAnalytics.ventesParCategorie.desserts.toLocaleString('fr-FR')} €</div>
-                  </div>
+              {/* Ventes par catégorie */}
+              <div className="kpi-grid">
+                <div className="kpi-card">
+                  <div className="icon">🍽️</div>
+                  <div className="title">Plats</div>
+                  <div className="value">{filteredAnalytics.ventesParCategorie.plats.toLocaleString('fr-FR')} €</div>
+                </div>
+                
+                <div className="kpi-card">
+                  <div className="icon">🍷</div>
+                  <div className="title">Boissons</div>
+                  <div className="value">{filteredAnalytics.ventesParCategorie.boissons.toLocaleString('fr-FR')} €</div>
+                </div>
+                
+                <div className="kpi-card">
+                  <div className="icon">🍰</div>
+                  <div className="title">Desserts</div>
+                  <div className="value">{filteredAnalytics.ventesParCategorie.desserts.toLocaleString('fr-FR')} €</div>
                 </div>
               </div>
             </div>
