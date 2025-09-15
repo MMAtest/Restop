@@ -497,10 +497,9 @@ function App() {
   const calculateAnalyticsForPeriod = (dateRange) => {
     if (!dateRange) return;
 
-    // Simuler des données différentes selon la période
-    const daysDiff = Math.ceil((dateRange.endDate - dateRange.startDate) / (1000 * 60 * 60 * 24)) + 1;
-    
-    // Données de base (pour une journée)
+    console.log("Calcul pour période:", dateRange.label, "de", dateRange.startDate, "à", dateRange.endDate);
+
+    // Données de base (pour aujourd'hui)
     const baseDayData = {
       caTotal: 27959.75,
       commandes: 21,
@@ -517,8 +516,36 @@ function App() {
       }
     };
 
-    // Calculer les données selon la période avec variations réalistes
-    const periodMultiplier = daysDiff === 1 ? 1 : daysDiff * (0.85 + Math.random() * 0.3); // Variation réaliste
+    // Calculer le multiplicateur selon la période avec des valeurs distinctes
+    let periodMultiplier = 1;
+    const daysDiff = Math.ceil((dateRange.endDate - dateRange.startDate) / (1000 * 60 * 60 * 24)) + 1;
+    
+    switch (true) {
+      case dateRange.label.includes('Aujourd\'hui'):
+        periodMultiplier = 1;
+        break;
+      case dateRange.label.includes('Hier'):
+        periodMultiplier = 0.92; // Légèrement moins qu'aujourd'hui
+        break;
+      case dateRange.label.includes('Cette semaine'):
+        periodMultiplier = daysDiff * 0.88; // Environ 5-6 jours de données
+        break;
+      case dateRange.label.includes('Semaine dernière'):
+        periodMultiplier = 7 * 0.85; // 7 jours complets, légèrement moins
+        break;
+      case dateRange.label.includes('Ce mois'):
+        periodMultiplier = daysDiff * 0.82; // Données du mois jusqu'à aujourd'hui
+        break;
+      case dateRange.label.includes('Mois dernier'):
+        periodMultiplier = 30 * 0.80; // Mois complet, données historiques
+        break;
+      default:
+        // Période personnalisée - utiliser le nombre de jours
+        periodMultiplier = daysDiff * 0.87;
+        break;
+    }
+    
+    console.log("Période:", dateRange.label, "Multiplicateur:", periodMultiplier, "Jours:", daysDiff);
     
     const analytics = {
       caTotal: Math.round(baseDayData.caTotal * periodMultiplier * 100) / 100,
@@ -536,6 +563,7 @@ function App() {
       }
     };
 
+    console.log("Nouvelles données calculées:", analytics);
     setFilteredAnalytics(analytics);
   };
 
