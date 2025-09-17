@@ -20,6 +20,7 @@ function App() {
   const [activeDashboardTab, setActiveDashboardTab] = useState("ventes"); // Nouveau state pour les onglets dashboard
   const [showBurgerMenu, setShowBurgerMenu] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(false); // State pour le thème (false = light par défaut)
+  const [alerteStockType, setAlerteStockType] = useState("produits"); // State pour le switch Produits/Productions dans les alertes
   
   // États pour la sélection de dates et données filtrées
   const [selectedDateRange, setSelectedDateRange] = useState(null);
