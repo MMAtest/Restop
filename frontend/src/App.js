@@ -2084,24 +2084,67 @@ function App() {
                 </div>
               </div>
 
-              {/* Analyse des productions possibles (modifiée) */}
+              {/* Analyse des productions possibles avec filtre */}
               <div className="item-list">
                 <div className="section-title">🍽️ Productions Possibles avec Stocks Actuels</div>
                 
-                {/* Créer une liste plate de toutes les productions possibles */}
+                {/* Filtre par catégorie de production */}
+                <div className="filter-section" style={{marginBottom: '15px'}}>
+                  <div className="filter-group" style={{display: 'flex', alignItems: 'center', gap: '10px'}}>
+                    <label className="filter-label" style={{fontSize: '14px', minWidth: '60px'}}>Filtre :</label>
+                    <select 
+                      className="filter-select"
+                      value={selectedProductionCategory}
+                      onChange={(e) => setSelectedProductionCategory(e.target.value)}
+                      style={{
+                        padding: '6px 10px',
+                        borderRadius: '4px',
+                        border: '1px solid var(--color-border)',
+                        background: 'var(--color-background-card)',
+                        color: 'var(--color-text-primary)',
+                        fontSize: '13px',
+                        minWidth: '120px'
+                      }}
+                    >
+                      <option value="">Toutes productions</option>
+                      <option value="Entrée">🥗 Entrées</option>
+                      <option value="Plat">🍽️ Plats</option>
+                      <option value="Dessert">🍰 Desserts</option>
+                      <option value="Bar">🍹 Bar</option>
+                      <option value="Autres">📝 Autres</option>
+                    </select>
+                  </div>
+                </div>
+                
+                {/* Créer une liste plate de toutes les productions possibles avec filtre */}
                 {stocksPrevisionnels.flatMap(stock => 
                   stock.productions_possibles.map(production => ({
                     ...production,
                     produit: stock.produit,
                     stock_disponible: stock.stock_actuel,
                     unite: stock.unite,
-                    stock_id: stock.id
+                    stock_id: stock.id,
+                    categorie: production.categorie || 'Autres' // Ajouter une catégorie par défaut
                   }))
-                ).map((production, index) => (
+                ).filter(production => !selectedProductionCategory || production.categorie === selectedProductionCategory)
+                .map((production, index) => (
                   <div key={index} className="item-row">
                     <div className="item-info">
                       <div className="item-name">
-                        🍽️ {production.nom}
+                        {production.categorie === 'Entrée' ? '🥗' : 
+                         production.categorie === 'Plat' ? '🍽️' : 
+                         production.categorie === 'Dessert' ? '🍰' : 
+                         production.categorie === 'Bar' ? '🍹' : '📝'} {production.nom}
+                        <span className="category-badge" style={{
+                          marginLeft: '6px',
+                          padding: '2px 6px',
+                          borderRadius: '8px',
+                          fontSize: '10px',
+                          background: 'var(--color-primary-blue)',
+                          color: 'white'
+                        }}>
+                          {production.categorie}
+                        </span>
                       </div>
                       <div className="item-details">
                         Produit principal: {production.produit} • Stock: {production.stock_disponible} {production.unite} • 
@@ -2111,7 +2154,7 @@ function App() {
                     <div className="item-actions">
                       <button 
                         className="button small" 
-                        onClick={() => alert(`Détails pour ${production.nom}:\n\n📦 Produit: ${production.produit}\n📏 Besoin: ${production.quantite_needed} ${production.unite} par portion\n📊 Stock disponible: ${production.stock_disponible} ${production.unite}\n⚡ Portions max: ${production.portions_possibles}`)}
+                        onClick={() => alert(`Détails pour ${production.nom}:\n\n🏷️ Catégorie: ${production.categorie}\n📦 Produit: ${production.produit}\n📏 Besoin: ${production.quantite_needed} ${production.unite} par portion\n📊 Stock disponible: ${production.stock_disponible} ${production.unite}\n⚡ Portions max: ${production.portions_possibles}`)}
                       >
                         🔍 Détails
                       </button>
