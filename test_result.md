@@ -489,9 +489,9 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Corrections menus intermédiaires ResTop validées"
-    - "Terminologie 'Top Plats' vs 'Top Recettes' corrigée"
-    - "Boutons onClick handlers fonctionnels dans sections STOCK et PRODUCTION"
+    - "Migration Répartition tab vers Stock section - COMPLETED"
+    - "Répartition optimale des productions déplacée avec succès"
+    - "Onglet Prévisionnel allégé - section répartition supprimée"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
