@@ -620,15 +620,27 @@ function App() {
       caTotal: 27959.75,
       commandes: 21,
       panierMoyen: 1331.42,
-      topRecettes: [
-        { nom: "Rigatoni à la truffe", ventes: 2418, portions: 78 },
-        { nom: "Fleurs de courgettes", ventes: 1911, portions: 91 },
-        { nom: "Souris d'agneau", ventes: 1872, portions: 52 }
+      topProductions: [
+        { nom: "Rigatoni à la truffe", ventes: 2418, portions: 78, categorie: "Plat" },
+        { nom: "Fleurs de courgettes", ventes: 1911, portions: 91, categorie: "Entrée" },
+        { nom: "Souris d'agneau", ventes: 1872, portions: 52, categorie: "Plat" },
+        { nom: "Tiramisù maison", ventes: 1654, portions: 67, categorie: "Dessert" },
+        { nom: "Cocktail Spritz", ventes: 1543, portions: 124, categorie: "Bar" },
+        { nom: "Salade de saison", ventes: 1387, portions: 89, categorie: "Entrée" },
+        { nom: "Plateau de fromages", ventes: 987, portions: 34, categorie: "Autres" }
+      ],
+      flopProductions: [
+        { nom: "Soupe froide", ventes: 187, portions: 12, categorie: "Entrée" },
+        { nom: "Tartare de légumes", ventes: 156, portions: 8, categorie: "Autres" },
+        { nom: "Mocktail exotique", ventes: 134, portions: 9, categorie: "Bar" },
+        { nom: "Panna cotta", ventes: 98, portions: 6, categorie: "Dessert" }
       ],
       ventesParCategorie: {
         plats: 6201,
         boissons: 4987,
-        desserts: 2156
+        desserts: 2156,
+        entrees: 3247,
+        autres: 892
       }
     };
 
