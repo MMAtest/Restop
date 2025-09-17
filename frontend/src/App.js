@@ -103,6 +103,11 @@ function App() {
   
   // État pour la recherche dans les stocks
   const [stockSearchTerm, setStockSearchTerm] = useState('');
+  
+  // États pour la pagination et filtres des stocks
+  const [stockCurrentPage, setStockCurrentPage] = useState(1);
+  const [stockItemsPerPage] = useState(10); // 10 produits par page
+  const [stockFilterCategory, setStockFilterCategory] = useState('all');
 
   // Fonction pour mettre à jour les portions sélectionnées avec équilibrage
   const updatePortionsSelectionnees = (stockId, productionIndex, newValue) => {
