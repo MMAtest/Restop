@@ -138,10 +138,20 @@ function App() {
     setSelectedCategoryFilter(category);
   };
 
-  // Effet pour mettre à jour les recettes filtrées quand les recettes changent
+  // Fonction pour filtrer les produits par catégorie
+  const filterProduitsByCategory = (category) => {
+    if (!category || category === '') {
+      setFilteredProduits(produits);
+    } else {
+      const filtered = produits.filter(produit => produit.categorie === category);
+      setFilteredProduits(filtered);
+    }
+  };
+
+  // Effet pour mettre à jour les produits filtrés quand les produits changent
   useEffect(() => {
-    filterRecettesByCategory(selectedCategoryFilter);
-  }, [recettes, selectedCategoryFilter]);
+    setFilteredProduits(produits);
+  }, [produits]);
 
   // Fonction pour récupérer le résumé des lots
   const fetchBatchSummary = async () => {
