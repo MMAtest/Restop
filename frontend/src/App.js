@@ -114,7 +114,34 @@ function App() {
     fetchRecettes();
     fetchDocumentsOcr();
     fetchBatchSummary(); // Ajouter récupération des lots
+    fetchCategoriesProduction(); // Récupérer les catégories
   }, []);
+
+  // Fonction pour récupérer les catégories de production
+  const fetchCategoriesProduction = async () => {
+    try {
+      const response = await axios.get(`${API}/categories-production`);
+      setCategoriesProduction(response.data.categories);
+    } catch (error) {
+      console.error("Erreur lors du chargement des catégories:", error);
+    }
+  };
+
+  // Fonction pour filtrer les recettes par catégorie
+  const filterRecettesByCategory = (category) => {
+    if (!category || category === '') {
+      setFilteredRecettes(recettes);
+    } else {
+      const filtered = recettes.filter(recette => recette.categorie === category);
+      setFilteredRecettes(filtered);
+    }
+    setSelectedCategoryFilter(category);
+  };
+
+  // Effet pour mettre à jour les recettes filtrées quand les recettes changent
+  useEffect(() => {
+    filterRecettesByCategory(selectedCategoryFilter);
+  }, [recettes, selectedCategoryFilter]);
 
   // Fonction pour récupérer le résumé des lots
   const fetchBatchSummary = async () => {
