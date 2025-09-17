@@ -80,20 +80,54 @@ function App() {
   // États pour le module prévisionnel
   const [stocksPrevisionnels, setStocksPrevisionnels] = useState([
     { id: 1, produit: "Tomates", stock_actuel: 25, unite: "kg", productions_possibles: [
-      { nom: "Salade Méditerranéenne", quantite_needed: 2, portions_possibles: 12 },
-      { nom: "Ratatouille", quantite_needed: 3, portions_possibles: 8 },
-      { nom: "Gazpacho", quantite_needed: 1.5, portions_possibles: 16 }
+      { nom: "Salade Méditerranéenne", quantite_needed: 2, portions_possibles: 12, portions_selectionnees: 0 },
+      { nom: "Ratatouille", quantite_needed: 3, portions_possibles: 8, portions_selectionnees: 0 },
+      { nom: "Gazpacho", quantite_needed: 1.5, portions_possibles: 16, portions_selectionnees: 0 }
     ]},
     { id: 2, produit: "Fromage de chèvre", stock_actuel: 3.2, unite: "kg", productions_possibles: [
-      { nom: "Salade de chèvre chaud", quantite_needed: 0.15, portions_possibles: 21 },
-      { nom: "Tarte aux courgettes", quantite_needed: 0.2, portions_possibles: 16 }
+      { nom: "Salade de chèvre chaud", quantite_needed: 0.15, portions_possibles: 21, portions_selectionnees: 0 },
+      { nom: "Tarte aux courgettes", quantite_needed: 0.2, portions_possibles: 16, portions_selectionnees: 0 }
     ]},
     { id: 3, produit: "Saumon frais", stock_actuel: 4.8, unite: "kg", productions_possibles: [
-      { nom: "Saumon grillé", quantite_needed: 0.18, portions_possibles: 26 },
-      { nom: "Tartare de saumon", quantite_needed: 0.12, portions_possibles: 40 }
+      { nom: "Saumon grillé", quantite_needed: 0.18, portions_possibles: 26, portions_selectionnees: 0 },
+      { nom: "Tartare de saumon", quantite_needed: 0.12, portions_possibles: 40, portions_selectionnees: 0 }
     ]}
   ]);
   const [selectedProductionPrevisionnelle, setSelectedProductionPrevisionnelle] = useState('');
+
+  // Fonction pour mettre à jour les portions sélectionnées avec équilibrage
+  const updatePortionsSelectionnees = (stockId, productionIndex, newValue) => {
+    setStocksPrevisionnels(prevStocks => {
+      return prevStocks.map(stock => {
+        if (stock.id === stockId) {
+          const updatedProductions = stock.productions_possibles.map((prod, index) => {
+            if (index === productionIndex) {
+              // Calculer la quantité totale utilisée par toutes les productions de ce stock
+              const autresPortions = stock.productions_possibles.reduce((total, p, i) => {
+                if (i !== productionIndex) {
+                  return total + (p.portions_selectionnees * p.quantite_needed);
+                }
+                return total;
+              }, 0);
+              
+              // Calculer la quantité max disponible pour cette production
+              const quantiteDisponible = stock.stock_actuel - autresPortions;
+              const maxPortionsPossibles = Math.floor(quantiteDisponible / prod.quantite_needed);
+              
+              // Limiter la valeur au maximum possible
+              const finalValue = Math.min(newValue, maxPortionsPossibles, prod.portions_possibles);
+              
+              return { ...prod, portions_selectionnees: finalValue };
+            }
+            return prod;
+          });
+          
+          return { ...stock, productions_possibles: updatedProductions };
+        }
+        return stock;
+      });
+    });
+  };
 
   // États pour les modals
   const [showProduitModal, setShowProduitModal] = useState(false);
