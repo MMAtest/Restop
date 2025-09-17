@@ -107,7 +107,59 @@ function App() {
     fetchMouvements();
     fetchRecettes();
     fetchDocumentsOcr();
+    fetchBatchSummary(); // Ajouter récupération des lots
   }, []);
+
+  // Fonction pour récupérer le résumé des lots
+  const fetchBatchSummary = async () => {
+    try {
+      const response = await axios.get(`${API}/stock/batch-summary`);
+      setBatchSummary(response.data);
+      
+      // Séparer les produits expirés et critiques
+      const expired = [];
+      const critical = [];
+      
+      response.data.forEach(item => {
+        item.batches.forEach(batch => {
+          if (batch.status === 'expired') {
+            expired.push({
+              product_name: item.product_name,
+              product_id: item.product_id,
+              batch_number: batch.batch_number,
+              expiry_date: batch.expiry_date,
+              quantity: batch.quantity
+            });
+          } else if (batch.status === 'critical') {
+            critical.push({
+              product_name: item.product_name,
+              product_id: item.product_id,
+              batch_number: batch.batch_number,
+              expiry_date: batch.expiry_date,
+              quantity: batch.quantity
+            });
+          }
+        });
+      });
+      
+      setExpiredProducts(expired);
+      setCriticalProducts(critical);
+    } catch (error) {
+      console.error("Erreur lors du chargement des lots:", error);
+    }
+  };
+
+  // Fonction pour récupérer les lots d'un produit spécifique
+  const fetchProductBatches = async (productId) => {
+    try {
+      const response = await axios.get(`${API}/stock/batch-info/${productId}`);
+      setSelectedProductBatches(response.data);
+      setShowBatchModal(true);
+    } catch (error) {
+      console.error("Erreur lors du chargement des lots du produit:", error);
+      alert("Erreur lors du chargement des lots");
+    }
+  };
 
   const fetchDashboardStats = async () => {
     try {
