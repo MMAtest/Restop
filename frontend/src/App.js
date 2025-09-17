@@ -1226,31 +1226,51 @@ function App() {
                   </div>
                 </div>
 
-                {/* Liste des productions filtrées */}
-                {getFilteredProductions(filteredAnalytics.topProductions, selectedProductionCategory).slice(0, 4).map((production, index) => (
-                  <div key={index} className="item-row">
-                    <div className="item-info">
-                      <div className="item-name">
-                        {production.categorie === 'Entrée' ? '🥗' : 
-                         production.categorie === 'Plat' ? '🍽️' : 
-                         production.categorie === 'Dessert' ? '🍰' : 
-                         production.categorie === 'Bar' ? '🍹' : '📝'} {production.nom}
-                        <span className="category-badge" style={{
-                          marginLeft: '6px',
-                          padding: '2px 6px',
-                          borderRadius: '8px',
-                          fontSize: '10px',
-                          background: 'var(--color-primary-blue)',
+                {/* Liste des productions filtrées avec coefficients */}
+                {getFilteredProductions(filteredAnalytics.topProductions, selectedProductionCategory).slice(0, 4).map((production, index) => {
+                  const coefficientStatus = production.coefficientReel <= production.coefficientPrevu ? 'success' : 'warning';
+                  const coefficientIcon = production.coefficientReel <= production.coefficientPrevu ? '✅' : '⚠️';
+                  
+                  return (
+                    <div key={index} className="item-row">
+                      <div className="item-info">
+                        <div className="item-name">
+                          {production.categorie === 'Entrée' ? '🥗' : 
+                           production.categorie === 'Plat' ? '🍽️' : 
+                           production.categorie === 'Dessert' ? '🍰' : 
+                           production.categorie === 'Bar' ? '🍹' : '📝'} {production.nom}
+                          <span className="category-badge" style={{
+                            marginLeft: '6px',
+                            padding: '2px 6px',
+                            borderRadius: '8px',
+                            fontSize: '10px',
+                            background: 'var(--color-primary-blue)',
+                            color: 'white'
+                          }}>
+                            {production.categorie}
+                          </span>
+                        </div>
+                        <div className="item-details">
+                          {production.portions} portions • Coeff. prévu: {(production.coefficientPrevu * 100).toFixed(1)}% • 
+                          Coeff. réel: {(production.coefficientReel * 100).toFixed(1)}% {coefficientIcon}
+                        </div>
+                      </div>
+                      <div className="item-actions">
+                        <span className={`coefficient-badge ${coefficientStatus}`} style={{
+                          padding: '4px 8px',
+                          borderRadius: '12px',
+                          fontSize: '12px',
+                          marginRight: '8px',
+                          background: coefficientStatus === 'success' ? 'var(--color-success-green)' : 'var(--color-warning-orange)',
                           color: 'white'
                         }}>
-                          {production.categorie}
+                          {coefficientStatus === 'success' ? 'Respecté' : 'Dépassé'}
                         </span>
+                        <div className="item-value">{production.ventes.toLocaleString('fr-FR')} €</div>
                       </div>
-                      <div className="item-details">{production.portions} portions vendues</div>
                     </div>
-                    <div className="item-value">{production.ventes.toLocaleString('fr-FR')} €</div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
 
               {/* Flop Productions avec filtre */}
