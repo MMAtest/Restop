@@ -2247,36 +2247,60 @@ function App() {
                 </div>
 
                 {/* Liste des recettes filtrées */}
-                {(filteredRecettes.length > 0 ? filteredRecettes : recettes).map((recette, index) => (
-                  <div key={index} className="item-row">
-                    <div className="item-info">
-                      <div className="item-name">
-                        {recette.categorie === 'Entrée' ? '🥗' : 
-                         recette.categorie === 'Plat' ? '🍽️' : 
-                         recette.categorie === 'Dessert' ? '🍰' : 
-                         recette.categorie === 'Bar' ? '🍹' : '📝'} {recette.nom}
-                        {recette.categorie && (
-                          <span className="category-badge" style={{
-                            marginLeft: '8px',
-                            padding: '4px 8px',
-                            borderRadius: '12px',
-                            fontSize: '12px',
-                            background: 'var(--color-primary-blue)',
-                            color: 'white'
-                          }}>
-                            {recette.categorie}
-                          </span>
-                        )}
+                {(filteredRecettes.length > 0 ? filteredRecettes : recettes).map((recette, index) => {
+                  // Fonction pour obtenir l'icône selon la catégorie de production
+                  const getProductionCategoryIcon = (categorie) => {
+                    if (!categorie) return '⚠️'; // Icône d'alerte si pas de catégorie
+                    
+                    switch(categorie) {
+                      case 'Entrée': return '🥗';
+                      case 'Plat': return '🍽️';
+                      case 'Dessert': return '🍰';
+                      case 'Bar': return '🍹';
+                      case 'Autres': return '📝';
+                      default: return '⚠️'; // Icône d'alerte pour catégorie non reconnue
+                    }
+                  };
+
+                  return (
+                    <div key={index} className="item-row">
+                      <div className="item-info">
+                        <div className="item-name">
+                          {getProductionCategoryIcon(recette.categorie)} {recette.nom}
+                          {recette.categorie ? (
+                            <span className="category-badge" style={{
+                              marginLeft: '8px',
+                              padding: '4px 8px',
+                              borderRadius: '12px',
+                              fontSize: '12px',
+                              background: 'var(--color-primary-blue)',
+                              color: 'white'
+                            }}>
+                              {recette.categorie}
+                            </span>
+                          ) : (
+                            <span className="category-badge" style={{
+                              marginLeft: '8px',
+                              padding: '4px 8px',
+                              borderRadius: '12px',
+                              fontSize: '12px',
+                              background: 'var(--color-warning-orange)',
+                              color: 'white'
+                            }}>
+                              Sans catégorie
+                            </span>
+                          )}
+                        </div>
+                        <div className="item-details">
+                          Prix: {recette.prix_vente}€ • Marge: {recette.marge_beneficiaire || 'N/A'}%
+                        </div>
                       </div>
-                      <div className="item-details">
-                        Prix: {recette.prix_vente}€ • Marge: {recette.marge_beneficiaire || 'N/A'}%
+                      <div className="item-actions">
+                        <button className="button small" onClick={() => handleEdit(recette, 'recette')}>✏️ Éditer</button>
                       </div>
                     </div>
-                    <div className="item-actions">
-                      <button className="button small" onClick={() => handleEdit(recette, 'recette')}>✏️ Éditer</button>
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
 
