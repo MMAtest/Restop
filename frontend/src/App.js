@@ -1324,8 +1324,8 @@ function App() {
                     <label className="filter-label" style={{fontSize: '14px', minWidth: '60px'}}>Filtre :</label>
                     <select 
                       className="filter-select"
-                      value={selectedProductionCategory}
-                      onChange={(e) => setSelectedProductionCategory(e.target.value)}
+                      value={selectedFlopCategory}
+                      onChange={(e) => setSelectedFlopCategory(e.target.value)}
                       style={{
                         padding: '6px 10px',
                         borderRadius: '4px',
@@ -1348,13 +1348,13 @@ function App() {
                       fontSize: '12px', 
                       color: 'var(--color-text-secondary)'
                     }}>
-                      {getFilteredProductions(filteredAnalytics.flopProductions, selectedProductionCategory).length} résultat(s)
+                      {getFilteredProductions(filteredAnalytics.flopProductions, selectedFlopCategory).length} résultat(s)
                     </div>
                   </div>
                 </div>
 
                 {/* Liste des flop productions filtrées avec coefficients */}
-                {getFilteredProductions(filteredAnalytics.flopProductions, selectedProductionCategory).slice(0, 4).map((production, index) => {
+                {getFilteredProductions(filteredAnalytics.flopProductions, selectedFlopCategory).slice(0, 4).map((production, index) => {
                   const coefficientStatus = production.coefficientReel <= production.coefficientPrevu ? 'success' : 'critical';
                   const coefficientIcon = production.coefficientReel <= production.coefficientPrevu ? '✅' : '🔴';
                   
