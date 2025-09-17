@@ -689,17 +689,21 @@ function App() {
     
     const analytics = {
       caTotal: Math.round(baseDayData.caTotal * periodMultiplier * 100) / 100,
-      commandes: Math.round(baseDayData.commandes * periodMultiplier),
-      panierMoyen: Math.round((baseDayData.caTotal * periodMultiplier) / (baseDayData.commandes * periodMultiplier) * 100) / 100,
+      caMidi: Math.round(baseDayData.caMidi * periodMultiplier * 100) / 100,
+      caSoir: Math.round(baseDayData.caSoir * periodMultiplier * 100) / 100,
+      couvertsMidi: Math.round(baseDayData.couvertsMidi * periodMultiplier),
+      couvertsSoir: Math.round(baseDayData.couvertsSoir * periodMultiplier),
       topProductions: baseDayData.topProductions.map(production => ({
         ...production,
         ventes: Math.round(production.ventes * periodMultiplier),
-        portions: Math.round(production.portions * periodMultiplier)
+        portions: Math.round(production.portions * periodMultiplier),
+        coutMatiere: Math.round(production.coutMatiere * periodMultiplier * 100) / 100
       })),
       flopProductions: baseDayData.flopProductions.map(production => ({
         ...production,
         ventes: Math.round(production.ventes * periodMultiplier),
-        portions: Math.round(production.portions * periodMultiplier)
+        portions: Math.round(production.portions * periodMultiplier),
+        coutMatiere: Math.round(production.coutMatiere * periodMultiplier * 100) / 100
       })),
       ventesParCategorie: {
         entrees: Math.round(baseDayData.ventesParCategorie.entrees * periodMultiplier),
