@@ -1801,7 +1801,7 @@ function App() {
                     fontWeight: 'normal',
                     marginLeft: '10px'
                   }}>
-                    - {selectedDateRange}
+                    - {selectedDateRange.label}
                   </span>
                 )}
               </div>
