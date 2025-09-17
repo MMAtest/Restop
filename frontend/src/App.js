@@ -1297,9 +1297,9 @@ function App() {
 
                 {/* Liste des productions filtrées avec coefficients */}
                 {getFilteredProductions(filteredAnalytics.topProductions, selectedProductionCategory).slice(0, 4).map((production, index) => {
-                  const coefficientStatus = production.coefficientReel >= production.coefficientPrevu ? 'warning' : 'success';
-                  const coefficientIcon = production.coefficientReel >= production.coefficientPrevu ? '⚠️' : '✅';
-                  const coefficientText = production.coefficientReel >= production.coefficientPrevu ? 'Dépassé' : 'Respecté';
+                  const coefficientStatus = production.coefficientReel >= production.coefficientPrevu ? 'success' : 'warning';
+                  const coefficientIcon = production.coefficientReel >= production.coefficientPrevu ? '✅' : '⚠️';
+                  const coefficientText = production.coefficientReel >= production.coefficientPrevu ? 'Respecté' : 'Dépassé';
                   
                   return (
                     <div key={index} className="item-row">
