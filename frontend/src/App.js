@@ -100,6 +100,9 @@ function App() {
   const [ocrCurrentPage, setOcrCurrentPage] = useState(1);
   const [ocrDocumentsPerPage] = useState(8); // 8 documents par page
   const [ocrFilterType, setOcrFilterType] = useState('all'); // 'all', 'z_report', 'facture_fournisseur'
+  
+  // État pour la recherche dans les stocks
+  const [stockSearchTerm, setStockSearchTerm] = useState('');
 
   // Fonction pour mettre à jour les portions sélectionnées avec équilibrage
   const updatePortionsSelectionnees = (stockId, productionIndex, newValue) => {
