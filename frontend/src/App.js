@@ -1546,7 +1546,7 @@ function App() {
                     fontWeight: 'bold',
                     marginRight: '8px'
                   }}>2</div>
-                  <div className="alert-title">Expiration < 3 jours</div>
+                  <div className="alert-title">Expiration &lt; 3 jours</div>
                 </div>
                 
                 <div className="alert-card warning">
