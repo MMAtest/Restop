@@ -13,7 +13,7 @@ from datetime import datetime
 import time
 
 # Configuration
-BASE_URL = "https://smart-inventory-63.preview.emergentagent.com/api"
+BASE_URL = "https://restop-stock.preview.emergentagent.com/api"
 HEADERS = {"Content-Type": "application/json"}
 
 class OCRUnitPriceTestSuite:
