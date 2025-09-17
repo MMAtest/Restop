@@ -1665,6 +1665,131 @@ function App() {
             </div>
           )}
 
+          {/* ONGLET COÛTS */}
+          {activeDashboardTab === "couts" && (
+            <div className="section-card">
+              <div className="section-title">
+                💰 Analyse des Coûts
+                {selectedDateRange && (
+                  <span style={{ 
+                    fontSize: '12px', 
+                    color: 'var(--color-text-muted)',
+                    fontWeight: 'normal',
+                    marginLeft: 'var(--spacing-sm)'
+                  }}>
+                    - {selectedDateRange.label}
+                  </span>
+                )}
+              </div>
+
+              {/* Nouveaux KPIs demandés : stock brut, net, déchets, pertes */}
+              <div className="kpi-grid">
+                <div className="kpi-card">
+                  <div className="icon">📦</div>
+                  <div className="title">Valeur Stock Brut</div>
+                  <div className="value">847 520 €</div>
+                  <div className="subtitle">Avant traitement</div>
+                </div>
+                
+                <div className="kpi-card">
+                  <div className="icon">✅</div>
+                  <div className="title">Valeur Stock Net</div>
+                  <div className="value positive">746 890 €</div>
+                  <div className="subtitle">Prêt à utiliser</div>
+                </div>
+                
+                <div className="kpi-card">
+                  <div className="icon">🗑️</div>
+                  <div className="title">Déchets</div>
+                  <div className="value warning">67 450 €</div>
+                  <div className="subtitle">7.96% du brut</div>
+                </div>
+                
+                <div className="kpi-card">
+                  <div className="icon">⚠️</div>
+                  <div className="title">Pertes</div>
+                  <div className="value critical">33 180 €</div>
+                  <div className="subtitle">3.91% du brut</div>
+                </div>
+              </div>
+
+              {/* Détail des coûts par catégorie */}
+              <div className="item-list">
+                <div className="section-title">💸 Répartition des Coûts par Poste</div>
+                
+                <div className="item-row">
+                  <div className="item-info">
+                    <div className="item-name">🥩 Matières Premières</div>
+                    <div className="item-details">65.2% du CA • Principalement viandes et poissons</div>
+                  </div>
+                  <div className="item-value">423 847 €</div>
+                </div>
+
+                <div className="item-row">
+                  <div className="item-info">
+                    <div className="item-name">👨‍🍳 Main d'œuvre</div>
+                    <div className="item-details">22.1% du CA • Cuisine et service</div>
+                  </div>
+                  <div className="item-value">143 920 €</div>
+                </div>
+
+                <div className="item-row">
+                  <div className="item-info">
+                    <div className="item-name">⚡ Charges Fixes</div>
+                    <div className="item-details">8.7% du CA • Électricité, loyer, assurances</div>
+                  </div>
+                  <div className="item-value">56 643 €</div>
+                </div>
+
+                <div className="item-row">
+                  <div className="item-info">
+                    <div className="item-name">🚚 Logistique</div>
+                    <div className="item-details">4.0% du CA • Transport et livraisons</div>
+                  </div>
+                  <div className="item-value">26 034 €</div>
+                </div>
+              </div>
+
+              {/* Analyse des pertes et déchets */}
+              <div className="item-list">
+                <div className="section-title">📊 Analyse Pertes & Déchets</div>
+                
+                <div className="item-row">
+                  <div className="item-info">
+                    <div className="item-name">🥬 Légumes</div>
+                    <div className="item-details">Perte: 12.3% • Principalement épluchures et fanes</div>
+                  </div>
+                  <div className="item-actions">
+                    <span className="status-badge warning">Normal</span>
+                    <div className="item-value warning">15 640 €</div>
+                  </div>
+                </div>
+
+                <div className="item-row">
+                  <div className="item-info">
+                    <div className="item-name">🐟 Poissons</div>
+                    <div className="item-details">Perte: 8.7% • Arêtes et parements</div>
+                  </div>
+                  <div className="item-actions">
+                    <span className="status-badge success">Optimisé</span>
+                    <div className="item-value">21 890 €</div>
+                  </div>
+                </div>
+
+                <div className="item-row">
+                  <div className="item-info">
+                    <div className="item-name">🥩 Viandes</div>
+                    <div className="item-details">Perte: 15.2% • Parage et os</div>
+                  </div>
+                  <div className="item-actions">
+                    <span className="status-badge critical">Élevé</span>
+                    <div className="item-value critical">29 920 €</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* ONGLET RENTABILITÉ */}
           {activeDashboardTab === "rentabilite" && (
             <div className="section-card">
