@@ -161,6 +161,14 @@ function App() {
     }
   };
 
+  // Fonction pour filtrer les productions par catégorie
+  const getFilteredProductions = (productions, category) => {
+    if (!category || category === '') {
+      return productions;
+    }
+    return productions.filter(production => production.categorie === category);
+  };
+
   // Effet pour mettre à jour les produits filtrés quand les produits changent
   useEffect(() => {
     setFilteredProduits(produits);
