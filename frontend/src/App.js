@@ -628,28 +628,30 @@ function App() {
     // Données de base (pour aujourd'hui)
     const baseDayData = {
       caTotal: 27959.75,
-      commandes: 21,
-      panierMoyen: 1331.42,
+      caMidi: 16775.85,
+      caSoir: 11183.90,
+      couvertsMidi: 87,
+      couvertsSoir: 64,
       topProductions: [
-        { nom: "Rigatoni à la truffe", ventes: 2418, portions: 78, categorie: "Plat" },
-        { nom: "Fleurs de courgettes", ventes: 1911, portions: 91, categorie: "Entrée" },
-        { nom: "Souris d'agneau", ventes: 1872, portions: 52, categorie: "Plat" },
-        { nom: "Tiramisù maison", ventes: 1654, portions: 67, categorie: "Dessert" },
-        { nom: "Cocktail Spritz", ventes: 1543, portions: 124, categorie: "Bar" },
-        { nom: "Salade de saison", ventes: 1387, portions: 89, categorie: "Entrée" },
-        { nom: "Plateau de fromages", ventes: 987, portions: 34, categorie: "Autres" }
+        { nom: "Rigatoni à la truffe", ventes: 2418, portions: 78, categorie: "Plat", coefficientPrevu: 0.35, coefficientReel: 0.32, coutMatiere: 774.00, prixVente: 28.50 },
+        { nom: "Fleurs de courgettes", ventes: 1911, portions: 91, categorie: "Entrée", coefficientPrevu: 0.25, coefficientReel: 0.28, coutMatiere: 482.75, prixVente: 17.25 },
+        { nom: "Souris d'agneau", ventes: 1872, portions: 52, categorie: "Plat", coefficientPrevu: 0.40, coefficientReel: 0.38, coutMatiere: 1368.00, prixVente: 36.00 },
+        { nom: "Tiramisù maison", ventes: 1654, portions: 67, categorie: "Dessert", coefficientPrevu: 0.20, coefficientReel: 0.22, coutMatiere: 264.64, prixVente: 12.00 },
+        { nom: "Cocktail Spritz", ventes: 1543, portions: 124, categorie: "Bar", coefficientPrevu: 0.15, coefficientReel: 0.18, coutMatiere: 201.59, prixVente: 11.20 },
+        { nom: "Salade de saison", ventes: 1387, portions: 89, categorie: "Entrée", coefficientPrevu: 0.30, coefficientReel: 0.26, coutMatiere: 360.22, prixVente: 14.50 },
+        { nom: "Plateau de fromages", ventes: 987, portions: 34, categorie: "Autres", coefficientPrevu: 0.45, coefficientReel: 0.48, coutMatiere: 473.76, prixVente: 29.00 }
       ],
       flopProductions: [
-        { nom: "Soupe froide", ventes: 187, portions: 12, categorie: "Entrée" },
-        { nom: "Tartare de légumes", ventes: 156, portions: 8, categorie: "Autres" },
-        { nom: "Mocktail exotique", ventes: 134, portions: 9, categorie: "Bar" },
-        { nom: "Panna cotta", ventes: 98, portions: 6, categorie: "Dessert" }
+        { nom: "Soupe froide", ventes: 187, portions: 12, categorie: "Entrée", coefficientPrevu: 0.20, coefficientReel: 0.35, coutMatiere: 54.60, prixVente: 15.60 },
+        { nom: "Tartare de légumes", ventes: 156, portions: 8, categorie: "Autres", coefficientPrevu: 0.25, coefficientReel: 0.42, coutMatiere: 70.20, prixVente: 16.70 },
+        { nom: "Mocktail exotique", ventes: 134, portions: 9, categorie: "Bar", coefficientPrevu: 0.15, coefficientReel: 0.28, coutMatiere: 37.52, prixVente: 13.40 },
+        { nom: "Panna cotta", ventes: 98, portions: 6, categorie: "Dessert", coefficientPrevu: 0.18, coefficientReel: 0.31, coutMatiere: 30.38, prixVente: 9.80 }
       ],
       ventesParCategorie: {
-        plats: 6201,
-        boissons: 4987,
-        desserts: 2156,
         entrees: 3247,
+        plats: 6201,
+        desserts: 2156,
+        boissons: 4987,
         autres: 892
       }
     };
