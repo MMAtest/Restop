@@ -231,7 +231,22 @@ class RecetteIngredient(BaseModel):
     quantite: float
     unite: str
 
-# Catégories de production définies
+# Modèle pour les données de vente avec services
+class VenteService(BaseModel):
+    service: str  # "midi" ou "soir"
+    ca_total: float
+    nb_couverts: int
+    productions: List[dict] = []  # Productions vendues avec leurs coefficients
+
+class AnalyseVente(BaseModel):
+    date: str
+    ca_total: float
+    ca_midi: float
+    ca_soir: float
+    nb_couverts_midi: int
+    nb_couverts_soir: int
+    productions_performance: List[dict] = []  # Avec coefficients prévu/réel
+
 CATEGORIES_PRODUCTION = ["Entrée", "Plat", "Dessert", "Bar", "Autres"]
 
 class Recette(BaseModel):
