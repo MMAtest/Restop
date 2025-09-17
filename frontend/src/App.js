@@ -1855,6 +1855,35 @@ function App() {
                 ))}
               </div>
 
+              {/* Flop Productions (nouvellement ajouté) */}
+              <div className="item-list">
+                <div className="section-title">📉 Productions Moins Rentables</div>
+                {filteredAnalytics.flopProductions.slice(0, 4).map((production, index) => (
+                  <div key={index} className="item-row">
+                    <div className="item-info">
+                      <div className="item-name">
+                        {production.categorie === 'Entrée' ? '🥗' : 
+                         production.categorie === 'Plat' ? '🍽️' : 
+                         production.categorie === 'Dessert' ? '🍰' : 
+                         production.categorie === 'Bar' ? '🍹' : '📝'} {production.nom}
+                        <span className="category-badge" style={{
+                          marginLeft: '6px',
+                          padding: '2px 6px',
+                          borderRadius: '8px',
+                          fontSize: '10px',
+                          background: 'var(--color-critical-red)',
+                          color: 'white'
+                        }}>
+                          {production.categorie}
+                        </span>
+                      </div>
+                      <div className="item-details">Marge: {32 - index * 3}% • {production.portions} portions vendues</div>
+                    </div>
+                    <div className="item-value critical">{production.ventes.toLocaleString('fr-FR')} €</div>
+                  </div>
+                ))}
+              </div>
+
               {/* Analyse comparative selon la période */}
               <div className="kpi-grid">
                 <div className="kpi-card">
