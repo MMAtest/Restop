@@ -1652,14 +1652,29 @@ function App() {
               </div>
 
               <div className="item-list">
-                <div className="section-title">Top Plats Rentables</div>
-                {filteredAnalytics.topRecettes.map((recette, index) => (
+                <div className="section-title">Top Productions Rentables</div>
+                {filteredAnalytics.topProductions.slice(0, 4).map((production, index) => (
                   <div key={index} className="item-row">
                     <div className="item-info">
-                      <div className="item-name">🍝 {recette.nom}</div>
-                      <div className="item-details">Marge: {76 + index * 2}% • {recette.portions} portions vendues</div>
+                      <div className="item-name">
+                        {production.categorie === 'Entrée' ? '🥗' : 
+                         production.categorie === 'Plat' ? '🍽️' : 
+                         production.categorie === 'Dessert' ? '🍰' : 
+                         production.categorie === 'Bar' ? '🍹' : '📝'} {production.nom}
+                        <span className="category-badge" style={{
+                          marginLeft: '6px',
+                          padding: '2px 6px',
+                          borderRadius: '8px',
+                          fontSize: '10px',
+                          background: 'var(--color-success-green)',
+                          color: 'white'
+                        }}>
+                          {production.categorie}
+                        </span>
+                      </div>
+                      <div className="item-details">Marge: {76 + index * 2}% • {production.portions} portions vendues</div>
                     </div>
-                    <div className="item-value positive">{recette.ventes.toLocaleString('fr-FR')} €</div>
+                    <div className="item-value positive">{production.ventes.toLocaleString('fr-FR')} €</div>
                   </div>
                 ))}
               </div>
