@@ -2589,36 +2589,181 @@ function App() {
                   <button className="button" onClick={handleTraitementAuto} disabled={loading}>🔄 Traitement Auto</button>
                 </div>
 
-                {/* Historique des documents */}
+                {/* Historique des documents avec filtre et pagination */}
                 <div className="item-list">
                   <div className="section-title">📄 Historique des Documents</div>
-                  {documentsOcr.slice(0, 5).map((doc, index) => (
-                    <div key={index} className="item-row">
-                      <div className="item-info">
-                        <div className="item-name">{doc.nom_fichier}</div>
-                        <div className="item-details">
-                          {doc.type_document === 'z_report' ? '📊 Rapport Z' : '🧾 Facture'} - 
-                          {new Date(doc.date_upload).toLocaleDateString('fr-FR')}
-                        </div>
-                      </div>
-                      <div className="item-actions">
-                        <button 
-                          className="button small"
-                          onClick={() => handlePreviewDocument(doc)}
-                        >
-                          👁️ Aperçu
-                        </button>
-                        {doc.type_document === 'z_report' && (
-                          <button 
-                            className="button small"
-                            onClick={() => handleProcessZReport(doc.id)}
-                          >
-                            ⚡ Traiter
-                          </button>
-                        )}
+                  
+                  {/* Filtre par type de document */}
+                  <div className="filter-section" style={{marginBottom: '20px'}}>
+                    <div className="filter-group" style={{display: 'flex', alignItems: 'center', gap: '10px'}}>
+                      <label className="filter-label" style={{fontSize: '14px', minWidth: '80px'}}>Type :</label>
+                      <select 
+                        className="filter-select"
+                        value={ocrFilterType}
+                        onChange={(e) => {
+                          setOcrFilterType(e.target.value);
+                          setOcrCurrentPage(1); // Reset à la page 1 lors du changement de filtre
+                        }}
+                        style={{
+                          padding: '6px 10px',
+                          borderRadius: '4px',
+                          border: '1px solid var(--color-border)',
+                          background: 'var(--color-background-card)',
+                          color: 'var(--color-text-primary)',
+                          fontSize: '13px',
+                          minWidth: '150px'
+                        }}
+                      >
+                        <option value="all">Tous les documents</option>
+                        <option value="z_report">📊 Rapports Z</option>
+                        <option value="facture_fournisseur">🧾 Factures</option>
+                      </select>
+                      
+                      <div className="filter-info" style={{
+                        fontSize: '14px', 
+                        color: 'var(--color-text-secondary)',
+                        marginLeft: '10px'
+                      }}>
+                        {(() => {
+                          const filteredDocs = documentsOcr.filter(doc => 
+                            ocrFilterType === 'all' || doc.type_document === ocrFilterType
+                          );
+                          return `${filteredDocs.length} document(s)`;
+                        })()}
                       </div>
                     </div>
-                  ))}
+                  </div>
+
+                  {/* Liste des documents avec pagination */}
+                  {(() => {
+                    // Filtrer les documents selon le type sélectionné
+                    const filteredDocs = documentsOcr.filter(doc => 
+                      ocrFilterType === 'all' || doc.type_document === ocrFilterType
+                    );
+                    
+                    // Calculer la pagination
+                    const totalPages = Math.ceil(filteredDocs.length / ocrDocumentsPerPage);
+                    const startIndex = (ocrCurrentPage - 1) * ocrDocumentsPerPage;
+                    const endIndex = startIndex + ocrDocumentsPerPage;
+                    const currentDocs = filteredDocs.slice(startIndex, endIndex);
+                    
+                    if (filteredDocs.length === 0) {
+                      return (
+                        <div style={{textAlign: 'center', padding: '40px', color: 'var(--color-text-muted)'}}>
+                          <div style={{fontSize: '48px', marginBottom: '15px'}}>📄</div>
+                          <p>Aucun document trouvé pour ce filtre</p>
+                        </div>
+                      );
+                    }
+
+                    return (
+                      <>
+                        {/* Documents de la page actuelle */}
+                        {currentDocs.map((doc, index) => (
+                          <div key={index} className="item-row">
+                            <div className="item-info">
+                              <div className="item-name">{doc.nom_fichier}</div>
+                              <div className="item-details">
+                                {doc.type_document === 'z_report' ? '📊 Rapport Z' : '🧾 Facture'} - 
+                                {new Date(doc.date_upload).toLocaleDateString('fr-FR')}
+                              </div>
+                            </div>
+                            <div className="item-actions">
+                              <button 
+                                className="button small"
+                                onClick={() => handlePreviewDocument(doc)}
+                              >
+                                👁️ Aperçu
+                              </button>
+                              {doc.type_document === 'z_report' && (
+                                <button 
+                                  className="button small"
+                                  onClick={() => handleProcessZReport(doc.id)}
+                                >
+                                  ⚡ Traiter
+                                </button>
+                              )}
+                            </div>
+                          </div>
+                        ))}
+
+                        {/* Contrôles de pagination */}
+                        {totalPages > 1 && (
+                          <div style={{
+                            display: 'flex', 
+                            justifyContent: 'space-between', 
+                            alignItems: 'center',
+                            marginTop: '20px',
+                            padding: '15px',
+                            background: 'var(--color-background-card-light)',
+                            borderRadius: '8px'
+                          }}>
+                            <div style={{fontSize: '14px', color: 'var(--color-text-secondary)'}}>
+                              Page {ocrCurrentPage} sur {totalPages} • 
+                              {startIndex + 1}-{Math.min(endIndex, filteredDocs.length)} sur {filteredDocs.length} documents
+                            </div>
+                            
+                            <div style={{display: 'flex', gap: '5px'}}>
+                              <button 
+                                className="button small" 
+                                onClick={() => setOcrCurrentPage(1)}
+                                disabled={ocrCurrentPage === 1}
+                                style={{
+                                  opacity: ocrCurrentPage === 1 ? 0.5 : 1,
+                                  cursor: ocrCurrentPage === 1 ? 'not-allowed' : 'pointer'
+                                }}
+                              >
+                                ⏮️ Début
+                              </button>
+                              <button 
+                                className="button small" 
+                                onClick={() => setOcrCurrentPage(ocrCurrentPage - 1)}
+                                disabled={ocrCurrentPage === 1}
+                                style={{
+                                  opacity: ocrCurrentPage === 1 ? 0.5 : 1,
+                                  cursor: ocrCurrentPage === 1 ? 'not-allowed' : 'pointer'
+                                }}
+                              >
+                                ⬅️ Précédent
+                              </button>
+                              <span style={{
+                                padding: '6px 12px',
+                                background: 'var(--color-primary-blue)',
+                                color: 'white',
+                                borderRadius: '4px',
+                                fontSize: '12px',
+                                fontWeight: 'bold'
+                              }}>
+                                {ocrCurrentPage}
+                              </span>
+                              <button 
+                                className="button small" 
+                                onClick={() => setOcrCurrentPage(ocrCurrentPage + 1)}
+                                disabled={ocrCurrentPage === totalPages}
+                                style={{
+                                  opacity: ocrCurrentPage === totalPages ? 0.5 : 1,
+                                  cursor: ocrCurrentPage === totalPages ? 'not-allowed' : 'pointer'
+                                }}
+                              >
+                                Suivant ➡️
+                              </button>
+                              <button 
+                                className="button small" 
+                                onClick={() => setOcrCurrentPage(totalPages)}
+                                disabled={ocrCurrentPage === totalPages}
+                                style={{
+                                  opacity: ocrCurrentPage === totalPages ? 0.5 : 1,
+                                  cursor: ocrCurrentPage === totalPages ? 'not-allowed' : 'pointer'
+                                }}
+                              >
+                                Fin ⏭️
+                              </button>
+                            </div>
+                          </div>
+                        )}
+                      </>
+                    );
+                  })()}
                 </div>
               </div>
             </div>
