@@ -32,19 +32,19 @@ function App() {
     couvertsMidi: 87,
     couvertsSoir: 64,
     topProductions: [
-      { nom: "Rigatoni à la truffe", ventes: 2418, portions: 78, categorie: "Plat", coefficientPrevu: 0.35, coefficientReel: 0.32, coutMatiere: 774.00, prixVente: 28.50 },
-      { nom: "Fleurs de courgettes", ventes: 1911, portions: 91, categorie: "Entrée", coefficientPrevu: 0.25, coefficientReel: 0.28, coutMatiere: 482.75, prixVente: 17.25 },
-      { nom: "Souris d'agneau", ventes: 1872, portions: 52, categorie: "Plat", coefficientPrevu: 0.40, coefficientReel: 0.38, coutMatiere: 1368.00, prixVente: 36.00 },
-      { nom: "Tiramisù maison", ventes: 1654, portions: 67, categorie: "Dessert", coefficientPrevu: 0.20, coefficientReel: 0.22, coutMatiere: 264.64, prixVente: 12.00 },
-      { nom: "Cocktail Spritz", ventes: 1543, portions: 124, categorie: "Bar", coefficientPrevu: 0.15, coefficientReel: 0.18, coutMatiere: 201.59, prixVente: 11.20 },
-      { nom: "Salade de saison", ventes: 1387, portions: 89, categorie: "Entrée", coefficientPrevu: 0.30, coefficientReel: 0.26, coutMatiere: 360.22, prixVente: 14.50 },
-      { nom: "Plateau de fromages", ventes: 987, portions: 34, categorie: "Autres", coefficientPrevu: 0.45, coefficientReel: 0.48, coutMatiere: 473.76, prixVente: 29.00 }
+      { nom: "Rigatoni à la truffe", ventes: 2418, portions: 78, categorie: "Plat", coefficientPrevu: 0.35, coefficientReel: 0.38, coutMatiere: 774.00, prixVente: 28.50 }, // Réel > Prévu = Dépassé
+      { nom: "Fleurs de courgettes", ventes: 1911, portions: 91, categorie: "Entrée", coefficientPrevu: 0.25, coefficientReel: 0.25, coutMatiere: 482.75, prixVente: 17.25 }, // Réel = Prévu = Respecté
+      { nom: "Souris d'agneau", ventes: 1872, portions: 52, categorie: "Plat", coefficientPrevu: 0.40, coefficientReel: 0.35, coutMatiere: 1368.00, prixVente: 36.00 }, // Réel < Prévu = Respecté
+      { nom: "Tiramisù maison", ventes: 1654, portions: 67, categorie: "Dessert", coefficientPrevu: 0.20, coefficientReel: 0.28, coutMatiere: 264.64, prixVente: 12.00 }, // Réel > Prévu = Dépassé
+      { nom: "Cocktail Spritz", ventes: 1543, portions: 124, categorie: "Bar", coefficientPrevu: 0.15, coefficientReel: 0.15, coutMatiere: 201.59, prixVente: 11.20 }, // Réel = Prévu = Respecté
+      { nom: "Salade de saison", ventes: 1387, portions: 89, categorie: "Entrée", coefficientPrevu: 0.30, coefficientReel: 0.24, coutMatiere: 360.22, prixVente: 14.50 }, // Réel < Prévu = Respecté
+      { nom: "Plateau de fromages", ventes: 987, portions: 34, categorie: "Autres", coefficientPrevu: 0.45, coefficientReel: 0.52, coutMatiere: 473.76, prixVente: 29.00 } // Réel > Prévu = Dépassé
     ],
     flopProductions: [
-      { nom: "Soupe froide", ventes: 187, portions: 12, categorie: "Entrée", coefficientPrevu: 0.20, coefficientReel: 0.35, coutMatiere: 54.60, prixVente: 15.60 },
-      { nom: "Tartare de légumes", ventes: 156, portions: 8, categorie: "Autres", coefficientPrevu: 0.25, coefficientReel: 0.42, coutMatiere: 70.20, prixVente: 16.70 },
-      { nom: "Mocktail exotique", ventes: 134, portions: 9, categorie: "Bar", coefficientPrevu: 0.15, coefficientReel: 0.28, coutMatiere: 37.52, prixVente: 13.40 },
-      { nom: "Panna cotta", ventes: 98, portions: 6, categorie: "Dessert", coefficientPrevu: 0.18, coefficientReel: 0.31, coutMatiere: 30.38, prixVente: 9.80 }
+      { nom: "Soupe froide", ventes: 187, portions: 12, categorie: "Entrée", coefficientPrevu: 0.20, coefficientReel: 0.18, coutMatiere: 54.60, prixVente: 15.60 }, // Réel < Prévu = Respecté
+      { nom: "Tartare de légumes", ventes: 156, portions: 8, categorie: "Autres", coefficientPrevu: 0.25, coefficientReel: 0.32, coutMatiere: 70.20, prixVente: 16.70 }, // Réel > Prévu = Dépassé
+      { nom: "Mocktail exotique", ventes: 134, portions: 9, categorie: "Bar", coefficientPrevu: 0.15, coefficientReel: 0.13, coutMatiere: 37.52, prixVente: 13.40 }, // Réel < Prévu = Respecté
+      { nom: "Panna cotta", ventes: 98, portions: 6, categorie: "Dessert", coefficientPrevu: 0.18, coefficientReel: 0.22, coutMatiere: 30.38, prixVente: 9.80 } // Réel > Prévu = Dépassé
     ],
     ventesParCategorie: {
       plats: 6201,
