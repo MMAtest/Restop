@@ -2502,6 +2502,109 @@ function App() {
               </div>
             </div>
 
+            {/* ONGLET RÉPARTITION */}
+            <div className={`production-tab ${activeStockTab === 'repartition' ? 'active' : ''}`}>
+              <div className="section-card">
+                <div className="section-title">🎯 Répartition Optimale des Productions</div>
+                
+                {/* Actions de répartition */}
+                <div style={{display: 'flex', gap: '10px', marginBottom: '20px', flexWrap: 'wrap'}}>
+                  <button className="button">📊 Analyser Stocks</button>
+                  <button className="button">🎯 Planification</button>
+                  <button className="button">📋 Commande Auto</button>
+                </div>
+
+                {/* Répartition optimale avec validation */}
+                <div className="item-list">
+                  <div className="section-title">🎯 Répartition Optimale avec Validation</div>
+                  
+                  {stocksPrevisionnels.map((stock, stockIndex) => {
+                    const stockUtilise = stock.productions_possibles.reduce((total, prod) => 
+                      total + (prod.portions_selectionnees * prod.quantite_needed), 0
+                    );
+                    const stockRestant = stock.stock_actuel - stockUtilise;
+                    
+                    return (
+                      <div key={stockIndex}>
+                        <div className="section-subtitle" style={{
+                          display: 'flex', 
+                          justifyContent: 'space-between', 
+                          alignItems: 'center',
+                          marginTop: '20px', 
+                          marginBottom: '10px', 
+                          fontSize: '16px', 
+                          fontWeight: 'bold',
+                          padding: '10px',
+                          background: 'var(--color-background-card-light)',
+                          borderRadius: '8px'
+                        }}>
+                          <span>📦 {stock.produit} ({stock.stock_actuel} {stock.unite})</span>
+                          <div style={{fontSize: '14px', fontWeight: 'normal'}}>
+                            <span style={{color: stockRestant < 0 ? 'var(--color-danger-red)' : 'var(--color-success-green)'}}>
+                              Restant: {stockRestant.toFixed(1)} {stock.unite}
+                            </span>
+                            <button 
+                              className="button small success" 
+                              style={{marginLeft: '10px'}}
+                              onClick={() => {
+                                alert(`Répartition validée pour ${stock.produit}!\n\nStock utilisé: ${stockUtilise.toFixed(1)} ${stock.unite}\nStock restant: ${stockRestant.toFixed(1)} ${stock.unite}`);
+                              }}
+                            >
+                              ✅ Valider
+                            </button>
+                          </div>
+                        </div>
+                        
+                        {stock.productions_possibles.map((production, prodIndex) => {
+                          const quantiteUtilisee = production.portions_selectionnees * production.quantite_needed;
+                          const autresUtilisations = stock.productions_possibles.reduce((total, p, i) => {
+                            if (i !== prodIndex) return total + (p.portions_selectionnees * p.quantite_needed);
+                            return total;
+                          }, 0);
+                          const stockDisponiblePourCetteProd = stock.stock_actuel - autresUtilisations;
+                          const maxPossible = Math.floor(stockDisponiblePourCetteProd / production.quantite_needed);
+                          
+                          return (
+                            <div key={prodIndex} className="item-row">
+                              <div className="item-info">
+                                <div className="item-name">
+                                  🍽️ {production.nom}
+                                </div>
+                                <div className="item-details">
+                                  Besoin: {production.quantite_needed} {stock.unite} par portion • 
+                                  Max équilibré: {Math.min(maxPossible, production.portions_possibles)} portions •
+                                  Utilise: {quantiteUtilisee.toFixed(1)} {stock.unite}
+                                </div>
+                              </div>
+                              <div className="item-actions">
+                                <input 
+                                  type="number" 
+                                  min="0" 
+                                  max={Math.min(maxPossible, production.portions_possibles)}
+                                  value={production.portions_selectionnees}
+                                  onChange={(e) => updatePortionsSelectionnees(stock.id, prodIndex, parseInt(e.target.value) || 0)}
+                                  style={{
+                                    width: '60px',
+                                    padding: '4px 8px',
+                                    borderRadius: '4px',
+                                    border: '1px solid var(--color-border)',
+                                    marginRight: '5px'
+                                  }}
+                                />
+                                <span style={{fontSize: '12px', color: 'var(--color-text-secondary)'}}>
+                                  / {Math.min(maxPossible, production.portions_possibles)}
+                                </span>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+
             {/* ONGLET GRILLES DE DONNÉES */}
             <div className={`production-tab ${activeStockTab === 'datagrids' ? 'active' : ''}`}>
               <DataGridsPage />
