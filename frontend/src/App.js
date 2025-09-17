@@ -1384,8 +1384,9 @@ function App() {
 
                 {/* Liste des flop productions filtrées avec coefficients */}
                 {getFilteredProductions(filteredAnalytics.flopProductions, selectedFlopCategory).slice(0, 4).map((production, index) => {
-                  const coefficientStatus = production.coefficientReel <= production.coefficientPrevu ? 'success' : 'critical';
-                  const coefficientIcon = production.coefficientReel <= production.coefficientPrevu ? '✅' : '🔴';
+                  const coefficientStatus = production.coefficientReel >= production.coefficientPrevu ? 'critical' : 'success';
+                  const coefficientIcon = production.coefficientReel >= production.coefficientPrevu ? '🔴' : '✅';
+                  const coefficientText = production.coefficientReel >= production.coefficientPrevu ? 'Problème' : 'Respecté';
                   
                   return (
                     <div key={index} className="item-row">
@@ -1420,7 +1421,7 @@ function App() {
                           background: coefficientStatus === 'success' ? 'var(--color-success-green)' : 'var(--color-critical-red)',
                           color: 'white'
                         }}>
-                          {coefficientStatus === 'success' ? 'Respecté' : 'Problème'}
+                          {coefficientText}
                         </span>
                         <div className="item-value warning">{production.ventes.toLocaleString('fr-FR')} €</div>
                       </div>
