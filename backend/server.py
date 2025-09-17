@@ -224,18 +224,21 @@ class MouvementCreate(BaseModel):
     fournisseur_id: Optional[str] = None
     commentaire: Optional[str] = None
 
-# Models pour la gestion des recettes
+# Models pour la gestion des recettes (Productions)
 class RecetteIngredient(BaseModel):
     produit_id: str
     produit_nom: Optional[str] = None
     quantite: float
     unite: str
 
+# Catégories de production définies
+CATEGORIES_PRODUCTION = ["Entrée", "Plat", "Dessert", "Bar", "Autres"]
+
 class Recette(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     nom: str
     description: Optional[str] = None
-    categorie: Optional[str] = None  # "entrée", "plat", "dessert", "boisson"
+    categorie: Optional[str] = None  # "Entrée", "Plat", "Dessert", "Bar", "Autres"
     portions: int  # Nombre de portions que la recette produit
     temps_preparation: Optional[int] = None  # en minutes
     instructions: Optional[str] = None
@@ -246,7 +249,7 @@ class Recette(BaseModel):
 class RecetteCreate(BaseModel):
     nom: str
     description: Optional[str] = None
-    categorie: Optional[str] = None
+    categorie: Optional[str] = None  # Doit être une des CATEGORIES_PRODUCTION
     portions: int
     temps_preparation: Optional[int] = None
     instructions: Optional[str] = None
