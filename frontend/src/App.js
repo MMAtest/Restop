@@ -1449,11 +1449,51 @@ function App() {
                 )}
               </div>
               
-              {/* Alertes de stock faible */}
+              {/* Alertes de stock faible avec switch */}
               <div className="alert-section">
-                <div className="alert-header">
-                  <div className="alert-title">Stock Faible</div>
-                  <div className="alert-count">3</div>
+                <div className="alert-header" style={{display: 'flex', alignItems: 'center', justifyContent: 'space-between'}}>
+                  <div style={{display: 'flex', alignItems: 'center'}}>
+                    <div className="alert-count" style={{
+                      background: 'var(--color-danger-red)',
+                      color: 'white',
+                      width: '24px',
+                      height: '24px',
+                      borderRadius: '50%',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      fontSize: '12px',
+                      fontWeight: 'bold',
+                      marginRight: '8px'
+                    }}>3</div>
+                    <div className="alert-title">Stock Faible</div>
+                  </div>
+                  
+                  {/* Switch pour Produits/Productions */}
+                  <div style={{display: 'flex', gap: '5px', fontSize: '12px'}}>
+                    <button 
+                      className="button small" 
+                      style={{
+                        background: 'var(--color-primary-blue)',
+                        color: 'white',
+                        padding: '4px 8px',
+                        fontSize: '11px'
+                      }}
+                    >
+                      Produits
+                    </button>
+                    <button 
+                      className="button small" 
+                      style={{
+                        background: 'var(--color-background-card-light)',
+                        color: 'var(--color-text-secondary)',
+                        padding: '4px 8px',
+                        fontSize: '11px'
+                      }}
+                    >
+                      Productions
+                    </button>
+                  </div>
                 </div>
                 
                 <div className="alert-card">
@@ -1490,14 +1530,53 @@ function App() {
                 </div>
               </div>
 
-              {/* Alertes basées sur la période */}
+              {/* Nouvelle alerte : Expiration < 3 jours */}
               <div className="alert-section">
-                <div className="alert-header">
-                  <div className="alert-title">Problèmes Période</div>
-                  <div className="alert-count">{filteredAnalytics.commandes < 10 ? '1' : '0'}</div>
+                <div className="alert-header" style={{display: 'flex', alignItems: 'center'}}>
+                  <div className="alert-count" style={{
+                    background: 'var(--color-warning-orange)',
+                    color: 'white',
+                    width: '24px',
+                    height: '24px',
+                    borderRadius: '50%',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: '12px',
+                    fontWeight: 'bold',
+                    marginRight: '8px'
+                  }}>2</div>
+                  <div className="alert-title">Expiration < 3 jours</div>
                 </div>
-                {filteredAnalytics.commandes < 10 ? (
-                  <div className="alert-card">
+                
+                <div className="alert-card warning">
+                  <div className="alert-item">
+                    <div className="product-info">
+                      <div className="product-name">🐟 Saumon frais</div>
+                      <div className="stock-info">
+                        Lot SAU-2024-15 • 2.8 kg • Expire dans 2 jours (19/09/2025)
+                      </div>
+                    </div>
+                    <div className="item-actions">
+                      <button className="button small warning">⚡ Utiliser rapidement</button>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="alert-card warning">
+                  <div className="alert-item">
+                    <div className="product-info">
+                      <div className="product-name">🥛 Crème fraîche</div>
+                      <div className="stock-info">
+                        Lot CRE-2024-08 • 1.5 L • Expire dans 1 jour (18/09/2025)
+                      </div>
+                    </div>
+                    <div className="item-actions">
+                      <button className="button small critical">🚨 Urgent</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
                     <div className="alert-item">
                       <div className="product-info">
                         <div className="product-name">📉 Activité Faible</div>
