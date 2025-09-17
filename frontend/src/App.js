@@ -375,6 +375,7 @@ function App() {
         portions: parseInt(recetteForm.portions),
         temps_preparation: recetteForm.temps_preparation ? parseInt(recetteForm.temps_preparation) : null,
         prix_vente: recetteForm.prix_vente ? parseFloat(recetteForm.prix_vente) : null,
+        coefficient_prevu: recetteForm.coefficient_prevu ? parseFloat(recetteForm.coefficient_prevu) / 100 : null, // Convertir en décimal
         ingredients: recetteForm.ingredients.map(ing => ({
           ...ing,
           quantite: parseFloat(ing.quantite)
