@@ -54,6 +54,12 @@ function App() {
   const [criticalProducts, setCriticalProducts] = useState([]);
   const [showBatchModal, setShowBatchModal] = useState(false);
   const [selectedProductBatches, setSelectedProductBatches] = useState(null);
+  
+  // États pour les filtres par catégorie
+  const [categoriesProduction, setCategoriesProduction] = useState([]);
+  const [selectedCategoryFilter, setSelectedCategoryFilter] = useState('');
+  const [filteredRecettes, setFilteredRecettes] = useState([]);
+  const [filteredProduits, setFilteredProduits] = useState([]);
 
   // États pour les modals
   const [showProduitModal, setShowProduitModal] = useState(false);
