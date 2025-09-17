@@ -1398,39 +1398,6 @@ function App() {
                   );
                 })}
               </div>
-
-              {/* Ventes par catégorie complètes */}
-              <div className="kpi-grid">
-                <div className="kpi-card">
-                  <div className="icon">🥗</div>
-                  <div className="title">Entrées</div>
-                  <div className="value">{filteredAnalytics.ventesParCategorie.entrees.toLocaleString('fr-FR')} €</div>
-                </div>
-                
-                <div className="kpi-card">
-                  <div className="icon">🍽️</div>
-                  <div className="title">Plats</div>
-                  <div className="value">{filteredAnalytics.ventesParCategorie.plats.toLocaleString('fr-FR')} €</div>
-                </div>
-                
-                <div className="kpi-card">
-                  <div className="icon">🍰</div>
-                  <div className="title">Desserts</div>
-                  <div className="value">{filteredAnalytics.ventesParCategorie.desserts.toLocaleString('fr-FR')} €</div>
-                </div>
-                
-                <div className="kpi-card">
-                  <div className="icon">🍹</div>
-                  <div className="title">Bar</div>
-                  <div className="value">{filteredAnalytics.ventesParCategorie.boissons.toLocaleString('fr-FR')} €</div>
-                </div>
-                
-                <div className="kpi-card">
-                  <div className="icon">📝</div>
-                  <div className="title">Autres</div>
-                  <div className="value">{filteredAnalytics.ventesParCategorie.autres.toLocaleString('fr-FR')} €</div>
-                </div>
-              </div>
             </div>
           )}
 
