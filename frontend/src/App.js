@@ -2191,7 +2191,6 @@ function App() {
                 
                 <div style={{display: 'flex', gap: '10px', marginBottom: '20px', flexWrap: 'wrap'}}>
                   <button className="button" onClick={() => setShowRecetteModal(true)}>➕ Nouvelle Production</button>
-                  <button className="button" onClick={handleCalculerCouts}>💰 Calculer Coûts</button>
                   <button className="button" onClick={handleExportRecettes}>📖 Export Excel</button>
                 </div>
 
