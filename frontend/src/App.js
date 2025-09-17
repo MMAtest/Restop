@@ -1384,9 +1384,9 @@ function App() {
 
                 {/* Liste des flop productions filtrées avec coefficients */}
                 {getFilteredProductions(filteredAnalytics.flopProductions, selectedFlopCategory).slice(0, 4).map((production, index) => {
-                  const coefficientStatus = production.coefficientReel >= production.coefficientPrevu ? 'critical' : 'success';
-                  const coefficientIcon = production.coefficientReel >= production.coefficientPrevu ? '🔴' : '✅';
-                  const coefficientText = production.coefficientReel >= production.coefficientPrevu ? 'Problème' : 'Respecté';
+                  const coefficientStatus = production.coefficientReel >= production.coefficientPrevu ? 'success' : 'critical';
+                  const coefficientIcon = production.coefficientReel >= production.coefficientPrevu ? '✅' : '🔴';
+                  const coefficientText = production.coefficientReel >= production.coefficientPrevu ? 'Respecté' : 'Problème';
                   
                   return (
                     <div key={index} className="item-row">
