@@ -157,8 +157,10 @@ function App() {
   // Fonction pour filtrer les produits par catégorie
   const filterProduitsByCategory = (category) => {
     if (!category || category === '') {
+      // Si "tous les ingrédients", afficher tout y compris ceux sans catégorie
       setFilteredProduits(produits);
     } else {
+      // Si catégorie spécifique, afficher seulement ceux avec cette catégorie
       const filtered = produits.filter(produit => produit.categorie === category);
       setFilteredProduits(filtered);
     }
@@ -167,8 +169,10 @@ function App() {
   // Fonction pour filtrer les productions par catégorie
   const getFilteredProductions = (productions, category) => {
     if (!category || category === '') {
+      // Si "toutes les catégories", afficher tout y compris ceux sans catégorie
       return productions;
     }
+    // Si catégorie spécifique, afficher seulement ceux avec cette catégorie
     return productions.filter(production => production.categorie === category);
   };
 
