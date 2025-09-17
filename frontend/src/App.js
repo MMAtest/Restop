@@ -2057,7 +2057,7 @@ function App() {
                   color: activeProductionTab === 'recettes' ? 'white' : 'var(--color-text-secondary)'
                 }}
               >
-                📝 Plats & Recettes
+                📝 Productions
               </button>
               <button 
                 className="button" 
