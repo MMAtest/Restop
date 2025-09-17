@@ -1960,22 +1960,35 @@ function App() {
                 </div>
               </div>
 
-              {/* Analyse des stocks actuels */}
+              {/* Analyse des productions possibles (modifiée) */}
               <div className="item-list">
-                <div className="section-title">📋 Analyse des Stocks & Productions Possibles</div>
+                <div className="section-title">🍽️ Productions Possibles avec Stocks Actuels</div>
                 
-                {stocksPrevisionnels.map((stock, index) => (
+                {/* Créer une liste plate de toutes les productions possibles */}
+                {stocksPrevisionnels.flatMap(stock => 
+                  stock.productions_possibles.map(production => ({
+                    ...production,
+                    produit: stock.produit,
+                    stock_disponible: stock.stock_actuel,
+                    unite: stock.unite,
+                    stock_id: stock.id
+                  }))
+                ).map((production, index) => (
                   <div key={index} className="item-row">
                     <div className="item-info">
                       <div className="item-name">
-                        📦 {stock.produit}
+                        🍽️ {production.nom}
                       </div>
                       <div className="item-details">
-                        Stock actuel: {stock.stock_actuel} {stock.unite} • {stock.productions_possibles.length} production(s) possible(s)
+                        Produit principal: {production.produit} • Stock: {production.stock_disponible} {production.unite} • 
+                        Max portions: {production.portions_possibles}
                       </div>
                     </div>
                     <div className="item-actions">
-                      <button className="button small" onClick={() => setSelectedProductionPrevisionnelle(stock.id)}>
+                      <button 
+                        className="button small" 
+                        onClick={() => alert(`Détails pour ${production.nom}:\n\n📦 Produit: ${production.produit}\n📏 Besoin: ${production.quantite_needed} ${production.unite} par portion\n📊 Stock disponible: ${production.stock_disponible} ${production.unite}\n⚡ Portions max: ${production.portions_possibles}`)}
+                      >
                         🔍 Détails
                       </button>
                     </div>
