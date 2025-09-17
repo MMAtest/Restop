@@ -243,6 +243,9 @@ class Recette(BaseModel):
     temps_preparation: Optional[int] = None  # en minutes
     instructions: Optional[str] = None
     prix_vente: Optional[float] = None
+    coefficient_prevu: Optional[float] = None  # Coefficient prévu par le manager
+    coefficient_reel: Optional[float] = None   # Coefficient réel calculé (Coût Matière / Prix de Vente)
+    cout_matiere: Optional[float] = None       # Coût total des matières premières
     ingredients: List[RecetteIngredient] = []
     created_at: datetime = Field(default_factory=datetime.utcnow)
 
@@ -254,6 +257,7 @@ class RecetteCreate(BaseModel):
     temps_preparation: Optional[int] = None
     instructions: Optional[str] = None
     prix_vente: Optional[float] = None
+    coefficient_prevu: Optional[float] = None  # Nouveau champ pour le coefficient prévu
     ingredients: List[RecetteIngredient] = []
 
 class RecetteUpdate(BaseModel):
