@@ -496,6 +496,18 @@ test_plan:
   test_all: false
   test_priority: "high_first"
 
+  - task: "Répartition Tab Migration - Phase 3 Complete"
+    implemented: true
+    working: true
+    file: "/app/frontend/src/App.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "✅ RÉPARTITION TAB MIGRATION COMPLETE - Successfully moved 'Répartition optimale des Productions' functionality from Prévisionnel tab to new dedicated Répartition tab within Stock section. Complete functionality preserved: stock management with validation, interactive input fields, action buttons (Analyser Stocks, Planification, Commande Auto), and all distribution logic. Prévisionnel tab cleaned and focused on forecasting analysis only."
+
   - task: "Nouvelle Interface OCR Module Complet"
     implemented: true
     working: true
