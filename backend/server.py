@@ -2508,7 +2508,12 @@ async def get_mouvements():
     mouvements = await db.mouvements_stock.find().sort("date", -1).to_list(1000)
     return [MouvementStock(**m) for m in mouvements]
 
-# Routes pour les recettes
+# Routes pour les recettes (Productions)
+@api_router.get("/categories-production")
+async def get_categories_production():
+    """Récupère les catégories de production disponibles"""
+    return {"categories": CATEGORIES_PRODUCTION}
+
 @api_router.post("/recettes", response_model=Recette)
 async def create_recette(recette: RecetteCreate):
     # Enrichir les ingrédients avec les noms des produits
