@@ -1716,7 +1716,7 @@ function App() {
                 )}
               </div>
 
-              {/* Nouveaux KPIs demandés : stock brut, net, déchets, pertes */}
+              {/* KPIs : stock brut, net, déchets, pertes */}
               <div className="kpi-grid">
                 <div className="kpi-card">
                   <div className="icon">📦</div>
@@ -1747,51 +1747,115 @@ function App() {
                 </div>
               </div>
 
-              {/* Détail des coûts par catégorie */}
+              {/* Répartition par catégorie de productions */}
               <div className="item-list">
-                <div className="section-title">💸 Répartition des Coûts par Poste</div>
+                <div className="section-title">🍽️ Répartition des Coûts par Catégorie de Productions</div>
                 
                 <div className="item-row">
                   <div className="item-info">
-                    <div className="item-name">🥩 Matières Premières</div>
-                    <div className="item-details">65.2% du CA • Principalement viandes et poissons</div>
+                    <div className="item-name">🍽️ Plats</div>
+                    <div className="item-details">42.3% des coûts totaux • 18 productions actives</div>
                   </div>
-                  <div className="item-value">423 847 €</div>
+                  <div className="item-value">357 142 €</div>
                 </div>
 
                 <div className="item-row">
                   <div className="item-info">
-                    <div className="item-name">👨‍🍳 Main d'œuvre</div>
-                    <div className="item-details">22.1% du CA • Cuisine et service</div>
+                    <div className="item-name">🥗 Entrées</div>
+                    <div className="item-details">28.7% des coûts totaux • 12 productions actives</div>
                   </div>
-                  <div className="item-value">143 920 €</div>
+                  <div className="item-value">242 568 €</div>
                 </div>
 
                 <div className="item-row">
                   <div className="item-info">
-                    <div className="item-name">⚡ Charges Fixes</div>
-                    <div className="item-details">8.7% du CA • Électricité, loyer, assurances</div>
+                    <div className="item-name">🍹 Bar</div>
+                    <div className="item-details">15.2% des coûts totaux • 8 productions actives</div>
                   </div>
-                  <div className="item-value">56 643 €</div>
+                  <div className="item-value">128 463 €</div>
                 </div>
 
                 <div className="item-row">
                   <div className="item-info">
-                    <div className="item-name">🚚 Logistique</div>
-                    <div className="item-details">4.0% du CA • Transport et livraisons</div>
+                    <div className="item-name">🍰 Desserts</div>
+                    <div className="item-details">10.1% des coûts totaux • 6 productions actives</div>
                   </div>
-                  <div className="item-value">26 034 €</div>
+                  <div className="item-value">85 374 €</div>
+                </div>
+
+                <div className="item-row">
+                  <div className="item-info">
+                    <div className="item-name">📝 Autres</div>
+                    <div className="item-details">3.7% des coûts totaux • 3 productions actives</div>
+                  </div>
+                  <div className="item-value">31 293 €</div>
                 </div>
               </div>
 
-              {/* Analyse des pertes et déchets */}
+              {/* Répartition par catégorie de produits */}
               <div className="item-list">
-                <div className="section-title">📊 Analyse Pertes & Déchets</div>
+                <div className="section-title">📦 Répartition des Coûts par Catégorie de Produits</div>
                 
                 <div className="item-row">
                   <div className="item-info">
+                    <div className="item-name">🥩 Viandes</div>
+                    <div className="item-details">38.5% des achats • Stock moyen: 287 kg</div>
+                  </div>
+                  <div className="item-value">326 235 €</div>
+                </div>
+
+                <div className="item-row">
+                  <div className="item-info">
+                    <div className="item-name">🐟 Poissons</div>
+                    <div className="item-details">24.1% des achats • Stock moyen: 156 kg</div>
+                  </div>
+                  <div className="item-value">204 187 €</div>
+                </div>
+
+                <div className="item-row">
+                  <div className="item-info">
+                    <div className="item-name">🥕 Légumes</div>
+                    <div className="item-details">18.7% des achats • Stock moyen: 423 kg</div>
+                  </div>
+                  <div className="item-value">158 624 €</div>
+                </div>
+
+                <div className="item-row">
+                  <div className="item-info">
+                    <div className="item-name">🧀 Produits laitiers</div>
+                    <div className="item-details">12.3% des achats • Stock moyen: 87 kg</div>
+                  </div>
+                  <div className="item-value">104 267 €</div>
+                </div>
+
+                <div className="item-row">
+                  <div className="item-info">
+                    <div className="item-name">🌶️ Épices & Condiments</div>
+                    <div className="item-details">6.4% des achats • Stock moyen: 32 kg</div>
+                  </div>
+                  <div className="item-value">54 207 €</div>
+                </div>
+              </div>
+
+              {/* Analyse pertes et déchets par produit puis productions */}
+              <div className="item-list">
+                <div className="section-title">📊 Analyse Pertes & Déchets par Produit</div>
+                
+                <div className="item-row">
+                  <div className="item-info">
+                    <div className="item-name">🥩 Viandes</div>
+                    <div className="item-details">Perte: 15.2% • Parage et os • Impact: 18 productions</div>
+                  </div>
+                  <div className="item-actions">
+                    <span className="status-badge critical">Élevé</span>
+                    <div className="item-value critical">29 920 €</div>
+                  </div>
+                </div>
+
+                <div className="item-row">
+                  <div className="item-info">
                     <div className="item-name">🥬 Légumes</div>
-                    <div className="item-details">Perte: 12.3% • Principalement épluchures et fanes</div>
+                    <div className="item-details">Perte: 12.3% • Épluchures et fanes • Impact: 24 productions</div>
                   </div>
                   <div className="item-actions">
                     <span className="status-badge warning">Normal</span>
@@ -1802,22 +1866,48 @@ function App() {
                 <div className="item-row">
                   <div className="item-info">
                     <div className="item-name">🐟 Poissons</div>
-                    <div className="item-details">Perte: 8.7% • Arêtes et parements</div>
+                    <div className="item-details">Perte: 8.7% • Arêtes et parements • Impact: 8 productions</div>
                   </div>
                   <div className="item-actions">
                     <span className="status-badge success">Optimisé</span>
                     <div className="item-value">21 890 €</div>
                   </div>
                 </div>
+              </div>
+
+              <div className="item-list">
+                <div className="section-title">🍽️ Analyse Pertes & Déchets par Production</div>
+                
+                <div className="item-row">
+                  <div className="item-info">
+                    <div className="item-name">🍽️ Côte de bœuf grillée</div>
+                    <div className="item-details">Perte: 18.5% • Principalement parage de viande</div>
+                  </div>
+                  <div className="item-actions">
+                    <span className="status-badge critical">À optimiser</span>
+                    <div className="item-value critical">8 240 €</div>
+                  </div>
+                </div>
 
                 <div className="item-row">
                   <div className="item-info">
-                    <div className="item-name">🥩 Viandes</div>
-                    <div className="item-details">Perte: 15.2% • Parage et os</div>
+                    <div className="item-name">🥗 Salade composée</div>
+                    <div className="item-details">Perte: 11.2% • Épluchage et préparation légumes</div>
                   </div>
                   <div className="item-actions">
-                    <span className="status-badge critical">Élevé</span>
-                    <div className="item-value critical">29 920 €</div>
+                    <span className="status-badge warning">Acceptable</span>
+                    <div className="item-value warning">3 870 €</div>
+                  </div>
+                </div>
+
+                <div className="item-row">
+                  <div className="item-info">
+                    <div className="item-name">🐟 Filet de saumon</div>
+                    <div className="item-details">Perte: 6.8% • Parage et désarêtage</div>
+                  </div>
+                  <div className="item-actions">
+                    <span className="status-badge success">Excellent</span>
+                    <div className="item-value">4 520 €</div>
                   </div>
                 </div>
               </div>
