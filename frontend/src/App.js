@@ -3138,6 +3138,105 @@ function App() {
           </div>
         </div>
       )}
+
+      {/* Modal Détails des Lots DLC */}
+      {showBatchModal && selectedProductBatches && (
+        <div className="modal-overlay" onClick={() => setShowBatchModal(false)}>
+          <div className="modal-content large" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3>📅 Lots & DLC - {selectedProductBatches.product_name}</h3>
+              <button className="modal-close" onClick={() => setShowBatchModal(false)}>×</button>
+            </div>
+            
+            <div className="modal-body">
+              {/* Résumé du produit */}
+              <div className="section-card" style={{marginBottom: '20px'}}>
+                <div className="kpi-grid">
+                  <div className="kpi-card">
+                    <div className="icon">📦</div>
+                    <div className="title">Stock Total</div>
+                    <div className="value">{selectedProductBatches.total_stock}</div>
+                  </div>
+                  
+                  <div className="kpi-card">
+                    <div className="icon">📅</div>
+                    <div className="title">Nombre de Lots</div>
+                    <div className="value">{selectedProductBatches.batches.length}</div>
+                  </div>
+                  
+                  <div className="kpi-card">
+                    <div className="icon">🔴</div>
+                    <div className="title">Lots Expirés</div>
+                    <div className="value critical">{selectedProductBatches.expired_batches}</div>
+                  </div>
+                  
+                  <div className="kpi-card">
+                    <div className="icon">🟡</div>
+                    <div className="title">Lots Critiques</div>
+                    <div className="value warning">{selectedProductBatches.critical_batches}</div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Liste détaillée des lots */}
+              <div className="section-card">
+                <div className="section-title">📋 Détail des Lots</div>
+                
+                {selectedProductBatches.batches.length > 0 ? (
+                  <div className="item-list">
+                    {selectedProductBatches.batches.map((batch, index) => {
+                      const statusIcon = batch.status === 'expired' ? '🔴' : 
+                                        batch.status === 'critical' ? '🟡' : '✅';
+                      const statusText = batch.status === 'expired' ? 'EXPIRÉ' : 
+                                        batch.status === 'critical' ? 'CRITIQUE' : 'OK';
+                      const statusClass = batch.status === 'expired' ? 'critical' : 
+                                         batch.status === 'critical' ? 'warning' : 'success';
+                      
+                      return (
+                        <div key={index} className="item-row">
+                          <div className="item-info">
+                            <div className="item-name">
+                              {statusIcon} Lot {batch.batch_number || `#${index + 1}`}
+                            </div>
+                            <div className="item-details">
+                              <strong>Quantité:</strong> {batch.quantity} • 
+                              <strong>Reçu le:</strong> {new Date(batch.received_date).toLocaleDateString('fr-FR')} •
+                              <strong>DLC:</strong> {batch.expiry_date ? new Date(batch.expiry_date).toLocaleDateString('fr-FR') : 'Non définie'}
+                              {batch.supplier_id && (
+                                <span> • <strong>Fournisseur:</strong> {batch.supplier_id}</span>
+                              )}
+                            </div>
+                          </div>
+                          <div className="item-actions">
+                            <span className={`status-badge ${statusClass}`}>
+                              {statusText}
+                            </span>
+                            <button className="button small">⚡ Consommer</button>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <div style={{textAlign: 'center', padding: '40px', color: 'var(--color-text-muted)'}}>
+                    <div style={{fontSize: '48px', marginBottom: '15px'}}>📅</div>
+                    <p>Aucun lot trouvé pour ce produit</p>
+                  </div>
+                )}
+              </div>
+            </div>
+            
+            <div className="modal-footer">
+              <button className="button secondary" onClick={() => setShowBatchModal(false)}>
+                Fermer
+              </button>
+              <button className="button" onClick={() => alert('Fonctionnalité à implémenter: Ajouter nouveau lot')}>
+                ➕ Nouveau Lot
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
