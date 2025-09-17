@@ -2468,44 +2468,217 @@ function App() {
                   </div>
                 </div>
 
-                {/* Liste des produits en stock */}
+                {/* Liste des produits en stock avec recherche et filtres */}
                 <div className="item-list">
                   <div className="section-title">📋 Produits en Stock</div>
                   
-                  {stocks.slice(0, 5).map((stock, index) => {
-                    const isLowStock = stock.quantite_actuelle <= stock.quantite_min;
-                    const produit = produits.find(p => p.id === stock.produit_id);
-                    const unite = getDisplayUnit(produit?.unite);
-                    
-                    return (
-                      <div key={index} className="item-row">
-                        <div className="item-info">
-                          <div className="item-name">
-                            {produit?.categorie === 'légumes' ? '🍅' : 
-                             produit?.categorie === 'épices' ? '🧄' : 
-                             produit?.categorie === 'huiles' ? '🫒' : 
-                             produit?.categorie === 'fromages' ? '🧀' : '📦'} {stock.produit_nom}
-                          </div>
-                          <div className="item-details">
-                            Stock: {formatQuantity(stock.quantite_actuelle, unite)} / Min: {formatQuantity(stock.quantite_min, unite)}
-                            {isLowStock && <span style={{color: 'var(--color-danger-red)', marginLeft: '8px'}}>⚠️ Critique</span>}
-                          </div>
-                        </div>
-                        <div className="item-actions">
-                          <button className="button small" onClick={() => handleEdit(produit, 'produit')}>✏️ Produit</button>
-                          <button className="button small success" onClick={() => handleAjusterStock(stock)}>📊 Ajuster</button>
-                          <button className="button small" onClick={() => setShowMouvementModal(true)}>🛒 Commander</button>
-                        </div>
+                  {/* Barre de recherche et filtres */}
+                  <div className="filter-section" style={{marginBottom: '20px'}}>
+                    <div style={{display: 'flex', gap: '15px', alignItems: 'center', flexWrap: 'wrap'}}>
+                      {/* Barre de recherche */}
+                      <div style={{display: 'flex', alignItems: 'center', gap: '8px', flex: '1', minWidth: '200px'}}>
+                        <label className="filter-label" style={{fontSize: '14px', minWidth: '70px'}}>🔍 Recherche :</label>
+                        <input
+                          type="text"
+                          placeholder="Nom du produit..."
+                          value={stockSearchTerm}
+                          onChange={(e) => setStockSearchTerm(e.target.value)}
+                          style={{
+                            padding: '6px 10px',
+                            borderRadius: '4px',
+                            border: '1px solid var(--color-border)',
+                            background: 'var(--color-background-card)',
+                            color: 'var(--color-text-primary)',
+                            fontSize: '13px',
+                            flex: '1'
+                          }}
+                        />
                       </div>
-                    );
-                  })}
-                  
-                  {stocks.length === 0 && (
-                    <div style={{textAlign: 'center', padding: '40px', color: 'var(--color-text-muted)'}}>
-                      <div style={{fontSize: '48px', marginBottom: '15px'}}>📦</div>
-                      <p>Aucun stock disponible</p>
+                      
+                      {/* Filtre par catégorie */}
+                      <div style={{display: 'flex', alignItems: 'center', gap: '8px'}}>
+                        <label className="filter-label" style={{fontSize: '14px', minWidth: '70px'}}>🏷️ Catégorie :</label>
+                        <select 
+                          className="filter-select"
+                          value={stockFilterCategory}
+                          onChange={(e) => {
+                            setStockFilterCategory(e.target.value);
+                            setStockCurrentPage(1); // Reset à la page 1
+                          }}
+                          style={{
+                            padding: '6px 10px',
+                            borderRadius: '4px',
+                            border: '1px solid var(--color-border)',
+                            background: 'var(--color-background-card)',
+                            color: 'var(--color-text-primary)',
+                            fontSize: '13px',
+                            minWidth: '150px'
+                          }}
+                        >
+                          <option value="all">Toutes catégories</option>
+                          <option value="légumes">🥕 Légumes</option>
+                          <option value="viandes">🥩 Viandes</option>
+                          <option value="poissons">🐟 Poissons</option>
+                          <option value="produits laitiers">🧀 Produits laitiers</option>
+                          <option value="épices">🌶️ Épices</option>
+                          <option value="fruits">🍎 Fruits</option>
+                          <option value="céréales">🌾 Céréales</option>
+                          <option value="boissons">🥤 Boissons</option>
+                          <option value="autres">📦 Autres</option>
+                        </select>
+                      </div>
                     </div>
-                  )}
+                  </div>
+
+                  {/* Liste des produits avec pagination */}
+                  {(() => {
+                    // Filtrer les stocks selon la recherche et la catégorie
+                    const filteredStocks = stocks.filter(stock => {
+                      const produit = produits.find(p => p.id === stock.produit_id);
+                      const matchesSearch = stock.produit_nom.toLowerCase().includes(stockSearchTerm.toLowerCase());
+                      const matchesCategory = stockFilterCategory === 'all' || 
+                                            (produit && produit.categorie && produit.categorie.toLowerCase() === stockFilterCategory.toLowerCase());
+                      return matchesSearch && matchesCategory;
+                    });
+                    
+                    // Calculer la pagination
+                    const totalPages = Math.ceil(filteredStocks.length / stockItemsPerPage);
+                    const startIndex = (stockCurrentPage - 1) * stockItemsPerPage;
+                    const endIndex = startIndex + stockItemsPerPage;
+                    const currentStocks = filteredStocks.slice(startIndex, endIndex);
+                    
+                    if (filteredStocks.length === 0) {
+                      return (
+                        <div style={{textAlign: 'center', padding: '40px', color: 'var(--color-text-muted)'}}>
+                          <div style={{fontSize: '48px', marginBottom: '15px'}}>📦</div>
+                          <p>Aucun produit trouvé</p>
+                          {stockSearchTerm && <p style={{fontSize: '14px'}}>Essayez un autre terme de recherche</p>}
+                        </div>
+                      );
+                    }
+
+                    return (
+                      <>
+                        {/* Informations sur les résultats */}
+                        <div style={{
+                          marginBottom: '15px',
+                          fontSize: '14px',
+                          color: 'var(--color-text-secondary)',
+                          padding: '8px 12px',
+                          background: 'var(--color-background-card-light)',
+                          borderRadius: '6px'
+                        }}>
+                          {filteredStocks.length} produit(s) trouvé(s)
+                          {stockSearchTerm && ` pour "${stockSearchTerm}"`}
+                          {stockFilterCategory !== 'all' && ` dans la catégorie "${stockFilterCategory}"`}
+                        </div>
+
+                        {/* Produits de la page actuelle */}
+                        {currentStocks.map((stock, index) => {
+                          const isLowStock = stock.quantite_actuelle <= stock.quantite_min;
+                          const produit = produits.find(p => p.id === stock.produit_id);
+                          const unite = getDisplayUnit(produit?.unite);
+                          
+                          return (
+                            <div key={index} className="item-row">
+                              <div className="item-info">
+                                <div className="item-name">
+                                  {produit?.categorie === 'légumes' ? '🍅' : 
+                                   produit?.categorie === 'épices' ? '🧄' : 
+                                   produit?.categorie === 'huiles' ? '🫒' : 
+                                   produit?.categorie === 'fromages' ? '🧀' : '📦'} {stock.produit_nom}
+                                </div>
+                                <div className="item-details">
+                                  Stock: {formatQuantity(stock.quantite_actuelle, unite)} / Min: {formatQuantity(stock.quantite_min, unite)}
+                                  {isLowStock && <span style={{color: 'var(--color-danger-red)', marginLeft: '8px'}}>⚠️ Critique</span>}
+                                </div>
+                              </div>
+                              <div className="item-actions">
+                                <button className="button small" onClick={() => handleEdit(produit, 'produit')}>✏️ Produit</button>
+                                <button className="button small success" onClick={() => handleAjusterStock(stock)}>📊 Ajuster</button>
+                                <button className="button small" onClick={() => setShowMouvementModal(true)}>🛒 Commander</button>
+                              </div>
+                            </div>
+                          );
+                        })}
+
+                        {/* Contrôles de pagination */}
+                        {totalPages > 1 && (
+                          <div style={{
+                            display: 'flex', 
+                            justifyContent: 'space-between', 
+                            alignItems: 'center',
+                            marginTop: '20px',
+                            padding: '15px',
+                            background: 'var(--color-background-card-light)',
+                            borderRadius: '8px'
+                          }}>
+                            <div style={{fontSize: '14px', color: 'var(--color-text-secondary)'}}>
+                              Page {stockCurrentPage} sur {totalPages} • 
+                              {startIndex + 1}-{Math.min(endIndex, filteredStocks.length)} sur {filteredStocks.length} produits
+                            </div>
+                            
+                            <div style={{display: 'flex', gap: '5px'}}>
+                              <button 
+                                className="button small" 
+                                onClick={() => setStockCurrentPage(1)}
+                                disabled={stockCurrentPage === 1}
+                                style={{
+                                  opacity: stockCurrentPage === 1 ? 0.5 : 1,
+                                  cursor: stockCurrentPage === 1 ? 'not-allowed' : 'pointer'
+                                }}
+                              >
+                                ⏮️ Début
+                              </button>
+                              <button 
+                                className="button small" 
+                                onClick={() => setStockCurrentPage(stockCurrentPage - 1)}
+                                disabled={stockCurrentPage === 1}
+                                style={{
+                                  opacity: stockCurrentPage === 1 ? 0.5 : 1,
+                                  cursor: stockCurrentPage === 1 ? 'not-allowed' : 'pointer'
+                                }}
+                              >
+                                ⬅️ Précédent
+                              </button>
+                              <span style={{
+                                padding: '6px 12px',
+                                background: 'var(--color-primary-blue)',
+                                color: 'white',
+                                borderRadius: '4px',
+                                fontSize: '12px',
+                                fontWeight: 'bold'
+                              }}>
+                                {stockCurrentPage}
+                              </span>
+                              <button 
+                                className="button small" 
+                                onClick={() => setStockCurrentPage(stockCurrentPage + 1)}
+                                disabled={stockCurrentPage === totalPages}
+                                style={{
+                                  opacity: stockCurrentPage === totalPages ? 0.5 : 1,
+                                  cursor: stockCurrentPage === totalPages ? 'not-allowed' : 'pointer'
+                                }}
+                              >
+                                Suivant ➡️
+                              </button>
+                              <button 
+                                className="button small" 
+                                onClick={() => setStockCurrentPage(totalPages)}
+                                disabled={stockCurrentPage === totalPages}
+                                style={{
+                                  opacity: stockCurrentPage === totalPages ? 0.5 : 1,
+                                  cursor: stockCurrentPage === totalPages ? 'not-allowed' : 'pointer'
+                                }}
+                              >
+                                Fin ⏭️
+                              </button>
+                            </div>
+                          </div>
+                        )}
+                      </>
+                    );
+                  })()}
                 </div>
 
                 {/* Section DLC & Lots intégrée */}
