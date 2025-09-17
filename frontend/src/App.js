@@ -1837,7 +1837,7 @@ function App() {
             {/* ONGLET PRODUITS */}
             {activeProductionTab === 'produits' && (
               <div className="item-list">
-                <div className="section-title">🥕 Gestion des Produits</div>
+                <div className="section-title">🥕 Gestion des Produits (Ingrédients)</div>
                 
                 <div style={{display: 'flex', gap: '10px', marginBottom: '20px', flexWrap: 'wrap'}}>
                   <button className="button" onClick={() => setShowProduitModal(true)}>➕ Nouveau Produit</button>
@@ -1845,17 +1845,72 @@ function App() {
                   <button className="button" onClick={handleGenererEtiquettes}>🏷️ Étiquettes</button>
                 </div>
 
-                {produits.slice(0, 6).map((produit, index) => (
+                {/* Filtre par catégorie d'ingrédients */}
+                <div className="filter-section" style={{marginBottom: '20px'}}>
+                  <div className="filter-group">
+                    <label className="filter-label">🏷️ Filtrer par type d'ingrédient :</label>
+                    <select 
+                      className="filter-select"
+                      onChange={(e) => filterProduitsByCategory(e.target.value)}
+                      style={{
+                        padding: '8px 12px',
+                        borderRadius: '6px',
+                        border: '1px solid var(--color-border)',
+                        background: 'var(--color-background-card)',
+                        color: 'var(--color-text-primary)',
+                        minWidth: '150px'
+                      }}
+                    >
+                      <option value="">Tous les ingrédients</option>
+                      <option value="Légumes">🥕 Légumes</option>
+                      <option value="Viandes">🥩 Viandes</option>
+                      <option value="Poissons">🐟 Poissons</option>
+                      <option value="Produits laitiers">🧀 Produits laitiers</option>
+                      <option value="Épices">🌶️ Épices & Condiments</option>
+                      <option value="Fruits">🍎 Fruits</option>
+                      <option value="Céréales">🌾 Céréales & Féculents</option>
+                      <option value="Boissons">🥤 Boissons</option>
+                      <option value="Autres">📦 Autres</option>
+                    </select>
+                    
+                    <div className="filter-info" style={{
+                      fontSize: '14px', 
+                      color: 'var(--color-text-secondary)',
+                      marginLeft: '10px'
+                    }}>
+                      {filteredProduits.length} produit(s) affiché(s)
+                    </div>
+                  </div>
+                </div>
+
+                {/* Liste des produits filtrés */}
+                {(filteredProduits.length > 0 ? filteredProduits : produits).map((produit, index) => (
                   <div key={index} className="item-row">
                     <div className="item-info">
                       <div className="item-name">
-                        {produit.categorie === 'entrée' ? '🥗' : 
-                         produit.categorie === 'plats' ? '🍽️' : 
-                         produit.categorie === 'desserts' ? '🍰' : 
-                         produit.categorie === 'boissons' ? '🍷' : '📦'} {produit.nom}
+                        {produit.categorie === 'Légumes' ? '🥕' : 
+                         produit.categorie === 'Viandes' ? '🥩' : 
+                         produit.categorie === 'Poissons' ? '🐟' : 
+                         produit.categorie === 'Produits laitiers' ? '🧀' :
+                         produit.categorie === 'Épices' ? '🌶️' :
+                         produit.categorie === 'Fruits' ? '🍎' :
+                         produit.categorie === 'Céréales' ? '🌾' :
+                         produit.categorie === 'Boissons' ? '🥤' : '📦'} {produit.nom}
+                        {produit.categorie && (
+                          <span className="category-badge" style={{
+                            marginLeft: '8px',
+                            padding: '4px 8px',
+                            borderRadius: '12px',
+                            fontSize: '12px',
+                            background: 'var(--color-accent-orange)',
+                            color: 'white'
+                          }}>
+                            {produit.categorie}
+                          </span>
+                        )}
                       </div>
                       <div className="item-details">
-                        {produit.description} • Prix: {produit.prix_achat}€
+                        {produit.description} • Prix: {produit.prix_achat || produit.reference_price || 'N/A'}€
                       </div>
                     </div>
                     <div className="item-actions">
