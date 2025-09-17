@@ -2030,94 +2030,93 @@ function App() {
                 ))}
               </div>
 
-              {/* Répartition des productions */}
+              {/* Répartition optimale avec validation */}
               <div className="item-list">
-                <div className="section-title">🎯 Répartition Optimale des Productions</div>
+                <div className="section-title">🎯 Répartition Optimale avec Validation</div>
                 
-                {stocksPrevisionnels.map((stock, stockIndex) => (
-                  <div key={stockIndex}>
-                    <div className="section-subtitle" style={{marginTop: '20px', marginBottom: '10px', fontSize: '16px', fontWeight: 'bold'}}>
-                      📦 {stock.produit} ({stock.stock_actuel} {stock.unite})
-                    </div>
-                    
-                    {stock.productions_possibles.map((production, prodIndex) => (
-                      <div key={prodIndex} className="item-row">
-                        <div className="item-info">
-                          <div className="item-name">
-                            🍽️ {production.nom}
-                          </div>
-                          <div className="item-details">
-                            Besoin: {production.quantite_needed} {stock.unite} par portion • 
-                            Max possible: {production.portions_possibles} portions
-                          </div>
-                        </div>
-                        <div className="item-actions">
-                          <input 
-                            type="number" 
-                            min="0" 
-                            max={production.portions_possibles}
-                            placeholder="0"
-                            style={{
-                              width: '60px',
-                              padding: '4px 8px',
-                              borderRadius: '4px',
-                              border: '1px solid var(--color-border)',
-                              marginRight: '5px'
-                            }}
-                          />
-                          <span style={{fontSize: '12px', color: 'var(--color-text-secondary)'}}>
-                            / {production.portions_possibles}
+                {stocksPrevisionnels.map((stock, stockIndex) => {
+                  const stockUtilise = stock.productions_possibles.reduce((total, prod) => 
+                    total + (prod.portions_selectionnees * prod.quantite_needed), 0
+                  );
+                  const stockRestant = stock.stock_actuel - stockUtilise;
+                  
+                  return (
+                    <div key={stockIndex}>
+                      <div className="section-subtitle" style={{
+                        display: 'flex', 
+                        justifyContent: 'space-between', 
+                        alignItems: 'center',
+                        marginTop: '20px', 
+                        marginBottom: '10px', 
+                        fontSize: '16px', 
+                        fontWeight: 'bold',
+                        padding: '10px',
+                        background: 'var(--color-background-card-light)',
+                        borderRadius: '8px'
+                      }}>
+                        <span>📦 {stock.produit} ({stock.stock_actuel} {stock.unite})</span>
+                        <div style={{fontSize: '14px', fontWeight: 'normal'}}>
+                          <span style={{color: stockRestant < 0 ? 'var(--color-danger-red)' : 'var(--color-success-green)'}}>
+                            Restant: {stockRestant.toFixed(1)} {stock.unite}
                           </span>
+                          <button 
+                            className="button small success" 
+                            style={{marginLeft: '10px'}}
+                            onClick={() => {
+                              alert(`Répartition validée pour ${stock.produit}!\n\nStock utilisé: ${stockUtilise.toFixed(1)} ${stock.unite}\nStock restant: ${stockRestant.toFixed(1)} ${stock.unite}`);
+                            }}
+                          >
+                            ✅ Valider
+                          </button>
                         </div>
                       </div>
-                    ))}
-                  </div>
-                ))}
-              </div>
-
-              {/* Simulation de commande automatique */}
-              <div className="item-list">
-                <div className="section-title">🚀 Commande Automatique par Fournisseur</div>
-                
-                <div className="alert-section">
-                  <div className="alert-header">
-                    <div className="alert-title">Fournisseur: Les Jardins de Provence</div>
-                  </div>
-                  <div className="section-card">
-                    <div style={{display: 'flex', gap: '10px', flexWrap: 'wrap'}}>
-                      <span className="status-badge success">• Tomates: 15 kg</span>
-                      <span className="status-badge warning">• Courgettes: 8 kg</span>
-                      <span className="status-badge success">• Basilic: 2 kg</span>
+                      
+                      {stock.productions_possibles.map((production, prodIndex) => {
+                        const quantiteUtilisee = production.portions_selectionnees * production.quantite_needed;
+                        const autresUtilisations = stock.productions_possibles.reduce((total, p, i) => {
+                          if (i !== prodIndex) return total + (p.portions_selectionnees * p.quantite_needed);
+                          return total;
+                        }, 0);
+                        const stockDisponiblePourCetteProd = stock.stock_actuel - autresUtilisations;
+                        const maxPossible = Math.floor(stockDisponiblePourCetteProd / production.quantite_needed);
+                        
+                        return (
+                          <div key={prodIndex} className="item-row">
+                            <div className="item-info">
+                              <div className="item-name">
+                                🍽️ {production.nom}
+                              </div>
+                              <div className="item-details">
+                                Besoin: {production.quantite_needed} {stock.unite} par portion • 
+                                Max équilibré: {Math.min(maxPossible, production.portions_possibles)} portions •
+                                Utilise: {quantiteUtilisee.toFixed(1)} {stock.unite}
+                              </div>
+                            </div>
+                            <div className="item-actions">
+                              <input 
+                                type="number" 
+                                min="0" 
+                                max={Math.min(maxPossible, production.portions_possibles)}
+                                value={production.portions_selectionnees}
+                                onChange={(e) => updatePortionsSelectionnees(stock.id, prodIndex, parseInt(e.target.value) || 0)}
+                                style={{
+                                  width: '60px',
+                                  padding: '4px 8px',
+                                  borderRadius: '4px',
+                                  border: '1px solid var(--color-border)',
+                                  marginRight: '5px'
+                                }}
+                              />
+                              <span style={{fontSize: '12px', color: 'var(--color-text-secondary)'}}>
+                                / {Math.min(maxPossible, production.portions_possibles)}
+                              </span>
+                            </div>
+                          </div>
+                        );
+                      })}
                     </div>
-                    <div style={{marginTop: '10px', textAlign: 'right'}}>
-                      <strong>Total estimé: 127,50 €</strong>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="alert-section">
-                  <div className="alert-header">
-                    <div className="alert-title">Fournisseur: Poissonnerie du Port</div>
-                  </div>
-                  <div className="section-card">
-                    <div style={{display: 'flex', gap: '10px', flexWrap: 'wrap'}}>
-                      <span className="status-badge success">• Saumon frais: 3 kg</span>
-                      <span className="status-badge success">• Daurade: 2.5 kg</span>
-                    </div>
-                    <div style={{marginTop: '10px', textAlign: 'right'}}>
-                      <strong>Total estimé: 89,20 €</strong>
-                    </div>
-                  </div>
-                </div>
-
-                <div style={{textAlign: 'center', marginTop: '20px'}}>
-                  <button className="button success" style={{marginRight: '10px'}}>
-                    ✅ Valider toutes les commandes
-                  </button>
-                  <button className="button">
-                    📝 Modifier les quantités
-                  </button>
-                </div>
+                  );
+                })}
               </div>
             </div>
           )}
