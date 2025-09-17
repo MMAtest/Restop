@@ -1620,11 +1620,11 @@ function App() {
                 )}
               </div>
 
-              {/* Nouvelle section : Stock critique */}
+              {/* Nouvelle section : Stock critique (ruptures uniquement) */}
               <div className="alert-section">
                 <div className="alert-header" style={{display: 'flex', alignItems: 'center', justifyContent: 'space-between'}}>
                   <div style={{display: 'flex', alignItems: 'center'}}>
-                    <div className="alert-title">Stock Critique</div>
+                    <div className="alert-title">Ruptures de Stock</div>
                     <div className="alert-count" style={{
                       background: 'var(--color-danger-red)',
                       color: 'white',
@@ -1787,6 +1787,69 @@ function App() {
                     </div>
                   </>
                 )}
+              </div>
+
+              {/* Nouvelle section séparée : DLC Critiques */}
+              <div className="alert-section">
+                <div className="alert-header" style={{display: 'flex', alignItems: 'center'}}>
+                  <div className="alert-title">DLC Critiques (&lt; 3 jours)</div>
+                  <div className="alert-count" style={{
+                    background: 'var(--color-warning-orange)',
+                    color: 'white',
+                    width: '24px',
+                    height: '24px',
+                    borderRadius: '50%',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: '12px',
+                    fontWeight: 'bold',
+                    marginLeft: '8px'
+                  }}>3</div>
+                </div>
+                
+                <div className="alert-card critical">
+                  <div className="alert-item">
+                    <div className="product-info">
+                      <div className="product-name">🐟 Saumon frais</div>
+                      <div className="stock-info">
+                        Lot SAU-2024-15 • 2.8 kg • <span style={{color: 'var(--color-danger-red)', fontWeight: 'bold'}}>Expire dans 1 jour</span>
+                      </div>
+                    </div>
+                    <div className="item-actions">
+                      <button className="button small critical">🚨 Urgent</button>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="alert-card critical">
+                  <div className="alert-item">
+                    <div className="product-info">
+                      <div className="product-name">🥛 Crème fraîche</div>
+                      <div className="stock-info">
+                        Lot CRE-2024-08 • 1.5 L • <span style={{color: 'var(--color-danger-red)', fontWeight: 'bold'}}>Expire dans 2 jours</span>
+                      </div>
+                    </div>
+                    <div className="item-actions">
+                      <button className="button small critical">🚨 Urgent</button>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="alert-card warning">
+                  <div className="alert-item">
+                    <div className="product-info">
+                      <div className="product-name">🧀 Brie de Meaux</div>
+                      <div className="stock-info">
+                        Lot BRI-2024-03 • 800g • <span style={{color: 'var(--color-warning-orange)', fontWeight: 'bold'}}>Expire dans 3 jours</span>
+                      </div>
+                    </div>
+                    <div className="item-actions">
+                      <button className="button small warning">⚡ Utiliser rapidement</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
               </div>
 
               {/* Section Expiration < 7 jours */}
