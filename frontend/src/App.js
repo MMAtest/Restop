@@ -1931,18 +1931,22 @@ function App() {
                 <button className="button">📋 Commande Auto</button>
               </div>
 
-              {/* KPIs prévisionnels */}
+              {/* KPIs prévisionnels modifiés */}
               <div className="kpi-grid">
                 <div className="kpi-card">
-                  <div className="icon">📦</div>
-                  <div className="title">Produits Analysés</div>
-                  <div className="value">{stocksPrevisionnels.length}</div>
+                  <div className="icon">📊</div>
+                  <div className="title">% Productions Possibles</div>
+                  <div className="value positive">
+                    {((stocksPrevisionnels.reduce((total, stock) => total + stock.productions_possibles.length, 0) / 12) * 100).toFixed(0)}%
+                  </div>
+                  <div className="subtitle">7 sur 12 possibles</div>
                 </div>
                 
                 <div className="kpi-card">
-                  <div className="icon">🍽️</div>
-                  <div className="title">Productions Possibles</div>
-                  <div className="value">{stocksPrevisionnels.reduce((total, stock) => total + stock.productions_possibles.length, 0)}</div>
+                  <div className="icon">📅</div>
+                  <div className="title">Nombre de Jours Possibles</div>
+                  <div className="value">4.2</div>
+                  <div className="subtitle">Avec stocks actuels</div>
                 </div>
                 
                 <div className="kpi-card">
@@ -1952,6 +1956,7 @@ function App() {
                     const maxPortions = Math.max(...stock.productions_possibles.map(p => p.portions_possibles));
                     return Math.max(max, maxPortions);
                   }, 0)}</div>
+                  <div className="subtitle">Production optimale</div>
                 </div>
               </div>
 
