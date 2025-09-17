@@ -2275,6 +2275,16 @@ function App() {
               </button>
               <button 
                 className="button" 
+                onClick={() => setActiveStockTab('repartition')}
+                style={{
+                  background: activeStockTab === 'repartition' ? 'var(--color-primary-blue)' : 'var(--color-background-card-light)',
+                  color: activeStockTab === 'repartition' ? 'white' : 'var(--color-text-secondary)'
+                }}
+              >
+                🎯 Répartition
+              </button>
+              <button 
+                className="button" 
                 onClick={() => setActiveStockTab('ocr')}
                 style={{
                   background: activeStockTab === 'ocr' ? 'var(--color-primary-blue)' : 'var(--color-background-card-light)',
