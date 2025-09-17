@@ -2109,40 +2109,64 @@ function App() {
                 </div>
 
                 {/* Liste des produits filtrés */}
-                {(filteredProduits.length > 0 ? filteredProduits : produits).map((produit, index) => (
-                  <div key={index} className="item-row">
-                    <div className="item-info">
-                      <div className="item-name">
-                        {produit.categorie === 'Légumes' ? '🥕' : 
-                         produit.categorie === 'Viandes' ? '🥩' : 
-                         produit.categorie === 'Poissons' ? '🐟' : 
-                         produit.categorie === 'Produits laitiers' ? '🧀' :
-                         produit.categorie === 'Épices' ? '🌶️' :
-                         produit.categorie === 'Fruits' ? '🍎' :
-                         produit.categorie === 'Céréales' ? '🌾' :
-                         produit.categorie === 'Boissons' ? '🥤' : '📦'} {produit.nom}
-                        {produit.categorie && (
-                          <span className="category-badge" style={{
-                            marginLeft: '8px',
-                            padding: '4px 8px',
-                            borderRadius: '12px',
-                            fontSize: '12px',
-                            background: 'var(--color-accent-orange)',
-                            color: 'white'
-                          }}>
-                            {produit.categorie}
-                          </span>
-                        )}
+                {(filteredProduits.length > 0 ? filteredProduits : produits).map((produit, index) => {
+                  // Fonction pour obtenir l'icône selon la catégorie
+                  const getCategoryIcon = (categorie) => {
+                    if (!categorie) return '⚠️'; // Icône d'alerte si pas de catégorie
+                    
+                    switch(categorie) {
+                      case 'Légumes': return '🥕';
+                      case 'Viandes': return '🥩';
+                      case 'Poissons': return '🐟';
+                      case 'Produits laitiers': return '🧀';
+                      case 'Épices': return '🌶️';
+                      case 'Fruits': return '🍎';
+                      case 'Céréales': return '🌾';
+                      case 'Boissons': return '🥤';
+                      case 'Autres': return '📦';
+                      default: return '⚠️'; // Icône d'alerte pour catégorie non reconnue
+                    }
+                  };
+
+                  return (
+                    <div key={index} className="item-row">
+                      <div className="item-info">
+                        <div className="item-name">
+                          {getCategoryIcon(produit.categorie)} {produit.nom}
+                          {produit.categorie ? (
+                            <span className="category-badge" style={{
+                              marginLeft: '8px',
+                              padding: '4px 8px',
+                              borderRadius: '12px',
+                              fontSize: '12px',
+                              background: 'var(--color-accent-orange)',
+                              color: 'white'
+                            }}>
+                              {produit.categorie}
+                            </span>
+                          ) : (
+                            <span className="category-badge" style={{
+                              marginLeft: '8px',
+                              padding: '4px 8px',
+                              borderRadius: '12px',
+                              fontSize: '12px',
+                              background: 'var(--color-warning-orange)',
+                              color: 'white'
+                            }}>
+                              Sans catégorie
+                            </span>
+                          )}
+                        </div>
+                        <div className="item-details">
+                          {produit.description} • Prix: {produit.prix_achat || produit.reference_price || 'N/A'}€
+                        </div>
                       </div>
-                      <div className="item-details">
-                        {produit.description} • Prix: {produit.prix_achat || produit.reference_price || 'N/A'}€
+                      <div className="item-actions">
+                        <button className="button small" onClick={() => handleEdit(produit, 'produit')}>✏️ Éditer</button>
                       </div>
                     </div>
-                    <div className="item-actions">
-                      <button className="button small" onClick={() => handleEdit(produit, 'produit')}>✏️ Éditer</button>
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
 
