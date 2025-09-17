@@ -1147,6 +1147,12 @@ function App() {
           >
             RENTABILITÉ
           </button>
+          <button 
+            className={`top-nav-tab ${activeDashboardTab === "previsionnel" ? "active" : ""}`}
+            onClick={() => setActiveDashboardTab("previsionnel")}
+          >
+            PRÉVISIONNEL
+          </button>
         </div>
       )}
 
