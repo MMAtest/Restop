@@ -3127,6 +3127,20 @@ function App() {
                   onChange={(e) => setRecetteForm({...recetteForm, prix_vente: e.target.value})}
                 />
               </div>
+              <div className="form-group">
+                <label className="form-label">Coefficient prévu (%)</label>
+                <input
+                  type="number"
+                  step="0.1"
+                  min="0"
+                  max="100"
+                  className="form-input"
+                  value={recetteForm.coefficient_prevu}
+                  onChange={(e) => setRecetteForm({...recetteForm, coefficient_prevu: e.target.value})}
+                  placeholder="Ex: 35 pour 35%"
+                />
+                <small className="form-hint">Coefficient prévu = (Coût Matière / Prix de Vente) × 100</small>
+              </div>
 
               {/* Gestion des ingrédients */}
               <div className="form-group">
