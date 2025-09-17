@@ -2187,7 +2187,7 @@ function App() {
             {/* ONGLET RECETTES */}
             {activeProductionTab === 'recettes' && (
               <div className="item-list">
-                <div className="section-title">📝 Plats & Recettes</div>
+                <div className="section-title">📝 Productions</div>
                 
                 <div style={{display: 'flex', gap: '10px', marginBottom: '20px', flexWrap: 'wrap'}}>
                   <button className="button" onClick={() => setShowRecetteModal(true)}>➕ Nouveau Plat</button>
