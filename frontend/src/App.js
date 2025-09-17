@@ -1173,15 +1173,17 @@ function App() {
                 </div>
                 
                 <div className="kpi-card">
-                  <div className="icon">🛒</div>
-                  <div className="title">Commandes</div>
-                  <div className="value">{filteredAnalytics.commandes}</div>
+                  <div className="icon">☀️</div>
+                  <div className="title">Service Midi</div>
+                  <div className="value">{filteredAnalytics.caMidi.toLocaleString('fr-FR')} €</div>
+                  <div className="subtitle">{filteredAnalytics.couvertsMidi} couverts</div>
                 </div>
                 
                 <div className="kpi-card">
-                  <div className="icon">🧾</div>
-                  <div className="title">Panier Moyen</div>
-                  <div className="value">{filteredAnalytics.panierMoyen.toLocaleString('fr-FR')} €</div>
+                  <div className="icon">🌙</div>
+                  <div className="title">Service Soir</div>
+                  <div className="value">{filteredAnalytics.caSoir.toLocaleString('fr-FR')} €</div>
+                  <div className="subtitle">{filteredAnalytics.couvertsSoir} couverts</div>
                 </div>
               </div>
 
