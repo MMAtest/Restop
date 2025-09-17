@@ -2623,13 +2623,6 @@ function App() {
               <div className="section-card">
                 <div className="section-title">🎯 Répartition Optimale des Productions</div>
                 
-                {/* Actions de répartition */}
-                <div style={{display: 'flex', gap: '10px', marginBottom: '20px', flexWrap: 'wrap'}}>
-                  <button className="button">📊 Analyser Stocks</button>
-                  <button className="button">🎯 Planification</button>
-                  <button className="button">📋 Commande Auto</button>
-                </div>
-
                 {/* Répartition optimale avec validation */}
                 <div className="item-list">
                   <div className="section-title">🎯 Répartition Optimale avec Validation</div>
