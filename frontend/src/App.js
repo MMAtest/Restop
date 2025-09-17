@@ -1875,6 +1875,82 @@ function App() {
                     </div>
                   )}
                 </div>
+
+                {/* Section DLC & Lots intégrée */}
+                <div className="item-list">
+                  <div className="section-title">📅 Gestion DLC & Lots</div>
+                  
+                  {/* Actions rapides DLC */}
+                  <div style={{display: 'flex', gap: '10px', marginBottom: '20px', flexWrap: 'wrap'}}>
+                    <button className="button" onClick={fetchBatchSummary}>🔄 Actualiser DLC</button>
+                    <button className="button warning">⚠️ Alertes DLC</button>
+                    <button className="button">📊 Rapport DLC</button>
+                  </div>
+
+                  {/* KPIs DLC */}
+                  <div className="kpi-grid">
+                    <div className="kpi-card">
+                      <div className="icon">📅</div>
+                      <div className="title">Produits avec DLC</div>
+                      <div className="value">{batchSummary.length}</div>
+                    </div>
+                    
+                    <div className="kpi-card">
+                      <div className="icon">🔴</div>
+                      <div className="title">Expirés</div>
+                      <div className="value critical">{expiredProducts.length}</div>
+                    </div>
+                    
+                    <div className="kpi-card">
+                      <div className="icon">🟡</div>
+                      <div className="title">Critiques (&lt; 7j)</div>
+                      <div className="value warning">{criticalProducts.length}</div>
+                    </div>
+                  </div>
+
+                  {/* Liste des produits avec DLC */}
+                  {batchSummary.length > 0 ? (
+                    batchSummary.slice(0, 5).map((item, index) => {
+                      const hasExpired = item.expired_batches > 0;
+                      const hasCritical = item.critical_batches > 0;
+                      const statusIcon = hasExpired ? '🔴' : hasCritical ? '🟡' : '✅';
+                      const statusText = hasExpired ? 'Expiré' : hasCritical ? 'Critique' : 'OK';
+                      
+                      return (
+                        <div key={index} className="item-row">
+                          <div className="item-info">
+                            <div className="item-name">
+                              {statusIcon} {item.product_name}
+                            </div>
+                            <div className="item-details">
+                              Stock total: {item.total_stock} • {item.batches.length} lot(s) • 
+                              {hasExpired && ` ${item.expired_batches} expiré(s)`}
+                              {hasCritical && ` ${item.critical_batches} critique(s)`}
+                              {!hasExpired && !hasCritical && ' Tous lots OK'}
+                            </div>
+                          </div>
+                          <div className="item-actions">
+                            <button 
+                              className="button small"
+                              onClick={() => fetchProductBatches(item.product_id)}
+                            >
+                              🔍 Voir lots
+                            </button>
+                            <span className={`status-badge ${hasExpired ? 'critical' : hasCritical ? 'warning' : 'success'}`}>
+                              {statusText}
+                            </span>
+                          </div>
+                        </div>
+                      );
+                    })
+                  ) : (
+                    <div style={{textAlign: 'center', padding: '40px', color: 'var(--color-text-muted)'}}>
+                      <div style={{fontSize: '48px', marginBottom: '15px'}}>📅</div>
+                      <p>Aucun lot avec DLC trouvé</p>
+                      <button className="button" onClick={fetchBatchSummary}>🔄 Actualiser</button>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
 
