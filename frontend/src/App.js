@@ -1097,7 +1097,7 @@ function App() {
     setOcrFile(null);
     setOcrPreview(null);
     setOcrResult(null);
-    setOcrType("z_report");
+    // Ne pas réinitialiser ocrType pour garder le choix de l'utilisateur
     setProcessingOcr(false);
   };
 
