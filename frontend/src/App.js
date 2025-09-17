@@ -1297,8 +1297,9 @@ function App() {
 
                 {/* Liste des productions filtrées avec coefficients */}
                 {getFilteredProductions(filteredAnalytics.topProductions, selectedProductionCategory).slice(0, 4).map((production, index) => {
-                  const coefficientStatus = production.coefficientReel <= production.coefficientPrevu ? 'success' : 'warning';
-                  const coefficientIcon = production.coefficientReel <= production.coefficientPrevu ? '✅' : '⚠️';
+                  const coefficientStatus = production.coefficientReel >= production.coefficientPrevu ? 'warning' : 'success';
+                  const coefficientIcon = production.coefficientReel >= production.coefficientPrevu ? '⚠️' : '✅';
+                  const coefficientText = production.coefficientReel >= production.coefficientPrevu ? 'Dépassé' : 'Respecté';
                   
                   return (
                     <div key={index} className="item-row">
@@ -1333,7 +1334,7 @@ function App() {
                           background: coefficientStatus === 'success' ? 'var(--color-success-green)' : 'var(--color-warning-orange)',
                           color: 'white'
                         }}>
-                          {coefficientStatus === 'success' ? 'Respecté' : 'Dépassé'}
+                          {coefficientText}
                         </span>
                         <div className="item-value">{production.ventes.toLocaleString('fr-FR')} €</div>
                       </div>
