@@ -1225,13 +1225,100 @@ function App() {
               <div className="alert-section">
                 <div className="alert-header">
                   <div className="alert-title">Produits Expirés</div>
-                  <div className="alert-count">0</div>
+                  <div className="alert-count">{expiredProducts.length}</div>
                 </div>
-                <div className="section-card">
-                  <p style={{color: 'var(--color-success-green)', textAlign: 'center', padding: '20px'}}>
-                    ✅ Aucun produit expiré actuellement
-                  </p>
+                
+                {expiredProducts.length > 0 ? (
+                  <div>
+                    {expiredProducts.slice(0, 3).map((item, index) => (
+                      <div key={index} className="alert-card critical">
+                        <div className="alert-item">
+                          <div className="product-info">
+                            <div className="product-name">🔴 {item.product_name}</div>
+                            <div className="stock-info">
+                              Lot {item.batch_number || 'N/A'} • {item.quantity} unités • 
+                              Expiré le {new Date(item.expiry_date).toLocaleDateString('fr-FR')}
+                            </div>
+                          </div>
+                          <div className="item-actions">
+                            <button 
+                              className="button small critical"
+                              onClick={() => fetchProductBatches(item.product_id)}
+                            >
+                              🔍 Voir lots
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                    {expiredProducts.length > 3 && (
+                      <div style={{textAlign: 'center', padding: '10px'}}>
+                        <button 
+                          className="button small"
+                          onClick={() => alert(`Total: ${expiredProducts.length} produits expirés`)}
+                        >
+                          Voir tous ({expiredProducts.length})
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <div className="section-card">
+                    <p style={{color: 'var(--color-success-green)', textAlign: 'center', padding: '20px'}}>
+                      ✅ Aucun produit expiré actuellement
+                    </p>
+                  </div>
+                )}
+              </div>
+
+              {/* Alertes produits critiques (expire bientôt) */}
+              <div className="alert-section">
+                <div className="alert-header">
+                  <div className="alert-title">Expire Bientôt (< 7 jours)</div>
+                  <div className="alert-count">{criticalProducts.length}</div>
                 </div>
+                
+                {criticalProducts.length > 0 ? (
+                  <div>
+                    {criticalProducts.slice(0, 3).map((item, index) => (
+                      <div key={index} className="alert-card warning">
+                        <div className="alert-item">
+                          <div className="product-info">
+                            <div className="product-name">🟡 {item.product_name}</div>
+                            <div className="stock-info">
+                              Lot {item.batch_number || 'N/A'} • {item.quantity} unités • 
+                              Expire le {new Date(item.expiry_date).toLocaleDateString('fr-FR')}
+                            </div>
+                          </div>
+                          <div className="item-actions">
+                            <button 
+                              className="button small warning"
+                              onClick={() => fetchProductBatches(item.product_id)}
+                            >
+                              🔍 Voir lots
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                    {criticalProducts.length > 3 && (
+                      <div style={{textAlign: 'center', padding: '10px'}}>
+                        <button 
+                          className="button small"
+                          onClick={() => alert(`Total: ${criticalProducts.length} produits expirent bientôt`)}
+                        >
+                          Voir tous ({criticalProducts.length})
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <div className="section-card">
+                    <p style={{color: 'var(--color-success-green)', textAlign: 'center', padding: '20px'}}>
+                      ✅ Aucun produit n'expire dans les 7 prochains jours
+                    </p>
+                  </div>
+                )}
               </div>
             </div>
           )}
