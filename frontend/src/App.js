@@ -46,6 +46,14 @@ function App() {
   const [recettes, setRecettes] = useState([]);
   const [documentsOcr, setDocumentsOcr] = useState([]);
   const [loading, setLoading] = useState(false);
+  
+  // États pour la gestion des lots et DLC
+  const [batches, setBatches] = useState([]);
+  const [batchSummary, setBatchSummary] = useState([]);
+  const [expiredProducts, setExpiredProducts] = useState([]);
+  const [criticalProducts, setCriticalProducts] = useState([]);
+  const [showBatchModal, setShowBatchModal] = useState(false);
+  const [selectedProductBatches, setSelectedProductBatches] = useState(null);
 
   // États pour les modals
   const [showProduitModal, setShowProduitModal] = useState(false);
