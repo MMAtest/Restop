@@ -2535,8 +2535,13 @@ async def create_recette(recette: RecetteCreate):
     return recette_obj
 
 @api_router.get("/recettes", response_model=List[Recette])
-async def get_recettes():
-    recettes = await db.recettes.find().to_list(1000)
+async def get_recettes(categorie: Optional[str] = None):
+    """Récupère les recettes avec filtre optionnel par catégorie"""
+    query = {}
+    if categorie and categorie in CATEGORIES_PRODUCTION:
+        query["categorie"] = categorie
+    
+    recettes = await db.recettes.find(query).to_list(1000)
     return [Recette(**r) for r in recettes]
 
 @api_router.get("/recettes/{recette_id}", response_model=Recette)
