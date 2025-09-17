@@ -687,15 +687,22 @@ function App() {
       caTotal: Math.round(baseDayData.caTotal * periodMultiplier * 100) / 100,
       commandes: Math.round(baseDayData.commandes * periodMultiplier),
       panierMoyen: Math.round((baseDayData.caTotal * periodMultiplier) / (baseDayData.commandes * periodMultiplier) * 100) / 100,
-      topRecettes: baseDayData.topRecettes.map(recette => ({
-        ...recette,
-        ventes: Math.round(recette.ventes * periodMultiplier),
-        portions: Math.round(recette.portions * periodMultiplier)
+      topProductions: baseDayData.topProductions.map(production => ({
+        ...production,
+        ventes: Math.round(production.ventes * periodMultiplier),
+        portions: Math.round(production.portions * periodMultiplier)
+      })),
+      flopProductions: baseDayData.flopProductions.map(production => ({
+        ...production,
+        ventes: Math.round(production.ventes * periodMultiplier),
+        portions: Math.round(production.portions * periodMultiplier)
       })),
       ventesParCategorie: {
+        entrees: Math.round(baseDayData.ventesParCategorie.entrees * periodMultiplier),
         plats: Math.round(baseDayData.ventesParCategorie.plats * periodMultiplier),
+        desserts: Math.round(baseDayData.ventesParCategorie.desserts * periodMultiplier),
         boissons: Math.round(baseDayData.ventesParCategorie.boissons * periodMultiplier),
-        desserts: Math.round(baseDayData.ventesParCategorie.desserts * periodMultiplier)
+        autres: Math.round(baseDayData.ventesParCategorie.autres * periodMultiplier)
       }
     };
 
