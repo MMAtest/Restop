@@ -190,7 +190,7 @@ body {
 
 .top-nav-tab.active {
   background: var(--color-primary-blue);
-  color: var(--color-text-primary);
+  color: white;
 }
 
 .top-nav-tab:hover:not(.active) {
