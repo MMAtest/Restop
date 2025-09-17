@@ -113,7 +113,7 @@ function App() {
   });
   const [recetteForm, setRecetteForm] = useState({
     nom: "", description: "", categorie: "", portions: "", temps_preparation: "", 
-    prix_vente: "", instructions: "", ingredients: []
+    prix_vente: "", coefficient_prevu: "", instructions: "", ingredients: []
   });
   const [ingredientForm, setIngredientForm] = useState({
     produit_id: "", quantite: "", unite: ""
