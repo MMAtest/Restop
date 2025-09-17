@@ -1488,6 +1488,7 @@ function App() {
               <div className="alert-section">
                 <div className="alert-header" style={{display: 'flex', alignItems: 'center', justifyContent: 'space-between'}}>
                   <div style={{display: 'flex', alignItems: 'center'}}>
+                    <div className="alert-title">Stock Faible</div>
                     <div className="alert-count" style={{
                       background: 'var(--color-danger-red)',
                       color: 'white',
@@ -1499,18 +1500,18 @@ function App() {
                       justifyContent: 'center',
                       fontSize: '12px',
                       fontWeight: 'bold',
-                      marginRight: '8px'
+                      marginLeft: '8px'
                     }}>3</div>
-                    <div className="alert-title">Stock Faible</div>
                   </div>
                   
                   {/* Switch pour Produits/Productions */}
                   <div style={{display: 'flex', gap: '5px', fontSize: '12px'}}>
                     <button 
                       className="button small" 
+                      onClick={() => setAlerteStockType("produits")}
                       style={{
-                        background: 'var(--color-primary-blue)',
-                        color: 'white',
+                        background: alerteStockType === "produits" ? 'var(--color-primary-blue)' : 'var(--color-background-card-light)',
+                        color: alerteStockType === "produits" ? 'white' : 'var(--color-text-secondary)',
                         padding: '4px 8px',
                         fontSize: '11px'
                       }}
@@ -1519,9 +1520,10 @@ function App() {
                     </button>
                     <button 
                       className="button small" 
+                      onClick={() => setAlerteStockType("productions")}
                       style={{
-                        background: 'var(--color-background-card-light)',
-                        color: 'var(--color-text-secondary)',
+                        background: alerteStockType === "productions" ? 'var(--color-primary-blue)' : 'var(--color-background-card-light)',
+                        color: alerteStockType === "productions" ? 'white' : 'var(--color-text-secondary)',
                         padding: '4px 8px',
                         fontSize: '11px'
                       }}
@@ -1531,38 +1533,78 @@ function App() {
                   </div>
                 </div>
                 
-                <div className="alert-card">
-                  <div className="alert-item">
-                    <div className="product-info">
-                      <div className="product-name">🍅 Tomates cerises</div>
-                      <div className="stock-info">
-                        Stock: <span className="stock-current">1.2 kg</span> / Min: <span className="stock-min">5.0 kg</span>
+                {/* Contenu conditionnel selon le type sélectionné */}
+                {alerteStockType === "produits" ? (
+                  <>
+                    <div className="alert-card">
+                      <div className="alert-item">
+                        <div className="product-info">
+                          <div className="product-name">🍅 Tomates cerises</div>
+                          <div className="stock-info">
+                            Stock: <span className="stock-current">1.2 kg</span> / Min: <span className="stock-min">5.0 kg</span>
+                          </div>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                </div>
 
-                <div className="alert-card">
-                  <div className="alert-item">
-                    <div className="product-info">
-                      <div className="product-name">🥬 Salade verte</div>
-                      <div className="stock-info">
-                        Stock: <span className="stock-current">5.3 kg</span> / Min: <span className="stock-min">10.0 kg</span>
+                    <div className="alert-card">
+                      <div className="alert-item">
+                        <div className="product-info">
+                          <div className="product-name">🥬 Salade verte</div>
+                          <div className="stock-info">
+                            Stock: <span className="stock-current">5.3 kg</span> / Min: <span className="stock-min">10.0 kg</span>
+                          </div>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                </div>
 
-                <div className="alert-card warning">
-                  <div className="alert-item">
-                    <div className="product-info">
-                      <div className="product-name">🧀 Fromage de chèvre</div>
-                      <div className="stock-info">
-                        Stock: <span className="stock-current">3.3 kg</span> / Min: <span className="stock-min">8.0 kg</span>
+                    <div className="alert-card warning">
+                      <div className="alert-item">
+                        <div className="product-info">
+                          <div className="product-name">🧀 Fromage de chèvre</div>
+                          <div className="stock-info">
+                            Stock: <span className="stock-current">3.3 kg</span> / Min: <span className="stock-min">8.0 kg</span>
+                          </div>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                </div>
+                  </>
+                ) : (
+                  <>
+                    <div className="alert-card">
+                      <div className="alert-item">
+                        <div className="product-info">
+                          <div className="product-name">🍽️ Salade Méditerranéenne</div>
+                          <div className="stock-info">
+                            Ingrédient manquant: Tomates cerises • Production limitée
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="alert-card warning">
+                      <div className="alert-item">
+                        <div className="product-info">
+                          <div className="product-name">🧀 Tarte aux courgettes</div>
+                          <div className="stock-info">
+                            Ingrédient faible: Fromage de chèvre • Max 8 portions possible
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="alert-card">
+                      <div className="alert-item">
+                        <div className="product-info">
+                          <div className="product-name">🥗 Salade de chèvre chaud</div>
+                          <div className="stock-info">
+                            Stock ingrédients insuffisant • Production suspendue
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </>
+                )}
               </div>
 
               {/* Nouvelle alerte : Expiration < 3 jours */}
