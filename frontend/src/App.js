@@ -1607,9 +1607,269 @@ function App() {
                 )}
               </div>
 
-              {/* Nouvelle alerte : Expiration < 3 jours */}
+              {/* Nouvelle section : Stock critique */}
+              <div className="alert-section">
+                <div className="alert-header" style={{display: 'flex', alignItems: 'center', justifyContent: 'space-between'}}>
+                  <div style={{display: 'flex', alignItems: 'center'}}>
+                    <div className="alert-title">Stock Critique</div>
+                    <div className="alert-count" style={{
+                      background: 'var(--color-danger-red)',
+                      color: 'white',
+                      width: '24px',
+                      height: '24px',
+                      borderRadius: '50%',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      fontSize: '12px',
+                      fontWeight: 'bold',
+                      marginLeft: '8px'
+                    }}>4</div>
+                  </div>
+                  
+                  {/* Switch pour Produits/Productions */}
+                  <div style={{display: 'flex', gap: '5px', fontSize: '12px'}}>
+                    <button 
+                      className="button small" 
+                      onClick={() => setAlerteStockType("produits")}
+                      style={{
+                        background: alerteStockType === "produits" ? 'var(--color-primary-blue)' : 'var(--color-background-card-light)',
+                        color: alerteStockType === "produits" ? 'white' : 'var(--color-text-secondary)',
+                        padding: '4px 8px',
+                        fontSize: '11px'
+                      }}
+                    >
+                      Produits
+                    </button>
+                    <button 
+                      className="button small" 
+                      onClick={() => setAlerteStockType("productions")}
+                      style={{
+                        background: alerteStockType === "productions" ? 'var(--color-primary-blue)' : 'var(--color-background-card-light)',
+                        color: alerteStockType === "productions" ? 'white' : 'var(--color-text-secondary)',
+                        padding: '4px 8px',
+                        fontSize: '11px'
+                      }}
+                    >
+                      Productions
+                    </button>
+                  </div>
+                </div>
+                
+                {/* Contenu conditionnel selon le type sélectionné */}
+                {alerteStockType === "produits" ? (
+                  <>
+                    <div className="alert-card critical">
+                      <div className="alert-item">
+                        <div className="product-info">
+                          <div className="product-name">🧄 Ail rose</div>
+                          <div className="stock-info">
+                            Stock: <span className="stock-current critical">0 kg</span> • Rupture totale
+                          </div>
+                        </div>
+                        <div className="item-actions">
+                          <button className="button small critical">🚨 Commander</button>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="alert-card critical">
+                      <div className="alert-item">
+                        <div className="product-info">
+                          <div className="product-name">🫒 Huile d'olive extra</div>
+                          <div className="stock-info">
+                            Stock: <span className="stock-current critical">0 L</span> • Plus en stock
+                          </div>
+                        </div>
+                        <div className="item-actions">
+                          <button className="button small critical">🚨 Commander</button>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="alert-card critical">
+                      <div className="alert-item">
+                        <div className="product-info">
+                          <div className="product-name">🌿 Basilic frais</div>
+                          <div className="stock-info">
+                            Stock: <span className="stock-current critical">0 kg</span> • Rupture stock
+                          </div>
+                        </div>
+                        <div className="item-actions">
+                          <button className="button small critical">🚨 Commander</button>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="alert-card critical">
+                      <div className="alert-item">
+                        <div className="product-info">
+                          <div className="product-name">🍋 Citrons</div>
+                          <div className="stock-info">
+                            Stock: <span className="stock-current critical">0 kg</span> • Stock épuisé
+                          </div>
+                        </div>
+                        <div className="item-actions">
+                          <button className="button small critical">🚨 Commander</button>
+                        </div>
+                      </div>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div className="alert-card critical">
+                      <div className="alert-item">
+                        <div className="product-info">
+                          <div className="product-name">🍝 Linguine aux palourdes</div>
+                          <div className="stock-info">
+                            Ingrédient manquant: Ail rose • <span className="stock-critical">Production impossible</span>
+                          </div>
+                        </div>
+                        <div className="item-actions">
+                          <button className="button small critical">🚫 Suspendue</button>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="alert-card critical">
+                      <div className="alert-item">
+                        <div className="product-info">
+                          <div className="product-name">🥗 Salade méditerranéenne</div>
+                          <div className="stock-info">
+                            Ingrédients manquants: Huile d'olive, Basilic • <span className="stock-critical">Production bloquée</span>
+                          </div>
+                        </div>
+                        <div className="item-actions">
+                          <button className="button small critical">🚫 Suspendue</button>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="alert-card critical">
+                      <div className="alert-item">
+                        <div className="product-info">
+                          <div className="product-name">🐟 Saumon grillé</div>
+                          <div className="stock-info">
+                            Ingrédient manquant: Citrons • <span className="stock-critical">Présentation incomplète</span>
+                          </div>
+                        </div>
+                        <div className="item-actions">
+                          <button className="button small warning">⚠️ Limitée</button>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="alert-card critical">
+                      <div className="alert-item">
+                        <div className="product-info">
+                          <div className="product-name">🍅 Caprese</div>
+                          <div className="stock-info">
+                            Ingrédient manquant: Basilic frais • <span className="stock-critical">Production impossible</span>
+                          </div>
+                        </div>
+                        <div className="item-actions">
+                          <button className="button small critical">🚫 Suspendue</button>
+                        </div>
+                      </div>
+                    </div>
+                  </>
+                )}
+              </div>
+
+              {/* Section Expiration < 7 jours */}
               <div className="alert-section">
                 <div className="alert-header" style={{display: 'flex', alignItems: 'center'}}>
+                  <div className="alert-title">Expiration &lt; 7 jours</div>
+                  <div className="alert-count" style={{
+                    background: 'var(--color-accent-orange)',
+                    color: 'white',
+                    width: '24px',
+                    height: '24px',
+                    borderRadius: '50%',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: '12px',
+                    fontWeight: 'bold',
+                    marginLeft: '8px'
+                  }}>5</div>
+                </div>
+                
+                <div className="alert-card warning">
+                  <div className="alert-item">
+                    <div className="product-info">
+                      <div className="product-name">🧀 Mozzarella di Bufala</div>
+                      <div className="stock-info">
+                        Lot MOZ-2024-12 • 2.2 kg • Expire dans 6 jours (23/09/2025)
+                      </div>
+                    </div>
+                    <div className="item-actions">
+                      <button className="button small">📅 Planifier</button>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="alert-card warning">
+                  <div className="alert-item">
+                    <div className="product-info">
+                      <div className="product-name">🥛 Yaourt grec</div>
+                      <div className="stock-info">
+                        Lot YAO-2024-09 • 3.5 L • Expire dans 5 jours (22/09/2025)
+                      </div>
+                    </div>
+                    <div className="item-actions">
+                      <button className="button small">📅 Planifier</button>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="alert-card warning">
+                  <div className="alert-item">
+                    <div className="product-info">
+                      <div className="product-name">🍞 Pain artisanal</div>
+                      <div className="stock-info">
+                        Lot PAI-2024-07 • 8 unités • Expire dans 4 jours (21/09/2025)
+                      </div>
+                    </div>
+                    <div className="item-actions">
+                      <button className="button small">📅 Planifier</button>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="alert-card warning">
+                  <div className="alert-item">
+                    <div className="product-info">
+                      <div className="product-name">🥬 Roquette</div>
+                      <div className="stock-info">
+                        Lot ROQ-2024-11 • 1.8 kg • Expire dans 6 jours (23/09/2025)
+                      </div>
+                    </div>
+                    <div className="item-actions">
+                      <button className="button small">📅 Planifier</button>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="alert-card warning">
+                  <div className="alert-item">
+                    <div className="product-info">
+                      <div className="product-name">🍤 Crevettes roses</div>
+                      <div className="stock-info">
+                        Lot CRE-2024-13 • 1.2 kg • Expire dans 7 jours (24/09/2025)
+                      </div>
+                    </div>
+                    <div className="item-actions">
+                      <button className="button small">📅 Planifier</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Section Expiration < 3 jours */}
+              <div className="alert-section">
+                <div className="alert-header" style={{display: 'flex', alignItems: 'center'}}>
+                  <div className="alert-title">Expiration &lt; 3 jours</div>
                   <div className="alert-count" style={{
                     background: 'var(--color-warning-orange)',
                     color: 'white',
@@ -1621,9 +1881,8 @@ function App() {
                     justifyContent: 'center',
                     fontSize: '12px',
                     fontWeight: 'bold',
-                    marginRight: '8px'
+                    marginLeft: '8px'
                   }}>2</div>
-                  <div className="alert-title">Expiration &lt; 3 jours</div>
                 </div>
                 
                 <div className="alert-card warning">
