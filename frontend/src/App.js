@@ -96,6 +96,11 @@ function App() {
   ]);
   const [selectedProductionPrevisionnelle, setSelectedProductionPrevisionnelle] = useState('');
 
+  // États pour la pagination et filtres OCR
+  const [ocrCurrentPage, setOcrCurrentPage] = useState(1);
+  const [ocrDocumentsPerPage] = useState(8); // 8 documents par page
+  const [ocrFilterType, setOcrFilterType] = useState('all'); // 'all', 'z_report', 'facture_fournisseur'
+
   // Fonction pour mettre à jour les portions sélectionnées avec équilibrage
   const updatePortionsSelectionnees = (stockId, productionIndex, newValue) => {
     setStocksPrevisionnels(prevStocks => {
