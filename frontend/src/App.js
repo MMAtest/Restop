@@ -2258,13 +2258,6 @@ function App() {
                 )}
               </div>
 
-              {/* Actions prévisionnelles */}
-              <div style={{display: 'flex', gap: '10px', marginBottom: '20px', flexWrap: 'wrap'}}>
-                <button className="button">📊 Analyser Stocks</button>
-                <button className="button">🎯 Planification</button>
-                <button className="button">📋 Commande Auto</button>
-              </div>
-
               {/* KPIs prévisionnels modifiés */}
               <div className="kpi-grid">
                 <div className="kpi-card">
