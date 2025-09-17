@@ -76,6 +76,24 @@ function App() {
   const [selectedCategoryFilter, setSelectedCategoryFilter] = useState('');
   const [filteredRecettes, setFilteredRecettes] = useState([]);
   const [filteredProduits, setFilteredProduits] = useState([]);
+  
+  // États pour le module prévisionnel
+  const [stocksPrevisionnels, setStocksPrevisionnels] = useState([
+    { id: 1, produit: "Tomates", stock_actuel: 25, unite: "kg", productions_possibles: [
+      { nom: "Salade Méditerranéenne", quantite_needed: 2, portions_possibles: 12 },
+      { nom: "Ratatouille", quantite_needed: 3, portions_possibles: 8 },
+      { nom: "Gazpacho", quantite_needed: 1.5, portions_possibles: 16 }
+    ]},
+    { id: 2, produit: "Fromage de chèvre", stock_actuel: 3.2, unite: "kg", productions_possibles: [
+      { nom: "Salade de chèvre chaud", quantite_needed: 0.15, portions_possibles: 21 },
+      { nom: "Tarte aux courgettes", quantite_needed: 0.2, portions_possibles: 16 }
+    ]},
+    { id: 3, produit: "Saumon frais", stock_actuel: 4.8, unite: "kg", productions_possibles: [
+      { nom: "Saumon grillé", quantite_needed: 0.18, portions_possibles: 26 },
+      { nom: "Tartare de saumon", quantite_needed: 0.12, portions_possibles: 40 }
+    ]}
+  ]);
+  const [selectedProductionPrevisionnelle, setSelectedProductionPrevisionnelle] = useState('');
 
   // États pour les modals
   const [showProduitModal, setShowProduitModal] = useState(false);
