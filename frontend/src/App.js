@@ -1778,17 +1778,7 @@ function App() {
                   color: activeStockTab === 'stocks' ? 'white' : 'var(--color-text-secondary)'
                 }}
               >
-                📦 Stocks
-              </button>
-              <button 
-                className="button" 
-                onClick={() => setActiveStockTab('dlc')}
-                style={{
-                  background: activeStockTab === 'dlc' ? 'var(--color-primary-blue)' : 'var(--color-background-card-light)',
-                  color: activeStockTab === 'dlc' ? 'white' : 'var(--color-text-secondary)'
-                }}
-              >
-                📅 DLC & Lots
+                📦 Stocks & DLC
               </button>
               <button 
                 className="button" 
