@@ -1893,13 +1893,67 @@ function App() {
                   <button className="button" onClick={handleExportRecettes}>📖 Export Excel</button>
                 </div>
 
-                {recettes.slice(0, 5).map((recette, index) => (
+                {/* Filtre par catégorie */}
+                <div className="filter-section" style={{marginBottom: '20px'}}>
+                  <div className="filter-group">
+                    <label className="filter-label">🏷️ Filtrer par catégorie :</label>
+                    <select 
+                      className="filter-select"
+                      value={selectedCategoryFilter}
+                      onChange={(e) => filterRecettesByCategory(e.target.value)}
+                      style={{
+                        padding: '8px 12px',
+                        borderRadius: '6px',
+                        border: '1px solid var(--color-border)',
+                        background: 'var(--color-background-card)',
+                        color: 'var(--color-text-primary)',
+                        minWidth: '150px'
+                      }}
+                    >
+                      <option value="">Toutes les catégories</option>
+                      {categoriesProduction.map(category => (
+                        <option key={category} value={category}>
+                          {category === 'Entrée' ? '🥗' : 
+                           category === 'Plat' ? '🍽️' : 
+                           category === 'Dessert' ? '🍰' :
+                           category === 'Bar' ? '🍹' : '📝'} {category}
+                        </option>
+                      ))}
+                    </select>
+                    
+                    {selectedCategoryFilter && (
+                      <div className="filter-info" style={{
+                        fontSize: '14px', 
+                        color: 'var(--color-text-secondary)',
+                        marginLeft: '10px'
+                      }}>
+                        {filteredRecettes.length} plat(s) trouvé(s)
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Liste des recettes filtrées */}
+                {(filteredRecettes.length > 0 ? filteredRecettes : recettes).map((recette, index) => (
                   <div key={index} className="item-row">
                     <div className="item-info">
                       <div className="item-name">
-                        {recette.categorie === 'entrée' ? '🥗' : 
-                         recette.categorie === 'plats' ? '🍽️' : 
-                         recette.categorie === 'desserts' ? '🍰' : '📝'} {recette.nom}
+                        {recette.categorie === 'Entrée' ? '🥗' : 
+                         recette.categorie === 'Plat' ? '🍽️' : 
+                         recette.categorie === 'Dessert' ? '🍰' : 
+                         recette.categorie === 'Bar' ? '🍹' : '📝'} {recette.nom}
+                        {recette.categorie && (
+                          <span className="category-badge" style={{
+                            marginLeft: '8px',
+                            padding: '4px 8px',
+                            borderRadius: '12px',
+                            fontSize: '12px',
+                            background: 'var(--color-primary-blue)',
+                            color: 'white'
+                          }}>
+                            {recette.categorie}
+                          </span>
+                        )}
                       </div>
                       <div className="item-details">
                         Prix: {recette.prix_vente}€ • Marge: {recette.marge_beneficiaire || 'N/A'}%
