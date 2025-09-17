@@ -155,7 +155,9 @@ class ProductBatch(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     product_id: str
     quantity: float
-    expiry_date: Optional[datetime] = None  # DLC - Date Limite de Consommation
+    quantity_brute: Optional[float] = None    # Quantité brute reçue
+    perte_percentage: Optional[float] = None  # Pourcentage de perte (produit brut → fini)
+    expiry_date: Optional[datetime] = None    # DLC - Date Limite de Consommation
     received_date: datetime = Field(default_factory=datetime.utcnow)
     supplier_id: Optional[str] = None
     batch_number: Optional[str] = None
