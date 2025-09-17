@@ -1933,70 +1933,11 @@ function App() {
                 )}
               </div>
               
-              <div className="kpi-grid">
-                <div className="kpi-card">
-                  <div className="icon">💰</div>
-                  <div className="title">Valeur Stock</div>
-                  <div className="value">16 326,05 €</div>
-                </div>
-                
-                <div className="kpi-card">
-                  <div className="icon">📊</div>
-                  <div className="title">Coût Moyen</div>
-                  <div className="value">{(filteredAnalytics.caTotal / filteredAnalytics.commandes * 0.32).toFixed(2)} €</div>
-                </div>
-                
-                <div className="kpi-card">
-                  <div className="icon">📉</div>
-                  <div className="title">Déchets</div>
-                  <div className="value warning">{Math.round(filteredAnalytics.caTotal * 0.045)} €</div>
-                </div>
-              </div>
-
-              <div className="item-list">
-                <div className="section-title">Plus Coûteux</div>
-                <div className="item-row">
-                  <div className="item-info">
-                    <div className="item-name">🥩 Côte de bœuf</div>
-                    <div className="item-details">Viandes Premium</div>
-                  </div>
-                  <div className="item-value">847,20 €</div>
-                </div>
-                <div className="item-row">
-                  <div className="item-info">
-                    <div className="item-name">🍄 Truffe noire</div>
-                    <div className="item-details">Épices & Aromates</div>
-                  </div>
-                  <div className="item-value">692,80 €</div>
-                </div>
-                <div className="item-row">
-                  <div className="item-info">
-                    <div className="item-name">🦞 Homard</div>
-                    <div className="item-details">Fruits de mer</div>
-                  </div>
-                  <div className="item-value">543,15 €</div>
-                </div>
-              </div>
-
-              {/* Analyse des coûts basée sur la période */}
-              <div className="kpi-grid">
-                <div className="kpi-card">
-                  <div className="icon">💸</div>
-                  <div className="title">Coûts Totaux</div>
-                  <div className="value">{Math.round(filteredAnalytics.caTotal * 0.35).toLocaleString('fr-FR')} €</div>
-                </div>
-                
-                <div className="kpi-card">
-                  <div className="icon">📈</div>
-                  <div className="title">Ratio Coûts/CA</div>
-                  <div className="value">35%</div>
-                </div>
-                
-                <div className="kpi-card">
-                  <div className="icon">⚖️</div>
-                  <div className="title">Économies</div>
-                  <div className="value positive">{Math.round(filteredAnalytics.caTotal * 0.08).toLocaleString('fr-FR')} €</div>
-                </div>
+              {/* Contenu vidé selon la demande */}
+              <div style={{textAlign: 'center', padding: '80px 20px', color: 'var(--color-text-muted)'}}>
+                <div style={{fontSize: '64px', marginBottom: '20px'}}>💰</div>
+                <h3 style={{marginBottom: '10px', color: 'var(--color-text-primary)'}}>Section en cours de développement</h3>
+                <p>L'analyse des coûts sera bientôt disponible</p>
               </div>
             </div>
           )}
