@@ -658,7 +658,7 @@ test_plan:
 
 agent_communication:
   - agent: "main"
-    message: "🎉 UI REDESIGN MAJEUR TERMINÉ ! Transformation complète de l'interface La Table d'Augustine selon template wireframe sophistiqué : Header élégant dégradé vert/or, navigation professionnelle pill-shaped, Dashboard avec cartes statistiques connectées aux vraies données (43 produits, 6 fournisseurs), Module OCR avec sidebar et zone drag & drop, Section Production avec sous-tabs (Produits/Fournisseurs/Recettes), Historique multi-sections (Ventes/Stocks/Commandes/Factures/Modifications), Gestion Stocks modernisée. Design professionnel Georgia serif, gradients sophistiqués, animations hover, layout responsive. Toutes fonctionnalités préservées, modals CRUD intacts, backend APIs fonctionnels. Interface prête pour production !."
+    message: "🎉 PHASE 3 RÉPARTITION TAB MIGRATION TERMINÉE ! Déplacement réussi de la fonctionnalité 'Répartition optimale des Productions' du tab Prévisionnel vers le nouveau tab dédié Répartition dans la section Stock. Fonctionnalité complète préservée : gestion stocks avec validation, champs input interactifs, boutons d'action (Analyser Stocks, Planification, Commande Auto), et toute la logique de distribution. Tab Prévisionnel allégé et focalisé sur l'analyse prévisionnelle uniquement. Navigation Stock > Répartition 100% opérationnelle."
   - agent: "main"
     message: "Implémentation complète système gestion stocks restaurant avec API FastAPI + interface React. Fonctionnalités : CRUD produits/fournisseurs, gestion stocks avec alertes, mouvements entrée/sortie, export/import Excel. Interface moderne avec Tailwind, navigation onglets, modals édition. Prêt pour tests backend puis frontend."
   - agent: "testing"
