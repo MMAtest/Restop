@@ -1176,16 +1176,68 @@ function App() {
                 </div>
               </div>
 
-              {/* Top Recettes */}
+              {/* Top Productions avec filtre */}
               <div className="item-list">
-                <div className="section-title">🍽️ Top Plats</div>
-                {filteredAnalytics.topRecettes.map((recette, index) => (
+                <div className="section-title">🍽️ Top Productions</div>
+                
+                {/* Filtre par catégorie */}
+                <div className="filter-section" style={{marginBottom: '15px'}}>
+                  <div className="filter-group" style={{display: 'flex', alignItems: 'center', gap: '10px'}}>
+                    <label className="filter-label" style={{fontSize: '14px', minWidth: '60px'}}>Filtre :</label>
+                    <select 
+                      className="filter-select"
+                      value={selectedProductionCategory}
+                      onChange={(e) => setSelectedProductionCategory(e.target.value)}
+                      style={{
+                        padding: '6px 10px',
+                        borderRadius: '4px',
+                        border: '1px solid var(--color-border)',
+                        background: 'var(--color-background-card)',
+                        color: 'var(--color-text-primary)',
+                        fontSize: '13px',
+                        minWidth: '120px'
+                      }}
+                    >
+                      <option value="">Toutes</option>
+                      <option value="Entrée">🥗 Entrées</option>
+                      <option value="Plat">🍽️ Plats</option>
+                      <option value="Dessert">🍰 Desserts</option>
+                      <option value="Bar">🍹 Bar</option>
+                      <option value="Autres">📝 Autres</option>
+                    </select>
+                    
+                    <div className="filter-info" style={{
+                      fontSize: '12px', 
+                      color: 'var(--color-text-secondary)'
+                    }}>
+                      {getFilteredProductions(filteredAnalytics.topProductions, selectedProductionCategory).length} résultat(s)
+                    </div>
+                  </div>
+                </div>
+
+                {/* Liste des productions filtrées */}
+                {getFilteredProductions(filteredAnalytics.topProductions, selectedProductionCategory).slice(0, 4).map((production, index) => (
                   <div key={index} className="item-row">
                     <div className="item-info">
-                      <div className="item-name">🍝 {recette.nom}</div>
-                      <div className="item-details">{recette.portions} portions vendues</div>
+                      <div className="item-name">
+                        {production.categorie === 'Entrée' ? '🥗' : 
+                         production.categorie === 'Plat' ? '🍽️' : 
+                         production.categorie === 'Dessert' ? '🍰' : 
+                         production.categorie === 'Bar' ? '🍹' : '📝'} {production.nom}
+                        <span className="category-badge" style={{
+                          marginLeft: '6px',
+                          padding: '2px 6px',
+                          borderRadius: '8px',
+                          fontSize: '10px',
+                          background: 'var(--color-primary-blue)',
+                          color: 'white'
+                        }}>
+                          {production.categorie}
+                        </span>
+                      </div>
+                      <div className="item-details">{production.portions} portions vendues</div>
                     </div>
-                    <div className="item-value">{recette.ventes.toLocaleString('fr-FR')} €</div>
+                    <div className="item-value">{production.ventes.toLocaleString('fr-FR')} €</div>
                   </div>
                 ))}
               </div>
