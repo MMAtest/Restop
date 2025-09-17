@@ -1850,7 +1850,6 @@ function App() {
                   </div>
                 </div>
               </div>
-              </div>
 
               {/* Section Expiration < 7 jours */}
               <div className="alert-section">
