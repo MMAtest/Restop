@@ -2781,9 +2781,11 @@ function App() {
                   onChange={(e) => setRecetteForm({...recetteForm, categorie: e.target.value})}
                 >
                   <option value="">Sélectionnez une catégorie</option>
-                  <option value="entrée">Entrée</option>
-                  <option value="plat">Plat</option>
-                  <option value="dessert">Dessert</option>
+                  <option value="Entrée">🥗 Entrée</option>
+                  <option value="Plat">🍽️ Plat</option>
+                  <option value="Dessert">🍰 Dessert</option>
+                  <option value="Bar">🍹 Bar</option>
+                  <option value="Autres">📝 Autres</option>
                 </select>
               </div>
               <div className="form-group">
