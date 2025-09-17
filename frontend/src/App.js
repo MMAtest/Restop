@@ -2556,13 +2556,23 @@ function App() {
                 />
               </div>
               <div className="form-group">
-                <label className="form-label">Catégorie</label>
-                <input
-                  type="text"
-                  className="form-input"
+                <label className="form-label">Catégorie d'ingrédient</label>
+                <select
+                  className="form-select"
                   value={produitForm.categorie}
                   onChange={(e) => setProduitForm({...produitForm, categorie: e.target.value})}
-                />
+                >
+                  <option value="">Sélectionnez une catégorie</option>
+                  <option value="Légumes">🥕 Légumes</option>
+                  <option value="Viandes">🥩 Viandes</option>
+                  <option value="Poissons">🐟 Poissons</option>
+                  <option value="Produits laitiers">🧀 Produits laitiers</option>
+                  <option value="Épices">🌶️ Épices & Condiments</option>
+                  <option value="Fruits">🍎 Fruits</option>
+                  <option value="Céréales">🌾 Céréales & Féculents</option>
+                  <option value="Boissons">🥤 Boissons</option>
+                  <option value="Autres">📦 Autres</option>
+                </select>
               </div>
               <div className="form-group">
                 <label className="form-label">Unité</label>
