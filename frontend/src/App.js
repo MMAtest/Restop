@@ -1274,7 +1274,7 @@ function App() {
               {/* Alertes produits critiques (expire bientôt) */}
               <div className="alert-section">
                 <div className="alert-header">
-                  <div className="alert-title">Expire Bientôt (< 7 jours)</div>
+                  <div className="alert-title">Expire Bientôt (&lt; 7 jours)</div>
                   <div className="alert-count">{criticalProducts.length}</div>
                 </div>
                 
