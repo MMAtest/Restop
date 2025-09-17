@@ -799,11 +799,48 @@ function App() {
       return total + (stock.quantite_actuelle * (produit?.prix_achat || 0));
     }, 0);
 
-    alert(`📊 RÉSUMÉ INVENTAIRE:\n\n` +
-      `📦 Produits total: ${totalProduits}\n` +
+    alert(`📱 INVENTAIRE RAPIDE:\n\n` +
+      `📦 Total produits: ${totalProduits}\n` +
       `⚠️ Stocks critiques: ${stocksCritiques}\n` +
       `💰 Valeur totale: ${valeurTotale.toFixed(2)}€\n\n` +
-      `Pour un inventaire détaillé, utilisez "📊 Rapport Stock" pour export Excel.`);
+      `Utilisez les sections dédiées pour un inventaire complet.`);
+  };
+
+  // Calculer Coûts (nouvelle fonction manquante)
+  const handleCalculerCouts = () => {
+    if (recettes.length === 0) {
+      alert("Aucune production trouvée pour calculer les coûts.");
+      return;
+    }
+    
+    let totalRecettes = recettes.length;
+    let recettesAvecCouts = 0;
+    let coutMoyenMatiere = 0;
+    
+    recettes.forEach(recette => {
+      if (recette.ingredients && recette.ingredients.length > 0) {
+        let coutRecette = 0;
+        recette.ingredients.forEach(ingredient => {
+          const produit = produits.find(p => p.id === ingredient.produit_id);
+          if (produit && produit.prix_achat) {
+            coutRecette += ingredient.quantite * produit.prix_achat;
+          }
+        });
+        if (coutRecette > 0) {
+          recettesAvecCouts++;
+          coutMoyenMatiere += coutRecette;
+        }
+      }
+    });
+    
+    coutMoyenMatiere = recettesAvecCouts > 0 ? coutMoyenMatiere / recettesAvecCouts : 0;
+    
+    alert(`💰 CALCUL DES COÛTS:\n\n` +
+      `📝 Total productions: ${totalRecettes}\n` +
+      `✅ Productions avec coûts calculables: ${recettesAvecCouts}\n` +
+      `💰 Coût matière moyen: ${coutMoyenMatiere.toFixed(2)}€\n\n` +
+      `Les coûts sont mis à jour automatiquement\n` +
+      `lors de la modification des prix des produits.`);
   };
   const handleImportRecettes = async (event) => {
     const file = event.target.files[0];
