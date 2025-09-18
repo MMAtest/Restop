@@ -3234,6 +3234,18 @@ async def delete_rapport_z(rapport_id: str):
         raise HTTPException(status_code=404, detail="Rapport non trouvé")
     return {"message": "Rapport supprimé"}
 
+@api_router.delete("/ocr/documents/all")
+async def delete_all_ocr_documents():
+    """Supprimer tous les documents OCR de l'historique"""
+    try:
+        result = await db.documents_ocr.delete_many({})
+        return {
+            "message": f"Tous les documents OCR ont été supprimés",
+            "deleted_count": result.deleted_count
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Erreur lors de la suppression: {str(e)}")
+
 # Include the router in the main app
 app.include_router(api_router)
 
