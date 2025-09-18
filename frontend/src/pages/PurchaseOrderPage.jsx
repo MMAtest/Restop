@@ -406,7 +406,7 @@ const PurchaseOrderPage = () => {
                     className="p-3 border border-gray-200 rounded-lg"
                   >
                     <div className="flex justify-between items-start">
-                      <div>
+                      <div className="flex-1">
                         <div className="font-medium">{productRelation.product_name}</div>
                         <div className="text-sm text-gray-600">
                           {formatCurrency(productRelation.price)} / {productRelation.product_unit}
@@ -422,12 +422,41 @@ const PurchaseOrderPage = () => {
                           </div>
                         )}
                       </div>
-                      <button
-                        onClick={() => addToOrder(productRelation)}
-                        className="bg-primary-500 hover:bg-primary-600 text-white px-3 py-1 rounded text-sm"
-                      >
-                        Ajouter
-                      </button>
+                      
+                      {/* Sélection de quantité et ajout au panier */}
+                      <div className="flex items-center space-x-2 ml-4">
+                        <div className="flex flex-col items-end">
+                          <label className="text-xs text-gray-500 mb-1">Quantité</label>
+                          <input
+                            type="number"
+                            min={productRelation.min_order_quantity || 1}
+                            step="0.1"
+                            defaultValue={productRelation.min_order_quantity || 1}
+                            className="w-20 px-2 py-1 text-sm border border-gray-300 rounded"
+                            id={`quantity-${productRelation.product_id}`}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') {
+                                e.preventDefault();
+                                const quantity = parseFloat(e.target.value) || 1;
+                                addToOrder(productRelation, quantity);
+                                e.target.value = productRelation.min_order_quantity || 1;
+                              }
+                            }}
+                          />
+                        </div>
+                        <button
+                          onClick={() => {
+                            const quantityInput = document.getElementById(`quantity-${productRelation.product_id}`);
+                            const quantity = parseFloat(quantityInput.value) || 1;
+                            addToOrder(productRelation, quantity);
+                            quantityInput.value = productRelation.min_order_quantity || 1;
+                          }}
+                          className="bg-primary-500 hover:bg-primary-600 text-white px-3 py-1 rounded text-sm flex items-center"
+                        >
+                          <span className="mr-1">➕</span>
+                          Ajouter
+                        </button>
+                      </div>
                     </div>
                   </div>
                 ))}
