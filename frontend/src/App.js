@@ -2456,9 +2456,6 @@ function App() {
                 {/* Actions rapides */}
                 <div style={{display: 'flex', gap: '10px', marginBottom: '20px', flexWrap: 'wrap'}}>
                   <button className="button" onClick={() => setShowProduitModal(true)}>➕ Nouveau Produit</button>
-                  <button className="button" onClick={handleExport}>📊 Rapport Stock</button>
-                  <button className="button warning" onClick={handleVoirAlertes}>⚠️ Alertes</button>
-                  <button className="button" onClick={handlePageInventaire}>📱 Inventaire</button>
                 </div>
 
                 {/* KPIs Stocks */}
