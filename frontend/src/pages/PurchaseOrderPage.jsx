@@ -663,8 +663,6 @@ const PurchaseOrderPage = () => {
                     </div>
                   ))}
                 </div>
-              </div>
-            </div>
           )}
         </div>
       </div>
@@ -714,6 +712,7 @@ const PurchaseOrderPage = () => {
           </div>
         </div>
       </div>
+    </div>
     </div>
   );
 };
