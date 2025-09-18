@@ -694,7 +694,6 @@ const PurchaseOrderPage = () => {
         </div>
       </div>
     </div>
-    </>
   );
 };
 
