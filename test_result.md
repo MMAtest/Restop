@@ -270,6 +270,21 @@ backend:
         agent: "testing"
         comment: "✅ LA TABLE D'AUGUSTINE DEMO DATA - 100% VALIDÉ ! POST /api/demo/init-table-augustine-data fonctionne parfaitement : 6 fournisseurs authentiques créés (Maison Artigiana prix burrata mondiale, Pêcherie des Sanguinaires Corse, Boucherie Limousine du Sud, Trufficulteurs de Forcalquier, Maraîchers de Provence, Fromagerie des Alpilles) avec contacts réels. 43 produits du menu authentique (Supions, Palourdes, Daurade royale, Bœuf Limousin, Souris d'agneau, Fleurs de courgettes, Truffe Aestivum 800€/kg, etc.). 10 recettes authentiques avec prix exacts du restaurant : Supions en persillade de Mamie (24€), Fleurs de courgettes de Mamet (21€), Linguine aux palourdes (28€), Rigatoni à la truffe de Forcalquier (31€), Souris d'agneau confite (36€), Bœuf Wellington à la truffe (56€). Relations ingrédients-produits correctement établies. Calculateur production capacity opérationnel. Message de confirmation mentionne 'La Table d'Augustine - Restaurant méditerranéen'."
 
+  - task: "Fonction OCR Optimisée - Éviter Faux Positifs Plats"
+    implemented: true
+    working: false
+    file: "/app/backend/server.py"
+    stuck_count: 1
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Fonction analyze_z_report_categories optimisée implémentée avec nouvelle logique séquentielle pour éviter les faux positifs dans la catégorie Plats. Extraction ciblée entre fin entrées et début desserts, filtrage renforcé des mots-clés TVA/totaux/remises"
+      - working: false
+        agent: "testing"
+        comment: "❌ FONCTION OCR OPTIMISÉE FAUX POSITIFS PLATS - PROBLÈMES CRITIQUES IDENTIFIÉS ! Test spécifique de la nouvelle logique séquentielle pour éviter les faux positifs dans la catégorie Plats révèle des dysfonctionnements majeurs : ❌ PROBLÈME CRITIQUE 1 : La fonction ne distingue PAS les catégories (x25) Entrees) des productions indentées (  x8) Salade Caesar) - 0 productions détectées au lieu de 8 attendues ❌ PROBLÈME CRITIQUE 2 : Mauvaise classification des familles - 16 items classés en 'Autres' au lieu de leur vraie famille (Salade Caesar/Tartare/Soupe → Entrées, Steak/Poisson/Pasta → Plats, Tiramisu/Tarte → Desserts) ❌ PROBLÈME HAUTE PRIORITÉ : Items individuels traités comme catégories au lieu de productions, rendant la logique séquentielle inefficace ✅ POINTS POSITIFS : Extraction données principales OK (date, heure, couverts, totaux), zones délimitées correctement (13 lignes entre entrées/desserts), aucun faux positif TVA/totaux détecté ❌ CONCLUSION : La fonction analyze_z_report_categories nécessite des corrections importantes pour distinguer catégories/productions et améliorer la classification des familles avant d'être opérationnelle pour éviter les faux positifs dans les Plats."
+
   - task: "API OCR Module Complet"
     implemented: true
     working: true
