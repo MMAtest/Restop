@@ -61,6 +61,17 @@ const getPeriodComparison = (dateRange) => {
   return "vs période précédente";
 };
 
+const getProductionCategoryIcon = (category) => {
+  const icons = {
+    'Entrée': '🥗',
+    'Plat': '🍽️',
+    'Dessert': '🍰',
+    'Bar': '🍹',
+    'Autres': '📝'
+  };
+  return icons[category] || '🍽️';
+};
+
 function App() {
   const [activeTab, setActiveTab] = useState("dashboard");
   const [activeProductionTab, setActiveProductionTab] = useState("produits");
