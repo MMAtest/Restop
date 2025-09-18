@@ -381,7 +381,19 @@ const PurchaseOrderPage = () => {
                   }`}
                   onClick={() => handleSupplierSelect(supplier)}
                 >
-                  <div className="font-medium">{supplier.nom}</div>
+                  <div className="flex items-center gap-2 mb-2">
+                    {/* Logo du fournisseur */}
+                    <span className="text-xl">
+                      {supplier.logo || '🏪'}
+                    </span>
+                    {/* Nom avec code couleur */}
+                    <div 
+                      className="font-medium px-2 py-1 rounded text-white text-sm"
+                      style={{backgroundColor: supplier.couleur || '#3B82F6'}}
+                    >
+                      {supplier.nom}
+                    </div>
+                  </div>
                   <div className="text-sm text-gray-600">
                     {supplier.telephone && (
                       <span className="mr-3">📞 {supplier.telephone}</span>
