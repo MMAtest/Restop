@@ -5078,6 +5078,208 @@ Nombre de couverts: 32"""
         except Exception as e:
             self.log_result("OCR Unknown Items Test", False, f"Exception: {str(e)}")
 
+    def test_ocr_delete_all_documents(self):
+        """Test du nouvel endpoint DELETE /api/ocr/documents/all"""
+        print("\n=== TEST DELETE ALL OCR DOCUMENTS ===")
+        
+        # Étape 1: Créer quelques documents OCR de test
+        test_documents_created = []
+        
+        # Créer 3 documents de test
+        for i in range(3):
+            # Créer une image de test simple
+            test_image_content = self.create_test_image(f"Test Document {i+1}")
+            
+            try:
+                files = {
+                    'file': (f'test_document_{i+1}.png', test_image_content, 'image/png')
+                }
+                data = {'document_type': 'z_report'}
+                
+                response = requests.post(f"{BASE_URL}/ocr/upload-document", files=files, data=data)
+                if response.status_code in [200, 201]:
+                    result = response.json()
+                    document_id = result.get("document_id")
+                    if document_id:
+                        test_documents_created.append(document_id)
+                        self.log_result(f"Création document test {i+1}", True, f"Document créé: {document_id}")
+                    else:
+                        self.log_result(f"Création document test {i+1}", False, "Pas d'ID retourné")
+                else:
+                    self.log_result(f"Création document test {i+1}", False, f"Erreur {response.status_code}")
+            except Exception as e:
+                self.log_result(f"Création document test {i+1}", False, f"Exception: {str(e)}")
+        
+        # Étape 2: Vérifier que les documents existent
+        try:
+            response = requests.get(f"{BASE_URL}/ocr/documents")
+            if response.status_code == 200:
+                documents_before = response.json()
+                documents_count_before = len(documents_before)
+                self.log_result("GET /ocr/documents (avant suppression)", True, 
+                              f"{documents_count_before} document(s) trouvé(s)")
+                
+                # Vérifier que nos documents de test sont présents
+                our_docs = [doc for doc in documents_before if doc.get("id") in test_documents_created]
+                if len(our_docs) == len(test_documents_created):
+                    self.log_result("Vérification documents créés", True, 
+                                  f"{len(our_docs)} documents de test confirmés")
+                else:
+                    self.log_result("Vérification documents créés", False, 
+                                  f"Seulement {len(our_docs)} documents trouvés sur {len(test_documents_created)} créés")
+            else:
+                self.log_result("GET /ocr/documents (avant suppression)", False, 
+                              f"Erreur {response.status_code}")
+                documents_count_before = 0
+        except Exception as e:
+            self.log_result("GET /ocr/documents (avant suppression)", False, f"Exception: {str(e)}")
+            documents_count_before = 0
+        
+        # Étape 3: Test principal - DELETE /api/ocr/documents/all
+        try:
+            response = requests.delete(f"{BASE_URL}/ocr/documents/all")
+            if response.status_code == 200:
+                result = response.json()
+                
+                # Vérifier le format de la réponse
+                if "message" in result and "deleted_count" in result:
+                    deleted_count = result["deleted_count"]
+                    message = result["message"]
+                    
+                    self.log_result("DELETE /ocr/documents/all", True, 
+                                  f"Réponse correcte: {deleted_count} documents supprimés")
+                    
+                    # Vérifier que le nombre supprimé correspond au nombre avant suppression
+                    if deleted_count == documents_count_before:
+                        self.log_result("Cohérence deleted_count", True, 
+                                      f"Nombre supprimé cohérent: {deleted_count}")
+                    else:
+                        self.log_result("Cohérence deleted_count", False, 
+                                      f"Incohérence: {deleted_count} supprimés vs {documents_count_before} attendus")
+                    
+                    # Vérifier le message
+                    if "supprimés" in message:
+                        self.log_result("Format message réponse", True, "Message approprié")
+                    else:
+                        self.log_result("Format message réponse", False, f"Message inattendu: {message}")
+                        
+                else:
+                    self.log_result("DELETE /ocr/documents/all", False, 
+                                  f"Format de réponse incorrect: {result}")
+            else:
+                self.log_result("DELETE /ocr/documents/all", False, 
+                              f"Erreur {response.status_code}: {response.text}")
+        except Exception as e:
+            self.log_result("DELETE /ocr/documents/all", False, f"Exception: {str(e)}")
+        
+        # Étape 4: Vérifier que tous les documents ont été supprimés
+        try:
+            response = requests.get(f"{BASE_URL}/ocr/documents")
+            if response.status_code == 200:
+                documents_after = response.json()
+                documents_count_after = len(documents_after)
+                
+                if documents_count_after == 0:
+                    self.log_result("Vérification suppression complète", True, 
+                                  "Tous les documents ont été supprimés")
+                else:
+                    self.log_result("Vérification suppression complète", False, 
+                                  f"{documents_count_after} document(s) restant(s)")
+                    
+                    # Afficher les documents restants pour debug
+                    for doc in documents_after:
+                        print(f"   Document restant: {doc.get('id', 'NO_ID')} - {doc.get('nom_fichier', 'NO_NAME')}")
+            else:
+                self.log_result("GET /ocr/documents (après suppression)", False, 
+                              f"Erreur {response.status_code}")
+        except Exception as e:
+            self.log_result("GET /ocr/documents (après suppression)", False, f"Exception: {str(e)}")
+        
+        # Étape 5: Test cas d'erreur - Supprimer quand il n'y a plus de documents
+        try:
+            response = requests.delete(f"{BASE_URL}/ocr/documents/all")
+            if response.status_code == 200:
+                result = response.json()
+                deleted_count = result.get("deleted_count", -1)
+                
+                if deleted_count == 0:
+                    self.log_result("DELETE sur collection vide", True, 
+                                  "Suppression sur collection vide gérée correctement")
+                else:
+                    self.log_result("DELETE sur collection vide", False, 
+                                  f"deleted_count incorrect: {deleted_count} au lieu de 0")
+            else:
+                self.log_result("DELETE sur collection vide", False, 
+                              f"Erreur {response.status_code}")
+        except Exception as e:
+            self.log_result("DELETE sur collection vide", False, f"Exception: {str(e)}")
+        
+        # Étape 6: Recréer un document et vérifier que l'endpoint fonctionne toujours
+        try:
+            test_image_content = self.create_test_image("Test Final")
+            files = {
+                'file': ('test_final.png', test_image_content, 'image/png')
+            }
+            data = {'document_type': 'z_report'}
+            
+            response = requests.post(f"{BASE_URL}/ocr/upload-document", files=files, data=data)
+            if response.status_code in [200, 201]:
+                result = response.json()
+                final_document_id = result.get("document_id")
+                
+                if final_document_id:
+                    self.log_result("Création document final", True, "Document créé après suppression totale")
+                    
+                    # Vérifier qu'il apparaît dans la liste
+                    list_response = requests.get(f"{BASE_URL}/ocr/documents")
+                    if list_response.status_code == 200:
+                        final_documents = list_response.json()
+                        if len(final_documents) == 1 and final_documents[0].get("id") == final_document_id:
+                            self.log_result("Vérification document final", True, 
+                                          "Document final correctement listé")
+                        else:
+                            self.log_result("Vérification document final", False, 
+                                          f"Problème avec la liste finale: {len(final_documents)} documents")
+                else:
+                    self.log_result("Création document final", False, "Pas d'ID retourné")
+            else:
+                self.log_result("Création document final", False, f"Erreur {response.status_code}")
+        except Exception as e:
+            self.log_result("Création document final", False, f"Exception: {str(e)}")
+
+    def create_test_image(self, text="Test"):
+        """Créer une image de test simple avec du texte"""
+        try:
+            from PIL import Image, ImageDraw, ImageFont
+            import io
+            
+            # Créer une image simple
+            img = Image.new('RGB', (400, 200), color='white')
+            draw = ImageDraw.Draw(img)
+            
+            # Essayer d'utiliser une police par défaut
+            try:
+                font = ImageFont.load_default()
+            except:
+                font = None
+            
+            # Ajouter du texte
+            draw.text((50, 50), f"RAPPORT Z - {text}", fill='black', font=font)
+            draw.text((50, 80), "Date: 06/01/2025", fill='black', font=font)
+            draw.text((50, 110), "Total CA: 123.45€", fill='black', font=font)
+            draw.text((50, 140), "Nombre couverts: 15", fill='black', font=font)
+            
+            # Convertir en bytes
+            img_buffer = io.BytesIO()
+            img.save(img_buffer, format='PNG')
+            img_buffer.seek(0)
+            
+            return img_buffer.getvalue()
+        except Exception as e:
+            # Fallback: créer un contenu minimal
+            print(f"Erreur création image: {e}")
+            return b"PNG_MOCK_CONTENT_FOR_TEST"
+
     def run_all_tests(self):
         """Exécute tous les tests"""
         print("🚀 DÉBUT DES TESTS BACKEND - GESTION STOCKS RESTAURANT + OCR")
