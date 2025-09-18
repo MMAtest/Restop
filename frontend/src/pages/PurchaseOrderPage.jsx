@@ -595,6 +595,125 @@ const PurchaseOrderPage = () => {
       </div>
       )}
 
+          {/* Récapitulatif de commande manuelle */}
+          {manualOrderSummary && (
+            <div className="bg-white rounded-lg shadow-sm mt-6">
+              <div className="p-6 border-b border-gray-200">
+                <div className="flex justify-between items-start">
+                  <div>
+                    <h3 className="text-lg font-semibold flex items-center">
+                      <span className="mr-2">📋</span>
+                      Récapitulatif de Commande - {manualOrderSummary.orderNumber}
+                    </h3>
+                    <p className="text-sm text-gray-600 mt-1">
+                      Fournisseur: {manualOrderSummary.supplier.nom}
+                    </p>
+                  </div>
+                  <div className="flex space-x-2">
+                    <button 
+                      onClick={() => {
+                        alert(`PDF généré pour la commande ${manualOrderSummary.orderNumber}`);
+                      }}
+                      className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-sm flex items-center"
+                    >
+                      <span className="mr-1">📄</span>
+                      PDF
+                    </button>
+                    <button 
+                      onClick={() => {
+                        alert(`Email envoyé à ${manualOrderSummary.supplier.nom}`);
+                      }}
+                      className="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded text-sm flex items-center"
+                    >
+                      <span className="mr-1">📧</span>
+                      Email
+                    </button>
+                    <button 
+                      onClick={() => {
+                        setManualOrderSummary(null);
+                        setOrderItems([]);
+                      }}
+                      className="bg-gray-500 hover:bg-gray-600 text-white px-3 py-1 rounded text-sm flex items-center"
+                    >
+                      <span className="mr-1">✖️</span>
+                      Fermer
+                    </button>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="p-6">
+                {/* Informations de livraison */}
+                <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-4">
+                  <h4 className="font-semibold text-yellow-800 mb-2">📅 Informations de Livraison</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                    <div>
+                      <span className="text-yellow-700">Date de commande:</span>
+                      <span className="font-medium ml-2">
+                        {new Date(manualOrderSummary.orderDate).toLocaleDateString('fr-FR')}
+                      </span>
+                    </div>
+                    <div>
+                      <span className="text-yellow-700">Livraison prévue:</span>
+                      <span className="font-medium ml-2 text-green-700">
+                        {manualOrderSummary.estimatedDelivery}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Détails des produits */}
+                <div className="space-y-2">
+                  {manualOrderSummary.items.map((item, index) => (
+                    <div key={index} className="flex justify-between items-center py-2 border-b border-gray-100 last:border-b-0">
+                      <div className="flex-1">
+                        <div className="font-medium">{item.product_name}</div>
+                        <div className="text-sm text-gray-600">
+                          {item.quantity} {item.unit} × {formatCurrency(item.unit_price)}
+                        </div>
+                      </div>
+                      <div className="font-medium text-right">
+                        {formatCurrency(item.unit_price * item.quantity)}
+                      </div>
+                    </div>
+                  ))}
+                  
+                  {/* Total */}
+                  <div className="flex justify-between items-center pt-4 border-t border-gray-200 font-semibold text-lg">
+                    <span>Total Commande:</span>
+                    <span className="text-2xl text-green-600">{formatCurrency(manualOrderSummary.total)}</span>
+                  </div>
+                </div>
+
+                {/* Actions finales */}
+                <div className="mt-6 pt-4 border-t border-gray-200">
+                  <div className="flex justify-center space-x-4">
+                    <button 
+                      onClick={() => {
+                        alert('Commande confirmée et envoyée au fournisseur !');
+                        setManualOrderSummary(null);
+                        setOrderItems([]);
+                      }}
+                      className="bg-green-500 hover:bg-green-600 text-white px-6 py-2 rounded-lg font-medium flex items-center"
+                    >
+                      <span className="mr-2">✅</span>
+                      Confirmer la Commande
+                    </button>
+                    <button 
+                      onClick={() => {
+                        setManualOrderSummary(null);
+                      }}
+                      className="bg-yellow-400 hover:bg-yellow-500 text-gray-900 px-6 py-2 rounded-lg font-medium flex items-center"
+                    >
+                      <span className="mr-2">✏️</span>
+                      Modifier
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Onglet Commande Automatique */}
           {activeOrderTab === 'auto' && (
             <div className="space-y-6">
