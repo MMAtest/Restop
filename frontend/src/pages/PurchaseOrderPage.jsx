@@ -235,39 +235,98 @@ const PurchaseOrderPage = () => {
           🛒 Gestion des Commandes
         </h1>
         <p className="text-gray-600">
-          Commandes manuelles et automatiques basées sur les productions
+          Suivi et création de commandes fournisseurs
         </p>
       </div>
 
-      {/* Onglets */}
-      <div className="mb-6">
-        <div className="flex space-x-1 bg-white p-1 rounded-lg shadow-sm">
-          <button
-            onClick={() => setActiveOrderTab('manual')}
-            className={`flex items-center px-4 py-2 rounded-md text-sm font-medium transition-all ${
-              activeOrderTab === 'manual'
-                ? 'bg-primary-500 text-white shadow-sm'
-                : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'
-            }`}
-          >
-            <span className="mr-2">✋</span>
-            Commande Manuelle
-          </button>
-          <button
-            onClick={() => setActiveOrderTab('auto')}
-            className={`flex items-center px-4 py-2 rounded-md text-sm font-medium transition-all ${
-              activeOrderTab === 'auto'
-                ? 'bg-primary-500 text-white shadow-sm'
-                : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'
-            }`}
-          >
-            <span className="mr-2">🤖</span>
-            Commande Automatique
-          </button>
+      {/* KPIs */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+        <div className="bg-white rounded-lg shadow-sm p-6">
+          <div className="flex items-center">
+            <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center mr-3">
+              <span className="text-xl">📋</span>
+            </div>
+            <div>
+              <p className="text-sm text-gray-600">Commandes ce mois</p>
+              <p className="text-2xl font-bold text-gray-900">24</p>
+            </div>
+          </div>
+        </div>
+        
+        <div className="bg-white rounded-lg shadow-sm p-6">
+          <div className="flex items-center">
+            <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center mr-3">
+              <span className="text-xl">💰</span>
+            </div>
+            <div>
+              <p className="text-sm text-gray-600">Montant total</p>
+              <p className="text-2xl font-bold text-gray-900">3 247€</p>
+            </div>
+          </div>
+        </div>
+        
+        <div className="bg-white rounded-lg shadow-sm p-6">
+          <div className="flex items-center">
+            <div className="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center mr-3">
+              <span className="text-xl">🚚</span>
+            </div>
+            <div>
+              <p className="text-sm text-gray-600">En attente</p>
+              <p className="text-2xl font-bold text-gray-900">7</p>
+            </div>
+          </div>
+        </div>
+        
+        <div className="bg-white rounded-lg shadow-sm p-6">
+          <div className="flex items-center">
+            <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center mr-3">
+              <span className="text-xl">🏢</span>
+            </div>
+            <div>
+              <p className="text-sm text-gray-600">Fournisseurs actifs</p>
+              <p className="text-2xl font-bold text-gray-900">12</p>
+            </div>
+          </div>
         </div>
       </div>
 
-      {/* Contenu des onglets */}
+      {/* Effectuer une commande */}
+      <div className="bg-white rounded-lg shadow-sm mb-8">
+        <div className="p-6 border-b border-gray-200">
+          <h2 className="text-xl font-semibold">Effectuer une Commande</h2>
+          <p className="text-gray-600 mt-1">Créez vos commandes manuellement ou automatiquement</p>
+        </div>
+        
+        {/* Onglets avec surbrillance jaune */}
+        <div className="p-4 border-b border-gray-200">
+          <div className="flex space-x-1">
+            <button
+              onClick={() => setActiveOrderTab('manual')}
+              className={`flex items-center px-4 py-2 rounded-md text-sm font-medium transition-all ${
+                activeOrderTab === 'manual'
+                  ? 'bg-yellow-400 text-gray-900 shadow-sm'
+                  : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'
+              }`}
+            >
+              <span className="mr-2">✋</span>
+              Commande Manuelle
+            </button>
+            <button
+              onClick={() => setActiveOrderTab('auto')}
+              className={`flex items-center px-4 py-2 rounded-md text-sm font-medium transition-all ${
+                activeOrderTab === 'auto'
+                  ? 'bg-yellow-400 text-gray-900 shadow-sm'
+                  : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'
+              }`}
+            >
+              <span className="mr-2">🤖</span>
+              Commande Automatique
+            </button>
+          </div>
+        </div>
+
+        {/* Contenu des onglets */}
+        <div className="p-6">
       {activeOrderTab === 'manual' && (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Supplier Selection */}
