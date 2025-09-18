@@ -17,7 +17,20 @@ const PurchaseOrderPage = () => {
 
   useEffect(() => {
     fetchSuppliers();
+    fetchRecipes();
   }, []);
+
+  const fetchRecipes = async () => {
+    try {
+      const response = await fetch(`${backendUrl}/api/recettes`);
+      if (response.ok) {
+        const data = await response.json();
+        setRecipes(data);
+      }
+    } catch (error) {
+      console.error('Erreur lors du chargement des recettes:', error);
+    }
+  };
 
   const fetchSuppliers = async () => {
     try {
