@@ -336,17 +336,23 @@ TOTAL GENERAL: 7433,00"""
         print("\n=== VÉRIFICATION CONFORMITÉ FORMAT JSON ===")
         
         try:
-            # Vérifier la structure JSON selon les spécifications
+            # Vérifier que z_analysis est présent (nouvelle structure)
+            z_analysis = donnees_parsees.get("z_analysis", {})
+            if not z_analysis:
+                self.log_result("❌ Z Analysis Présente", False, "z_analysis manquant dans donnees_parsees")
+                return
+            
+            # Vérifier la structure JSON selon les spécifications dans z_analysis
             required_json_fields = [
                 "date_cloture", "heure_cloture", "nombre_couverts", 
                 "total_ht", "total_ttc", "analysis"
             ]
             
-            missing_json_fields = [field for field in required_json_fields if field not in donnees_parsees]
+            missing_json_fields = [field for field in required_json_fields if field not in z_analysis]
             if not missing_json_fields:
-                self.log_result("✅ Format JSON Conforme", True, "Structure JSON conforme aux spécifications")
+                self.log_result("✅ Format JSON Conforme", True, "Structure JSON conforme dans z_analysis")
             else:
-                self.log_result("❌ Format JSON Conforme", False, f"Champs JSON manquants: {missing_json_fields}")
+                self.log_result("❌ Format JSON Conforme", False, f"Champs JSON manquants dans z_analysis: {missing_json_fields}")
             
             # Vérifier les types de données
             type_checks = [
@@ -359,15 +365,15 @@ TOTAL GENERAL: 7433,00"""
             ]
             
             for field, expected_type in type_checks:
-                if field in donnees_parsees:
-                    actual_value = donnees_parsees[field]
+                if field in z_analysis:
+                    actual_value = z_analysis[field]
                     if isinstance(actual_value, expected_type):
                         self.log_result(f"✅ Type {field}", True, f"{field}: {type(actual_value).__name__}")
                     else:
                         self.log_result(f"❌ Type {field}", False, f"{field}: {type(actual_value).__name__} au lieu de {expected_type}")
             
             # Vérifier la structure de l'analyse par catégories
-            analysis = donnees_parsees.get("analysis", {})
+            analysis = z_analysis.get("analysis", {})
             expected_categories = ["Bar", "Entrées", "Plats", "Desserts"]
             
             for category in expected_categories:
