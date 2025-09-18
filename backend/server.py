@@ -711,14 +711,56 @@ def extract_text_from_pdf(pdf_content: bytes) -> str:
             return
         extracted_parts.append(txt)
 
-    # PASS 1: pdfplumber - try with different laparams to capture multi-column
+    # PASS 1: pdfplumber - PRÉSERVATION INDENTATION AMÉLIORÉE
     try:
         pdf_file = io.BytesIO(pdf_content)
         with pdfplumber.open(pdf_file) as pdf:
             for page in pdf.pages:
-                # default
-                txt1 = page.extract_text()
-                append_text(txt1)
+                # APPROCHE 1: Extraction standard qui préserve souvent mieux l'indentation
+                txt1 = page.extract_text(layout=True)  # layout=True préserve mieux la mise en forme
+                if txt1:
+                    append_text(txt1)
+                
+                # APPROCHE 2: Extraction basée sur les caractères avec positions
+                try:
+                    chars = page.chars
+                    if chars:
+                        # Grouper les caractères par ligne basé sur leur position Y
+                        lines_dict = {}
+                        for char in chars:
+                            y = round(char['y0'], 1)  # Arrondir pour grouper sur même ligne
+                            if y not in lines_dict:
+                                lines_dict[y] = []
+                            lines_dict[y].append(char)
+                        
+                        # Reconstruire le texte ligne par ligne en préservant l'indentation
+                        sorted_lines = sorted(lines_dict.keys(), reverse=True)  # Du haut vers le bas
+                        reconstructed_lines = []
+                        
+                        for y in sorted_lines:
+                            line_chars = sorted(lines_dict[y], key=lambda c: c['x0'])  # De gauche à droite
+                            if not line_chars:
+                                continue
+                            
+                            # Calculer l'indentation basée sur la position X du premier caractère
+                            first_x = line_chars[0]['x0']
+                            base_x = 50  # Position X de base (à ajuster selon le PDF)
+                            indent_spaces = max(0, int((first_x - base_x) / 10))  # 10 pixels ≈ 1 espace
+                            
+                            # Construire la ligne avec indentation
+                            line_text = ''.join([c['text'] for c in line_chars])
+                            indented_line = ' ' * indent_spaces + line_text.strip()
+                            
+                            if indented_line.strip():  # Ignorer lignes vides
+                                reconstructed_lines.append(indented_line)
+                        
+                        if reconstructed_lines:
+                            reconstructed_text = '\n'.join(reconstructed_lines)
+                            append_text(reconstructed_text)
+                
+                except Exception as e:
+                    print(f"⚠️ Erreur extraction par caractères: {str(e)}")
+                
                 # table-aware extraction if tables exist
                 try:
                     tables = page.extract_tables()
