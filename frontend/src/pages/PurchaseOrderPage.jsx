@@ -327,8 +327,8 @@ const PurchaseOrderPage = () => {
 
         {/* Contenu des onglets */}
         <div className="p-6">
-      {activeOrderTab === 'manual' && (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {activeOrderTab === 'manual' && (
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Supplier Selection */}
           <div className="bg-white rounded-lg shadow-sm">
           <div className="p-6 border-b border-gray-200">
