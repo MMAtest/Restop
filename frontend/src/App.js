@@ -3098,7 +3098,17 @@ function App() {
                   color: activeProductionTab === 'recettes' ? 'white' : 'var(--color-text-secondary)'
                 }}
               >
-                📝 Productions
+                🍽️ Productions
+              </button>
+              <button 
+                className="button" 
+                onClick={() => setActiveProductionTab('datagrids')}
+                style={{
+                  background: activeProductionTab === 'datagrids' ? 'var(--color-primary-blue)' : 'var(--color-background-card-light)',
+                  color: activeProductionTab === 'datagrids' ? 'white' : 'var(--color-text-secondary)'
+                }}
+              >
+                📊 Grilles de données
               </button>
               <button 
                 className="button" 
