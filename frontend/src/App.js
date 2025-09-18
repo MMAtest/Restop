@@ -3122,8 +3122,6 @@ function App() {
                 
                 <div style={{display: 'flex', gap: '10px', marginBottom: '20px', flexWrap: 'wrap'}}>
                   <button className="button" onClick={() => setShowProduitModal(true)}>➕ Nouveau Produit</button>
-                  <button className="button" onClick={handleAnalyseProduits}>📊 Analyse Produits</button>
-                  <button className="button" onClick={handleGenererEtiquettes}>🏷️ Étiquettes</button>
                 </div>
 
                 {/* Filtre par catégorie d'ingrédients */}
