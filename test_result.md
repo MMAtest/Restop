@@ -561,11 +561,13 @@ metadata:
 
 test_plan:
   current_focus:
+    - "Fonction OCR Optimisée - Éviter Faux Positifs Plats"
     - "Migration Répartition tab vers Stock section - COMPLETED"
     - "Répartition optimale des productions déplacée avec succès"
     - "Onglet Prévisionnel allégé - section répartition supprimée"
     - "Améliorations Visuelles Fournisseurs - Codes Couleur et Logos - COMPLETED"
-  stuck_tasks: []
+  stuck_tasks:
+    - "Fonction OCR Optimisée - Éviter Faux Positifs Plats"
   test_all: false
   test_priority: "high_first"
 
