@@ -3117,13 +3117,28 @@ function App() {
                   <button className="button" onClick={() => setShowProduitModal(true)}>➕ Nouveau Produit</button>
                 </div>
 
-                {/* Filtre par catégorie d'ingrédients */}
+                {/* Filtre universel par catégorie */}
                 <div className="filter-section" style={{marginBottom: '20px'}}>
                   <div className="filter-group">
-                    <label className="filter-label">🏷️ Filtrer par type d'ingrédient :</label>
+                    <label className="filter-label">
+                      🏷️ Filtrer par catégorie {
+                        activeProductionTab === 'produits' ? 'd\'ingrédients' :
+                        activeProductionTab === 'fournisseurs' ? 'de fournisseurs' :
+                        activeProductionTab === 'recettes' ? 'de productions' :
+                        ''
+                      } :
+                    </label>
                     <select 
                       className="filter-select"
-                      onChange={(e) => filterProduitsByCategory(e.target.value)}
+                      onChange={(e) => {
+                        if (activeProductionTab === 'produits') {
+                          filterProduitsByCategory(e.target.value);
+                        } else if (activeProductionTab === 'fournisseurs') {
+                          // Pas de filtrage pour les fournisseurs pour l'instant
+                        } else if (activeProductionTab === 'recettes') {
+                          filterRecettesByCategory(e.target.value);
+                        }
+                      }}
                       style={{
                         padding: '8px 12px',
                         borderRadius: '6px',
@@ -3133,16 +3148,44 @@ function App() {
                         minWidth: '150px'
                       }}
                     >
-                      <option value="">Tous les ingrédients</option>
-                      <option value="Légumes">🥕 Légumes</option>
-                      <option value="Viandes">🥩 Viandes</option>
-                      <option value="Poissons">🐟 Poissons</option>
-                      <option value="Produits laitiers">🧀 Produits laitiers</option>
-                      <option value="Épices">🌶️ Épices & Condiments</option>
-                      <option value="Fruits">🍎 Fruits</option>
-                      <option value="Céréales">🌾 Céréales & Féculents</option>
-                      <option value="Boissons">🥤 Boissons</option>
-                      <option value="Autres">📦 Autres</option>
+                      {activeProductionTab === 'produits' && (
+                        <>
+                          <option value="">Tous les ingrédients</option>
+                          <option value="Légumes">🥕 Légumes</option>
+                          <option value="Viandes">🥩 Viandes</option>
+                          <option value="Poissons">🐟 Poissons</option>
+                          <option value="Produits laitiers">🧀 Produits laitiers</option>
+                          <option value="Épices">🌶️ Épices & Condiments</option>
+                          <option value="Fruits">🍎 Fruits</option>
+                          <option value="Céréales">🌾 Céréales & Féculents</option>
+                          <option value="Boissons">🥤 Boissons</option>
+                          <option value="Autres">📦 Autres</option>
+                        </>
+                      )}
+                      {activeProductionTab === 'fournisseurs' && (
+                        <>
+                          <option value="">Tous les fournisseurs</option>
+                          <option value="Légumes">🥕 Spécialité Légumes</option>
+                          <option value="Viandes">🥩 Spécialité Viandes</option>
+                          <option value="Poissons">🐟 Spécialité Poissons</option>
+                          <option value="Généraux">🏪 Fournisseurs généraux</option>
+                        </>
+                      )}
+                      {activeProductionTab === 'recettes' && (
+                        <>
+                          <option value="">Toutes les productions</option>
+                          <option value="Entrée">🥗 Entrées</option>
+                          <option value="Plat">🍽️ Plats</option>
+                          <option value="Dessert">🍰 Desserts</option>
+                          <option value="Bar">🍹 Bar</option>
+                          <option value="Autres">📝 Autres</option>
+                        </>
+                      )}
+                      {activeProductionTab === 'datagrids' && (
+                        <>
+                          <option value="">Toutes les données</option>
+                        </>
+                      )}
                     </select>
                     
                     <div className="filter-info" style={{
@@ -3150,7 +3193,10 @@ function App() {
                       color: 'var(--color-text-secondary)',
                       marginLeft: '10px'
                     }}>
-                      {filteredProduits.length} produit(s) affiché(s)
+                      {activeProductionTab === 'produits' && `${filteredProduits.length} produit(s) affiché(s)`}
+                      {activeProductionTab === 'fournisseurs' && `${fournisseurs.length} fournisseur(s) affiché(s)`}
+                      {activeProductionTab === 'recettes' && `${filteredRecettes.length} production(s) affichée(s)`}
+                      {activeProductionTab === 'datagrids' && 'Grilles de données professionnelles'}
                     </div>
                   </div>
                 </div>
