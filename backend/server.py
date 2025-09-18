@@ -169,6 +169,24 @@ class SupplierCostConfigCreate(BaseModel):
     delivery_cost: float = 0.0
     extra_cost: float = 0.0
 
+# ✅ Archive system models
+class ArchivedItem(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    original_id: str  # ID de l'objet original
+    item_type: str    # "produit", "production", "fournisseur"
+    original_data: dict  # Données complètes de l'objet archivé
+    archived_at: datetime = Field(default_factory=datetime.utcnow)
+    archived_by: Optional[str] = None  # Utilisateur qui a archivé
+    reason: Optional[str] = None  # Raison de l'archivage
+
+class ArchiveRequest(BaseModel):
+    item_id: str
+    item_type: str  # "produit", "production", "fournisseur"
+    reason: Optional[str] = None
+
+class RestoreRequest(BaseModel):
+    archive_id: str
+
 class SupplierProductInfoCreate(BaseModel):
     supplier_id: str
     product_id: str
