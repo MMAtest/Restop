@@ -2183,21 +2183,51 @@ function App() {
 
               {/* Section DLC < 7 jours */}
               <div className="alert-section">
-                <div className="alert-header" style={{display: 'flex', alignItems: 'center'}}>
-                  <div className="alert-title">DLC &lt; 7 jours</div>
-                  <div className="alert-count" style={{
-                    background: 'var(--color-accent-orange)',
-                    color: 'white',
-                    width: '24px',
-                    height: '24px',
-                    borderRadius: '50%',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    fontSize: '12px',
-                    fontWeight: 'bold',
-                    marginLeft: '8px'
-                  }}>5</div>
+                <div className="alert-header" style={{display: 'flex', alignItems: 'center', justifyContent: 'space-between'}}>
+                  <div style={{display: 'flex', alignItems: 'center'}}>
+                    <div className="alert-title">DLC &lt; 7 jours</div>
+                    <div className="alert-count" style={{
+                      background: 'var(--color-accent-orange)',
+                      color: 'white',
+                      width: '24px',
+                      height: '24px',
+                      borderRadius: '50%',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      fontSize: '12px',
+                      fontWeight: 'bold',
+                      marginLeft: '8px'
+                    }}>5</div>
+                  </div>
+                  
+                  {/* Switcher pour ce bloc */}
+                  <div style={{display: 'flex', gap: '3px'}}>
+                    <button 
+                      className="button small"
+                      onClick={() => setDlcViewMode7Days('produits')}
+                      style={{
+                        background: dlcViewMode7Days === 'produits' ? 'var(--color-primary-blue)' : 'var(--color-background-card)',
+                        color: dlcViewMode7Days === 'produits' ? 'white' : 'var(--color-text-secondary)',
+                        padding: '2px 6px',
+                        fontSize: '10px'
+                      }}
+                    >
+                      📦 Produits
+                    </button>
+                    <button 
+                      className="button small"
+                      onClick={() => setDlcViewMode7Days('productions')}
+                      style={{
+                        background: dlcViewMode7Days === 'productions' ? 'var(--color-primary-blue)' : 'var(--color-background-card)',
+                        color: dlcViewMode7Days === 'productions' ? 'white' : 'var(--color-text-secondary)',
+                        padding: '2px 6px',
+                        fontSize: '10px'
+                      }}
+                    >
+                      🍽️ Productions
+                    </button>
+                  </div>
                 </div>
                 
                 <div className="alert-card warning">
