@@ -473,6 +473,142 @@ const PurchaseOrderPage = () => {
           </div>
         </div>
       </div>
+      )}
+
+      {/* Onglet Commande Automatique */}
+      {activeOrderTab === 'auto' && (
+        <div className="space-y-6">
+          {/* Sélection des productions */}
+          <div className="bg-white rounded-lg shadow-sm">
+            <div className="p-6 border-b border-gray-200">
+              <h3 className="text-lg font-semibold flex items-center">
+                <span className="mr-2">🍽️</span>
+                Sélectionner les Productions
+              </h3>
+              <p className="text-sm text-gray-600 mt-1">
+                Choisissez les productions et quantités pour calculer automatiquement les commandes
+              </p>
+            </div>
+            <div className="p-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 max-h-96 overflow-y-auto">
+                {recipes.map((recipe) => (
+                  <div
+                    key={recipe.id}
+                    className={`p-4 border rounded-lg cursor-pointer transition-all ${
+                      selectedRecipes.find(r => r.id === recipe.id)
+                        ? 'border-primary-500 bg-primary-50'
+                        : 'border-gray-200 hover:border-gray-300'
+                    }`}
+                    onClick={() => {
+                      const isSelected = selectedRecipes.find(r => r.id === recipe.id);
+                      if (isSelected) {
+                        setSelectedRecipes(selectedRecipes.filter(r => r.id !== recipe.id));
+                      } else {
+                        setSelectedRecipes([...selectedRecipes, { ...recipe, selectedQuantity: 1 }]);
+                      }
+                    }}
+                  >
+                    <div className="font-medium flex items-center">
+                      <span className="mr-2">
+                        {recipe.categorie === 'Entrée' ? '🥗' :
+                         recipe.categorie === 'Plat' ? '🍽️' :
+                         recipe.categorie === 'Dessert' ? '🍰' :
+                         recipe.categorie === 'Bar' ? '🍹' : '📝'}
+                      </span>
+                      {recipe.nom}
+                    </div>
+                    <div className="text-sm text-gray-600 mt-1">
+                      {recipe.portions} portions • {recipe.categorie}
+                    </div>
+                    {selectedRecipes.find(r => r.id === recipe.id) && (
+                      <div className="mt-2">
+                        <label className="text-xs text-gray-500">Quantité souhaitée:</label>
+                        <input
+                          type="number"
+                          min="1"
+                          value={selectedRecipes.find(r => r.id === recipe.id)?.selectedQuantity || 1}
+                          onChange={(e) => {
+                            const quantity = parseInt(e.target.value) || 1;
+                            setSelectedRecipes(selectedRecipes.map(r => 
+                              r.id === recipe.id ? { ...r, selectedQuantity: quantity } : r
+                            ));
+                          }}
+                          onClick={(e) => e.stopPropagation()}
+                          className="w-20 px-2 py-1 text-sm border rounded mt-1"
+                        />
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+              
+              {selectedRecipes.length > 0 && (
+                <div className="mt-6 pt-4 border-t">
+                  <div className="flex justify-between items-center">
+                    <div className="text-sm text-gray-600">
+                      {selectedRecipes.length} production(s) sélectionnée(s)
+                    </div>
+                    <button
+                      onClick={calculateAutoOrder}
+                      disabled={loading}
+                      className="bg-primary-500 hover:bg-primary-600 text-white px-4 py-2 rounded-lg font-medium disabled:opacity-50"
+                    >
+                      {loading ? 'Calcul...' : '🤖 Calculer les Commandes'}
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Résultats des commandes automatiques */}
+          {autoOrderResults.length > 0 && (
+            <div className="bg-white rounded-lg shadow-sm">
+              <div className="p-6 border-b border-gray-200">
+                <h3 className="text-lg font-semibold flex items-center">
+                  <span className="mr-2">📊</span>
+                  Commandes Suggérées par Fournisseur
+                </h3>
+              </div>
+              <div className="p-6">
+                <div className="space-y-4">
+                  {autoOrderResults.map((order, index) => (
+                    <div key={index} className="border rounded-lg p-4">
+                      <div className="flex justify-between items-start mb-3">
+                        <div>
+                          <h4 className="font-medium text-lg">{order.supplierName}</h4>
+                          <p className="text-sm text-gray-600">
+                            {order.products.length} produit(s) • Total: {formatCurrency(order.total)}
+                          </p>
+                        </div>
+                        <button className="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded text-sm">
+                          ✅ Valider Commande
+                        </button>
+                      </div>
+                      
+                      <div className="space-y-2">
+                        {order.products.map((product, productIndex) => (
+                          <div key={productIndex} className="flex justify-between items-center py-2 border-b border-gray-100 last:border-b-0">
+                            <div>
+                              <div className="font-medium">{product.productName}</div>
+                              <div className="text-sm text-gray-600">
+                                {product.quantity} {product.unit} × {formatCurrency(product.pricePerUnit)}
+                              </div>
+                            </div>
+                            <div className="font-medium">
+                              {formatCurrency(product.totalPrice)}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Order History Preview */}
       <div className="mt-8 bg-white rounded-lg shadow-sm">
