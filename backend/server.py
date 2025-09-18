@@ -301,6 +301,9 @@ class Recipe(BaseModel):
     temps_preparation: Optional[int] = None  # in minutes
     instructions: Optional[str] = None
     prix_vente: Optional[float] = None
+    coefficient_prevu: Optional[float] = None  # Coefficient prévu par le manager (en multiples)
+    coefficient_reel: Optional[float] = None   # Coefficient réel calculé (Coût Matière / Prix de Vente)
+    cout_matiere: Optional[float] = None       # Coût total des matières premières
     ingredients: List[RecetteIngredient] = []
     is_simple_recipe: bool = False  # ✅ True for direct-sale items (beverages, etc.)
     cost_analysis: Optional[dict] = None  # Auto-calculated cost breakdown
