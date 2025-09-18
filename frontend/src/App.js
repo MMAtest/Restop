@@ -2686,13 +2686,6 @@ function App() {
                 <div className="item-list">
                   <div className="section-title">📅 Gestion DLC & Lots</div>
                   
-                  {/* Actions rapides DLC */}
-                  <div style={{display: 'flex', gap: '10px', marginBottom: '20px', flexWrap: 'wrap'}}>
-                    <button className="button" onClick={fetchBatchSummary}>🔄 Actualiser DLC</button>
-                    <button className="button warning">⚠️ Alertes DLC</button>
-                    <button className="button">📊 Rapport DLC</button>
-                  </div>
-
                   {/* KPIs DLC */}
                   <div className="kpi-grid">
                     <div className="kpi-card">
