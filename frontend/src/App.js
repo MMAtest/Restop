@@ -407,10 +407,41 @@ function App() {
     e.preventDefault();
     setLoading(true);
     try {
+      // Séparer les données du fournisseur des coûts
+      const { deliveryCost, extraCost, ...fournisseurData } = fournisseurForm;
+      
+      let supplierId;
       if (editingItem) {
-        await axios.put(`${API}/fournisseurs/${editingItem.id}`, fournisseurForm);
+        await axios.put(`${API}/fournisseurs/${editingItem.id}`, fournisseurData);
+        supplierId = editingItem.id;
       } else {
-        await axios.post(`${API}/fournisseurs`, fournisseurForm);
+        const response = await axios.post(`${API}/fournisseurs`, fournisseurData);
+        supplierId = response.data.id;
+      }
+
+      // Mettre à jour la configuration des coûts si nécessaire
+      if (deliveryCost > 0 || extraCost > 0) {
+        try {
+          // Essayer de mettre à jour la configuration existante
+          await axios.put(`${API}/supplier-cost-config/${supplierId}`, {
+            supplier_id: supplierId,
+            delivery_cost: deliveryCost,
+            extra_cost: extraCost
+          });
+        } catch (updateError) {
+          // Si la mise à jour échoue, créer une nouvelle configuration
+          if (updateError.response?.status === 404) {
+            try {
+              await axios.post(`${API}/supplier-cost-config`, {
+                supplier_id: supplierId,
+                delivery_cost: deliveryCost,
+                extra_cost: extraCost
+              });
+            } catch (createError) {
+              console.warn("Impossible de créer la configuration des coûts:", createError);
+            }
+          }
+        }
       }
 
       setShowFournisseurModal(false);
