@@ -495,27 +495,28 @@ def analyze_z_report_categories(texte_ocr: str) -> dict:
         # Skip les lignes vides ou trop courtes
         if len(ln_clean) < 5:
             continue
-            
-        # Vérifier si c'est une catégorie
-        m_cat = category_pattern.match(ln_clean)
-        if m_cat:
-            quantity = int(m_cat.group(1))
-            name = m_cat.group(2).strip()
-            amount = parse_number_fr(m_cat.group(3)) or 0.0
-            
-            current_category = {
-                "nom": name,
-                "quantite": quantity,
-                "prix_total": amount,
-                "type": "categorie",
-                "raw_line": ln_clean
-            }
-            categories.append(current_category)
-            continue
         
-        # Vérifier si c'est une production (ligne originale avec indentation)
-        if ln.startswith(' ') or ln.startswith('\t') or ln.startswith('_'):
-            # Production sous une catégorie
+        # Déterminer si c'est une ligne indentée (production) ou non (catégorie)
+        is_indented = ln.startswith(' ') or ln.startswith('\t') or ln.startswith('_')
+        
+        if not is_indented:
+            # Vérifier si c'est une catégorie (ligne non-indentée)
+            m_cat = category_pattern.match(ln_clean)
+            if m_cat:
+                quantity = int(m_cat.group(1))
+                name = m_cat.group(2).strip()
+                amount = parse_number_fr(m_cat.group(3)) or 0.0
+                
+                current_category = {
+                    "nom": name,
+                    "quantite": quantity,
+                    "prix_total": amount,
+                    "type": "categorie",
+                    "raw_line": ln_clean
+                }
+                categories.append(current_category)
+        else:
+            # Vérifier si c'est une production (ligne indentée)
             ln_clean_prod = ln.lstrip(' \t_')
             m_prod = production_pattern.match(ln_clean_prod)
             if m_prod:
