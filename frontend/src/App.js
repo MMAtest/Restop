@@ -2892,16 +2892,165 @@ function App() {
                     </div>
                   </div>
 
-                  {/* Liste des produits avec pagination */}
+                  {/* Liste des éléments avec pagination */}
                   {(() => {
-                    // Filtrer les stocks selon la recherche et la catégorie
-                    const filteredStocks = stocks.filter(stock => {
-                      const produit = produits.find(p => p.id === stock.produit_id);
-                      const matchesSearch = stock.produit_nom.toLowerCase().includes(stockSearchTerm.toLowerCase());
-                      const matchesCategory = stockFilterCategory === 'all' || 
-                                            (produit && produit.categorie && produit.categorie.toLowerCase() === stockFilterCategory.toLowerCase());
-                      return matchesSearch && matchesCategory;
-                    });
+                    if (stockViewMode === 'productions') {
+                      // Affichage par productions
+                      const filteredProductions = recettes.filter(recette => {
+                        const matchesSearch = recette.nom.toLowerCase().includes(stockSearchTerm.toLowerCase());
+                        const matchesCategory = stockFilterCategory === 'all' || 
+                                              (recette.categorie && recette.categorie.toLowerCase() === stockFilterCategory.toLowerCase());
+                        return matchesSearch && matchesCategory;
+                      });
+                      
+                      const totalPages = Math.ceil(filteredProductions.length / stockItemsPerPage);
+                      const startIndex = (stockCurrentPage - 1) * stockItemsPerPage;
+                      const endIndex = startIndex + stockItemsPerPage;
+                      const currentProductions = filteredProductions.slice(startIndex, endIndex);
+                      
+                      if (filteredProductions.length === 0) {
+                        return (
+                          <div style={{textAlign: 'center', padding: '40px', color: 'var(--color-text-muted)'}}>
+                            <div style={{fontSize: '48px', marginBottom: '15px'}}>🍽️</div>
+                            <p>Aucune production trouvée</p>
+                            {stockSearchTerm && <p style={{fontSize: '14px'}}>Essayez un autre terme de recherche</p>}
+                          </div>
+                        );
+                      }
+                      
+                      return (
+                        <>
+                          <div style={{
+                            marginBottom: '15px',
+                            fontSize: '14px',
+                            color: 'var(--color-text-secondary)',
+                            padding: '8px 12px',
+                            background: 'var(--color-background-card-light)',
+                            borderRadius: '6px'
+                          }}>
+                            {filteredProductions.length} production(s) • Page {stockCurrentPage} sur {totalPages}
+                          </div>
+                          
+                          {currentProductions.map((production) => (
+                            <div key={production.id} className="item-row">
+                              <div className="item-info">
+                                <div className="item-name">
+                                  {getCategoryIcon(production.categorie)} {production.nom}
+                                  <span className="category-badge" style={{
+                                    marginLeft: '6px',
+                                    padding: '2px 6px',
+                                    borderRadius: '8px',
+                                    fontSize: '10px',
+                                    background: getCategoryColor(production.categorie),
+                                    color: 'white'
+                                  }}>
+                                    {production.categorie}
+                                  </span>
+                                </div>
+                                <div className="item-details">
+                                  Coeff: {production.coefficient.toFixed(2)} • 
+                                  {production.ingredients.length} ingrédient(s) • 
+                                  Coût estimé: {(production.ingredients.reduce((sum, ing) => sum + (ing.cout_unitaire * ing.quantite_requise), 0)).toFixed(2)}€
+                                </div>
+                              </div>
+                              <div className="item-actions">
+                                <button className="button small" onClick={() => handleEdit(production, 'recette')}>✏️ Éditer</button>
+                                <button 
+                                  className="button small warning" 
+                                  onClick={async () => {
+                                    const reason = window.prompt(`Raison de l'archivage de "${production.nom}" (optionnel):`);
+                                    if (reason !== null) {
+                                      const success = await archiveItem(production.id, 'production', reason || null);
+                                      if (success) {
+                                        alert(`${production.nom} archivé avec succès !`);
+                                      } else {
+                                        alert("Erreur lors de l'archivage");
+                                      }
+                                    }
+                                  }}
+                                >
+                                  📁 Archiver
+                                </button>
+                              </div>
+                            </div>
+                          ))}
+                          
+                          {/* Contrôles de pagination pour productions */}
+                          {totalPages > 1 && (
+                            <div style={{
+                              display: 'flex', 
+                              justifyContent: 'space-between', 
+                              alignItems: 'center',
+                              marginTop: '20px',
+                              padding: '15px',
+                              background: 'var(--color-background-card-light)',
+                              borderRadius: '8px'
+                            }}>
+                              <div style={{fontSize: '14px', color: 'var(--color-text-secondary)'}}>
+                                Page {stockCurrentPage} sur {totalPages} • 
+                                {startIndex + 1}-{Math.min(endIndex, filteredProductions.length)} sur {filteredProductions.length} productions
+                              </div>
+                              
+                              <div style={{display: 'flex', gap: '5px'}}>
+                                <button 
+                                  className="button small" 
+                                  onClick={() => setStockCurrentPage(1)}
+                                  disabled={stockCurrentPage === 1}
+                                  style={{
+                                    opacity: stockCurrentPage === 1 ? 0.5 : 1,
+                                    cursor: stockCurrentPage === 1 ? 'not-allowed' : 'pointer'
+                                  }}
+                                >
+                                  ⏮️ Début
+                                </button>
+                                <button 
+                                  className="button small" 
+                                  onClick={() => setStockCurrentPage(stockCurrentPage - 1)}
+                                  disabled={stockCurrentPage === 1}
+                                  style={{
+                                    opacity: stockCurrentPage === 1 ? 0.5 : 1,
+                                    cursor: stockCurrentPage === 1 ? 'not-allowed' : 'pointer'
+                                  }}
+                                >
+                                  ⬅️ Précédent
+                                </button>
+                                <button 
+                                  className="button small" 
+                                  onClick={() => setStockCurrentPage(stockCurrentPage + 1)}
+                                  disabled={stockCurrentPage === totalPages}
+                                  style={{
+                                    opacity: stockCurrentPage === totalPages ? 0.5 : 1,
+                                    cursor: stockCurrentPage === totalPages ? 'not-allowed' : 'pointer'
+                                  }}
+                                >
+                                  Suivant ➡️
+                                </button>
+                                <button 
+                                  className="button small" 
+                                  onClick={() => setStockCurrentPage(totalPages)}
+                                  disabled={stockCurrentPage === totalPages}
+                                  style={{
+                                    opacity: stockCurrentPage === totalPages ? 0.5 : 1,
+                                    cursor: stockCurrentPage === totalPages ? 'not-allowed' : 'pointer'
+                                  }}
+                                >
+                                  Fin ⏭️
+                                </button>
+                              </div>
+                            </div>
+                          )}
+                        </>
+                      );
+                    } else {
+                      // Affichage par produits (mode par défaut)
+                      // Filtrer les stocks selon la recherche et la catégorie
+                      const filteredStocks = stocks.filter(stock => {
+                        const produit = produits.find(p => p.id === stock.produit_id);
+                        const matchesSearch = stock.produit_nom.toLowerCase().includes(stockSearchTerm.toLowerCase());
+                        const matchesCategory = stockFilterCategory === 'all' || 
+                                              (produit && produit.categorie && produit.categorie.toLowerCase() === stockFilterCategory.toLowerCase());
+                        return matchesSearch && matchesCategory;
+                      });
                     
                     // Calculer la pagination
                     const totalPages = Math.ceil(filteredStocks.length / stockItemsPerPage);
