@@ -1328,6 +1328,7 @@ function App() {
                   <div className="icon">💰</div>
                   <div className="title">CA Total</div>
                   <div className="value">{filteredAnalytics.caTotal.toLocaleString('fr-FR')} €</div>
+                  <div className="subtitle">{(filteredAnalytics.couvertsMidi + filteredAnalytics.couvertsSoir)} couverts</div>
                 </div>
                 
                 <div className="kpi-card">
@@ -1342,6 +1343,43 @@ function App() {
                   <div className="title">Service Soir</div>
                   <div className="value">{filteredAnalytics.caSoir.toLocaleString('fr-FR')} €</div>
                   <div className="subtitle">{filteredAnalytics.couvertsSoir} couverts</div>
+                </div>
+                
+                {/* Nouveaux KPIs - Panier moyen par couvert */}
+                <div className="kpi-card">
+                  <div className="icon">🍽️</div>
+                  <div className="title">Panier Moyen Global</div>
+                  <div className="value">
+                    {(filteredAnalytics.couvertsMidi + filteredAnalytics.couvertsSoir) > 0 
+                      ? (filteredAnalytics.caTotal / (filteredAnalytics.couvertsMidi + filteredAnalytics.couvertsSoir)).toFixed(2)
+                      : '0.00'
+                    } €
+                  </div>
+                  <div className="subtitle">par couvert</div>
+                </div>
+                
+                <div className="kpi-card">
+                  <div className="icon">☀️</div>
+                  <div className="title">Panier Moyen Midi</div>
+                  <div className="value">
+                    {filteredAnalytics.couvertsMidi > 0 
+                      ? (filteredAnalytics.caMidi / filteredAnalytics.couvertsMidi).toFixed(2)
+                      : '0.00'
+                    } €
+                  </div>
+                  <div className="subtitle">par couvert</div>
+                </div>
+                
+                <div className="kpi-card">
+                  <div className="icon">🌙</div>
+                  <div className="title">Panier Moyen Soir</div>
+                  <div className="value">
+                    {filteredAnalytics.couvertsSoir > 0 
+                      ? (filteredAnalytics.caSoir / filteredAnalytics.couvertsSoir).toFixed(2)
+                      : '0.00'
+                    } €
+                  </div>
+                  <div className="subtitle">par couvert</div>
                 </div>
               </div>
 
