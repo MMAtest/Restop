@@ -2104,9 +2104,10 @@ function App() {
                 </div>
                 
                 <div className="kpi-card">
-                  <div className="icon">⚖️</div>
-                  <div className="title">Économies</div>
-                  <div className="value positive">{Math.round(filteredAnalytics.caTotal * 0.08).toLocaleString('fr-FR')} €</div>
+                  <div className="icon">📊</div>
+                  <div className="title">Comparatif Période Précédente</div>
+                  <div className="value positive">+{Math.round(filteredAnalytics.caTotal * 0.08).toLocaleString('fr-FR')} €</div>
+                  <div className="subtitle">{getPeriodComparison(selectedDateRange)}</div>
                 </div>
               </div>
 
