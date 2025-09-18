@@ -1,30 +1,7 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useMemo } from 'react';
 import DataGrid from './DataGrid';
 
-const RecipesDataGrid = ({ onRecipeSelect, onRecipeEdit, onRecipeDelete, onCalculateCosts }) => {
-  const [recipes, setRecipes] = useState([]);
-  const [loading, setLoading] = useState(false);
-
-  const backendUrl = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8001';
-
-  useEffect(() => {
-    fetchRecipes();
-  }, []);
-
-  const fetchRecipes = async () => {
-    setLoading(true);
-    try {
-      const response = await fetch(`${backendUrl}/api/recettes`);
-      if (response.ok) {
-        const data = await response.json();
-        setRecipes(data);
-      }
-    } catch (error) {
-      console.error('Erreur lors du chargement des recettes:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
+const RecipesDataGrid = ({ recipes = [], loading, onRecipeSelect, onRecipeEdit, onRecipeDelete, onCalculateCosts }) => {
 
   // Actions renderer
   const ActionsRenderer = ({ data }) => (
