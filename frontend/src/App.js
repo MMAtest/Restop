@@ -402,7 +402,7 @@ function App() {
       }
 
       setShowFournisseurModal(false);
-      setFournisseurForm({ nom: "", contact: "", email: "", telephone: "", adresse: "" });
+      setFournisseurForm({ nom: "", contact: "", email: "", telephone: "", adresse: "", couleur: "#3B82F6", logo: "" });
       setEditingItem(null);
       fetchFournisseurs();
       fetchDashboardStats();
