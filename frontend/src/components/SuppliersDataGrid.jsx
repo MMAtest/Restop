@@ -214,7 +214,7 @@ const SuppliersDataGrid = ({ suppliers = [], loading, onSupplierSelect, onSuppli
             </p>
           </div>
           <button
-            onClick={fetchSuppliers}
+            onClick={() => window.location.reload()}
             className="text-primary-500 hover:text-primary-600 font-medium flex items-center"
           >
             <span className="mr-1">🔄</span>
