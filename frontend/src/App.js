@@ -42,10 +42,10 @@ function App() {
       { nom: "Plateau de fromages", ventes: 987, portions: 34, categorie: "Autres", coefficientPrevu: 2.10, coefficientReel: 2.08, coutMatiere: 473.76, prixVente: 29.00 } // 29.00 / (473.76/34) = 2.08
     ],
     flopProductions: [
-      { nom: "Soupe froide", ventes: 187, portions: 12, categorie: "Entrée", coefficientPrevu: 0.20, coefficientReel: 0.18, coutMatiere: 54.60, prixVente: 15.60 }, // Réel < Prévu = Respecté
-      { nom: "Tartare de légumes", ventes: 156, portions: 8, categorie: "Autres", coefficientPrevu: 0.25, coefficientReel: 0.32, coutMatiere: 70.20, prixVente: 16.70 }, // Réel > Prévu = Dépassé
-      { nom: "Mocktail exotique", ventes: 134, portions: 9, categorie: "Bar", coefficientPrevu: 0.15, coefficientReel: 0.13, coutMatiere: 37.52, prixVente: 13.40 }, // Réel < Prévu = Respecté
-      { nom: "Panna cotta", ventes: 98, portions: 6, categorie: "Dessert", coefficientPrevu: 0.18, coefficientReel: 0.22, coutMatiere: 30.38, prixVente: 9.80 } // Réel > Prévu = Dépassé
+      { nom: "Soupe froide", ventes: 187, portions: 12, categorie: "Entrée", coefficientPrevu: 3.50, coefficientReel: 3.43, coutMatiere: 54.60, prixVente: 15.60 }, // 15.60 / (54.60/12) = 3.43
+      { nom: "Tartare de légumes", ventes: 156, portions: 8, categorie: "Autres", coefficientPrevu: 1.90, coefficientReel: 1.90, coutMatiere: 70.20, prixVente: 16.70 }, // 16.70 / (70.20/8) = 1.90
+      { nom: "Mocktail exotique", ventes: 134, portions: 9, categorie: "Bar", coefficientPrevu: 3.20, coefficientReel: 3.21, coutMatiere: 37.52, prixVente: 13.40 }, // 13.40 / (37.52/9) = 3.21
+      { nom: "Panna cotta", ventes: 98, portions: 6, categorie: "Dessert", coefficientPrevu: 1.95, coefficientReel: 1.94, coutMatiere: 30.38, prixVente: 9.80 } // 9.80 / (30.38/6) = 1.94
     ],
     ventesParCategorie: {
       plats: 6201,
