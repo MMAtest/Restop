@@ -2736,6 +2736,12 @@ function App() {
                     <div className="title">Valeur Totale</div>
                     <div className="value">16 326,05 €</div>
                   </div>
+                  
+                  <div className="kpi-card">
+                    <div className="icon">⏰</div>
+                    <div className="title">DLC &lt; 3 jours</div>
+                    <div className="value" style={{color: 'var(--color-warning-orange)'}}>8 produits</div>
+                  </div>
                 </div>
 
                 {/* Liste des produits en stock avec recherche et filtres */}
