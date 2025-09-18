@@ -423,44 +423,117 @@ def normalize_family(cat_name: str) -> str:
     return "Autres"
 
 def analyze_z_report_categories(texte_ocr: str) -> dict:
-    """Extract covers, total_ttc, category headers and aggregate in 4 families.
-    Only category header lines are used (per user choice A)."""
+    """
+    Analyse optimisée des rapports Z selon les spécifications détaillées.
+    Extrait : date/heure, couverts, totaux HT/TTC, catégories et productions.
+    """
     lines = [l.strip() for l in (texte_ocr or '').split('\n') if l and len(l.strip()) > 0]
-
-    # Extract covers and total TTC
-    covers = None
+    
+    # Variables pour les données principales
+    date_cloture = None
+    heure_cloture = None
+    nombre_couverts = None
+    total_ht = None
     total_ttc = None
+    
+    # 1. Extraction Date et Heure de clôture
     for ln in lines:
-        m_cov = re.search(r"nombre\s+de\s+couverts\s+([0-9]+(?:[\.,][0-9]{1,2})?)", ln, re.IGNORECASE)
-        if m_cov and covers is None:
-            covers = parse_number_fr(m_cov.group(1))
-        m_ttc = re.search(r"total\s+ttc\s+([0-9]+(?:[\.,][0-9]{1,2})?)", ln, re.IGNORECASE)
+        # Recherche de la date (format DD/MM/YYYY ou DD/MM/YY)
+        m_date = re.search(r"(\d{1,2})/(\d{1,2})/(\d{2,4})", ln)
+        if m_date and date_cloture is None:
+            day, month, year = m_date.groups()
+            if len(year) == 2:
+                year = "20" + year
+            date_cloture = f"{day.zfill(2)}/{month.zfill(2)}/{year}"
+        
+        # Recherche de l'heure (format HH:MM:SS ou HH:MM)
+        m_heure = re.search(r"(\d{1,2}):(\d{2})(?::(\d{2}))?", ln)
+        if m_heure and heure_cloture is None:
+            hour, minute, second = m_heure.groups()
+            if second:
+                heure_cloture = f"{hour.zfill(2)}:{minute}:{second}"
+            else:
+                heure_cloture = f"{hour.zfill(2)}:{minute}"
+    
+    # 2. Extraction Nombre de couverts
+    for ln in lines:
+        m_cov = re.search(r"nombre\s+de\s+couverts\s*:?\s*([0-9]+(?:[,\.][0-9]{1,2})?)", ln, re.IGNORECASE)
+        if m_cov and nombre_couverts is None:
+            nombre_couverts = parse_number_fr(m_cov.group(1))
+    
+    # 3. Extraction Total HT
+    for ln in lines:
+        m_ht = re.search(r"total\s+ht\s*:?\s*([0-9]+(?:[,\.][0-9]{1,2})?)", ln, re.IGNORECASE)
+        if m_ht and total_ht is None:
+            total_ht = parse_number_fr(m_ht.group(1))
+    
+    # 4. Extraction Total TTC
+    for ln in lines:
+        m_ttc = re.search(r"total\s+ttc\s*:?\s*([0-9]+(?:[,\.][0-9]{1,2})?)", ln, re.IGNORECASE)
         if m_ttc and total_ttc is None:
             total_ttc = parse_number_fr(m_ttc.group(1))
-
-    # Category header pattern: (xNB) NAME AMOUNT
-    # Avoid lines starting with '_' (those are sub-items)
-    cat_headers = []
-    header_pat = re.compile(r"^\(x?(\d{1,4})\)\s*([^_][A-Za-zÀ-ÿ0-9\s'\-]+?)\s+([0-9]+(?:[\.,][0-9]{2}))$", re.IGNORECASE)
-
+    
+    # 5. Extraction des catégories et productions
+    categories = []
+    productions = []
+    current_category = None
+    
+    # Patterns pour les catégories : x73) Entrees 1234,56
+    category_pattern = re.compile(r"^x?(\d+)\)\s*([^0-9]+?)\s+([0-9]+(?:[,\.][0-9]{2}))$", re.IGNORECASE)
+    
+    # Patterns pour les productions individuelles : (x14) Moules 252,00
+    production_pattern = re.compile(r"^\(?x?(\d+)\)?\s*([^0-9]+?)\s+([0-9]+(?:[,\.][0-9]{2}))$", re.IGNORECASE)
+    
     for i, ln in enumerate(lines):
-        if ln.startswith('_'):
+        # Skip les lignes vides ou trop courtes
+        if len(ln) < 5:
             continue
-        m = header_pat.match(ln)
-        if m:
-            qty = int(m.group(1))
-            name = m.group(2).strip()
-            amount = parse_number_fr(m.group(3)) or 0.0
-            family = normalize_family(name)
-            cat_headers.append({
-                "quantity": qty,
-                "category_name": name,
-                "amount": amount,
-                "family": family,
+            
+        # Vérifier si c'est une catégorie
+        m_cat = category_pattern.match(ln)
+        if m_cat:
+            quantity = int(m_cat.group(1))
+            name = m_cat.group(2).strip()
+            amount = parse_number_fr(m_cat.group(3)) or 0.0
+            
+            current_category = {
+                "nom": name,
+                "quantite": quantity,
+                "prix_total": amount,
+                "type": "categorie",
                 "raw_line": ln
-            })
-
-    # Aggregate per family
+            }
+            categories.append(current_category)
+            continue
+        
+        # Vérifier si c'est une production (souvent indentée)
+        if ln.startswith(' ') or ln.startswith('\t') or ln.startswith('_'):
+            # Production sous une catégorie
+            ln_clean = ln.lstrip(' \t_')
+            m_prod = production_pattern.match(ln_clean)
+            if m_prod:
+                quantity = int(m_prod.group(1))
+                name = m_prod.group(2).strip()
+                amount = parse_number_fr(m_prod.group(3)) or 0.0
+                
+                production = {
+                    "nom": name,
+                    "quantite": quantity,
+                    "prix_total": amount,
+                    "type": "production",
+                    "categorie_parent": current_category["nom"] if current_category else None,
+                    "raw_line": ln
+                }
+                productions.append(production)
+    
+    # 6. Regroupement des catégories "Bar"
+    categories_bar = [
+        "boissons chaudes", "boissons fraiches", "cocktail", "biere pression",
+        "verre pichets rouge", "verres pichets de rose", "verres pichets de blanc",
+        "bouteilles rose", "bouteille rouge", "bouteille blanc"
+    ]
+    
+    # Analyser et regrouper
     analysis = {
         "Bar": {"articles": 0, "ca": 0.0, "details": []},
         "Entrées": {"articles": 0, "ca": 0.0, "details": []},
@@ -468,17 +541,34 @@ def analyze_z_report_categories(texte_ocr: str) -> dict:
         "Desserts": {"articles": 0, "ca": 0.0, "details": []},
         "Autres": {"articles": 0, "ca": 0.0, "details": []}
     }
-
-    for h in cat_headers:
-        fam = h["family"]
-        analysis[fam]["articles"] += h["quantity"]
-        analysis[fam]["ca"] += h["amount"] or 0.0
-        analysis[fam]["details"].append({
-            "name": h["category_name"],
-            "quantity": h["quantity"],
-            "amount": h["amount"]
+    
+    # Classifier les catégories
+    for cat in categories:
+        nom_clean = cat["nom"].lower()
+        
+        # Vérifier si c'est une catégorie Bar
+        is_bar = any(bar_cat in nom_clean for bar_cat in categories_bar)
+        
+        if is_bar:
+            family = "Bar"
+        elif any(word in nom_clean for word in ["entree", "entrée", "appetizer"]):
+            family = "Entrées"
+        elif any(word in nom_clean for word in ["plat", "main", "principal"]):
+            family = "Plats"
+        elif any(word in nom_clean for word in ["dessert", "sweet", "glace"]):
+            family = "Desserts"
+        else:
+            family = "Autres"
+        
+        analysis[family]["articles"] += cat["quantite"]
+        analysis[family]["ca"] += cat["prix_total"]
+        analysis[family]["details"].append({
+            "name": cat["nom"],
+            "quantity": cat["quantite"],
+            "amount": cat["prix_total"]
         })
-
+    
+    # Calculs de vérification
     total_calc = sum(analysis[k]["ca"] for k in analysis)
     verification = {
         "total_calculated": round(total_calc, 2),
@@ -486,13 +576,30 @@ def analyze_z_report_categories(texte_ocr: str) -> dict:
         "delta_eur": (round(total_calc - total_ttc, 2) if (total_ttc is not None) else None),
         "delta_pct": (round(((total_calc - total_ttc) / total_ttc) * 100, 2) if (total_ttc and total_ttc != 0) else None)
     }
-
+    
     return {
-        "covers": covers,
+        # Données principales extraites
+        "date_cloture": date_cloture,
+        "heure_cloture": heure_cloture,
+        "nombre_couverts": nombre_couverts,
+        "total_ht": total_ht,
         "total_ttc": total_ttc,
-        "category_headers": cat_headers,
+        
+        # Données détaillées
+        "categories_detectees": categories,
+        "productions_detectees": productions,
+        
+        # Analyse par familles
         "analysis": analysis,
-        "verification": verification
+        "verification": verification,
+        
+        # Compteurs
+        "total_categories": len(categories),
+        "total_productions": len(productions),
+        
+        # Legacy compatibility
+        "covers": nombre_couverts,
+        "category_headers": categories
     }
 
 def extract_text_from_pdf(pdf_content: bytes) -> str:
