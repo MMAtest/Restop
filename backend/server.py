@@ -439,8 +439,9 @@ def analyze_z_report_categories(texte_ocr: str) -> dict:
     
     # 1. Extraction Date et Heure de clôture
     for ln in lines:
+        ln_clean = ln.strip()  # Nettoyer pour l'analyse
         # Recherche de la date (format DD/MM/YYYY ou DD/MM/YY)
-        m_date = re.search(r"(\d{1,2})/(\d{1,2})/(\d{2,4})", ln)
+        m_date = re.search(r"(\d{1,2})/(\d{1,2})/(\d{2,4})", ln_clean)
         if m_date and date_cloture is None:
             day, month, year = m_date.groups()
             if len(year) == 2:
@@ -448,7 +449,7 @@ def analyze_z_report_categories(texte_ocr: str) -> dict:
             date_cloture = f"{day.zfill(2)}/{month.zfill(2)}/{year}"
         
         # Recherche de l'heure (format HH:MM:SS ou HH:MM)
-        m_heure = re.search(r"(\d{1,2}):(\d{2})(?::(\d{2}))?", ln)
+        m_heure = re.search(r"(\d{1,2}):(\d{2})(?::(\d{2}))?", ln_clean)
         if m_heure and heure_cloture is None:
             hour, minute, second = m_heure.groups()
             if second:
@@ -458,19 +459,22 @@ def analyze_z_report_categories(texte_ocr: str) -> dict:
     
     # 2. Extraction Nombre de couverts
     for ln in lines:
-        m_cov = re.search(r"nombre\s+de\s+couverts\s*:?\s*([0-9]+(?:[,\.][0-9]{1,2})?)", ln, re.IGNORECASE)
+        ln_clean = ln.strip()
+        m_cov = re.search(r"nombre\s+de\s+couverts\s*:?\s*([0-9]+(?:[,\.][0-9]{1,2})?)", ln_clean, re.IGNORECASE)
         if m_cov and nombre_couverts is None:
             nombre_couverts = parse_number_fr(m_cov.group(1))
     
     # 3. Extraction Total HT
     for ln in lines:
-        m_ht = re.search(r"total\s+ht\s*:?\s*([0-9]+(?:[,\.][0-9]{1,2})?)", ln, re.IGNORECASE)
+        ln_clean = ln.strip()
+        m_ht = re.search(r"total\s+ht\s*:?\s*([0-9]+(?:[,\.][0-9]{1,2})?)", ln_clean, re.IGNORECASE)
         if m_ht and total_ht is None:
             total_ht = parse_number_fr(m_ht.group(1))
     
     # 4. Extraction Total TTC
     for ln in lines:
-        m_ttc = re.search(r"total\s+ttc\s*:?\s*([0-9]+(?:[,\.][0-9]{1,2})?)", ln, re.IGNORECASE)
+        ln_clean = ln.strip()
+        m_ttc = re.search(r"total\s+ttc\s*:?\s*([0-9]+(?:[,\.][0-9]{1,2})?)", ln_clean, re.IGNORECASE)
         if m_ttc and total_ttc is None:
             total_ttc = parse_number_fr(m_ttc.group(1))
     
