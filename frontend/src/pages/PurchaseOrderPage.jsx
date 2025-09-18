@@ -228,6 +228,7 @@ const PurchaseOrderPage = () => {
   };
 
   return (
+    <>
     <div className="p-6 bg-gradient-to-br from-gray-100 to-gray-200 min-h-screen">
       {/* Header */}
       <div className="mb-8">
