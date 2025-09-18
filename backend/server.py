@@ -427,7 +427,8 @@ def analyze_z_report_categories(texte_ocr: str) -> dict:
     Analyse optimisée des rapports Z selon les spécifications détaillées.
     Extrait : date/heure, couverts, totaux HT/TTC, catégories et productions.
     """
-    lines = [l.strip() for l in (texte_ocr or '').split('\n') if l and len(l.strip()) > 0]
+    # CORRECTION: Préserver l'indentation pour détecter les productions
+    lines = [l for l in (texte_ocr or '').split('\n') if l and len(l.strip()) > 0]
     
     # Variables pour les données principales
     date_cloture = None
