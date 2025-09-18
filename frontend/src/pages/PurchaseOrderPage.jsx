@@ -696,31 +696,33 @@ const PurchaseOrderPage = () => {
             </div>
           )}
         </div>
-      </div>
-
-      {/* Commandes récentes */}
-      <div className="bg-white rounded-lg shadow-sm">
-        <div className="p-6 border-b border-gray-200">
-          <h3 className="text-lg font-semibold flex items-center">
-            <span className="mr-2">📋</span>
-            Commandes Récentes
-          </h3>
-        </div>
-        <div className="p-6">
-          <div className="space-y-4">
-            <div className="flex justify-between items-center p-4 border rounded-lg">
-              <div>
-                <div className="font-medium">Commande #CMD-2024-15</div>
-                <div className="text-sm text-gray-600">Fournisseur Rungis • 15 produits • 12/09/2024</div>
-              </div>
-              <div className="text-right">
-                <div className="font-medium">247,30€</div>
-                <div className="text-sm text-green-600">✅ Livrée</div>
+        
+        {/* Commandes récentes */}
+        <div className="bg-white rounded-lg shadow-sm mt-8">
+          <div className="p-6 border-b border-gray-200">
+            <h3 className="text-lg font-semibold flex items-center">
+              <span className="mr-2">📋</span>
+              Commandes Récentes
+            </h3>
+          </div>
+          <div className="p-6">
+            <div className="space-y-4">
+              <div className="flex justify-between items-center p-4 border rounded-lg">
+                <div>
+                  <div className="font-medium">Commande #CMD-2024-15</div>
+                  <div className="text-sm text-gray-600">Fournisseur Rungis • 15 produits • 12/09/2024</div>
+                </div>
+                <div className="text-right">
+                  <div className="font-medium">247,30€</div>
+                  <div className="text-sm text-green-600">✅ Livrée</div>
+                </div>
               </div>
             </div>
           </div>
         </div>
       </div>
+
+      {/* Section supprimée pour éviter éléments adjacents */}
     </div>
   );
 };
