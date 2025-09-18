@@ -2728,16 +2728,16 @@ function App() {
                               {!hasExpired && !hasCritical && ' Tous lots OK'}
                             </div>
                           </div>
-                          <div className="item-actions">
+                          <div className="item-actions" style={{display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '8px'}}>
+                            <span className={`status-badge ${hasExpired ? 'critical' : hasCritical ? 'warning' : 'success'}`}>
+                              {statusText}
+                            </span>
                             <button 
                               className="button small"
                               onClick={() => fetchProductBatches(item.product_id)}
                             >
                               🔍 Voir lots
                             </button>
-                            <span className={`status-badge ${hasExpired ? 'critical' : hasCritical ? 'warning' : 'success'}`}>
-                              {statusText}
-                            </span>
                           </div>
                         </div>
                       );
