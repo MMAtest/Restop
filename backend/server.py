@@ -57,6 +57,11 @@ class RapportZ(BaseModel):
 
 api_router = APIRouter(prefix="/api")
 
+# Categories pour fournisseurs
+CATEGORIES_FOURNISSEURS = [
+    "frais", "surgelés", "primeur", "marée", "boucherie", "extra", "hygiène", "bar"
+]
+
 # Models pour la gestion des stocks
 class Fournisseur(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
@@ -67,6 +72,7 @@ class Fournisseur(BaseModel):
     adresse: Optional[str] = None
     couleur: Optional[str] = "#3B82F6"  # Couleur par défaut (bleu)
     logo: Optional[str] = None  # URL ou emoji pour le logo
+    categorie: Optional[str] = "frais"  # Catégorie par défaut
     created_at: datetime = Field(default_factory=datetime.utcnow)
 
 class FournisseurCreate(BaseModel):
@@ -77,6 +83,7 @@ class FournisseurCreate(BaseModel):
     adresse: Optional[str] = None
     couleur: Optional[str] = "#3B82F6"  # Couleur par défaut (bleu)
     logo: Optional[str] = None  # URL ou emoji pour le logo
+    categorie: Optional[str] = "frais"  # Catégorie par défaut
 
 # ✅ Version 3 - Enhanced User Management with RBAC
 class User(BaseModel):
