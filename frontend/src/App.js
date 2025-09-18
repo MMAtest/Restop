@@ -1487,8 +1487,8 @@ function App() {
                           </span>
                         </div>
                         <div className="item-details">
-                          {production.portions} portions • Coeff. prévu: {(production.coefficientPrevu * 100).toFixed(1)}% • 
-                          Coeff. réel: {(production.coefficientReel * 100).toFixed(1)}% {coefficientIcon}
+                          {production.portions} portions • Coeff. prévu: {production.coefficientPrevu.toFixed(2)} • 
+                          Coeff. réel: {production.coefficientReel.toFixed(2)} {coefficientIcon}
                         </div>
                       </div>
                       <div className="item-actions">
