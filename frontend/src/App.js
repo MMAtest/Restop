@@ -383,6 +383,64 @@ function App() {
     }
   };
 
+  // Fonctions pour le système d'archivage
+  const fetchArchives = async (itemType = null) => {
+    try {
+      const url = itemType ? `${API}/archives?item_type=${itemType}` : `${API}/archives`;
+      const response = await axios.get(url);
+      setArchivedItems(response.data);
+    } catch (error) {
+      console.error("Erreur lors du chargement des archives:", error);
+    }
+  };
+
+  const archiveItem = async (itemId, itemType, reason = null) => {
+    try {
+      await axios.post(`${API}/archive`, {
+        item_id: itemId,
+        item_type: itemType,
+        reason: reason
+      });
+      
+      // Rafraîchir les listes appropriées
+      if (itemType === 'produit') fetchProduits();
+      else if (itemType === 'production') fetchRecettes();
+      else if (itemType === 'fournisseur') fetchFournisseurs();
+      
+      fetchArchives();
+      return true;
+    } catch (error) {
+      console.error("Erreur lors de l'archivage:", error);
+      return false;
+    }
+  };
+
+  const restoreItem = async (archiveId) => {
+    try {
+      await axios.post(`${API}/restore/${archiveId}`);
+      fetchArchives();
+      // Rafraîchir toutes les listes pour être sûr
+      fetchProduits();
+      fetchRecettes();
+      fetchFournisseurs();
+      return true;
+    } catch (error) {
+      console.error("Erreur lors de la restauration:", error);
+      return false;
+    }
+  };
+
+  const deleteArchivePermanently = async (archiveId) => {
+    try {
+      await axios.delete(`${API}/archives/${archiveId}`);
+      fetchArchives();
+      return true;
+    } catch (error) {
+      console.error("Erreur lors de la suppression définitive:", error);
+      return false;
+    }
+  };
+
   const fetchStocks = async () => {
     try {
       const response = await axios.get(`${API}/stocks`);
