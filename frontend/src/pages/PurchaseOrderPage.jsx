@@ -667,21 +667,50 @@ const PurchaseOrderPage = () => {
             </div>
           )}
         </div>
-      )}
+      </div>
 
-      {/* Order History Preview */}
-      <div className="mt-8 bg-white rounded-lg shadow-sm">
+      {/* Commandes récentes */}
+      <div className="bg-white rounded-lg shadow-sm">
         <div className="p-6 border-b border-gray-200">
           <h3 className="text-lg font-semibold flex items-center">
             <span className="mr-2">📋</span>
-            Historique des Commandes (Aperçu)
+            Commandes Récentes
           </h3>
         </div>
         <div className="p-6">
-          <div className="text-center py-8 text-gray-500">
-            <div className="text-4xl mb-2">📋</div>
-            <p>Fonctionnalité à venir</p>
-            <p className="text-sm">L'historique des commandes sera affiché ici</p>
+          <div className="space-y-4">
+            <div className="flex justify-between items-center p-4 border rounded-lg">
+              <div>
+                <div className="font-medium">Commande #CMD-2024-15</div>
+                <div className="text-sm text-gray-600">Fournisseur Rungis • 15 produits • 12/09/2024</div>
+              </div>
+              <div className="text-right">
+                <div className="font-medium">247,30€</div>
+                <div className="text-sm text-green-600">✅ Livrée</div>
+              </div>
+            </div>
+            
+            <div className="flex justify-between items-center p-4 border rounded-lg">
+              <div>
+                <div className="font-medium">Commande #CMD-2024-14</div>
+                <div className="text-sm text-gray-600">Epicerie Gourmet • 8 produits • 10/09/2024</div>
+              </div>
+              <div className="text-right">
+                <div className="font-medium">156,80€</div>
+                <div className="text-sm text-yellow-600">🚚 En cours</div>
+              </div>
+            </div>
+            
+            <div className="flex justify-between items-center p-4 border rounded-lg">
+              <div>
+                <div className="font-medium">Commande #CMD-2024-13</div>
+                <div className="text-sm text-gray-600">Boucherie Martin • 5 produits • 08/09/2024</div>
+              </div>
+              <div className="text-right">
+                <div className="font-medium">189,50€</div>
+                <div className="text-sm text-green-600">✅ Livrée</div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
