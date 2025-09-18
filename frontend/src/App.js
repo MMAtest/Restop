@@ -2791,6 +2791,18 @@ function App() {
                 <div style={{display: 'flex', gap: '10px', marginBottom: '20px', flexWrap: 'wrap'}}>
                   <button className="button" onClick={() => setShowOcrModal(true)}>📁 Importer Document</button>
                   <button className="button" onClick={handleTraitementAuto} disabled={loading}>🔄 Traitement Auto</button>
+                  <button 
+                    className="button" 
+                    onClick={handleSupprimerTousDocumentsOcr} 
+                    disabled={loading}
+                    style={{
+                      background: 'linear-gradient(45deg, #ff6b6b, #ff8e8e)',
+                      border: 'none',
+                      color: 'white'
+                    }}
+                  >
+                    🗑️ Vider l'historique
+                  </button>
                 </div>
 
                 {/* Historique des documents avec filtre et pagination */}
