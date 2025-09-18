@@ -64,7 +64,7 @@ const DataGrid = ({
 
   return (
     <div 
-      className={`ag-theme-alpine ${className}`} 
+      className={`ag-theme-quartz ${className}`} 
       style={{ height, width: '100%' }}
     >
       <AgGridReact
