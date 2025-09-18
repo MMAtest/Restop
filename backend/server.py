@@ -59,7 +59,7 @@ api_router = APIRouter(prefix="/api")
 
 # Categories pour fournisseurs
 CATEGORIES_FOURNISSEURS = [
-    "frais", "surgelés", "primeur", "marée", "boucherie", "extra", "hygiène", "bar"
+    "frais", "surgelés", "primeur", "marée", "boucherie", "fromagerie", "extra", "hygiène", "bar"
 ]
 
 # Models pour la gestion des stocks
