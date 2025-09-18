@@ -3365,6 +3365,13 @@ function App() {
               </div>
             )}
 
+            {/* ONGLET GRILLES DE DONNÉES */}
+            {activeProductionTab === 'datagrids' && (
+              <div>
+                <DataGridsPage />
+              </div>
+            )}
+
             {/* ONGLET HISTORIQUE */}
             {activeProductionTab === 'historique' && (
               <div>
