@@ -3474,9 +3474,6 @@ function App() {
           <div className="bottom-nav-label">Orders</div>
         </button>
       </div>
-      <div id="users" className={`wireframe-section ${activeTab === "users" ? "active" : ""}`}>
-        <UserManagementPage />
-      </div>
 
       {/* PROFESSIONAL DATA GRIDS */}
       <div id="datagrids" className={`wireframe-section ${activeTab === "datagrids" ? "active" : ""}`}>
