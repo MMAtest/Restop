@@ -163,7 +163,7 @@ const SuppliersDataGrid = ({ suppliers = [], loading, onSupplierSelect, onSuppli
       field: 'statut',
       width: 120,
       cellRenderer: StatusRenderer,
-      filter: 'agSetColumnFilter'
+      filter: 'agTextColumnFilter'
     },
     {
       headerName: 'Créé le',
