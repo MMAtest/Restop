@@ -2240,7 +2240,7 @@ function App() {
                           {production.categorie}
                         </span>
                       </div>
-                      <div className="item-details">Coefficient Réel: {76 + index * 2}% • {production.portions} portions vendues</div>
+                      <div className="item-details">Coefficient Réel: {(2.5 + index * 0.15).toFixed(2)} • {production.portions} portions vendues</div>
                     </div>
                     <div className="item-value positive">{production.ventes.toLocaleString('fr-FR')} €</div>
                   </div>
