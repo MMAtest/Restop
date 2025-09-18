@@ -3723,6 +3723,121 @@ function App() {
               </div>
             )}
 
+            {/* ONGLET ARCHIVES */}
+            {activeProductionTab === 'archives' && (
+              <div>
+                <div className="section-card">
+                  <div className="section-title">📁 Gestion des Archives</div>
+                  
+                  {/* Filtres par type */}
+                  <div className="filter-section" style={{marginBottom: '20px'}}>
+                    <div style={{display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap'}}>
+                      <label className="filter-label">Afficher :</label>
+                      <select 
+                        className="filter-select"
+                        value={selectedArchiveType}
+                        onChange={(e) => {
+                          setSelectedArchiveType(e.target.value);
+                          fetchArchives(e.target.value === 'tous' ? null : e.target.value);
+                        }}
+                        style={{
+                          padding: '6px 10px',
+                          borderRadius: '4px',
+                          border: '1px solid var(--color-border)',
+                          background: 'var(--color-background-card)',
+                          color: 'var(--color-text-primary)',
+                          fontSize: '13px'
+                        }}
+                      >
+                        <option value="tous">Tous les éléments</option>
+                        <option value="produit">📦 Produits</option>
+                        <option value="production">🍽️ Productions</option>
+                        <option value="fournisseur">🚚 Fournisseurs</option>
+                      </select>
+                      
+                      <div className="filter-info" style={{
+                        fontSize: '12px', 
+                        color: 'var(--color-text-secondary)',
+                        marginLeft: '10px'
+                      }}>
+                        {archivedItems.length} élément(s) archivé(s)
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Liste des éléments archivés */}
+                  <div className="item-list">
+                    {archivedItems.length === 0 ? (
+                      <div style={{
+                        textAlign: 'center',
+                        padding: '40px',
+                        color: 'var(--color-text-secondary)'
+                      }}>
+                        📭 Aucun élément archivé
+                      </div>
+                    ) : (
+                      archivedItems.map((archive, index) => (
+                        <div key={archive.id} className="item-row">
+                          <div className="item-info">
+                            <div className="item-name">
+                              {archive.item_type === 'produit' ? '📦' : 
+                               archive.item_type === 'production' ? '🍽️' : '🚚'} {archive.original_data.nom}
+                              <span className="category-badge" style={{
+                                marginLeft: '8px',
+                                padding: '2px 6px',
+                                borderRadius: '8px',
+                                fontSize: '10px',
+                                background: 'var(--color-warning-orange)',
+                                color: 'white'
+                              }}>
+                                {archive.item_type}
+                              </span>
+                            </div>
+                            <div className="item-details">
+                              Archivé le {new Date(archive.archived_at).toLocaleDateString('fr-FR')} • 
+                              {archive.reason && ` Raison: ${archive.reason}`}
+                            </div>
+                          </div>
+                          <div className="item-actions">
+                            <button 
+                              className="button small success"
+                              onClick={async () => {
+                                if (window.confirm(`Restaurer ${archive.original_data.nom} ?`)) {
+                                  const success = await restoreItem(archive.id);
+                                  if (success) {
+                                    alert(`${archive.original_data.nom} restauré avec succès !`);
+                                  } else {
+                                    alert("Erreur lors de la restauration");
+                                  }
+                                }
+                              }}
+                            >
+                              ↩️ Restaurer
+                            </button>
+                            <button 
+                              className="button small danger"
+                              onClick={async () => {
+                                if (window.confirm(`Supprimer définitivement ${archive.original_data.nom} ?\n\nCette action est irréversible !`)) {
+                                  const success = await deleteArchivePermanently(archive.id);
+                                  if (success) {
+                                    alert(`${archive.original_data.nom} supprimé définitivement`);
+                                  } else {
+                                    alert("Erreur lors de la suppression");
+                                  }
+                                }
+                              }}
+                            >
+                              🗑️ Supprimer
+                            </button>
+                          </div>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+
             {/* ONGLET HISTORIQUE */}
             {activeProductionTab === 'historique' && (
               <div>
