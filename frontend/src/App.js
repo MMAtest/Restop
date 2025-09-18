@@ -2618,7 +2618,37 @@ function App() {
 
                 {/* Liste des produits en stock avec recherche et filtres */}
                 <div className="item-list">
-                  <div className="section-title">📋 Produits en Stock</div>
+                  <div className="section-title">
+                    📋 {stockViewMode === 'produits' ? 'Produits en Stock' : 'Stock par Production'}
+                    
+                    {/* Toggle View Mode */}
+                    <div style={{display: 'flex', gap: '5px', marginLeft: '15px', display: 'inline-flex'}}>
+                      <button 
+                        className="button small"
+                        onClick={() => setStockViewMode('produits')}
+                        style={{
+                          background: stockViewMode === 'produits' ? 'var(--color-primary-blue)' : 'var(--color-background-card)',
+                          color: stockViewMode === 'produits' ? 'white' : 'var(--color-text-secondary)',
+                          padding: '4px 8px',
+                          fontSize: '12px'
+                        }}
+                      >
+                        📦 Par Produit
+                      </button>
+                      <button 
+                        className="button small"
+                        onClick={() => setStockViewMode('productions')}
+                        style={{
+                          background: stockViewMode === 'productions' ? 'var(--color-primary-blue)' : 'var(--color-background-card)',
+                          color: stockViewMode === 'productions' ? 'white' : 'var(--color-text-secondary)',
+                          padding: '4px 8px',
+                          fontSize: '12px'
+                        }}
+                      >
+                        🍽️ Par Production
+                      </button>
+                    </div>
+                  </div>
                   
                   {/* Barre de recherche et filtres */}
                   <div className="filter-section" style={{marginBottom: '20px'}}>
@@ -2628,7 +2658,7 @@ function App() {
                         <label className="filter-label" style={{fontSize: '14px', minWidth: '70px'}}>🔍 Recherche :</label>
                         <input
                           type="text"
-                          placeholder="Nom du produit..."
+                          placeholder={stockViewMode === 'produits' ? "Nom du produit..." : "Nom de la production..."}
                           value={stockSearchTerm}
                           onChange={(e) => setStockSearchTerm(e.target.value)}
                           style={{
