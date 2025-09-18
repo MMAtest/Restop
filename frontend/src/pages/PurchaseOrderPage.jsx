@@ -421,9 +421,16 @@ const PurchaseOrderPage = () => {
               2. Produits Disponibles
             </h3>
             {selectedSupplier && (
-              <p className="text-sm text-gray-600 mt-1">
-                Fournisseur: {selectedSupplier.nom}
-              </p>
+              <div className="flex items-center gap-2 mt-1">
+                <span className="text-sm text-gray-600">Fournisseur:</span>
+                <span className="text-lg">{selectedSupplier.logo || '🏪'}</span>
+                <span 
+                  className="text-sm px-2 py-1 rounded text-white font-medium"
+                  style={{backgroundColor: selectedSupplier.couleur || '#3B82F6'}}
+                >
+                  {selectedSupplier.nom}
+                </span>
+              </div>
             )}
           </div>
           <div className="p-6">
