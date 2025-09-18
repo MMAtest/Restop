@@ -1482,22 +1482,19 @@ function App() {
                 {getFilteredProductions(filteredAnalytics.topProductions, selectedProductionCategory).slice(0, 4).map((production, index) => {
                   const coefficientStatus = production.coefficientReel >= production.coefficientPrevu ? 'success' : 'warning';
                   const coefficientIcon = production.coefficientReel >= production.coefficientPrevu ? '✅' : '⚠️';
-                  const coefficientText = production.coefficientReel >= production.coefficientPrevu ? 'Respecté' : 'Dépassé';
+                  const coefficientText = production.coefficientReel >= production.coefficientPrevu ? 'Respecté' : 'Pas atteint';
                   
                   return (
                     <div key={index} className="item-row">
                       <div className="item-info">
                         <div className="item-name">
-                          {production.categorie === 'Entrée' ? '🥗' : 
-                           production.categorie === 'Plat' ? '🍽️' : 
-                           production.categorie === 'Dessert' ? '🍰' : 
-                           production.categorie === 'Bar' ? '🍹' : '📝'} {production.nom}
+                          {getCategoryIcon(production.categorie)} {production.nom}
                           <span className="category-badge" style={{
                             marginLeft: '6px',
                             padding: '2px 6px',
                             borderRadius: '8px',
                             fontSize: '10px',
-                            background: 'var(--color-primary-blue)',
+                            background: getCategoryColor(production.categorie),
                             color: 'white'
                           }}>
                             {production.categorie}
