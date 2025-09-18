@@ -421,18 +421,20 @@ TOTAL GENERAL: 7433,00"""
                 
                 # Vérifier que les données parsées sont présentes et complètes
                 donnees_parsees = document.get("donnees_parsees", {})
-                if donnees_parsees and "analysis" in donnees_parsees:
-                    self.log_result("✅ Données Parsées Complètes", True, "Analyse complète disponible")
+                z_analysis = donnees_parsees.get("z_analysis", {})
+                
+                if z_analysis and "analysis" in z_analysis:
+                    self.log_result("✅ Données Parsées Complètes", True, "Analyse complète disponible dans z_analysis")
                     
                     # Test spécifique: vérifier que l'analyse contient les bonnes valeurs
-                    analysis = donnees_parsees.get("analysis", {})
+                    analysis = z_analysis.get("analysis", {})
                     if "Bar" in analysis and analysis["Bar"].get("ca", 0) > 0:
                         self.log_result("✅ Analyse Bar Valide", True, f"CA Bar: {analysis['Bar']['ca']}€")
                     else:
                         self.log_result("❌ Analyse Bar Valide", False, "Analyse Bar manquante ou invalide")
                         
                 else:
-                    self.log_result("❌ Données Parsées Complètes", False, "Analyse incomplète")
+                    self.log_result("❌ Données Parsées Complètes", False, "z_analysis manquant ou incomplet")
                 
                 # Test du processus Z-report si disponible
                 if document.get("type_document") == "z_report":
