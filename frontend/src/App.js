@@ -3602,6 +3602,22 @@ function App() {
                     </div>
                     <div className="item-actions">
                       <button className="button small" onClick={() => handleEdit(fournisseur, 'fournisseur')}>✏️ Éditer</button>
+                      <button 
+                        className="button small warning" 
+                        onClick={async () => {
+                          const reason = window.prompt(`Raison de l'archivage de "${fournisseur.nom}" (optionnel):`);
+                          if (reason !== null) { // null = annulé, empty string = OK sans raison
+                            const success = await archiveItem(fournisseur.id, 'fournisseur', reason || null);
+                            if (success) {
+                              alert(`${fournisseur.nom} archivé avec succès !`);
+                            } else {
+                              alert("Erreur lors de l'archivage");
+                            }
+                          }
+                        }}
+                      >
+                        📁 Archiver
+                      </button>
                     </div>
                   </div>
                 ))}
