@@ -173,7 +173,7 @@ function App() {
     nom: "", description: "", categorie: "", unite: "", prix_achat: "", fournisseur_id: ""
   });
   const [fournisseurForm, setFournisseurForm] = useState({
-    nom: "", contact: "", email: "", telephone: "", adresse: "", couleur: "#3B82F6", logo: ""
+    nom: "", contact: "", email: "", telephone: "", adresse: "", couleur: "#3B82F6", logo: "", categorie: "frais", deliveryCost: 0, extraCost: 0
   });
   const [mouvementForm, setMouvementForm] = useState({
     produit_id: "", type: "entree", quantite: "", reference: "", commentaire: ""
