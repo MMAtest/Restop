@@ -148,6 +148,9 @@ function App() {
   const [showArchivePage, setShowArchivePage] = useState(false);
   const [selectedArchiveType, setSelectedArchiveType] = useState('tous'); // 'tous', 'produit', 'production', 'fournisseur'
   
+  // État pour le switcher des alertes
+  const [alertViewMode, setAlertViewMode] = useState('produits'); // 'produits' ou 'productions'
+  
   // États pour le module prévisionnel
   const [stocksPrevisionnels, setStocksPrevisionnels] = useState([
     { id: 1, produit: "Tomates", stock_actuel: 25, unite: "kg", productions_possibles: [
