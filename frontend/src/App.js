@@ -537,7 +537,9 @@ function App() {
         contact: item.contact || "",
         email: item.email || "",
         telephone: item.telephone || "",
-        adresse: item.adresse || ""
+        adresse: item.adresse || "",
+        couleur: item.couleur || "#3B82F6",
+        logo: item.logo || ""
       });
       setShowFournisseurModal(true);
     } else if (type === "recette") {
