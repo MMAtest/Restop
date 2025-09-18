@@ -860,9 +860,9 @@ function App() {
 
     // Données de base (pour aujourd'hui)
     const baseDayData = {
-      caTotal: 27959.75,
-      caMidi: 16775.85,
-      caSoir: 11183.90,
+      caTotal: 8975.50,
+      caMidi: 5385.30,
+      caSoir: 3590.20,
       couvertsMidi: 87,
       couvertsSoir: 64,
       topProductions: [
