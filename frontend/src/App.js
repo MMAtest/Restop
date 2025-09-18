@@ -3388,6 +3388,19 @@ function App() {
               </button>
               <button 
                 className="button" 
+                onClick={() => {
+                  setActiveProductionTab('archives');
+                  fetchArchives();
+                }}
+                style={{
+                  background: activeProductionTab === 'archives' ? 'var(--color-primary-blue)' : 'var(--color-background-card-light)',
+                  color: activeProductionTab === 'archives' ? 'white' : 'var(--color-text-secondary)'
+                }}
+              >
+                📁 Archives
+              </button>
+              <button 
+                className="button" 
                 onClick={() => setActiveProductionTab('historique')}
                 style={{
                   background: activeProductionTab === 'historique' ? 'var(--color-primary-blue)' : 'var(--color-background-card-light)',
