@@ -4046,6 +4046,57 @@ function App() {
                   onChange={(e) => setFournisseurForm({...fournisseurForm, adresse: e.target.value})}
                 />
               </div>
+              
+              {/* Nouveaux champs visuels */}
+              <div className="form-group">
+                <label className="form-label">Couleur d'identification</label>
+                <div style={{display: 'flex', alignItems: 'center', gap: '10px'}}>
+                  <input
+                    type="color"
+                    className="form-input"
+                    value={fournisseurForm.couleur}
+                    onChange={(e) => setFournisseurForm({...fournisseurForm, couleur: e.target.value})}
+                    style={{width: '60px', height: '40px', padding: '2px', cursor: 'pointer'}}
+                  />
+                  <span style={{
+                    padding: '8px 16px',
+                    backgroundColor: fournisseurForm.couleur,
+                    color: 'white',
+                    borderRadius: '4px',
+                    fontSize: '14px',
+                    fontWeight: '500'
+                  }}>
+                    {fournisseurForm.nom || 'Aperçu'}
+                  </span>
+                </div>
+              </div>
+              
+              <div className="form-group">
+                <label className="form-label">Logo (emoji ou URL)</label>
+                <div style={{display: 'flex', alignItems: 'center', gap: '10px'}}>
+                  <input
+                    type="text"
+                    className="form-input"
+                    value={fournisseurForm.logo}
+                    onChange={(e) => setFournisseurForm({...fournisseurForm, logo: e.target.value})}
+                    placeholder="🏪 ou https://exemple.com/logo.png"
+                    style={{flex: 1}}
+                  />
+                  {fournisseurForm.logo && (
+                    <span style={{
+                      fontSize: '24px',
+                      padding: '8px',
+                      backgroundColor: '#f3f4f6',
+                      borderRadius: '4px'
+                    }}>
+                      {fournisseurForm.logo.startsWith('http') ? '🖼️' : fournisseurForm.logo}
+                    </span>
+                  )}
+                </div>
+                <small style={{color: 'var(--color-text-secondary)', fontSize: '12px'}}>
+                  Utilisez un emoji (🏪 🥩 🐟) ou une URL d'image
+                </small>
+              </div>
               <div className="button-group">
                 <button
                   type="button"
