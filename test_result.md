@@ -274,7 +274,7 @@ backend:
     implemented: true
     working: false
     file: "/app/backend/server.py"
-    stuck_count: 2
+    stuck_count: 3
     priority: "high"
     needs_retesting: false
     status_history:
@@ -287,6 +287,9 @@ backend:
       - working: false
         agent: "testing"
         comment: "🔥 ANALYSE CRITIQUE COMPLÈTE - PROBLÈMES CRITIQUES CONFIRMÉS ! Test exhaustif avec document existant (ID: 42cd9f45-a043-4e0a-a560-4e6ae2a9f89a) et texte de référence fourni confirme les dysfonctionnements majeurs : ❌ PROBLÈME CRITIQUE 1 CONFIRMÉ : 0 productions détectées au lieu de 8 attendues (Salade Caesar, Tartare saumon, Soupe du jour, Steak frites, Poisson grillé, Pasta truffe, Tiramisu, Tarte citron) ❌ PROBLÈME CRITIQUE 2 CONFIRMÉ : 16 items individuels traités comme catégories au lieu de productions - la fonction ne distingue PAS l'indentation (indent_level = 0 vs indent_level > 0) ❌ PROBLÈME CRITIQUE 3 CONFIRMÉ : 47% des items classés en 'Autres' au lieu de leurs vraies familles (Entrées/Plats/Desserts) ✅ POINTS POSITIFS : Extraction données principales fonctionnelle (date: 01/09/2025, heure: 22:59:38, couverts: 122, totaux), logique séquentielle détecte zone plats (14 lignes entre entrées/desserts), structure texte correctement analysée (14 catégories + 8 productions dans texte brut) ❌ CONCLUSION CRITIQUE : La fonction analyze_z_report_categories avec détection d'indentation améliorée NE FONCTIONNE PAS. Les corrections apportées n'ont pas résolu les problèmes fondamentaux de distinction catégories/productions. Nécessite refactoring complet de la logique d'indentation avant mise en production."
+      - working: false
+        agent: "testing"
+        comment: "🔥 TEST FINAL DÉTECTION INDENTATION - PROBLÈME CRITIQUE IDENTIFIÉ ! Test avec texte exact demandé révèle le problème racine : ❌ PROBLÈME CRITIQUE PRINCIPAL : L'indentation est PERDUE lors de l'extraction PDF - le texte extrait ne préserve pas les espaces d'indentation (  x8) Salade Caesar devient x8) Salade Caesar) ❌ RÉSULTATS ACTUELS : 14 catégories détectées au lieu de 3 (tous items traités comme catégories), 5 productions au lieu de 8, tous avec indent_level=0 ❌ CAUSE RACINE : La fonction extract_text_from_pdf() ne préserve pas l'indentation originale, rendant impossible la distinction catégories/productions basée sur len(line) - len(line.lstrip(' \t')) ✅ POINTS POSITIFS CONFIRMÉS : Extraction données principales PARFAITE (date: 01/09/2025, heure: 22:59:38, couverts: 122.0, total: 3574.0€), logique séquentielle active, classification familiale partiellement fonctionnelle ❌ CONCLUSION CRITIQUE : Le problème n'est PAS dans analyze_z_report_categories mais dans l'extraction PDF qui supprime l'indentation. NÉCESSITE correction de extract_text_from_pdf() pour préserver les espaces d'indentation ou utilisation d'une approche alternative pour détecter la hiérarchie sans dépendre de l'indentation physique."
 
   - task: "API OCR Module Complet"
     implemented: true
