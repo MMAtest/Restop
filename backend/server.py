@@ -65,6 +65,8 @@ class Fournisseur(BaseModel):
     email: Optional[str] = None
     telephone: Optional[str] = None
     adresse: Optional[str] = None
+    couleur: Optional[str] = "#3B82F6"  # Couleur par défaut (bleu)
+    logo: Optional[str] = None  # URL ou emoji pour le logo
     created_at: datetime = Field(default_factory=datetime.utcnow)
 
 class FournisseurCreate(BaseModel):
@@ -73,6 +75,8 @@ class FournisseurCreate(BaseModel):
     email: Optional[str] = None
     telephone: Optional[str] = None
     adresse: Optional[str] = None
+    couleur: Optional[str] = "#3B82F6"  # Couleur par défaut (bleu)
+    logo: Optional[str] = None  # URL ou emoji pour le logo
 
 # ✅ Version 3 - Enhanced User Management with RBAC
 class User(BaseModel):
