@@ -19,6 +19,7 @@ const CATEGORIES_FOURNISSEURS = [
   { value: "primeur", label: "🍎 Primeur", icon: "🍎" },
   { value: "marée", label: "🐟 Marée", icon: "🐟" },
   { value: "boucherie", label: "🥩 Boucherie", icon: "🥩" },
+  { value: "fromagerie", label: "🧀 Fromagerie", icon: "🧀" },
   { value: "extra", label: "✨ Extra", icon: "✨" },
   { value: "hygiène", label: "🧽 Hygiène", icon: "🧽" },
   { value: "bar", label: "🍺 Bar", icon: "🍺" }
