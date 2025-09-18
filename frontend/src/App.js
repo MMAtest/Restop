@@ -1058,6 +1058,35 @@ function App() {
     }
   };
 
+  // Supprimer tous les documents OCR
+  const handleSupprimerTousDocumentsOcr = async () => {
+    try {
+      setLoading(true);
+      
+      if (documentsOcr.length === 0) {
+        alert("ℹ️ Aucun document à supprimer");
+        return;
+      }
+
+      const confirmation = window.confirm(`🗑️ SUPPRESSION DE L'HISTORIQUE:\n\nÊtes-vous sûr de vouloir supprimer tous les ${documentsOcr.length} documents OCR ?\n\n⚠️ Cette action est irréversible !`);
+      
+      if (confirmation) {
+        const response = await axios.delete(`${API}/ocr/documents/all`);
+        
+        alert(`✅ Historique vidé avec succès !\n\n${response.data.deleted_count} document(s) supprimé(s)`);
+        
+        // Rafraîchir la liste des documents
+        fetchDocumentsOcr();
+        setSelectedDocument(null);
+      }
+    } catch (error) {
+      console.error("Erreur suppression documents OCR:", error);
+      alert("❌ Erreur lors de la suppression de l'historique");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // Sélectionner document dans l'historique
   const handleSelectDocument = (doc) => {
     setSelectedDocument(doc);
