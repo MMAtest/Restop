@@ -148,8 +148,9 @@ function App() {
   const [showArchivePage, setShowArchivePage] = useState(false);
   const [selectedArchiveType, setSelectedArchiveType] = useState('tous'); // 'tous', 'produit', 'production', 'fournisseur'
   
-  // État pour le switcher des alertes
-  const [alertViewMode, setAlertViewMode] = useState('produits'); // 'produits' ou 'productions'
+  // États pour les switchers des blocs DLC individuels
+  const [dlcViewMode3Days, setDlcViewMode3Days] = useState('produits'); // pour DLC > 3 jours
+  const [dlcViewMode7Days, setDlcViewMode7Days] = useState('produits'); // pour DLC < 7 jours
   
   // États pour le module prévisionnel
   const [stocksPrevisionnels, setStocksPrevisionnels] = useState([
