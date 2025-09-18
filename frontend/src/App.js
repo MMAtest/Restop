@@ -3431,67 +3431,7 @@ function App() {
 
         {/* COMMANDES */}
         <div id="orders" className={`wireframe-section ${activeTab === "orders" ? "active" : ""}`}>
-          <div className="section-card">
-            <div className="section-title">🛒 Gestion des Commandes</div>
-            
-            {/* Actions commandes */}
-            <div style={{display: 'flex', gap: '10px', marginBottom: '20px', flexWrap: 'wrap'}}>
-              <button className="button">➕ Nouvelle Commande</button>
-              <button className="button">📊 Historique</button>
-              <button className="button">🚚 Suivi Livraisons</button>
-            </div>
-
-            {/* KPIs Commandes */}
-            <div className="kpi-grid">
-              <div className="kpi-card">
-                <div className="icon">📦</div>
-                <div className="title">Commandes Actives</div>
-                <div className="value">7</div>
-              </div>
-              
-              <div className="kpi-card">
-                <div className="icon">🚚</div>
-                <div className="title">En Livraison</div>
-                <div className="value">3</div>
-              </div>
-              
-              <div className="kpi-card">
-                <div className="icon">💰</div>
-                <div className="title">Montant Total</div>
-                <div className="value">2 847,30 €</div>
-              </div>
-            </div>
-
-            {/* Liste des commandes */}
-            <div className="item-list">
-              <div className="section-title">📋 Commandes Récentes</div>
-              
-              {fournisseurs.slice(0, 4).map((fournisseur, index) => (
-                <div key={index} className="item-row">
-                  <div className="item-info">
-                    <div className="item-name">
-                      🏪 CMD-2025-{String(90 + index).padStart(3, '0')} - {fournisseur.nom}
-                    </div>
-                    <div className="item-details">
-                      {new Date(Date.now() - index * 24 * 60 * 60 * 1000).toLocaleDateString('fr-FR')} • 
-                      Montant: €{(Math.random() * 500 + 100).toFixed(2)}
-                    </div>
-                  </div>
-                  <div className="item-value positive">✅ Livrée</div>
-                  <div className="item-actions">
-                    <button className="button small">👁️ Détails</button>
-                  </div>
-                </div>
-              ))}
-              
-              {fournisseurs.length === 0 && (
-                <div style={{textAlign: 'center', padding: '40px', color: 'var(--color-text-muted)'}}>
-                  <div style={{fontSize: '48px', marginBottom: '15px'}}>🛒</div>
-                  <p>Aucune commande enregistrée</p>
-                </div>
-              )}
-            </div>
-          </div>
+          <PurchaseOrderPage />
         </div>
 
         {/* USER MANAGEMENT */}
