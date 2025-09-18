@@ -1,30 +1,7 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useMemo } from 'react';
 import DataGrid from './DataGrid';
 
-const ProductsDataGrid = ({ onProductSelect, onProductEdit, onProductDelete }) => {
-  const [products, setProducts] = useState([]);
-  const [loading, setLoading] = useState(false);
-
-  const backendUrl = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8001';
-
-  useEffect(() => {
-    fetchProducts();
-  }, []);
-
-  const fetchProducts = async () => {
-    setLoading(true);
-    try {
-      const response = await fetch(`${backendUrl}/api/produits`);
-      if (response.ok) {
-        const data = await response.json();
-        setProducts(data);
-      }
-    } catch (error) {
-      console.error('Erreur lors du chargement des produits:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
+const ProductsDataGrid = ({ products = [], loading, onProductSelect, onProductEdit, onProductDelete }) => {
 
   // Actions renderer
   const ActionsRenderer = ({ data }) => (
