@@ -433,9 +433,10 @@ def analyze_z_report_categories(texte_ocr: str) -> dict:
     """
     Analyse optimisée des rapports Z selon les spécifications détaillées.
     Respecte la structure séquentielle : Entrées → Plats → Desserts
+    CORRECTION CRITIQUE : Détection d'indentation basée sur les bonnes pratiques OCR
     """
-    # PRÉSERVER L'INDENTATION ORIGINALE pour détecter la hiérarchie
-    lines = [l for l in (texte_ocr or '').split('\n') if l and len(l.strip()) > 0]
+    # PRÉSERVER TOUTES LES LIGNES AVEC INDENTATION ORIGINALE (ne pas strip !)
+    lines = [l for l in (texte_ocr or '').split('\n') if l.strip()]  # Enlever seulement les lignes vides
     
     # Variables pour les données principales
     date_cloture = None
@@ -444,7 +445,7 @@ def analyze_z_report_categories(texte_ocr: str) -> dict:
     total_ht = None
     total_ttc = None
     
-    # 1. Extraction Date et Heure de clôture
+    # 1. Extraction Date et Heure de clôture (sur texte nettoyé)
     for ln in lines:
         ln_clean = ln.strip()
         # Recherche de la date (format DD/MM/YYYY ou DD/MM/YY)
@@ -485,48 +486,47 @@ def analyze_z_report_categories(texte_ocr: str) -> dict:
         if m_ttc and total_ttc is None:
             total_ttc = parse_number_fr(m_ttc.group(1))
     
-    # 5. LOGIQUE CORRIGÉE : Détection correcte indentation catégories vs productions
+    # 5. LOGIQUE CORRIGÉE : Détection d'indentation basée sur les meilleures pratiques
     categories = []
     productions = []
     
-    # Patterns pour les catégories : x73) Entrees 1234,56 (NON INDENTÉES)
+    # Patterns pour catégories et productions
     category_pattern = re.compile(r"^x?(\d+)\)\s*([^0-9]+?)\s+([0-9]+(?:[,\.][0-9]{2}))$", re.IGNORECASE)
-    
-    # Patterns pour les productions individuelles : (x14) Moules 252,00 (INDENTÉES)
     production_pattern = re.compile(r"^\(?x?(\d+)\)?\s*([^0-9]+?)\s+([0-9]+(?:[,\.][0-9]{2}))$", re.IGNORECASE)
     
-    # Mots-clés à éviter (TVA, totaux, etc.)
+    # Mots-clés à éviter
     keywords_to_avoid = [
         "tva", "total", "sous.total", "sous total", "solde", "caisse", "espece", "carte", "cheque",
         "remise", "service", "pourboire", "commission", "frais", "reduction", 
-        "annulation", "retour", "net", "brut", "ht", "ttc", "taux", "base", "heure"
+        "annulation", "retour", "net", "brut", "ht", "ttc", "taux", "base", "heure", "date", "rapport"
     ]
     
     current_category = None
     
-    for i, ln in enumerate(lines):
-        ln_clean = ln.strip()
+    # Construire la hiérarchie en analysant l'indentation
+    for i, line in enumerate(lines):
+        # DÉTECTION INDENTATION CORRECTE selon bonnes pratiques OCR
+        indent_level = len(line) - len(line.lstrip(' \t'))  # Compte espaces et tabulations
+        content = line.strip()
         
         # Skip les lignes vides ou trop courtes
-        if len(ln_clean) < 5:
+        if len(content) < 5:
             continue
         
         # Skip les lignes contenant des mots-clés à éviter
-        if any(keyword in ln_clean.lower() for keyword in keywords_to_avoid):
+        if any(keyword in content.lower() for keyword in keywords_to_avoid):
             continue
         
-        # DÉTECTION INDENTATION : Calculer le niveau d'indentation
-        indent_level = len(ln) - len(ln.lstrip(' \t'))
-        
-        # CATÉGORIES : Lignes non indentées (indent_level == 0) qui matchent le pattern
+        # CLASSIFICATION BASÉE SUR L'INDENTATION
         if indent_level == 0:
-            m_cat = category_pattern.match(ln_clean)
+            # CATÉGORIES (non indentées)
+            m_cat = category_pattern.match(content)
             if m_cat:
                 quantity = int(m_cat.group(1))
                 name = m_cat.group(2).strip()
                 amount = parse_number_fr(m_cat.group(3)) or 0.0
                 
-                # Classifier la catégorie
+                # Classification intelligente des familles
                 name_lower = name.lower()
                 if any(word in name_lower for word in ["entree", "entrée", "appetizer", "amuse"]):
                     family = "Entrées"
@@ -545,44 +545,41 @@ def analyze_z_report_categories(texte_ocr: str) -> dict:
                     "prix_total": amount,
                     "type": "categorie",
                     "family": family,
-                    "raw_line": ln_clean,
+                    "raw_line": content,
                     "line_number": i,
                     "indent_level": indent_level
                 }
                 categories.append(category_info)
                 current_category = category_info
-                continue
-        
-        # PRODUCTIONS : Lignes indentées (indent_level > 0) qui matchent le pattern
+                
         elif indent_level > 0:
-            m_prod = production_pattern.match(ln_clean)
+            # PRODUCTIONS (indentées)
+            m_prod = production_pattern.match(content)
             if m_prod:
                 quantity = int(m_prod.group(1))
                 name = m_prod.group(2).strip()
                 amount = parse_number_fr(m_prod.group(3)) or 0.0
                 
-                # Filtrage supplémentaire pour éviter les faux positifs
+                # Filtrage des faux positifs
                 name_lower = name.lower()
-                
-                # Skip si c'est clairement du texte non pertinent
                 if any(keyword in name_lower for keyword in keywords_to_avoid):
                     continue
                 
-                # Skip si c'est un pattern de TVA ou taxe
+                # Skip patterns de TVA/pourcentage
                 if re.search(r"\d+[\.,]?\d*\s*%", name):
                     continue
                 
-                # Déterminer la famille en fonction de la catégorie parente
+                # Déterminer la famille
                 if current_category:
                     family = current_category["family"]
                     parent_name = current_category["nom"]
                 else:
-                    # Fallback: classifier basé sur le nom si pas de catégorie parente
-                    if any(word in name_lower for word in ["salade", "tartare", "soupe", "entree", "entrée"]):
+                    # Classification de secours
+                    if any(word in name_lower for word in ["salade", "tartare", "soupe"]):
                         family = "Entrées"
-                    elif any(word in name_lower for word in ["steak", "poisson", "pasta", "plat"]):
+                    elif any(word in name_lower for word in ["steak", "poisson", "pasta"]):
                         family = "Plats"
-                    elif any(word in name_lower for word in ["tiramisu", "tarte", "dessert", "glace"]):
+                    elif any(word in name_lower for word in ["tiramisu", "tarte"]):
                         family = "Desserts"
                     else:
                         family = "Autres"
@@ -595,33 +592,26 @@ def analyze_z_report_categories(texte_ocr: str) -> dict:
                     "type": "production",
                     "categorie_parent": parent_name,
                     "family": family,
-                    "raw_line": ln,
+                    "raw_line": line,  # Ligne originale avec indentation
                     "line_number": i,
                     "indent_level": indent_level
                 }
                 productions.append(production)
     
-    # LOGIQUE SÉQUENTIELLE pour les PLATS (filtrage entre Entrées et Desserts)
-    # Identifier les zones des entrées et desserts
-    entrees_lines = []
-    desserts_lines = []
+    # LOGIQUE SÉQUENTIELLE pour filtrer les plats problématiques
+    # Trouver les bornes des entrées et desserts
+    entrees_lines = [cat["line_number"] for cat in categories if cat["family"] == "Entrées"]
+    desserts_lines = [cat["line_number"] for cat in categories if cat["family"] == "Desserts"]
     
-    for cat in categories:
-        if cat["family"] == "Entrées":
-            entrees_lines.append(cat["line_number"])
-        elif cat["family"] == "Desserts":
-            desserts_lines.append(cat["line_number"])
-    
-    # Déterminer les bornes
     entrees_end_line = max(entrees_lines) if entrees_lines else None
     desserts_start_line = min(desserts_lines) if desserts_lines else None
     
-    # Filtrer les productions de plats qui sont en dehors de la zone séquentielle
+    # Filtrer les productions de plats selon la séquence
     if entrees_end_line is not None and desserts_start_line is not None:
         filtered_productions = []
         for prod in productions:
             if prod["family"] == "Plats":
-                # Ne garder que les plats entre la fin des entrées et le début des desserts
+                # Ne garder que les plats entre les entrées et desserts
                 if entrees_end_line < prod["line_number"] < desserts_start_line:
                     filtered_productions.append(prod)
             else:
@@ -629,14 +619,13 @@ def analyze_z_report_categories(texte_ocr: str) -> dict:
                 filtered_productions.append(prod)
         productions = filtered_productions
     
-    # 6. Regroupement des catégories "Bar" (inchangé)
+    # 6. Regroupement et analyse par familles
     categories_bar = [
         "boissons chaudes", "boissons fraiches", "cocktail", "biere pression",
         "verre pichets rouge", "verres pichets de rose", "verres pichets de blanc",
         "bouteilles rose", "bouteille rouge", "bouteille blanc"
     ]
     
-    # Analyser et regrouper
     analysis = {
         "Bar": {"articles": 0, "ca": 0.0, "details": []},
         "Entrées": {"articles": 0, "ca": 0.0, "details": []},
@@ -645,17 +634,11 @@ def analyze_z_report_categories(texte_ocr: str) -> dict:
         "Autres": {"articles": 0, "ca": 0.0, "details": []}
     }
     
-    # Agréger les catégories
+    # Agréger catégories
     for cat in categories:
         nom_clean = cat["nom"].lower()
-        
-        # Vérifier si c'est une catégorie Bar
         is_bar = any(bar_cat in nom_clean for bar_cat in categories_bar)
-        
-        if is_bar:
-            family = "Bar"
-        else:
-            family = cat["family"]
+        family = "Bar" if is_bar else cat["family"]
         
         analysis[family]["articles"] += cat["quantite"]
         analysis[family]["ca"] += cat["prix_total"]
@@ -665,7 +648,7 @@ def analyze_z_report_categories(texte_ocr: str) -> dict:
             "amount": cat["prix_total"]
         })
     
-    # Agréger les productions
+    # Agréger productions
     for prod in productions:
         family = prod["family"]
         analysis[family]["articles"] += prod["quantite"]
