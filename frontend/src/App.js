@@ -33,13 +33,13 @@ function App() {
     couvertsMidi: 87,
     couvertsSoir: 64,
     topProductions: [
-      { nom: "Rigatoni à la truffe", ventes: 2418, portions: 78, categorie: "Plat", coefficientPrevu: 0.35, coefficientReel: 0.38, coutMatiere: 774.00, prixVente: 28.50 }, // Réel > Prévu = Dépassé
-      { nom: "Fleurs de courgettes", ventes: 1911, portions: 91, categorie: "Entrée", coefficientPrevu: 0.25, coefficientReel: 0.25, coutMatiere: 482.75, prixVente: 17.25 }, // Réel = Prévu = Respecté
-      { nom: "Souris d'agneau", ventes: 1872, portions: 52, categorie: "Plat", coefficientPrevu: 0.40, coefficientReel: 0.35, coutMatiere: 1368.00, prixVente: 36.00 }, // Réel < Prévu = Respecté
-      { nom: "Tiramisù maison", ventes: 1654, portions: 67, categorie: "Dessert", coefficientPrevu: 0.20, coefficientReel: 0.28, coutMatiere: 264.64, prixVente: 12.00 }, // Réel > Prévu = Dépassé
-      { nom: "Cocktail Spritz", ventes: 1543, portions: 124, categorie: "Bar", coefficientPrevu: 0.15, coefficientReel: 0.15, coutMatiere: 201.59, prixVente: 11.20 }, // Réel = Prévu = Respecté
-      { nom: "Salade de saison", ventes: 1387, portions: 89, categorie: "Entrée", coefficientPrevu: 0.30, coefficientReel: 0.24, coutMatiere: 360.22, prixVente: 14.50 }, // Réel < Prévu = Respecté
-      { nom: "Plateau de fromages", ventes: 987, portions: 34, categorie: "Autres", coefficientPrevu: 0.45, coefficientReel: 0.52, coutMatiere: 473.76, prixVente: 29.00 } // Réel > Prévu = Dépassé
+      { nom: "Rigatoni à la truffe", ventes: 2418, portions: 78, categorie: "Plat", coefficientPrevu: 2.85, coefficientReel: 2.87, coutMatiere: 774.00, prixVente: 28.50 }, // 28.50 / (774.00/78) = 2.87
+      { nom: "Fleurs de courgettes", ventes: 1911, portions: 91, categorie: "Entrée", coefficientPrevu: 3.25, coefficientReel: 3.25, coutMatiere: 482.75, prixVente: 17.25 }, // 17.25 / (482.75/91) = 3.25
+      { nom: "Souris d'agneau", ventes: 1872, portions: 52, categorie: "Plat", coefficientPrevu: 1.50, coefficientReel: 1.37, coutMatiere: 1368.00, prixVente: 36.00 }, // 36.00 / (1368.00/52) = 1.37
+      { nom: "Tiramisù maison", ventes: 1654, portions: 67, categorie: "Dessert", coefficientPrevu: 3.00, coefficientReel: 3.04, coutMatiere: 264.64, prixVente: 12.00 }, // 12.00 / (264.64/67) = 3.04
+      { nom: "Cocktail Spritz", ventes: 1543, portions: 124, categorie: "Bar", coefficientPrevu: 6.90, coefficientReel: 6.90, coutMatiere: 201.59, prixVente: 11.20 }, // 11.20 / (201.59/124) = 6.90
+      { nom: "Salade de saison", ventes: 1387, portions: 89, categorie: "Entrée", coefficientPrevu: 3.60, coefficientReel: 3.58, coutMatiere: 360.22, prixVente: 14.50 }, // 14.50 / (360.22/89) = 3.58
+      { nom: "Plateau de fromages", ventes: 987, portions: 34, categorie: "Autres", coefficientPrevu: 2.10, coefficientReel: 2.08, coutMatiere: 473.76, prixVente: 29.00 } // 29.00 / (473.76/34) = 2.08
     ],
     flopProductions: [
       { nom: "Soupe froide", ventes: 187, portions: 12, categorie: "Entrée", coefficientPrevu: 0.20, coefficientReel: 0.18, coutMatiere: 54.60, prixVente: 15.60 }, // Réel < Prévu = Respecté
