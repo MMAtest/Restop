@@ -2436,16 +2436,6 @@ function App() {
               >
                 📱 OCR
               </button>
-              <button 
-                className="button" 
-                onClick={() => setActiveStockTab('datagrids')}
-                style={{
-                  background: activeStockTab === 'datagrids' ? 'var(--color-primary-blue)' : 'var(--color-background-card-light)',
-                  color: activeStockTab === 'datagrids' ? 'white' : 'var(--color-text-secondary)'
-                }}
-              >
-                📋 Grilles Données
-              </button>
             </div>
 
             {/* ONGLET STOCKS */}
