@@ -3637,6 +3637,101 @@ async def delete_all_ocr_documents():
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Erreur lors de la suppression: {str(e)}")
 
+# ✅ Archive System Endpoints
+@api_router.post("/archive")
+async def archive_item(request: ArchiveRequest):
+    """Archiver un produit, production ou fournisseur"""
+    # Obtenir les données originales selon le type
+    original_data = None
+    collection_name = None
+    
+    if request.item_type == "produit":
+        collection_name = "produits"
+        original_data = await db.produits.find_one({"id": request.item_id})
+    elif request.item_type == "production":
+        collection_name = "recettes"
+        original_data = await db.recettes.find_one({"id": request.item_id})
+    elif request.item_type == "fournisseur":
+        collection_name = "fournisseurs" 
+        original_data = await db.fournisseurs.find_one({"id": request.item_id})
+    else:
+        raise HTTPException(status_code=400, detail="Type d'élément invalide")
+    
+    if not original_data:
+        raise HTTPException(status_code=404, detail="Élément non trouvé")
+    
+    # Supprimer l'_id MongoDB pour éviter les conflits
+    if "_id" in original_data:
+        del original_data["_id"]
+    
+    # Créer l'archive
+    archived_item = ArchivedItem(
+        original_id=request.item_id,
+        item_type=request.item_type,
+        original_data=original_data,
+        reason=request.reason
+    )
+    
+    await db.archived_items.insert_one(archived_item.dict())
+    
+    # Supprimer l'élément original de sa collection
+    collection = getattr(db, collection_name)
+    await collection.delete_one({"id": request.item_id})
+    
+    return {"message": f"{request.item_type.capitalize()} archivé avec succès", "archive_id": archived_item.id}
+
+@api_router.get("/archives", response_model=List[ArchivedItem])
+async def get_archives(item_type: Optional[str] = None):
+    """Obtenir la liste des éléments archivés"""
+    query = {}
+    if item_type:
+        query["item_type"] = item_type
+    
+    archives = await db.archived_items.find(query).sort("archived_at", -1).to_list(1000)
+    return [ArchivedItem(**archive) for archive in archives]
+
+@api_router.post("/restore/{archive_id}")
+async def restore_item(archive_id: str):
+    """Restaurer un élément archivé"""
+    # Trouver l'archive
+    archive = await db.archived_items.find_one({"id": archive_id})
+    if not archive:
+        raise HTTPException(status_code=404, detail="Archive non trouvée")
+    
+    archived_item = ArchivedItem(**archive)
+    
+    # Déterminer la collection de destination
+    collection_name = None
+    if archived_item.item_type == "produit":
+        collection_name = "produits"
+    elif archived_item.item_type == "production":
+        collection_name = "recettes"
+    elif archived_item.item_type == "fournisseur":
+        collection_name = "fournisseurs"
+    
+    # Vérifier que l'élément n'existe pas déjà
+    collection = getattr(db, collection_name)
+    existing = await collection.find_one({"id": archived_item.original_id})
+    if existing:
+        raise HTTPException(status_code=400, detail="L'élément existe déjà et ne peut pas être restauré")
+    
+    # Restaurer l'élément
+    await collection.insert_one(archived_item.original_data)
+    
+    # Supprimer l'archive
+    await db.archived_items.delete_one({"id": archive_id})
+    
+    return {"message": f"{archived_item.item_type.capitalize()} restauré avec succès"}
+
+@api_router.delete("/archives/{archive_id}")
+async def delete_archive(archive_id: str):
+    """Supprimer définitivement une archive (sans restauration)"""
+    result = await db.archived_items.delete_one({"id": archive_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Archive non trouvée")
+    
+    return {"message": "Archive supprimée définitivement"}
+
 # Include the router in the main app
 app.include_router(api_router)
 
