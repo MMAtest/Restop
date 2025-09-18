@@ -3046,10 +3046,6 @@ function App() {
               </div>
             </div>
 
-            {/* ONGLET GRILLES DE DONNÉES */}
-            <div className={`production-tab ${activeStockTab === 'datagrids' ? 'active' : ''}`}>
-              <DataGridsPage />
-            </div>
           </div>
         </div>
 
