@@ -563,7 +563,8 @@ const PurchaseOrderPage = () => {
       </div>
       )}
 
-
+          {/* Onglet Commande Automatique */}
+          {activeOrderTab === 'auto' && (
             <div className="space-y-6">
               {/* Sélection des productions */}
               <div className="bg-gray-50 rounded-lg p-6">
