@@ -47,6 +47,20 @@ const getCategoryIcon = (category) => {
   return icons[category] || icons['Autres'];
 };
 
+const getPeriodComparison = (dateRange) => {
+  if (!dateRange) return "vs période précédente";
+  
+  const label = dateRange.label.toLowerCase();
+  if (label.includes('aujourd\'hui')) return "vs hier";
+  if (label.includes('cette semaine')) return "vs semaine dernière";
+  if (label.includes('ce mois')) return "vs mois dernier";
+  if (label.includes('hier')) return "vs avant-hier";
+  if (label.includes('semaine dernière')) return "vs semaine précédente";
+  if (label.includes('mois dernier')) return "vs mois précédent";
+  
+  return "vs période précédente";
+};
+
 function App() {
   const [activeTab, setActiveTab] = useState("dashboard");
   const [activeProductionTab, setActiveProductionTab] = useState("produits");
