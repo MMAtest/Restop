@@ -88,7 +88,7 @@ const ProductsDataGrid = ({ products = [], loading, onProductSelect, onProductEd
       field: 'categorie',
       width: 180,
       cellRenderer: CategoryRenderer,
-      filter: 'agSetColumnFilter'
+      filter: 'agTextColumnFilter'
     },
     {
       headerName: 'Prix Référence',
