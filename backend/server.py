@@ -153,6 +153,22 @@ class SupplierProductInfo(BaseModel):
     last_updated: datetime = Field(default_factory=datetime.utcnow)
     created_at: datetime = Field(default_factory=datetime.utcnow)
 
+# ✅ Auto-generated delivery & extra costs products per supplier
+class SupplierCostConfig(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    supplier_id: str
+    delivery_cost: float = 0.0  # Frais de livraison fixes par commande
+    extra_cost: float = 0.0    # Frais supplémentaires (manutention, etc.)
+    delivery_cost_product_id: Optional[str] = None  # ID du produit auto-créé pour frais livraison
+    extra_cost_product_id: Optional[str] = None     # ID du produit auto-créé pour frais extra
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+    updated_at: datetime = Field(default_factory=datetime.utcnow)
+
+class SupplierCostConfigCreate(BaseModel):
+    supplier_id: str
+    delivery_cost: float = 0.0
+    extra_cost: float = 0.0
+
 class SupplierProductInfoCreate(BaseModel):
     supplier_id: str
     product_id: str
