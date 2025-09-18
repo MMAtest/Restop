@@ -11,7 +11,7 @@ import base64
 import io
 
 # Configuration
-BASE_URL = "https://restop-manager.preview.emergentagent.com/api"
+BASE_URL = "https://smart-zreports.preview.emergentagent.com/api"
 HEADERS = {"Content-Type": "application/json"}
 
 def create_test_pdf_with_indentation():
