@@ -6,6 +6,12 @@ const PurchaseOrderPage = () => {
   const [supplierProducts, setSupplierProducts] = useState([]);
   const [orderItems, setOrderItems] = useState([]);
   const [loading, setLoading] = useState(false);
+  
+  // États pour le module de commande automatique
+  const [activeOrderTab, setActiveOrderTab] = useState('manual'); // 'manual' ou 'auto'
+  const [recipes, setRecipes] = useState([]);
+  const [selectedRecipes, setSelectedRecipes] = useState([]);
+  const [autoOrderResults, setAutoOrderResults] = useState([]);
 
   const backendUrl = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8001';
 
