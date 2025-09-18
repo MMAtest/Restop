@@ -2946,8 +2946,6 @@ function App() {
             {/* ONGLET RÉPARTITION */}
             <div className={`production-tab ${activeStockTab === 'repartition' ? 'active' : ''}`}>
               <div className="section-card">
-                <div className="section-title">🎯 Répartition Optimale des Productions</div>
-                
                 {/* Répartition optimale avec validation */}
                 <div className="item-list">
                   <div className="section-title">🎯 Répartition Optimale avec Validation</div>
