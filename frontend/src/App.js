@@ -1941,54 +1941,6 @@ function App() {
                 </div>
               </div>
 
-              {/* Section Expiration < 3 jours */}
-              <div className="alert-section">
-                <div className="alert-header" style={{display: 'flex', alignItems: 'center'}}>
-                  <div className="alert-title">Expiration &lt; 3 jours</div>
-                  <div className="alert-count" style={{
-                    background: 'var(--color-warning-orange)',
-                    color: 'white',
-                    width: '24px',
-                    height: '24px',
-                    borderRadius: '50%',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    fontSize: '12px',
-                    fontWeight: 'bold',
-                    marginLeft: '8px'
-                  }}>2</div>
-                </div>
-                
-                <div className="alert-card warning">
-                  <div className="alert-item">
-                    <div className="product-info">
-                      <div className="product-name">🐟 Saumon frais</div>
-                      <div className="stock-info">
-                        Lot SAU-2024-15 • 2.8 kg • Expire dans 2 jours (19/09/2025)
-                      </div>
-                    </div>
-                    <div className="item-actions">
-                      <button className="button small warning">⚡ Utiliser rapidement</button>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="alert-card warning">
-                  <div className="alert-item">
-                    <div className="product-info">
-                      <div className="product-name">🥛 Crème fraîche</div>
-                      <div className="stock-info">
-                        Lot CRE-2024-08 • 1.5 L • Expire dans 1 jour (18/09/2025)
-                      </div>
-                    </div>
-                    <div className="item-actions">
-                      <button className="button small critical">🚨 Urgent</button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
           )}
 
           {/* ONGLET COÛTS */}
