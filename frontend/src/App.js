@@ -88,7 +88,7 @@ function App() {
   const [selectedProductionCategory, setSelectedProductionCategory] = useState(''); // Filtre pour les top productions
   const [selectedFlopCategory, setSelectedFlopCategory] = useState(''); // Filtre pour les flop productions séparé
   const [filteredAnalytics, setFilteredAnalytics] = useState({
-    caTotal: 27959.75,
+    caTotal: 8975.50,
     caMidi: 16775.85,  // 60% du CA total
     caSoir: 11183.90,  // 40% du CA total
     couvertsMidi: 87,
