@@ -79,13 +79,13 @@ const PurchaseOrderPage = () => {
     }
   };
 
-  const addToOrder = (productRelation) => {
+  const addToOrder = (productRelation, quantity = 1) => {
     const existingItem = orderItems.find(item => item.product_id === productRelation.product_id);
     
     if (existingItem) {
       setOrderItems(orderItems.map(item => 
         item.product_id === productRelation.product_id 
-          ? { ...item, quantity: item.quantity + 1 }
+          ? { ...item, quantity: item.quantity + quantity }
           : item
       ));
     } else {
@@ -93,7 +93,7 @@ const PurchaseOrderPage = () => {
         product_id: productRelation.product_id,
         product_name: productRelation.product_name,
         unit_price: productRelation.price,
-        quantity: 1,
+        quantity: quantity,
         unit: productRelation.product_unit
       }]);
     }
