@@ -130,6 +130,12 @@ function App() {
   // État pour l'affichage des stocks
   const [stockViewMode, setStockViewMode] = useState('produits'); // 'produits' ou 'productions'
   
+  // États pour le système d'archivage
+  const [archivedItems, setArchivedItems] = useState([]);
+  const [showArchiveModal, setShowArchiveModal] = useState(false);
+  const [showArchivePage, setShowArchivePage] = useState(false);
+  const [selectedArchiveType, setSelectedArchiveType] = useState('tous'); // 'tous', 'produit', 'production', 'fournisseur'
+  
   // États pour le module prévisionnel
   const [stocksPrevisionnels, setStocksPrevisionnels] = useState([
     { id: 1, produit: "Tomates", stock_actuel: 25, unite: "kg", productions_possibles: [
