@@ -583,9 +583,9 @@ const PurchaseOrderPage = () => {
 
                   <button
                     onClick={handleCreateOrder}
-                    className="w-full bg-primary-500 hover:bg-primary-600 text-white py-2 rounded-lg font-medium"
+                    className="w-full bg-yellow-400 hover:bg-yellow-500 text-gray-900 py-2 rounded-lg font-medium"
                   >
-                    Créer la Commande
+                    ✅ Valider Commande
                   </button>
                 </div>
               </>
