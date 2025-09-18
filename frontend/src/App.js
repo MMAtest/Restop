@@ -4125,6 +4125,56 @@ function App() {
                   Utilisez un emoji (🏪 🥩 🐟) ou une URL d'image
                 </small>
               </div>
+              
+              {/* Nouveau champ catégorie */}
+              <div className="form-group">
+                <label className="form-label">Catégorie</label>
+                <select
+                  className="form-select"
+                  value={fournisseurForm.categorie}
+                  onChange={(e) => setFournisseurForm({...fournisseurForm, categorie: e.target.value})}
+                >
+                  {CATEGORIES_FOURNISSEURS.map((cat) => (
+                    <option key={cat.value} value={cat.value}>
+                      {cat.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              
+              {/* Nouveaux champs pour les coûts */}
+              <div className="form-row" style={{display: 'flex', gap: '15px'}}>
+                <div className="form-group" style={{flex: 1}}>
+                  <label className="form-label">Frais de livraison (€)</label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    className="form-input"
+                    value={fournisseurForm.deliveryCost}
+                    onChange={(e) => setFournisseurForm({...fournisseurForm, deliveryCost: parseFloat(e.target.value) || 0})}
+                    placeholder="0.00"
+                  />
+                  <small style={{color: 'var(--color-text-secondary)', fontSize: '12px'}}>
+                    Frais fixes par commande
+                  </small>
+                </div>
+                <div className="form-group" style={{flex: 1}}>
+                  <label className="form-label">Frais supplémentaires (€)</label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    className="form-input"
+                    value={fournisseurForm.extraCost}
+                    onChange={(e) => setFournisseurForm({...fournisseurForm, extraCost: parseFloat(e.target.value) || 0})}
+                    placeholder="0.00"
+                  />
+                  <small style={{color: 'var(--color-text-secondary)', fontSize: '12px'}}>
+                    Manutention, emballage...
+                  </small>
+                </div>
+              </div>
               <div className="button-group">
                 <button
                   type="button"
