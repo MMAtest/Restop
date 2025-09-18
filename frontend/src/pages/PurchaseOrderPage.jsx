@@ -12,6 +12,7 @@ const PurchaseOrderPage = () => {
   const [recipes, setRecipes] = useState([]);
   const [selectedRecipes, setSelectedRecipes] = useState([]);
   const [autoOrderResults, setAutoOrderResults] = useState([]);
+  const [manualOrderSummary, setManualOrderSummary] = useState(null); // Pour le récapitulatif de commande manuelle
 
   const backendUrl = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8001';
 
