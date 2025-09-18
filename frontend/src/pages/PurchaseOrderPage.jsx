@@ -165,18 +165,21 @@ const PurchaseOrderPage = () => {
       return;
     }
     
-    const orderData = {
+    // Calculer la date de livraison prévue (exemple: +3 jours ouvrés)
+    const today = new Date();
+    const deliveryDate = new Date(today);
+    deliveryDate.setDate(today.getDate() + 3); // 3 jours de délai par défaut
+    
+    const orderSummary = {
       supplier: selectedSupplier,
       items: orderItems,
       total: getTotalOrder(),
-      date: new Date().toISOString()
+      orderDate: new Date().toISOString(),
+      estimatedDelivery: deliveryDate.toLocaleDateString('fr-FR'),
+      orderNumber: `CMD-${Date.now().toString().slice(-6)}`
     };
     
-    console.log('Commande créée:', orderData);
-    alert(`Commande créée pour ${selectedSupplier.nom} - Total: ${getTotalOrder().toFixed(2)}€`);
-    
-    // Reset order
-    setOrderItems([]);
+    setManualOrderSummary(orderSummary);
   };
 
   const calculateAutoOrder = async () => {
