@@ -490,12 +490,14 @@ def analyze_z_report_categories(texte_ocr: str) -> dict:
     production_pattern = re.compile(r"^\(?x?(\d+)\)?\s*([^0-9]+?)\s+([0-9]+(?:[,\.][0-9]{2}))$", re.IGNORECASE)
     
     for i, ln in enumerate(lines):
+        ln_clean = ln.strip()  # Version nettoyée pour l'analyse
+        
         # Skip les lignes vides ou trop courtes
-        if len(ln) < 5:
+        if len(ln_clean) < 5:
             continue
             
         # Vérifier si c'est une catégorie
-        m_cat = category_pattern.match(ln)
+        m_cat = category_pattern.match(ln_clean)
         if m_cat:
             quantity = int(m_cat.group(1))
             name = m_cat.group(2).strip()
@@ -506,16 +508,16 @@ def analyze_z_report_categories(texte_ocr: str) -> dict:
                 "quantite": quantity,
                 "prix_total": amount,
                 "type": "categorie",
-                "raw_line": ln
+                "raw_line": ln_clean
             }
             categories.append(current_category)
             continue
         
-        # Vérifier si c'est une production (souvent indentée)
+        # Vérifier si c'est une production (ligne originale avec indentation)
         if ln.startswith(' ') or ln.startswith('\t') or ln.startswith('_'):
             # Production sous une catégorie
-            ln_clean = ln.lstrip(' \t_')
-            m_prod = production_pattern.match(ln_clean)
+            ln_clean_prod = ln.lstrip(' \t_')
+            m_prod = production_pattern.match(ln_clean_prod)
             if m_prod:
                 quantity = int(m_prod.group(1))
                 name = m_prod.group(2).strip()
@@ -527,7 +529,7 @@ def analyze_z_report_categories(texte_ocr: str) -> dict:
                     "prix_total": amount,
                     "type": "production",
                     "categorie_parent": current_category["nom"] if current_category else None,
-                    "raw_line": ln
+                    "raw_line": ln_clean_prod
                 }
                 productions.append(production)
     
