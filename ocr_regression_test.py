@@ -12,7 +12,7 @@ from datetime import datetime
 import time
 
 # Configuration
-BASE_URL = "https://restop-stock.preview.emergentagent.com/api"
+BASE_URL = "https://restop-manager.preview.emergentagent.com/api"
 HEADERS = {"Content-Type": "application/json"}
 
 class OCRRegressionTest:

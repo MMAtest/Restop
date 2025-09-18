@@ -12,7 +12,7 @@ from PIL import Image, ImageDraw, ImageFont
 import io
 
 # Configuration
-BASE_URL = "https://restop-stock.preview.emergentagent.com/api"
+BASE_URL = "https://restop-manager.preview.emergentagent.com/api"
 HEADERS = {"Content-Type": "application/json"}
 
 class OCRProcessingTestSuite:
