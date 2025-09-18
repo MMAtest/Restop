@@ -270,7 +270,7 @@ const RecipesDataGrid = ({ recipes = [], loading, onRecipeSelect, onRecipeEdit, 
               Calculer Tous les Coûts
             </button>
             <button
-              onClick={fetchRecipes}
+              onClick={() => window.location.reload()}
               className="text-primary-500 hover:text-primary-600 font-medium flex items-center"
             >
               <span className="mr-1">🔄</span>
