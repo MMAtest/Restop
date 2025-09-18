@@ -3427,10 +3427,7 @@ function App() {
           </div>
         </div>
 
-        {/* COMMANDES */}
-        <div id="orders" className={`wireframe-section ${activeTab === "orders" ? "active" : ""}`}>
-          <PurchaseOrderPage />
-        </div>
+
 
         {/* USER MANAGEMENT */}
         <div id="users" className={`wireframe-section ${activeTab === "users" ? "active" : ""}`}>
