@@ -3310,7 +3310,23 @@ function App() {
                 {fournisseurs.slice(0, 4).map((fournisseur, index) => (
                   <div key={index} className="item-row">
                     <div className="item-info">
-                      <div className="item-name">🏪 {fournisseur.nom}</div>
+                      <div className="item-name" style={{display: 'flex', alignItems: 'center', gap: '8px'}}>
+                        {/* Logo du fournisseur */}
+                        <span style={{fontSize: '20px'}}>
+                          {fournisseur.logo || '🏪'}
+                        </span>
+                        {/* Nom avec code couleur */}
+                        <span style={{
+                          backgroundColor: fournisseur.couleur || '#3B82F6',
+                          color: 'white',
+                          padding: '4px 8px',
+                          borderRadius: '4px',
+                          fontWeight: '500',
+                          fontSize: '14px'
+                        }}>
+                          {fournisseur.nom}
+                        </span>
+                      </div>
                       <div className="item-details">
                         {fournisseur.email} • Tel: {fournisseur.telephone}
                       </div>
