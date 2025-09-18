@@ -4312,7 +4312,7 @@ function App() {
                 />
               </div>
               <div className="form-group">
-                <label className="form-label">Coefficient prévu (%)</label>
+                <label className="form-label">Coefficient prévu (multiple)</label>
                 <input
                   type="number"
                   step="0.1"
