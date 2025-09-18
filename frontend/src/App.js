@@ -1716,7 +1716,7 @@ function App() {
                           borderRadius: '12px',
                           fontSize: '12px',
                           marginRight: '8px',
-                          background: coefficientStatus === 'success' ? 'var(--color-success-green)' : 'var(--color-critical-red)',
+                          background: coefficientStatus === 'success' ? 'var(--color-success-green)' : 'var(--color-warning-orange)',
                           color: 'white'
                         }}>
                           {coefficientText}
