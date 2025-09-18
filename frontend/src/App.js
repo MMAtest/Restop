@@ -1997,6 +1997,52 @@ function App() {
                 </div>
               </div>
 
+              {/* Nouvelle section DLC > 3 jours */}
+              <div className="alert-section">
+                <div className="alert-header" style={{display: 'flex', alignItems: 'center'}}>
+                  <div className="alert-title">DLC > 3 jours</div>
+                  <div className="alert-count" style={{
+                    background: 'var(--color-success-green)',
+                    color: 'white',
+                    width: '24px',
+                    height: '24px',
+                    borderRadius: '50%',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: '12px',
+                    fontWeight: 'bold',
+                    marginLeft: '8px'
+                  }}>12</div>
+                </div>
+                
+                <div className="alert-card success">
+                  <div className="alert-item">
+                    <div className="product-info">
+                      <div className="product-name">🥩 Bœuf Limousin</div>
+                      <div className="stock-info">
+                        Lot BEU-2024-18 • 5.2 kg • Expire dans 8 jours (01/10/2025)
+                      </div>
+                    </div>
+                    <div className="item-actions">
+                      <button className="button small success">✅ Stock sain</button>
+                    </div>
+                  </div>
+                  
+                  <div className="alert-item">
+                    <div className="product-info">
+                      <div className="product-name">🍎 Pommes Golden</div>
+                      <div className="stock-info">
+                        Lot POM-2024-22 • 8.5 kg • Expire dans 12 jours (05/10/2025)
+                      </div>
+                    </div>
+                    <div className="item-actions">
+                      <button className="button small success">✅ Stock sain</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
               {/* Section Expiration < 7 jours */}
               <div className="alert-section">
                 <div className="alert-header" style={{display: 'flex', alignItems: 'center'}}>
