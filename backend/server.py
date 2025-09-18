@@ -2640,9 +2640,17 @@ def parse_facture_fournisseur(texte_ocr: str) -> FactureFournisseurData:
 # Routes pour les fournisseurs
 @api_router.post("/fournisseurs", response_model=Fournisseur)
 async def create_fournisseur(fournisseur: FournisseurCreate):
+    # Valider la catégorie si fournie
+    if fournisseur.categorie and fournisseur.categorie not in CATEGORIES_FOURNISSEURS:
+        raise HTTPException(status_code=400, detail=f"Catégorie invalide. Catégories disponibles: {', '.join(CATEGORIES_FOURNISSEURS)}")
+    
     fournisseur_dict = fournisseur.dict()
     fournisseur_obj = Fournisseur(**fournisseur_dict)
     await db.fournisseurs.insert_one(fournisseur_obj.dict())
+    
+    # Créer automatiquement les produits de coûts (delivery & extra costs)
+    await create_supplier_cost_products(fournisseur_obj.id, fournisseur_obj.nom)
+    
     return fournisseur_obj
 
 @api_router.get("/fournisseurs", response_model=List[Fournisseur])
