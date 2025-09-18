@@ -5337,6 +5337,7 @@ Nombre de couverts: 32"""
         self.test_ocr_document_by_id()
         self.test_ocr_z_report_stock_processing()
         self.test_ocr_document_delete()
+        self.test_ocr_delete_all_documents()  # 🆕 TEST NOUVEL ENDPOINT DELETE ALL
         self.test_ocr_error_handling()
         
         # 🆕 NOUVEAUX TESTS VERSION 3 FEATURE #2 - ENHANCED OCR PARSING
