@@ -110,7 +110,7 @@ const ProductsDataGrid = ({ products = [], loading, onProductSelect, onProductEd
       headerName: 'Unité',
       field: 'unite',
       width: 80,
-      filter: 'agSetColumnFilter'
+      filter: 'agTextColumnFilter'
     },
     {
       headerName: 'Fournisseur',
