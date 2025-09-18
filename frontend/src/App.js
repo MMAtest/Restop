@@ -2981,9 +2981,9 @@ function App() {
                                   </span>
                                 </div>
                                 <div className="item-details">
-                                  Coeff: {production.coefficient.toFixed(2)} • 
-                                  {production.ingredients.length} ingrédient(s) • 
-                                  Coût estimé: {(production.ingredients.reduce((sum, ing) => sum + (ing.cout_unitaire * ing.quantite_requise), 0)).toFixed(2)}€
+                                  Coeff: {(production.coefficient || 0).toFixed(2)} • 
+                                  {production.ingredients ? production.ingredients.length : 0} ingrédient(s) • 
+                                  Coût estimé: {production.ingredients ? (production.ingredients.reduce((sum, ing) => sum + ((ing.cout_unitaire || 0) * (ing.quantite_requise || 0)), 0)).toFixed(2) : '0.00'}€
                                 </div>
                               </div>
                               <div className="item-actions">
