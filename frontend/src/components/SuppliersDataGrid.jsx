@@ -1,30 +1,7 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useMemo } from 'react';
 import DataGrid from './DataGrid';
 
-const SuppliersDataGrid = ({ onSupplierSelect, onSupplierEdit, onSupplierDelete }) => {
-  const [suppliers, setSuppliers] = useState([]);
-  const [loading, setLoading] = useState(false);
-
-  const backendUrl = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8001';
-
-  useEffect(() => {
-    fetchSuppliers();
-  }, []);
-
-  const fetchSuppliers = async () => {
-    setLoading(true);
-    try {
-      const response = await fetch(`${backendUrl}/api/fournisseurs`);
-      if (response.ok) {
-        const data = await response.json();
-        setSuppliers(data);
-      }
-    } catch (error) {
-      console.error('Erreur lors du chargement des fournisseurs:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
+const SuppliersDataGrid = ({ suppliers = [], loading, onSupplierSelect, onSupplierEdit, onSupplierDelete }) => {
 
   // Actions renderer
   const ActionsRenderer = ({ data }) => (
