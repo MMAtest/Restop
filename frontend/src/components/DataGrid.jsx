@@ -35,35 +35,32 @@ const DataGrid = ({
     defaultColDef,
     pagination,
     paginationPageSize,
-    rowSelection,
-    suppressRowClickSelection,
+    paginationPageSizeSelector: [10, 20, 25, 50, 100],
+    rowSelection: { mode: 'singleRow', enableClickSelection: !suppressRowClickSelection },
     animateRows: true,
     enableCellTextSelection: true,
-    localeTextFunc: (key, defaultValue) => {
+    localeText: {
       // French localization for common grid terms
-      const translations = {
-        'page': 'Page',
-        'to': 'à',
-        'of': 'sur',
-        'next': 'Suivant',
-        'previous': 'Précédent',
-        'loadingOoo': 'Chargement...',
-        'noRowsToShow': 'Aucune donnée à afficher',
-        'contains': 'Contient',
-        'notContains': 'Ne contient pas',
-        'equals': 'Égal à',
-        'notEqual': 'Différent de',
-        'startsWith': 'Commence par',
-        'endsWith': 'Finit par',
-        'filterOoo': 'Filtrer...',
-        'applyFilter': 'Appliquer',
-        'resetFilter': 'Réinitialiser',
-        'andCondition': 'ET',
-        'orCondition': 'OU'
-      };
-      return translations[key] || defaultValue;
+      page: 'Page',
+      to: 'à',
+      of: 'sur',
+      next: 'Suivant',
+      previous: 'Précédent',
+      loadingOoo: 'Chargement...',
+      noRowsToShow: 'Aucune donnée à afficher',
+      contains: 'Contient',
+      notContains: 'Ne contient pas',
+      equals: 'Égal à',
+      notEqual: 'Différent de',
+      startsWith: 'Commence par',
+      endsWith: 'Finit par',
+      filterOoo: 'Filtrer...',
+      applyFilter: 'Appliquer',
+      resetFilter: 'Réinitialiser',
+      andCondition: 'ET',
+      orCondition: 'OU'
     }
-  }), [defaultColDef, pagination, paginationPageSize, rowSelection, suppressRowClickSelection]);
+  }), [defaultColDef, pagination, paginationPageSize, suppressRowClickSelection]);
 
   return (
     <div 
