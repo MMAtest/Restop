@@ -4120,7 +4120,7 @@ function App() {
                   onClick={() => {
                     setShowFournisseurModal(false);
                     setEditingItem(null);
-                    setFournisseurForm({ nom: "", contact: "", email: "", telephone: "", adresse: "", couleur: "#3B82F6", logo: "" });
+                    setFournisseurForm({ nom: "", contact: "", email: "", telephone: "", adresse: "", couleur: "#3B82F6", logo: "", categorie: "frais", deliveryCost: 0, extraCost: 0 });
                   }}
                 >
                   Annuler
