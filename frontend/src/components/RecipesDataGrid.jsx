@@ -160,7 +160,7 @@ const RecipesDataGrid = ({ recipes = [], loading, onRecipeSelect, onRecipeEdit, 
       field: 'categorie',
       width: 130,
       cellRenderer: CategoryRenderer,
-      filter: 'agSetColumnFilter'
+      filter: 'agTextColumnFilter'
     },
     {
       headerName: 'Portions',
