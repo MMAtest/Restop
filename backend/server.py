@@ -2684,6 +2684,104 @@ async def delete_fournisseur(fournisseur_id: str):
         raise HTTPException(status_code=404, detail="Fournisseur non trouvé")
     return {"message": "Fournisseur supprimé"}
 
+# Helper function pour créer les produits de coûts automatiquement
+async def create_supplier_cost_products(supplier_id: str, supplier_name: str):
+    """Créer automatiquement les produits 'delivery' et 'extra costs' pour un fournisseur"""
+    try:
+        # Créer le produit "Frais de livraison"
+        delivery_product = Produit(
+            nom=f"Frais de livraison - {supplier_name}",
+            description=f"Frais de livraison fixes pour les commandes de {supplier_name}",
+            categorie="Service",
+            unite="forfait",
+            reference_price=0.0,
+            main_supplier_id=supplier_id,
+            fournisseur_id=supplier_id,  # Legacy compatibility
+            fournisseur_nom=supplier_name
+        )
+        await db.produits.insert_one(delivery_product.dict())
+        
+        # Créer le produit "Frais supplémentaires"
+        extra_product = Produit(
+            nom=f"Frais supplémentaires - {supplier_name}",
+            description=f"Frais supplémentaires (manutention, emballage...) pour {supplier_name}",
+            categorie="Service", 
+            unite="forfait",
+            reference_price=0.0,
+            main_supplier_id=supplier_id,
+            fournisseur_id=supplier_id,  # Legacy compatibility
+            fournisseur_nom=supplier_name
+        )
+        await db.produits.insert_one(extra_product.dict())
+        
+        # Créer la configuration des coûts
+        cost_config = SupplierCostConfig(
+            supplier_id=supplier_id,
+            delivery_cost=0.0,
+            extra_cost=0.0,
+            delivery_cost_product_id=delivery_product.id,
+            extra_cost_product_id=extra_product.id
+        )
+        await db.supplier_cost_configs.insert_one(cost_config.dict())
+        
+        # Créer les stocks initiaux pour ces produits
+        for product in [delivery_product, extra_product]:
+            stock = Stock(
+                produit_id=product.id,
+                produit_nom=product.nom,
+                quantite_actuelle=0.0,
+                quantite_min=0.0,
+                quantite_max=1.0
+            )
+            await db.stocks.insert_one(stock.dict())
+        
+        print(f"✅ Produits de coûts créés pour {supplier_name}")
+        
+    except Exception as e:
+        print(f"⚠️ Erreur création produits de coûts pour {supplier_name}: {str(e)}")
+
+# Routes pour les catégories de fournisseurs
+@api_router.get("/fournisseurs-categories")
+async def get_fournisseurs_categories():
+    """Obtenir la liste des catégories de fournisseurs disponibles"""
+    return {"categories": CATEGORIES_FOURNISSEURS}
+
+# Routes pour la configuration des coûts fournisseurs
+@api_router.post("/supplier-cost-config", response_model=SupplierCostConfig)
+async def create_supplier_cost_config(config: SupplierCostConfigCreate):
+    # Vérifier que le fournisseur existe
+    supplier = await db.fournisseurs.find_one({"id": config.supplier_id})
+    if not supplier:
+        raise HTTPException(status_code=404, detail="Fournisseur non trouvé")
+    
+    # Vérifier si une config existe déjà
+    existing = await db.supplier_cost_configs.find_one({"supplier_id": config.supplier_id})
+    if existing:
+        raise HTTPException(status_code=400, detail="Configuration déjà existante pour ce fournisseur")
+    
+    config_obj = SupplierCostConfig(**config.dict())
+    await db.supplier_cost_configs.insert_one(config_obj.dict())
+    return config_obj
+
+@api_router.get("/supplier-cost-config/{supplier_id}", response_model=SupplierCostConfig)
+async def get_supplier_cost_config(supplier_id: str):
+    config = await db.supplier_cost_configs.find_one({"supplier_id": supplier_id})
+    if not config:
+        raise HTTPException(status_code=404, detail="Configuration non trouvée")
+    return SupplierCostConfig(**config)
+
+@api_router.put("/supplier-cost-config/{supplier_id}", response_model=SupplierCostConfig)
+async def update_supplier_cost_config(supplier_id: str, config: SupplierCostConfigCreate):
+    result = await db.supplier_cost_configs.update_one(
+        {"supplier_id": supplier_id},
+        {"$set": {**config.dict(), "updated_at": datetime.utcnow()}}
+    )
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Configuration non trouvée")
+    
+    updated_config = await db.supplier_cost_configs.find_one({"supplier_id": supplier_id})
+    return SupplierCostConfig(**updated_config)
+
 # Routes pour les produits
 @api_router.post("/produits", response_model=Produit)
 async def create_produit(produit: ProduitCreate):
