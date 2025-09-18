@@ -1592,6 +1592,17 @@ function App() {
                           }}>
                             {production.categorie}
                           </span>
+                          <span className={`coefficient-badge ${coefficientStatus}`} style={{
+                            marginLeft: '8px',
+                            padding: '2px 6px',
+                            borderRadius: '8px',
+                            fontSize: '10px',
+                            background: coefficientStatus === 'success' ? 'var(--color-success-green)' : 'var(--color-warning-orange)',
+                            color: 'white',
+                            fontWeight: 'bold'
+                          }}>
+                            {coefficientText}
+                          </span>
                         </div>
                         <div className="item-details">
                           {production.portions} portions • Coeff. prévu: {production.coefficientPrevu.toFixed(2)} • 
@@ -1675,6 +1686,17 @@ function App() {
                             color: 'white'
                           }}>
                             {production.categorie}
+                          </span>
+                          <span className={`coefficient-badge ${coefficientStatus}`} style={{
+                            marginLeft: '8px',
+                            padding: '2px 6px',
+                            borderRadius: '8px',
+                            fontSize: '10px',
+                            background: coefficientStatus === 'success' ? 'var(--color-success-green)' : 'var(--color-warning-orange)',
+                            color: 'white',
+                            fontWeight: 'bold'
+                          }}>
+                            {coefficientText}
                           </span>
                         </div>
                         <div className="item-details">
