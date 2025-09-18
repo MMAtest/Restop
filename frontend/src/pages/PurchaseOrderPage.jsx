@@ -135,6 +135,91 @@ const PurchaseOrderPage = () => {
     setOrderItems([]);
   };
 
+  const calculateAutoOrder = async () => {
+    if (selectedRecipes.length === 0) {
+      alert('Veuillez sélectionner au moins une production');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      // Calculer les besoins totaux par produit
+      const productNeeds = {};
+      
+      selectedRecipes.forEach(recipe => {
+        const selectedQuantity = recipe.selectedQuantity || 1;
+        recipe.ingredients.forEach(ingredient => {
+          const productId = ingredient.produit_id;
+          const needed = (ingredient.quantite * selectedQuantity);
+          
+          if (productNeeds[productId]) {
+            productNeeds[productId].quantity += needed;
+          } else {
+            productNeeds[productId] = {
+              productId: productId,
+              productName: ingredient.produit_nom || 'Produit inconnu',
+              quantity: needed,
+              unit: ingredient.unite,
+              suppliers: []
+            };
+          }
+        });
+      });
+
+      // Regrouper par fournisseur
+      const ordersBySupplier = {};
+      
+      for (const productId in productNeeds) {
+        const need = productNeeds[productId];
+        
+        // Obtenir les informations fournisseur pour ce produit
+        try {
+          const response = await fetch(`${backendUrl}/api/supplier-info-by-product/${productId}`);
+          if (response.ok) {
+            const supplierInfo = await response.json();
+            
+            supplierInfo.forEach(info => {
+              const supplierId = info.supplier_id;
+              const supplierName = info.supplier_name;
+              
+              if (!ordersBySupplier[supplierId]) {
+                ordersBySupplier[supplierId] = {
+                  supplierId: supplierId,
+                  supplierName: supplierName,
+                  products: [],
+                  total: 0
+                };
+              }
+              
+              const estimatedPrice = info.price_per_unit || 0;
+              const totalPrice = estimatedPrice * need.quantity;
+              
+              ordersBySupplier[supplierId].products.push({
+                productId: productId,
+                productName: need.productName,
+                quantity: need.quantity,
+                unit: need.unit,
+                pricePerUnit: estimatedPrice,
+                totalPrice: totalPrice
+              });
+              
+              ordersBySupplier[supplierId].total += totalPrice;
+            });
+          }
+        } catch (error) {
+          console.warn(`Impossible de trouver un fournisseur pour ${need.productName}`);
+        }
+      }
+
+      setAutoOrderResults(Object.values(ordersBySupplier));
+    } catch (error) {
+      console.error('Erreur lors du calcul automatique:', error);
+      alert('Erreur lors du calcul des commandes automatiques');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const formatCurrency = (amount) => {
     return new Intl.NumberFormat('fr-FR', {
       style: 'currency',
