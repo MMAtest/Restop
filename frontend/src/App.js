@@ -12,6 +12,18 @@ import DateRangePicker from "./components/DateRangePicker";
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
 
+// Constantes pour les catégories de fournisseurs
+const CATEGORIES_FOURNISSEURS = [
+  { value: "frais", label: "🥬 Frais", icon: "🥬" },
+  { value: "surgelés", label: "🧊 Surgelés", icon: "🧊" },
+  { value: "primeur", label: "🍎 Primeur", icon: "🍎" },
+  { value: "marée", label: "🐟 Marée", icon: "🐟" },
+  { value: "boucherie", label: "🥩 Boucherie", icon: "🥩" },
+  { value: "extra", label: "✨ Extra", icon: "✨" },
+  { value: "hygiène", label: "🧽 Hygiène", icon: "🧽" },
+  { value: "bar", label: "🍺 Bar", icon: "🍺" }
+];
+
 function App() {
   const [activeTab, setActiveTab] = useState("dashboard");
   const [activeProductionTab, setActiveProductionTab] = useState("produits");
