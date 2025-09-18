@@ -68,6 +68,94 @@ SOLDE DE CAISSE
 Nombre de couverts: 122,00
 Total TTC: 3574,00"""
 
+    def create_test_pdf(self, text_content):
+        """Crée un PDF de test avec le contenu texte"""
+        try:
+            from reportlab.pdfgen import canvas
+            from reportlab.lib.pagesizes import letter
+            import io
+            
+            buffer = io.BytesIO()
+            p = canvas.Canvas(buffer, pagesize=letter)
+            
+            # Ajouter le texte ligne par ligne
+            lines = text_content.split('\n')
+            y_position = 750
+            
+            for line in lines:
+                if y_position < 50:  # Nouvelle page si nécessaire
+                    p.showPage()
+                    y_position = 750
+                p.drawString(50, y_position, line)
+                y_position -= 15
+            
+            p.save()
+            buffer.seek(0)
+            return buffer.getvalue()
+            
+        except ImportError:
+            # Fallback: créer un PDF minimal avec une autre méthode
+            return self.create_minimal_pdf(text_content)
+    
+    def create_minimal_pdf(self, text_content):
+        """Crée un PDF minimal sans reportlab"""
+        # Créer un PDF très basique avec le contenu
+        pdf_header = b"%PDF-1.4\n"
+        pdf_content = f"""1 0 obj
+<<
+/Type /Catalog
+/Pages 2 0 R
+>>
+endobj
+
+2 0 obj
+<<
+/Type /Pages
+/Kids [3 0 R]
+/Count 1
+>>
+endobj
+
+3 0 obj
+<<
+/Type /Page
+/Parent 2 0 R
+/MediaBox [0 0 612 792]
+/Contents 4 0 R
+>>
+endobj
+
+4 0 obj
+<<
+/Length {len(text_content) + 50}
+>>
+stream
+BT
+/F1 12 Tf
+50 750 Td
+({text_content.replace(chr(10), ') Tj T* (')}) Tj
+ET
+endstream
+endobj
+
+xref
+0 5
+0000000000 65535 f 
+0000000010 00000 n 
+0000000053 00000 n 
+0000000110 00000 n 
+0000000205 00000 n 
+trailer
+<<
+/Size 5
+/Root 1 0 R
+>>
+startxref
+{300 + len(text_content)}
+%%EOF"""
+        
+        return pdf_header + pdf_content.encode('utf-8')
+
     def test_sequential_logic_extraction(self):
         """Test de la nouvelle logique séquentielle"""
         print("\n=== TEST LOGIQUE SÉQUENTIELLE OCR ===")
@@ -75,11 +163,13 @@ Total TTC: 3574,00"""
         # Créer le texte OCR de test
         test_text = self.create_test_ocr_text()
         
-        # Simuler l'upload d'un document avec ce texte
+        # Créer un PDF de test
         try:
-            # Créer un document OCR simulé
+            pdf_content = self.create_test_pdf(test_text)
+            
+            # Upload du PDF
             files = {
-                'file': ('test_sequential.txt', test_text.encode('utf-8'), 'text/plain')
+                'file': ('test_sequential_z_report.pdf', pdf_content, 'application/pdf')
             }
             data = {'document_type': 'z_report'}
             
@@ -89,7 +179,7 @@ Total TTC: 3574,00"""
                 self.document_id = result.get("document_id")
                 
                 if self.document_id:
-                    self.log_result("Document Upload", True, f"Document créé avec ID: {self.document_id}")
+                    self.log_result("Document Upload", True, f"Document PDF créé avec ID: {self.document_id}")
                     
                     # Tester l'analyse avec la fonction analyze_z_report_categories
                     self.test_analyze_z_report_categories()
@@ -100,6 +190,10 @@ Total TTC: 3574,00"""
                 
         except Exception as e:
             self.log_result("Document Upload", False, f"Exception: {str(e)}")
+            
+            # Fallback: tester directement avec la fonction analyze_z_report_categories
+            print("Fallback: Test direct de la fonction analyze_z_report_categories")
+            self.test_direct_analysis()
 
     def test_analyze_z_report_categories(self):
         """Test spécifique de la fonction analyze_z_report_categories optimisée"""
