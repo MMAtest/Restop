@@ -854,3 +854,22 @@ agent_communication:
       - working: true
         agent: "testing"
         comment: "🎯 CRÉATION LOTS DLC TEST - 77.8% RÉUSSITE (14/18 tests) ! Objectif atteint avec succès : ✅ LOTS EXPIRÉS CRÉÉS : 2 lots avec dates passées (EXP-20250915-01, EXP-20250912-02) pour alertes rouges ✅ LOTS CRITIQUES CRÉÉS : 2 lots expirant dans 2-4 jours (CRIT-20250920-01, CRIT-20250922-02) pour alertes critiques ✅ LOTS NORMAUX CRÉÉS : 2 lots expirant dans 14-29 jours (NORM-20251001-01, NORM-20251016-02) pour statut normal ✅ ENDPOINTS VALIDÉS : POST /api/product-batches (6 lots créés), GET /api/stock/batch-summary (43 produits avec lots), GET /api/stock/batch-info/{product_id} (détails individuels) ✅ STATUTS FONCTIONNELS : Expired (rouge), Critical (jaune), Good (vert) correctement assignés selon seuil 7 jours ✅ DONNÉES RÉALISTES : Quantités variées (15-70 unités), prix d'achat réalistes (6-15€), numéros de lots structurés ✅ PRODUITS DIVERSIFIÉS : 6 produits différents utilisés (Supions, Moules, Sardines, Daurade, Palourdes, etc.) ❌ 4 échecs mineurs : Exceptions lors affichage détails lots (problème formatage, pas fonctionnel). RÉSULTAT : Interface DLC dispose maintenant de données de test complètes avec alertes réelles pour validation fonctionnalité complète !"
+
+  - task: "Modifications Coefficient en Multiples - Tests Complets"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Modifications demandées pour coefficients en multiples au lieu de pourcentages"
+      - working: true
+        agent: "testing"
+        comment: "🎉 COEFFICIENTS EN MULTIPLES - 100% RÉUSSITE ! Validation complète des modifications demandées dans la review : ✅ CORRECTION MODÈLE : Recipe class mise à jour avec champs coefficient_prevu, coefficient_reel, cout_matiere manquants. Problème résolu où Recette = Recipe écrasait le modèle original ✅ EXEMPLES EXACTS VALIDÉS : Cocktail Premium (Bar, 6.0, 15€) et Plat du jour (Plat, 2.5, 24€) créés et stockés correctement selon spécifications exactes ✅ STOCKAGE SANS CONVERSION : Coefficients 6.0 et 2.5 stockés tels quels en base (pas 0.60 ou 0.25), aucune conversion appliquée ✅ ENDPOINTS API COMPLETS : POST /api/recettes accepte coefficients multiples, GET /api/recettes et GET /api/recettes/{id} retournent valeurs originales sans modification ✅ LOGIQUE MATHÉMATIQUE : Validation coefficient = prix_vente / cout_matiere_unitaire confirmée (30€/3.0=10€, 25€/2.5=10€, 60€/6.0=10€) ✅ PERSISTANCE BASE DONNÉES : Coefficients restent identiques après multiples lectures, stockage MongoDB correct ✅ COHÉRENCE CALCULS : Coefficient 3.0 = prix vente 3× coût achat, coefficient 6.0 = prix vente 6× coût achat validés. Modifications coefficient en multiples entièrement opérationnelles pour production avec 100% des tests réussis (14/14) !"
+
+agent_communication:
+    - agent: "testing"
+      message: "🎯 TESTS COEFFICIENT EN MULTIPLES TERMINÉS - 100% RÉUSSITE ! Toutes les modifications demandées dans la review ont été validées avec succès. Les coefficients sont maintenant stockés en multiples (3.0, 6.0, 2.5) au lieu de pourcentages (0.30, 0.60, 0.25). Les exemples fournis (Cocktail Premium 6.0, Plat du jour 2.5) fonctionnent parfaitement. Calculs cohérents validés : coefficient = prix_vente / cout_matiere_unitaire. Tous les endpoints API acceptent et retournent les coefficients sans conversion. Stockage en base de données correct et persistant."
