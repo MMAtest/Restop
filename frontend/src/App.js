@@ -1748,6 +1748,34 @@ function App() {
                     - {selectedDateRange.label}
                   </span>
                 )}
+                
+                {/* Switcher Produits/Productions */}
+                <div style={{display: 'flex', gap: '5px', marginLeft: '15px', display: 'inline-flex'}}>
+                  <button 
+                    className="button small"
+                    onClick={() => setAlertViewMode('produits')}
+                    style={{
+                      background: alertViewMode === 'produits' ? 'var(--color-primary-blue)' : 'var(--color-background-card)',
+                      color: alertViewMode === 'produits' ? 'white' : 'var(--color-text-secondary)',
+                      padding: '4px 8px',
+                      fontSize: '12px'
+                    }}
+                  >
+                    📦 Produits
+                  </button>
+                  <button 
+                    className="button small"
+                    onClick={() => setAlertViewMode('productions')}
+                    style={{
+                      background: alertViewMode === 'productions' ? 'var(--color-primary-blue)' : 'var(--color-background-card)',
+                      color: alertViewMode === 'productions' ? 'white' : 'var(--color-text-secondary)',
+                      padding: '4px 8px',
+                      fontSize: '12px'
+                    }}
+                  >
+                    🍽️ Productions
+                  </button>
+                </div>
               </div>
               
               {/* Alertes de stock faible avec switch */}
