@@ -667,7 +667,6 @@ const PurchaseOrderPage = () => {
             </div>
           )}
         </div>
-      </div>
 
       {/* Commandes récentes */}
       <div className="bg-white rounded-lg shadow-sm">
