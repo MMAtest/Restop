@@ -432,9 +432,8 @@ def normalize_family(cat_name: str) -> str:
 def analyze_z_report_categories(texte_ocr: str) -> dict:
     """
     Analyse optimisée des rapports Z selon les spécifications détaillées.
-    Extrait : date/heure, couverts, totaux HT/TTC, catégories et productions.
+    Respecte la structure séquentielle : Entrées → Plats → Desserts
     """
-    # CORRECTION: Préserver l'indentation pour détecter les productions
     lines = [l for l in (texte_ocr or '').split('\n') if l and len(l.strip()) > 0]
     
     # Variables pour les données principales
@@ -446,7 +445,7 @@ def analyze_z_report_categories(texte_ocr: str) -> dict:
     
     # 1. Extraction Date et Heure de clôture
     for ln in lines:
-        ln_clean = ln.strip()  # Nettoyer pour l'analyse
+        ln_clean = ln.strip()
         # Recherche de la date (format DD/MM/YYYY ou DD/MM/YY)
         m_date = re.search(r"(\d{1,2})/(\d{1,2})/(\d{2,4})", ln_clean)
         if m_date and date_cloture is None:
@@ -485,10 +484,9 @@ def analyze_z_report_categories(texte_ocr: str) -> dict:
         if m_ttc and total_ttc is None:
             total_ttc = parse_number_fr(m_ttc.group(1))
     
-    # 5. Extraction des catégories et productions
+    # 5. NOUVELLE LOGIQUE : Extraction séquentielle respectant la structure du rapport Z
     categories = []
     productions = []
-    current_category = None
     
     # Patterns pour les catégories : x73) Entrees 1234,56
     category_pattern = re.compile(r"^x?(\d+)\)\s*([^0-9]+?)\s+([0-9]+(?:[,\.][0-9]{2}))$", re.IGNORECASE)
@@ -496,52 +494,148 @@ def analyze_z_report_categories(texte_ocr: str) -> dict:
     # Patterns pour les productions individuelles : (x14) Moules 252,00
     production_pattern = re.compile(r"^\(?x?(\d+)\)?\s*([^0-9]+?)\s+([0-9]+(?:[,\.][0-9]{2}))$", re.IGNORECASE)
     
+    # Mots-clés à éviter (TVA, totaux, etc.)
+    keywords_to_avoid = [
+        "tva", "total", "sous.total", "solde", "caisse", "espece", "carte", "cheque",
+        "remise", "service", "pourboire", "commission", "frais", "reduction", 
+        "annulation", "retour", "net", "brut", "ht", "ttc", "taux", "base"
+    ]
+    
+    # Détecter les zones de catégories pour une extraction séquentielle
+    category_zones = {}  # {nom_categorie: [debut_ligne, fin_ligne]}
+    current_category = None
+    category_start_line = None
+    
     for i, ln in enumerate(lines):
-        ln_clean = ln.strip()  # Version nettoyée pour l'analyse
+        ln_clean = ln.strip()
         
         # Skip les lignes vides ou trop courtes
         if len(ln_clean) < 5:
             continue
         
-        # Déterminer si c'est une ligne indentée (production) ou non (catégorie)
-        is_indented = ln.startswith(' ') or ln.startswith('\t') or ln.startswith('_')
+        # Vérifier si c'est une catégorie
+        m_cat = category_pattern.match(ln_clean)
+        if m_cat:
+            quantity = int(m_cat.group(1))
+            name = m_cat.group(2).strip()
+            amount = parse_number_fr(m_cat.group(3)) or 0.0
+            
+            # Fermer la catégorie précédente
+            if current_category and category_start_line is not None:
+                category_zones[current_category] = [category_start_line, i-1]
+            
+            # Classifier la nouvelle catégorie
+            name_lower = name.lower()
+            if any(word in name_lower for word in ["entree", "entrée", "appetizer", "amuse"]):
+                family = "Entrées"
+            elif any(word in name_lower for word in ["plat", "main", "principal", "resistance"]):
+                family = "Plats"
+            elif any(word in name_lower for word in ["dessert", "sweet", "glace", "patisserie"]):
+                family = "Desserts"
+            elif any(word in name_lower for word in ["boisson", "cocktail", "biere", "vin", "verre", "bouteille"]):
+                family = "Bar"
+            else:
+                family = "Autres"
+            
+            category_info = {
+                "nom": name,
+                "quantite": quantity,
+                "prix_total": amount,
+                "type": "categorie",
+                "family": family,
+                "raw_line": ln_clean,
+                "line_number": i
+            }
+            categories.append(category_info)
+            
+            current_category = name
+            category_start_line = i + 1
+            continue
+    
+    # Fermer la dernière catégorie
+    if current_category and category_start_line is not None:
+        category_zones[current_category] = [category_start_line, len(lines)-1]
+    
+    # EXTRACTION CIBLÉE PAR ZONE POUR LES PLATS
+    # Trouver les indices des catégories Entrées et Desserts
+    entrees_end_line = None
+    desserts_start_line = None
+    
+    for cat in categories:
+        if cat["family"] == "Entrées":
+            zone = category_zones.get(cat["nom"])
+            if zone:
+                entrees_end_line = max(entrees_end_line or 0, zone[1])
+        elif cat["family"] == "Desserts":
+            zone = category_zones.get(cat["nom"])
+            if zone:
+                desserts_start_line = min(desserts_start_line or len(lines), zone[0] - 1)
+    
+    # Extraire les productions par catégorie avec filtrage spécial pour les Plats
+    for cat in categories:
+        zone = category_zones.get(cat["nom"])
+        if not zone:
+            continue
+            
+        start_line, end_line = zone
         
-        if not is_indented:
-            # Vérifier si c'est une catégorie (ligne non-indentée)
-            m_cat = category_pattern.match(ln_clean)
-            if m_cat:
-                quantity = int(m_cat.group(1))
-                name = m_cat.group(2).strip()
-                amount = parse_number_fr(m_cat.group(3)) or 0.0
+        # Pour les PLATS : utiliser la zone entre la fin des entrées et le début des desserts
+        if cat["family"] == "Plats":
+            if entrees_end_line is not None:
+                start_line = max(start_line, entrees_end_line + 1)
+            if desserts_start_line is not None:
+                end_line = min(end_line, desserts_start_line - 1)
+        
+        # Extraire les productions dans cette zone
+        for line_idx in range(start_line, min(end_line + 1, len(lines))):
+            if line_idx >= len(lines):
+                continue
                 
-                current_category = {
-                    "nom": name,
-                    "quantite": quantity,
-                    "prix_total": amount,
-                    "type": "categorie",
-                    "raw_line": ln_clean
-                }
-                categories.append(current_category)
-        else:
-            # Vérifier si c'est une production (ligne indentée)
-            ln_clean_prod = ln.lstrip(' \t_')
-            m_prod = production_pattern.match(ln_clean_prod)
+            ln = lines[line_idx]
+            ln_clean = ln.strip()
+            
+            # Skip les lignes trop courtes
+            if len(ln_clean) < 5:
+                continue
+            
+            # Skip les lignes contenant des mots-clés à éviter
+            if any(keyword in ln_clean.lower() for keyword in keywords_to_avoid):
+                continue
+            
+            # Vérifier si c'est une production (souvent indentée)
+            if ln.startswith(' ') or ln.startswith('\t') or ln.startswith('_'):
+                ln_clean = ln.lstrip(' \t_')
+                
+            m_prod = production_pattern.match(ln_clean)
             if m_prod:
                 quantity = int(m_prod.group(1))
                 name = m_prod.group(2).strip()
                 amount = parse_number_fr(m_prod.group(3)) or 0.0
+                
+                # Filtrage supplémentaire pour éviter les faux positifs
+                name_lower = name.lower()
+                
+                # Skip si c'est clairement du texte non pertinent
+                if any(keyword in name_lower for keyword in keywords_to_avoid):
+                    continue
+                
+                # Skip si c'est un pattern de TVA ou taxe
+                if re.search(r"\d+[\.,]?\d*\s*%", name):
+                    continue
                 
                 production = {
                     "nom": name,
                     "quantite": quantity,
                     "prix_total": amount,
                     "type": "production",
-                    "categorie_parent": current_category["nom"] if current_category else None,
-                    "raw_line": ln_clean_prod
+                    "categorie_parent": cat["nom"],
+                    "family": cat["family"],
+                    "raw_line": ln,
+                    "line_number": line_idx
                 }
                 productions.append(production)
     
-    # 6. Regroupement des catégories "Bar"
+    # 6. Regroupement des catégories "Bar" (inchangé)
     categories_bar = [
         "boissons chaudes", "boissons fraiches", "cocktail", "biere pression",
         "verre pichets rouge", "verres pichets de rose", "verres pichets de blanc",
@@ -557,7 +651,7 @@ def analyze_z_report_categories(texte_ocr: str) -> dict:
         "Autres": {"articles": 0, "ca": 0.0, "details": []}
     }
     
-    # Classifier les catégories
+    # Classifier les catégories avec regroupement Bar
     for cat in categories:
         nom_clean = cat["nom"].lower()
         
@@ -566,14 +660,8 @@ def analyze_z_report_categories(texte_ocr: str) -> dict:
         
         if is_bar:
             family = "Bar"
-        elif any(word in nom_clean for word in ["entree", "entrée", "appetizer"]):
-            family = "Entrées"
-        elif any(word in nom_clean for word in ["plat", "main", "principal"]):
-            family = "Plats"
-        elif any(word in nom_clean for word in ["dessert", "sweet", "glace"]):
-            family = "Desserts"
         else:
-            family = "Autres"
+            family = cat["family"]  # Utiliser la classification déjà faite
         
         analysis[family]["articles"] += cat["quantite"]
         analysis[family]["ca"] += cat["prix_total"]
@@ -603,6 +691,11 @@ def analyze_z_report_categories(texte_ocr: str) -> dict:
         # Données détaillées
         "categories_detectees": categories,
         "productions_detectees": productions,
+        
+        # Zones détectées pour debug
+        "category_zones": category_zones,
+        "entrees_end_line": entrees_end_line,
+        "desserts_start_line": desserts_start_line,
         
         # Analyse par familles
         "analysis": analysis,
