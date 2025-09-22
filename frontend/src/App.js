@@ -1682,7 +1682,9 @@ function App() {
                 </div>
 
                 {/* Liste des flop productions filtrées avec coefficients */}
-                {getFilteredProductions(filteredAnalytics.flopProductions, selectedFlopCategory).slice(0, 4).map((production, index) => {
+                {getFilteredProductions(filteredAnalytics.flopProductions, selectedFlopCategory)
+                  .slice(0, showMoreFlopProductions ? 9 : 4)
+                  .map((production, index) => {
                   // Assurer que tous les produits ont des coefficients (valeurs par défaut si manquantes)
                   const coefficientPrevu = production.coefficientPrevu || 0;
                   const coefficientReel = production.coefficientReel || 0;
