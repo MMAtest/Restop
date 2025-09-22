@@ -4938,7 +4938,7 @@ function App() {
                   className="button btn-cancel"
                   onClick={() => {
                     setShowMouvementModal(false);
-                    setMouvementForm({ produit_id: "", type: "entree", quantite: "", reference: "", commentaire: "" });
+                    setMouvementForm({ produit_id: "", type: "entree", quantite: "", reference: "", commentaire: "", lot: "", unite: "" });
                   }}
                 >
                   Annuler
