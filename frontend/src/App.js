@@ -2129,11 +2129,11 @@ function App() {
                 </div>
               </div>
 
-              {/* Section DLC < 7 jours */}
+              {/* Section DLC < 3 jours */}
               <div className="alert-section">
                 <div className="alert-header" style={{display: 'flex', alignItems: 'center', justifyContent: 'space-between'}}>
                   <div style={{display: 'flex', alignItems: 'center'}}>
-                    <div className="alert-title">DLC &lt; 7 jours</div>
+                    <div className="alert-title">DLC &lt; 3 jours</div>
                     <div className="alert-count" style={{
                       background: 'var(--color-accent-orange)',
                       color: 'white',
