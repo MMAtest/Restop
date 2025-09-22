@@ -1465,10 +1465,10 @@ function App() {
                   <div className="subtitle">{filteredAnalytics.couvertsSoir} couverts</div>
                 </div>
                 
-                {/* Nouveaux KPIs - Panier moyen par couvert */}
+                {/* Nouveaux KPIs - Ticket moyen par couvert */}
                 <div className="kpi-card">
                   <div className="icon">🍽️</div>
-                  <div className="title">Panier Moyen Global</div>
+                  <div className="title">Ticket Moyen Global</div>
                   <div className="value">
                     {(filteredAnalytics.couvertsMidi + filteredAnalytics.couvertsSoir) > 0 
                       ? (filteredAnalytics.caTotal / (filteredAnalytics.couvertsMidi + filteredAnalytics.couvertsSoir)).toFixed(2)
@@ -1479,25 +1479,19 @@ function App() {
                 </div>
                 
                 <div className="kpi-card">
-                  <div className="icon">☀️</div>
-                  <div className="title">Panier Moyen Midi</div>
-                  <div className="value">
-                    {filteredAnalytics.couvertsMidi > 0 
-                      ? (filteredAnalytics.caMidi / filteredAnalytics.couvertsMidi).toFixed(2)
-                      : '0.00'
-                    } €
-                  </div>
-                  <div className="subtitle">par couvert</div>
-                </div>
-                
-                <div className="kpi-card">
-                  <div className="icon">🌙</div>
-                  <div className="title">Panier Moyen Soir</div>
-                  <div className="value">
-                    {filteredAnalytics.couvertsSoir > 0 
-                      ? (filteredAnalytics.caSoir / filteredAnalytics.couvertsSoir).toFixed(2)
-                      : '0.00'
-                    } €
+                  <div className="icon">🕐</div>
+                  <div className="title">Ticket Moyen par Service</div>
+                  <div className="value" style={{display: 'flex', flexDirection: 'column', gap: '4px'}}>
+                    <div style={{display: 'flex', alignItems: 'center', gap: '8px'}}>
+                      <span>☀️</span>
+                      <span>{filteredAnalytics.couvertsMidi > 0 ? (filteredAnalytics.caMidi / filteredAnalytics.couvertsMidi).toFixed(2) : '0.00'}€</span>
+                      <span style={{fontSize: '12px', color: 'var(--color-text-secondary)'}}>midi</span>
+                    </div>
+                    <div style={{display: 'flex', alignItems: 'center', gap: '8px'}}>
+                      <span>🌙</span>
+                      <span>{filteredAnalytics.couvertsSoir > 0 ? (filteredAnalytics.caSoir / filteredAnalytics.couvertsSoir).toFixed(2) : '0.00'}€</span>
+                      <span style={{fontSize: '12px', color: 'var(--color-text-secondary)'}}>soir</span>
+                    </div>
                   </div>
                   <div className="subtitle">par couvert</div>
                 </div>
