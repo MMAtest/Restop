@@ -1731,11 +1731,6 @@ function App() {
                 })}
                 
                 {/* Bouton Voir plus pour Flop Productions */}
-                {(
-                  <div style={{textAlign: 'center', marginTop: '15px', marginBottom: '20px', fontSize: '12px', color: 'red'}}>
-                    Debug: {getFilteredProductions(filteredAnalytics.flopProductions, selectedFlopCategory).length} flop productions
-                  </div>
-                )}
                 {getFilteredProductions(filteredAnalytics.flopProductions, selectedFlopCategory).length > 4 && (
                   <div style={{textAlign: 'center', marginTop: '15px', marginBottom: '20px'}}>
                     <button 
