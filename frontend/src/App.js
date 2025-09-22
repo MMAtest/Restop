@@ -1621,6 +1621,25 @@ function App() {
                     </div>
                   );
                 })}
+                
+                {/* Bouton Voir plus pour Top Productions */}
+                {getFilteredProductions(filteredAnalytics.topProductions, selectedProductionCategory).length > 4 && (
+                  <div style={{textAlign: 'center', marginTop: '15px'}}>
+                    <button 
+                      className="button small"
+                      onClick={() => setShowMoreTopProductions(!showMoreTopProductions)}
+                      style={{
+                        background: 'var(--color-background-card-light)',
+                        color: 'var(--color-text-primary)',
+                        padding: '8px 16px',
+                        borderRadius: '6px',
+                        fontSize: '13px'
+                      }}
+                    >
+                      {showMoreTopProductions ? '📤 Voir moins' : '📥 Voir plus (+5)'}
+                    </button>
+                  </div>
+                )}
               </div>
 
               {/* Flop Productions avec filtre */}
