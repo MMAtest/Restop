@@ -151,9 +151,8 @@ function App() {
   const [showArchivePage, setShowArchivePage] = useState(false);
   const [selectedArchiveType, setSelectedArchiveType] = useState('tous'); // 'tous', 'produit', 'production', 'fournisseur'
   
-  // États pour les switchers des blocs DLC individuels
-  const [dlcViewMode3Days, setDlcViewMode3Days] = useState('produits'); // pour DLC > 3 jours
-  const [dlcViewMode7Days, setDlcViewMode7Days] = useState('produits'); // pour DLC < 7 jours
+  // État pour le switcher du bloc DLC < 3 jours
+  const [dlcViewMode7Days, setDlcViewMode7Days] = useState('produits'); // pour DLC < 3 jours
   
   // États pour les boutons "Voir plus" des productions
   const [showMoreTopProductions, setShowMoreTopProductions] = useState(false);
