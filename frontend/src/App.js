@@ -3087,7 +3087,6 @@ function App() {
                               <div className="item-actions">
                                 <button className="button small" onClick={() => handleEdit(produit, 'produit')}>✏️ Produit</button>
                                 <button className="button small success" onClick={() => handleAjusterStock(stock)}>📊 Ajuster</button>
-                                <button className="button small" onClick={() => setShowMouvementModal(true)}>🛒 Commander</button>
                               </div>
                             </div>
                           );
