@@ -4890,6 +4890,31 @@ function App() {
                   required
                 />
               </div>
+              
+              {/* Nouveaux champs Lot et Unité */}
+              <div className="form-row" style={{display: 'flex', gap: '15px'}}>
+                <div className="form-group" style={{flex: 1}}>
+                  <label className="form-label">Lot</label>
+                  <input
+                    type="text"
+                    className="form-input"
+                    value={mouvementForm.lot}
+                    onChange={(e) => setMouvementForm({...mouvementForm, lot: e.target.value})}
+                    placeholder="Ex: LOT-2024-001"
+                  />
+                </div>
+                <div className="form-group" style={{flex: 1}}>
+                  <label className="form-label">Unité</label>
+                  <input
+                    type="text"
+                    className="form-input"
+                    value={mouvementForm.unite}
+                    onChange={(e) => setMouvementForm({...mouvementForm, unite: e.target.value})}
+                    placeholder="Ex: kg, L, pièces"
+                  />
+                </div>
+              </div>
+              
               <div className="form-group">
                 <label className="form-label">Référence</label>
                 <input
