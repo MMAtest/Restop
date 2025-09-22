@@ -886,7 +886,10 @@ function App() {
         { nom: "Soupe froide", ventes: 187, portions: 12, categorie: "Entrée", coefficientPrevu: 3.50, coefficientReel: 3.43, coutMatiere: 54.60, prixVente: 15.60 },
         { nom: "Tartare de légumes", ventes: 156, portions: 8, categorie: "Autres", coefficientPrevu: 1.90, coefficientReel: 1.90, coutMatiere: 70.20, prixVente: 16.70 },
         { nom: "Mocktail exotique", ventes: 134, portions: 9, categorie: "Bar", coefficientPrevu: 3.20, coefficientReel: 3.21, coutMatiere: 37.52, prixVente: 13.40 },
-        { nom: "Panna cotta", ventes: 98, portions: 6, categorie: "Dessert", coefficientPrevu: 1.95, coefficientReel: 1.94, coutMatiere: 30.38, prixVente: 9.80 }
+        { nom: "Panna cotta", ventes: 98, portions: 6, categorie: "Dessert", coefficientPrevu: 1.95, coefficientReel: 1.94, coutMatiere: 30.38, prixVente: 9.80 },
+        { nom: "Salade tiède", ventes: 87, portions: 5, categorie: "Entrée", coefficientPrevu: 2.80, coefficientReel: 2.65, coutMatiere: 35.20, prixVente: 8.70 },
+        { nom: "Velouté automnal", ventes: 76, portions: 4, categorie: "Plat", coefficientPrevu: 3.00, coefficientReel: 2.85, coutMatiere: 28.15, prixVente: 7.60 },
+        { nom: "Smoothie détox", ventes: 65, portions: 3, categorie: "Bar", coefficientPrevu: 2.50, coefficientReel: 2.40, coutMatiere: 25.30, prixVente: 6.50 }
       ],
       ventesParCategorie: {
         entrees: 3247,
