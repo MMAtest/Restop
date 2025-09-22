@@ -2139,6 +2139,82 @@ function App() {
                   <div style={{display: 'flex', alignItems: 'center'}}>
                     <div className="alert-title">DLC &lt; 3 jours</div>
                     <div className="alert-count" style={{
+                      background: 'var(--color-critical-red)',
+                      color: 'white',
+                      width: '24px',
+                      height: '24px',
+                      borderRadius: '50%',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      fontSize: '12px',
+                      fontWeight: 'bold',
+                      marginLeft: '8px'
+                    }}>3</div>
+                  </div>
+                  
+                  {/* Switcher pour ce bloc */}
+                  <div style={{display: 'flex', gap: '3px'}}>
+                    <button 
+                      className="button small"
+                      onClick={() => setDlcViewMode3Days('produits')}
+                      style={{
+                        background: dlcViewMode3Days === 'produits' ? 'var(--color-primary-blue)' : 'var(--color-background-card)',
+                        color: dlcViewMode3Days === 'produits' ? 'white' : 'var(--color-text-secondary)',
+                        padding: '2px 6px',
+                        fontSize: '10px'
+                      }}
+                    >
+                      📦 Produits
+                    </button>
+                    <button 
+                      className="button small"
+                      onClick={() => setDlcViewMode3Days('productions')}
+                      style={{
+                        background: dlcViewMode3Days === 'productions' ? 'var(--color-primary-blue)' : 'var(--color-background-card)',
+                        color: dlcViewMode3Days === 'productions' ? 'white' : 'var(--color-text-secondary)',
+                        padding: '2px 6px',
+                        fontSize: '10px'
+                      }}
+                    >
+                      🍽️ Productions
+                    </button>
+                  </div>
+                </div>
+                
+                <div className="alert-card critical">
+                  <div className="alert-item">
+                    <div className="product-info">
+                      <div className="product-name">🥛 Lait frais</div>
+                      <div className="stock-info">
+                        Lot LAI-2024-15 • 12 L • Expire dans 2 jours (25/09/2025)
+                      </div>
+                    </div>
+                    <div className="item-actions">
+                      <button className="button small critical">🚨 Urgent</button>
+                    </div>
+                  </div>
+                  
+                  <div className="alert-item">
+                    <div className="product-info">
+                      <div className="product-name">🐟 Saumon frais</div>
+                      <div className="stock-info">
+                        Lot SAU-2024-09 • 3.5 kg • Expire dans 1 jour (24/09/2025)
+                      </div>
+                    </div>
+                    <div className="item-actions">
+                      <button className="button small critical">🚨 Urgent</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Section DLC < 7 jours */}
+              <div className="alert-section">
+                <div className="alert-header" style={{display: 'flex', alignItems: 'center', justifyContent: 'space-between'}}>
+                  <div style={{display: 'flex', alignItems: 'center'}}>
+                    <div className="alert-title">DLC &lt; 7 jours</div>
+                    <div className="alert-count" style={{
                       background: 'var(--color-accent-orange)',
                       color: 'white',
                       width: '24px',
