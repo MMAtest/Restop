@@ -1624,7 +1624,7 @@ function App() {
                 
                 {/* Bouton Voir plus pour Top Productions */}
                 {getFilteredProductions(filteredAnalytics.topProductions, selectedProductionCategory).length > 4 && (
-                  <div style={{textAlign: 'center', marginTop: '15px'}}>
+                  <div style={{textAlign: 'center', marginTop: '15px', marginBottom: '20px'}}>
                     <button 
                       className="button small"
                       onClick={() => setShowMoreTopProductions(!showMoreTopProductions)}
