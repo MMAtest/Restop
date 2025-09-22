@@ -839,12 +839,17 @@ function App() {
 
   // Fonction pour ajuster le stock d'un produit spécifique
   const handleAjusterStock = (stock) => {
+    // Trouver le produit pour récupérer l'unité
+    const produit = produits.find(p => p.id === stock.produit_id);
+    
     setMouvementForm({
       produit_id: stock.produit_id,
       type: "ajustement",
       quantite: "",
       reference: `ADJ-${Date.now()}`,
-      commentaire: `Ajustement stock pour ${stock.produit_nom}`
+      commentaire: `Ajustement stock pour ${stock.produit_nom}`,
+      lot: "",
+      unite: produit ? produit.unite : ""
     });
     setShowMouvementModal(true);
   };
