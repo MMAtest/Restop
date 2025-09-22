@@ -256,7 +256,7 @@ function App() {
     nom: "", contact: "", email: "", telephone: "", adresse: "", couleur: "#3B82F6", logo: "", categorie: "frais", deliveryCost: 0, extraCost: 0
   });
   const [mouvementForm, setMouvementForm] = useState({
-    produit_id: "", type: "entree", quantite: "", reference: "", commentaire: ""
+    produit_id: "", type: "entree", quantite: "", reference: "", commentaire: "", lot: "", unite: ""
   });
   const [recetteForm, setRecetteForm] = useState({
     nom: "", description: "", categorie: "", portions: "", temps_preparation: "", 
