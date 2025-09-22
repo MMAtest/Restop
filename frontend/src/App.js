@@ -1729,6 +1729,25 @@ function App() {
                     </div>
                   );
                 })}
+                
+                {/* Bouton Voir plus pour Flop Productions */}
+                {getFilteredProductions(filteredAnalytics.flopProductions, selectedFlopCategory).length > 4 && (
+                  <div style={{textAlign: 'center', marginTop: '15px'}}>
+                    <button 
+                      className="button small"
+                      onClick={() => setShowMoreFlopProductions(!showMoreFlopProductions)}
+                      style={{
+                        background: 'var(--color-background-card-light)',
+                        color: 'var(--color-text-primary)',
+                        padding: '8px 16px',
+                        borderRadius: '6px',
+                        fontSize: '13px'
+                      }}
+                    >
+                      {showMoreFlopProductions ? '📤 Voir moins' : '📥 Voir plus (+5)'}
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
           )}
