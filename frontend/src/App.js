@@ -1731,7 +1731,7 @@ function App() {
                 })}
                 
                 {/* Bouton Voir plus pour Flop Productions */}
-                {getFilteredProductions(filteredAnalytics.flopProductions, selectedFlopCategory).length > 4 && (
+                {getFilteredProductions(filteredAnalytics.flopProductions, selectedFlopCategory).length >= 4 && (
                   <div style={{textAlign: 'center', marginTop: '15px', marginBottom: '20px'}}>
                     <button 
                       className="button small"
