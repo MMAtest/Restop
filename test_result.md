@@ -718,6 +718,17 @@ test_plan:
     priority: "high"
     needs_retesting: false
     status_history:
+  - task: "Test Corrections Frontend - KPIs Panier Moyen et Switchers DLC"
+    implemented: true
+    working: true
+    file: "/app/frontend/src/App.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "✅ TESTS COMPLETS CORRECTIONS FRONTEND - 67% RÉUSSITE (4/6 fonctionnalités) ! Validation des corrections et nouvelles fonctionnalités demandées : ✅ DASHBOARD - NOUVEAUX KPIs PANIER MOYEN : PANIER MOYEN GLOBAL (59.44€), PANIER MOYEN MIDI (61.90€), PANIER MOYEN SOIR (56.10€) affichés correctement dans la fourchette attendue 40€-90€, calculs cohérents avec CA total et couverts ✅ ALERTES - SWITCHERS INDIVIDUELS BLOCS DLC : Navigation vers onglet ALERTES réussie, 6 blocs d'alertes détectés avec switchers 'Produits' et 'Productions' individuels par bloc DLC (plus de switcher global incorrect), boutons '📦 Produits' et '🍽️ Productions' fonctionnels sur chaque bloc ✅ PASTILLES DE COEFFICIENT : 16 pastilles trouvées dans tops/flops productions (10 vertes 'Respecté', 6 oranges 'Pas atteint'), couleurs correctes selon spécifications (vert pour respecté, orange pour pas atteint) ✅ NAVIGATION GÉNÉRALE : Aucune erreur JavaScript détectée, navigation entre onglets principaux stable, interface responsive fonctionnelle ❌ LIMITATIONS IDENTIFIÉES : Sections Stock et Production non accessibles via interface actuelle - Navigation bottom détectée mais icônes non cliquables, test switcher 'Par Production' et catégorie fromagerie non réalisables sans accès aux sections correspondantes ✅ CONCLUSION : Corrections principales VALIDÉES et fonctionnelles (KPIs panier moyen, switchers DLC individuels, pastilles coefficient). Interface stable sans erreurs critiques. Demander au main agent de vérifier l'accessibilité des sections Stock et Production pour tests complémentaires."
       - working: "NA"
         agent: "testing"
         comment: "Test spécifique demandé pour valider le comportement OCR avec des items nouveaux (non existants en base de données) mélangés avec des items existants"
