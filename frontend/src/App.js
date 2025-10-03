@@ -4512,7 +4512,16 @@ function App() {
 
                         {/* Saisie des quantités pour chaque préparation */}
                         <div style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '16px', marginBottom: '20px'}}>
-                          {preparationsProduit.map(prep => (
+                          {preparationsProduit.map(prep => {
+                            // Calculer la quantité max possible basée sur le stock disponible
+                            const stockDisponible = (stockProduit?.quantite_actuelle || 0) - stockUtiliseTotal + (repartitionQuantities[prep.id] || 0) * (prep.quantite_produit_brut / prep.quantite_preparee);
+                            const ratioPreparation = prep.quantite_preparee / prep.quantite_produit_brut;
+                            const quantiteMaxPossible = Math.min(
+                              prep.quantite_preparee, // Max de la préparation elle-même
+                              stockDisponible * ratioPreparation // Max selon le stock disponible
+                            );
+                            
+                            return (
                             <div key={prep.id} style={{
                               padding: '16px', 
                               background: 'white', 
@@ -4527,7 +4536,7 @@ function App() {
                                 <input
                                   type="number"
                                   min="0"
-                                  max={prep.quantite_preparee}
+                                  max={Math.max(0, quantiteMaxPossible)}
                                   step="0.1"
                                   placeholder="Quantité..."
                                   value={repartitionQuantities[prep.id] || ''}
