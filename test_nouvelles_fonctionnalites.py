@@ -239,78 +239,58 @@ class NouvellesFonctionnalitesTestSuite:
                 result = response.json()
                 
                 # Vérifier la structure de la réponse
-                required_fields = ["status", "message", "diagnostic"]
+                required_fields = ["system_status", "tests"]
                 if all(field in result for field in required_fields):
                     self.log_result("POST /api/archive/diagnostic - Structure", True, 
                                   "Structure de réponse correcte")
                     
-                    status = result.get("status")
-                    diagnostic = result.get("diagnostic", {})
+                    system_status = result.get("system_status")
+                    tests = result.get("tests", [])
                     
-                    # Vérifier le statut
-                    if status in ["success", "warning", "error"]:
-                        self.log_result("Statut diagnostic", True, f"Statut: {status}")
+                    # Vérifier le statut système
+                    if system_status == "running":
+                        self.log_result("Statut système", True, f"Système: {system_status}")
                     else:
-                        self.log_result("Statut diagnostic", False, f"Statut invalide: {status}")
+                        self.log_result("Statut système", False, f"Statut inattendu: {system_status}")
                     
-                    # Vérifier la structure du diagnostic
-                    if isinstance(diagnostic, dict):
-                        expected_diagnostic_fields = ["collections_testees", "permissions", "structure_donnees"]
-                        diagnostic_fields_present = [f for f in expected_diagnostic_fields if f in diagnostic]
+                    # Vérifier les tests
+                    if isinstance(tests, list) and len(tests) > 0:
+                        self.log_result("Tests diagnostic", True, f"{len(tests)} tests exécutés")
                         
-                        if len(diagnostic_fields_present) >= 2:
-                            self.log_result("Structure diagnostic", True, 
-                                          f"Champs diagnostic présents: {', '.join(diagnostic_fields_present)}")
-                            
-                            # Vérifier les collections testées
-                            collections_testees = diagnostic.get("collections_testees", {})
-                            if isinstance(collections_testees, dict):
-                                expected_collections = ["produits", "fournisseurs", "recettes"]
-                                tested_collections = [col for col in expected_collections if col in collections_testees]
+                        # Analyser chaque test
+                        tests_reussis = 0
+                        for test in tests:
+                            if isinstance(test, dict) and test.get("status") == "success":
+                                tests_reussis += 1
+                                test_name = test.get("name", "Test inconnu")
+                                self.log_result(f"Test {test_name}", True, "Réussi")
                                 
-                                if len(tested_collections) >= 2:
-                                    self.log_result("Collections testées", True, 
-                                                  f"Collections testées: {', '.join(tested_collections)}")
-                                    
-                                    # Vérifier les détails de chaque collection
-                                    for collection in tested_collections:
-                                        col_info = collections_testees[collection]
-                                        if isinstance(col_info, dict) and "count" in col_info:
-                                            count = col_info["count"]
-                                            self.log_result(f"Collection {collection}", True, 
-                                                          f"{count} éléments dans {collection}")
+                                # Vérifier les détails spécifiques
+                                if test_name == "Collections Count":
+                                    details = test.get("details", {})
+                                    if isinstance(details, dict):
+                                        collections_testees = ["produits", "recettes", "fournisseurs", "archives"]
+                                        collections_trouvees = [col for col in collections_testees if col in details]
+                                        
+                                        if len(collections_trouvees) >= 3:
+                                            self.log_result("Collections testées", True, 
+                                                          f"Collections: {', '.join(collections_trouvees)}")
                                         else:
-                                            self.log_result(f"Collection {collection}", False, 
-                                                          "Informations collection incomplètes")
-                                else:
-                                    self.log_result("Collections testées", False, 
-                                                  f"Peu de collections testées: {tested_collections}")
+                                            self.log_result("Collections testées", False, 
+                                                          f"Peu de collections: {collections_trouvees}")
                             else:
-                                self.log_result("Collections testées", False, 
-                                              "Format collections_testees incorrect")
-                            
-                            # Vérifier les permissions
-                            permissions = diagnostic.get("permissions", {})
-                            if isinstance(permissions, dict):
-                                permission_checks = ["read", "write", "delete"]
-                                permissions_ok = [p for p in permission_checks if permissions.get(p) == True]
-                                
-                                if len(permissions_ok) >= 2:
-                                    self.log_result("Permissions système", True, 
-                                                  f"Permissions OK: {', '.join(permissions_ok)}")
-                                else:
-                                    self.log_result("Permissions système", False, 
-                                                  f"Permissions insuffisantes: {permissions}")
-                            else:
-                                self.log_result("Permissions système", False, 
-                                              "Format permissions incorrect")
-                                
+                                test_name = test.get("name", "Test inconnu")
+                                self.log_result(f"Test {test_name}", False, 
+                                              f"Statut: {test.get('status', 'inconnu')}")
+                        
+                        if tests_reussis == len(tests):
+                            self.log_result("Tous tests diagnostic", True, 
+                                          f"{tests_reussis}/{len(tests)} tests réussis")
                         else:
-                            self.log_result("Structure diagnostic", False, 
-                                          f"Champs diagnostic insuffisants: {diagnostic_fields_present}")
+                            self.log_result("Tous tests diagnostic", False, 
+                                          f"Seulement {tests_reussis}/{len(tests)} tests réussis")
                     else:
-                        self.log_result("Structure diagnostic", False, 
-                                      f"Diagnostic n'est pas un dictionnaire: {type(diagnostic)}")
+                        self.log_result("Tests diagnostic", False, "Aucun test ou format incorrect")
                         
                 else:
                     missing_fields = [f for f in required_fields if f not in result]
