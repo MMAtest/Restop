@@ -161,7 +161,7 @@ class OCRMultiInvoiceTestSuite:
                     for rejected in rejected_invoices:
                         quality_score = rejected.get("quality_score", -1)
                         if 0.0 <= quality_score <= 1.0:
-                            self.log_result("Quality Score Range", True, f"Score qualité: {quality_score}")
+                            self.log_result("Quality Score Range", True, f"Score qualite: {quality_score}")
                         else:
                             self.log_result("Quality Score Range", False, f"Score invalide: {quality_score}")
                 
