@@ -4,7 +4,7 @@ import requests
 import json
 import os
 
-BACKEND_URL = "https://ocrstockpro.preview.emergentagent.com/api"
+BACKEND_URL = "https://cuisine-tracker-5.preview.emergentagent.com/api"
 DOCUMENTS_DIR = "/app/ocr_test_documents"
 
 def test_ocr_document(file_path, document_type):

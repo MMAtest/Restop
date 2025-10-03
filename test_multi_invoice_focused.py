@@ -9,7 +9,7 @@ import json
 from datetime import datetime
 
 # Configuration
-BASE_URL = "https://ocrstockpro.preview.emergentagent.com/api"
+BASE_URL = "https://cuisine-tracker-5.preview.emergentagent.com/api"
 HEADERS = {"Content-Type": "application/json"}
 METRO_PDF_URL = "https://customer-assets.emergentagent.com/job_ocrstockpro/artifacts/dbb8qsl7_METRO.pdf"
 

@@ -16,7 +16,7 @@ from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import letter
 
 # Configuration
-BASE_URL = "https://ocrstockpro.preview.emergentagent.com/api"
+BASE_URL = "https://cuisine-tracker-5.preview.emergentagent.com/api"
 HEADERS = {"Content-Type": "application/json"}
 
 class OCRZReportEnhancedTestSuite:

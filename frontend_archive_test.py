@@ -8,7 +8,7 @@ import requests
 import json
 
 # Configuration identique au frontend
-BACKEND_URL = "https://ocrstockpro.preview.emergentagent.com"
+BACKEND_URL = "https://cuisine-tracker-5.preview.emergentagent.com"
 API = f"{BACKEND_URL}/api"
 HEADERS = {"Content-Type": "application/json"}
 

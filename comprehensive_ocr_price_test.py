@@ -9,7 +9,7 @@ import json
 from datetime import datetime
 
 # Configuration
-BASE_URL = "https://ocrstockpro.preview.emergentagent.com/api"
+BASE_URL = "https://cuisine-tracker-5.preview.emergentagent.com/api"
 
 class ComprehensiveOCRPriceTest:
     def __init__(self):
