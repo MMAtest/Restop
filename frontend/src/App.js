@@ -430,6 +430,57 @@ function App() {
     }
   };
 
+  // ✅ Auto-génération des préparations
+  const handleAutoGeneratePreparations = async () => {
+    try {
+      setLoading(true);
+      
+      const confirmation = window.confirm(
+        "🔄 AUTO-GÉNÉRATION DES PRÉPARATIONS\n\n" +
+        "Cette action va :\n" +
+        "• Analyser tous vos produits avec catégories\n" +
+        "• Créer 2-3 préparations cohérentes par produit\n" +
+        "• Supprimer les préparations existantes\n" +
+        "• Baser les préparations sur vos recettes existantes\n\n" +
+        "Continuer ?"
+      );
+      
+      if (!confirmation) return;
+      
+      const response = await axios.post(`${API}/preparations/auto-generate`);
+      
+      if (response.data.success) {
+        alert(`✅ AUTO-GÉNÉRATION RÉUSSIE !\n\n` +
+              `📊 Résultats :\n` +
+              `• ${response.data.preparations_created} préparations créées\n` +
+              `• ${response.data.details.total_products_processed} produits traités\n` +
+              `• Catégories : ${response.data.details.categories_processed.join(', ')}\n\n` +
+              `📝 Exemples créés :\n` +
+              `${response.data.details.sample_preparations.slice(0, 5).join('\n')}`);
+        
+        fetchPreparations(); // Rafraîchir la liste
+      } else {
+        alert(`❌ ERREUR : ${response.data.message}`);
+      }
+    } catch (error) {
+      console.error("Erreur lors de l'auto-génération:", error);
+      alert(`❌ Erreur lors de l'auto-génération: ${error.response?.data?.detail || error.message}`);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // ✅ Récupérer les produits groupés par catégories pour l'affichage accordéon  
+  const fetchProduitsParCategories = async () => {
+    try {
+      const response = await axios.get(`${API}/produits/by-categories`);
+      return response.data;
+    } catch (error) {
+      console.error("Erreur lors du chargement des produits par catégories:", error);
+      return { categories: {}, total_categories: 0, total_products: 0 };
+    }
+  };
+
   // Fonction pour récupérer les lots d'un produit spécifique
   const fetchProductBatches = async (productId) => {
     try {
