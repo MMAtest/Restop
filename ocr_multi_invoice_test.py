@@ -399,7 +399,7 @@ class OCRMultiInvoiceTestSuite:
                 self.log_result("Individual Invoice Parsing", False, f"Exception: {str(e)}")
         
         # ✅ Tester avec un PDF contenant UNE SEULE facture
-        single_invoice_content = b"PDF simulé avec une seule facture FACTURE N°12345 Date: 01/01/2025 Total: 150.00 EUR"
+        single_invoice_content = b"PDF simule avec une seule facture FACTURE N12345 Date: 01/01/2025 Total: 150.00 EUR"
         
         try:
             files = {
