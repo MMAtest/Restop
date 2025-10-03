@@ -197,27 +197,61 @@ const PurchaseOrderPage = () => {
     return orderItems.reduce((total, item) => total + (item.unit_price * item.quantity), 0);
   };
 
-  const handleCreateOrder = () => {
+  const handleCreateOrder = async () => {
     if (orderItems.length === 0) {
       alert('Veuillez ajouter des produits à la commande');
       return;
     }
     
-    // Calculer la date de livraison prévue (exemple: +3 jours ouvrés)
-    const today = new Date();
-    const deliveryDate = new Date(today);
-    deliveryDate.setDate(today.getDate() + 3); // 3 jours de délai par défaut
+    if (!selectedSupplier) {
+      alert('Veuillez sélectionner un fournisseur');
+      return;
+    }
     
-    const orderSummary = {
-      supplier: selectedSupplier,
-      items: orderItems,
-      total: getTotalOrder(),
-      orderDate: new Date().toISOString(),
-      estimatedDelivery: deliveryDate.toLocaleDateString('fr-FR'),
-      orderNumber: `CMD-${Date.now().toString().slice(-6)}`
-    };
-    
-    setManualOrderSummary(orderSummary);
+    setLoading(true);
+    try {
+      // Créer la commande via l'API
+      const response = await fetch(`${backendUrl}/api/orders`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          supplier_id: selectedSupplier.id,
+          items: orderItems.map(item => ({
+            product_id: item.product_id,
+            product_name: item.product_name,
+            quantity: item.quantity,
+            unit: item.unit,
+            unit_price: item.unit_price,
+            total_price: item.unit_price * item.quantity
+          })),
+          notes: ''
+        })
+      });
+      
+      if (response.ok) {
+        const order = await response.json();
+        alert(`✅ Commande créée avec succès!\n\nN° ${order.order_number}\nLivraison estimée: ${new Date(order.estimated_delivery_date).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' })}`);
+        
+        // Réinitialiser
+        setOrderItems([]);
+        setSelectedSupplier(null);
+        setSupplierProducts([]);
+        
+        // Recharger les commandes
+        fetchOrders();
+        
+        // Basculer vers l'historique
+        setActiveOrderTab('history');
+      } else {
+        const error = await response.json();
+        alert('❌ Erreur lors de la création: ' + (error.detail || 'Erreur inconnue'));
+      }
+    } catch (error) {
+      console.error('Erreur:', error);
+      alert('❌ Erreur lors de la création de la commande');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const calculateAutoOrder = async () => {
