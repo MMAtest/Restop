@@ -378,6 +378,18 @@ backend:
         agent: "testing"
         comment: "🎯 SYSTÈME D'ARCHIVAGE BACKEND - 100% RÉUSSITE (30/30 tests) ! Diagnostic complet du problème rapporté par l'utilisateur révèle que le BACKEND FONCTIONNE PARFAITEMENT : ✅ POST /api/archive fonctionne pour tous les types (produit, production, fournisseur) avec suppression automatique de la collection originale et création d'archive avec UUID ✅ GET /api/archives récupère toutes les archives avec filtrage par type optionnel, structure complète (id, original_id, item_type, original_data, archived_at, reason) ✅ POST /api/restore/{archive_id} restaure correctement les éléments dans leur collection d'origine et supprime l'archive ✅ Gestion d'erreurs appropriée (404 pour ID inexistant, 400 pour type invalide) ✅ Tests avec données réelles (Supions en persillade, fournisseurs authentiques) validés ✅ Vérifications de suppression/restauration confirmées ❌ PROBLÈME IDENTIFIÉ : Le problème est côté FRONTEND - les boutons d'archivage dans les sections Productions et Fournisseurs ne communiquent pas correctement avec l'API backend. Le code JavaScript archiveItem() est correct mais les événements onClick ne se déclenchent pas ou échouent silencieusement. RECOMMANDATION : Vérifier les console.log du navigateur et les appels réseau dans les DevTools pour identifier l'erreur JavaScript côté frontend."
 
+  - task: "OCR - Séparation et Traitement Factures Multiples"
+    implemented: true
+    working: "NA"
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Implémentation complète de la détection et séparation de factures multiples dans un PDF : 1) Fonction detect_multiple_invoices() avec patterns avancés METRO/fournisseurs français, détection headers/footers, groupement intelligent positions proches (lignes 473-612). 2) Fonction check_invoice_quality() avec score 0.0-1.0, vérifications éléments essentiels, détection erreurs OCR, seuil rejet < 0.6 (lignes 614-675). 3) Endpoint /api/ocr/upload-document amélioré pour factures multiples : détection automatique, traitement individuel de chaque facture valide, rejet automatique pages mal scannées, retour structuré avec multi_invoice=true, total_detected, successfully_processed, rejected_count, rejected_invoices avec détails (lignes 3590-3703). 4) Frontend App.js handleOcrUpload() avec gestion réponse multi_invoice, affichage message détaillé factures traitées/rejetées (lignes 1181-1201). PRÊT POUR TEST avec METRO.pdf (14 documents)."
+
 frontend:
   - task: "Interface Dashboard"
     implemented: true
