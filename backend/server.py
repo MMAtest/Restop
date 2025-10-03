@@ -3527,9 +3527,11 @@ async def get_dashboard_stats():
 @api_router.post("/ocr/upload-document", response_model=DocumentUploadResponse)
 async def upload_and_process_document(
     file: UploadFile = File(...),
-    document_type: str = "z_report"  # "z_report" ou "facture_fournisseur"
+    document_type: str = Form("z_report")  # "z_report" ou "facture_fournisseur" - MUST use Form() for multipart data
 ):
     """Upload et traitement OCR d'un document (image ou PDF) - Rapport Z ou facture"""
+    
+    print(f"📝 Document type received: {document_type}")
     
     if document_type not in ["z_report", "facture_fournisseur"]:
         raise HTTPException(status_code=400, detail="Type de document invalide. Utilisez 'z_report' ou 'facture_fournisseur'")
