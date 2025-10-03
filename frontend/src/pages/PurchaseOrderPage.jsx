@@ -700,12 +700,48 @@ const PurchaseOrderPage = () => {
                       </div>
                     </div>
                   )}
+                  
+                  {/* Estimation de livraison */}
+                  {deliveryEstimate && (
+                    <div className="bg-blue-50 border border-blue-200 p-4 rounded-lg mb-4">
+                      <div className="flex items-start gap-3">
+                        <span className="text-2xl">🚚</span>
+                        <div className="flex-1">
+                          <div className="font-semibold text-blue-900 mb-1">
+                            Livraison estimée
+                          </div>
+                          <div className="text-sm text-blue-800 mb-2">
+                            {new Date(deliveryEstimate.estimated_delivery_date).toLocaleDateString('fr-FR', {
+                              weekday: 'long',
+                              day: 'numeric',
+                              month: 'long',
+                              hour: '2-digit',
+                              minute: '2-digit'
+                            })}
+                          </div>
+                          {deliveryEstimate.can_order_today ? (
+                            <div className="text-xs text-green-700 bg-green-100 inline-block px-2 py-1 rounded">
+                              ✅ Commande possible aujourd'hui
+                            </div>
+                          ) : (
+                            <div className="text-xs text-orange-700 bg-orange-100 inline-block px-2 py-1 rounded">
+                              ⏰ Prochaine commande: {new Date(deliveryEstimate.next_order_date).toLocaleDateString('fr-FR')}
+                            </div>
+                          )}
+                          <p className="text-xs text-gray-600 mt-2">
+                            {deliveryEstimate.explanation}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
 
                   <button
                     onClick={handleCreateOrder}
-                    className="w-full bg-yellow-400 hover:bg-yellow-500 text-gray-900 py-2 rounded-lg font-medium"
+                    disabled={loading}
+                    className="w-full bg-yellow-400 hover:bg-yellow-500 text-gray-900 py-2 rounded-lg font-medium disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    ✅ Valider Commande
+                    {loading ? '⏳ Création...' : '✅ Valider Commande'}
                   </button>
                 </div>
               </>
