@@ -211,6 +211,12 @@ body {
   overflow-y: auto;
 }
 
+/* Remove top padding for orders page */
+#orders .content-wrapper,
+#orders {
+  padding-top: 0 !important;
+}
+
 /* ===== WIREFRAME SECTIONS ===== */
 .wireframe-section {
   display: none;
