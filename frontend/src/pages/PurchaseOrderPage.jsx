@@ -1080,6 +1080,134 @@ const PurchaseOrderPage = () => {
               )}
             </div>
           )}
+          
+          {/* Onglet Historique */}
+          {activeOrderTab === 'history' && (
+            <div>
+              <div className="mb-6">
+                <h3 className="text-xl font-bold mb-2">📋 Historique des Commandes</h3>
+                <p className="text-gray-600">Suivez l'état de vos commandes en temps réel</p>
+              </div>
+              
+              {loading ? (
+                <div className="text-center py-12">
+                  <div className="text-4xl mb-4">⏳</div>
+                  <p className="text-gray-600">Chargement des commandes...</p>
+                </div>
+              ) : orders.length === 0 ? (
+                <div className="text-center py-12 bg-gray-50 rounded-lg">
+                  <div className="text-6xl mb-4">📦</div>
+                  <p className="text-xl font-medium text-gray-700 mb-2">Aucune commande</p>
+                  <p className="text-gray-600 mb-6">Créez votre première commande dans l'onglet "Commande Manuelle"</p>
+                  <button
+                    onClick={() => setActiveOrderTab('manual')}
+                    className="bg-yellow-400 hover:bg-yellow-500 text-gray-900 px-6 py-2 rounded-lg font-medium"
+                  >
+                    ➕ Créer une commande
+                  </button>
+                </div>
+              ) : (
+                <div className="space-y-6">
+                  {orders.map((order) => (
+                    <div key={order.id} className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+                      {/* En-tête commande */}
+                      <div className="bg-gray-50 px-6 py-4 border-b border-gray-200">
+                        <div className="flex justify-between items-start">
+                          <div>
+                            <h4 className="text-lg font-semibold text-gray-800">
+                              {order.supplier_name}
+                            </h4>
+                            <p className="text-sm text-gray-600">
+                              Commande n°{order.order_number}
+                            </p>
+                          </div>
+                          <div className="text-right">
+                            <div className="text-2xl font-bold text-gray-800">
+                              {formatCurrency(order.total_amount)}
+                            </div>
+                            <p className="text-xs text-gray-500">
+                              {order.items.length} article{order.items.length > 1 ? 's' : ''}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      {/* Timeline */}
+                      <div className="p-6">
+                        <OrderTimeline order={order} />
+                      </div>
+                      
+                      {/* Détails produits */}
+                      <div className="px-6 pb-4">
+                        <details className="group">
+                          <summary className="cursor-pointer text-sm font-medium text-gray-700 hover:text-gray-900 flex items-center gap-2">
+                            <span className="group-open:rotate-90 transition-transform">▶</span>
+                            Voir les produits commandés
+                          </summary>
+                          <div className="mt-4 space-y-2 pl-4">
+                            {order.items.map((item, idx) => (
+                              <div key={idx} className="flex justify-between items-center py-2 border-b border-gray-100 text-sm">
+                                <div className="flex-1">
+                                  <span className="font-medium">{item.product_name}</span>
+                                  <span className="text-gray-500 ml-2">({item.quantity} {item.unit})</span>
+                                </div>
+                                <div className="text-right">
+                                  <div className="font-medium">{formatCurrency(item.total_price)}</div>
+                                  <div className="text-xs text-gray-500">{formatCurrency(item.unit_price)}/{item.unit}</div>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </details>
+                      </div>
+                      
+                      {/* Actions rapides */}
+                      <div className="px-6 pb-6">
+                        <div className="flex gap-2">
+                          {order.status === 'pending' && (
+                            <button
+                              onClick={() => updateOrderStatus(order.id, 'confirmed')}
+                              className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700"
+                            >
+                              ✓ Confirmer
+                            </button>
+                          )}
+                          {order.status === 'confirmed' && (
+                            <button
+                              onClick={() => updateOrderStatus(order.id, 'in_transit')}
+                              className="px-4 py-2 bg-purple-600 text-white rounded-lg text-sm font-medium hover:bg-purple-700"
+                            >
+                              🚚 En transit
+                            </button>
+                          )}
+                          {order.status === 'in_transit' && (
+                            <button
+                              onClick={() => updateOrderStatus(order.id, 'delivered')}
+                              className="px-4 py-2 bg-green-600 text-white rounded-lg text-sm font-medium hover:bg-green-700"
+                            >
+                              ✅ Marquer comme livré
+                            </button>
+                          )}
+                          {order.status === 'pending' && (
+                            <button
+                              onClick={() => {
+                                if (confirm('Êtes-vous sûr de vouloir annuler cette commande ?')) {
+                                  updateOrderStatus(order.id, 'cancelled');
+                                }
+                              }}
+                              className="px-4 py-2 bg-red-600 text-white rounded-lg text-sm font-medium hover:bg-red-700"
+                            >
+                              ❌ Annuler
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </div>
     </div>
