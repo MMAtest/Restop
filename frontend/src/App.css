@@ -238,6 +238,7 @@ body {
   padding: var(--spacing-md);
   box-shadow: var(--shadow-card);
   transition: transform 0.2s ease;
+  text-align: center; /* Centrage par défaut pour mobile */
 }
 
 .kpi-card:hover {
