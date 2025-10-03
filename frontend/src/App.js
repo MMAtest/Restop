@@ -410,6 +410,25 @@ function App() {
       console.error("Erreur lors du chargement des lots:", error);
     }
   };
+  
+  // Fonctions pour les préparations
+  const fetchPreparations = async () => {
+    try {
+      const response = await axios.get(`${API}/preparations`);
+      setPreparations(response.data);
+    } catch (error) {
+      console.error("Erreur lors du chargement des préparations:", error);
+    }
+  };
+  
+  const fetchFormesDecoupe = async () => {
+    try {
+      const response = await axios.get(`${API}/formes-decoupe`);
+      setFormesDecoupe(response.data);
+    } catch (error) {
+      console.error("Erreur lors du chargement des formes de découpe:", error);
+    }
+  };
 
   // Fonction pour récupérer les lots d'un produit spécifique
   const fetchProductBatches = async (productId) => {
