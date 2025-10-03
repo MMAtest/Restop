@@ -100,6 +100,39 @@ class FournisseurCreate(BaseModel):
     categorie: Optional[str] = "frais"  # Catégorie par défaut
     delivery_rules: Optional[DeliveryRules] = None  # Règles de livraison
 
+# ✅ Order Management Models
+class OrderItem(BaseModel):
+    """Article dans une commande"""
+    product_id: str
+    product_name: str
+    quantity: float
+    unit: str
+    unit_price: float
+    total_price: float
+
+class Order(BaseModel):
+    """Commande fournisseur"""
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    order_number: str  # Numéro de commande unique (ex: CMD-123456)
+    supplier_id: str
+    supplier_name: str
+    items: List[OrderItem]
+    total_amount: float
+    order_date: datetime = Field(default_factory=datetime.utcnow)
+    estimated_delivery_date: Optional[datetime] = None
+    actual_delivery_date: Optional[datetime] = None
+    status: str = "pending"  # pending, confirmed, in_transit, delivered, cancelled
+    notes: Optional[str] = None
+    created_by: Optional[str] = None  # User ID
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+    updated_at: datetime = Field(default_factory=datetime.utcnow)
+
+class OrderCreate(BaseModel):
+    """Création d'une commande"""
+    supplier_id: str
+    items: List[OrderItem]
+    notes: Optional[str] = None
+
 # ✅ Version 3 - Enhanced User Management with RBAC
 class User(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
