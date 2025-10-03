@@ -588,7 +588,7 @@ class OCRMultiInvoiceTestSuite:
     
     def run_all_tests(self):
         """Exécute tous les tests dans l'ordre de priorité"""
-        print("🎯 DÉBUT DES TESTS OCR - SÉPARATION ET TRAITEMENT FACTURES MULTIPLES")
+        print("🎯 DEBUT DES TESTS OCR - SEPARATION ET TRAITEMENT FACTURES MULTIPLES")
         print("=" * 80)
         
         start_time = time.time()
