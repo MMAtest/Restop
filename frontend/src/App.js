@@ -286,6 +286,11 @@ function App() {
     dlc: "",
     notes: ""
   });
+  
+  // ✅ États pour l'affichage accordéon des produits
+  const [produitsParCategories, setProduitsParCategories] = useState({ categories: {}, total_categories: 0, total_products: 0 });
+  const [categoriesExpanded, setCategoriesExpanded] = useState({}); // Quelles catégories sont ouvertes
+  const [showCategoriesView, setShowCategoriesView] = useState(false); // Vue liste normale vs accordéon
   const [fournisseurForm, setFournisseurForm] = useState({
     nom: "", contact: "", email: "", telephone: "", adresse: "", couleur: "#3B82F6", logo: "", categorie: "frais", deliveryCost: 0, extraCost: 0,
     delivery_rules: {
