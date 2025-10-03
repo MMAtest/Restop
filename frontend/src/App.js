@@ -880,6 +880,25 @@ function App() {
         }
       });
       setShowFournisseurModal(true);
+    } else if (type === "preparation") {
+      setPreparationForm({
+        nom: item.nom,
+        produit_id: item.produit_id,
+        forme_decoupe: item.forme_decoupe,
+        forme_decoupe_custom: item.forme_decoupe_custom || "",
+        quantite_produit_brut: item.quantite_produit_brut.toString(),
+        unite_produit_brut: item.unite_produit_brut,
+        quantite_preparee: item.quantite_preparee.toString(),
+        unite_preparee: item.unite_preparee,
+        perte: item.perte.toString(),
+        perte_pourcentage: item.perte_pourcentage.toString(),
+        nombre_portions: item.nombre_portions.toString(),
+        taille_portion: item.taille_portion.toString(),
+        unite_portion: item.unite_portion,
+        dlc: item.dlc ? new Date(item.dlc).toISOString().split('T')[0] : "",
+        notes: item.notes || ""
+      });
+      setShowPreparationModal(true);
     } else if (type === "recette") {
       setRecetteForm({
         nom: item.nom,
