@@ -25,6 +25,19 @@ const PurchaseOrderPage = () => {
     fetchSuppliers();
     fetchRecipes();
     fetchOrders();
+    
+    // Supprimer le padding du content-wrapper pour cette page uniquement
+    const contentWrapper = document.querySelector('.content-wrapper');
+    if (contentWrapper) {
+      contentWrapper.style.paddingTop = '0';
+    }
+    
+    // Remettre le padding lors du démontage du composant
+    return () => {
+      if (contentWrapper) {
+        contentWrapper.style.paddingTop = '';
+      }
+    };
   }, []);
   
   // Charger l'estimation de livraison quand on sélectionne un fournisseur
