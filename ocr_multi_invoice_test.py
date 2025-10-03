@@ -458,7 +458,7 @@ class OCRMultiInvoiceTestSuite:
         """PRIORITY 5 - Tests de Robustesse"""
         print("\n=== PRIORITY 5 - TESTS DE ROBUSTESSE ===")
         
-        # ✅ Tester avec PDF très court (< 200 caractères)
+        # ✅ Tester avec PDF tres court (< 200 caracteres)
         short_pdf = b"PDF court"
         
         try:
