@@ -929,6 +929,9 @@ function App() {
       } else if (type === "recette") {
         await axios.delete(`${API}/recettes/${id}`);
         fetchRecettes();
+      } else if (type === "preparation") {
+        await axios.delete(`${API}/preparations/${id}`);
+        fetchPreparations();
       }
       fetchDashboardStats();
     } catch (error) {
