@@ -6399,7 +6399,7 @@ function App() {
                 <div style={{fontWeight: 'bold', marginBottom: '12px'}}>Quantités</div>
                 <div style={{display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px'}}>
                   <div className="form-group">
-                    <label className="form-label">Produit brut *</label>
+                    <label className="form-label">Quantité produit brut *</label>
                     <div style={{display: 'flex', gap: '8px'}}>
                       <input
                         type="number"
@@ -6426,7 +6426,7 @@ function App() {
                     </div>
                   </div>
                   <div className="form-group">
-                    <label className="form-label">Quantité préparée *</label>
+                    <label className="form-label">Quantité attendue *</label>
                     <div style={{display: 'flex', gap: '8px'}}>
                       <input
                         type="number"
@@ -6455,9 +6455,9 @@ function App() {
                 </div>
               </div>
 
-              {/* Perte */}
+              {/* Perte estimée */}
               <div style={{background: '#fee2e2', padding: '16px', borderRadius: '8px', marginBottom: '16px'}}>
-                <div style={{fontWeight: 'bold', marginBottom: '12px', color: '#dc2626'}}>Perte (calculée automatiquement)</div>
+                <div style={{fontWeight: 'bold', marginBottom: '12px', color: '#dc2626'}}>Perte estimée (calculée automatiquement)</div>
                 <div style={{display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px'}}>
                   <div className="form-group">
                     <label className="form-label">Perte (quantité)</label>
