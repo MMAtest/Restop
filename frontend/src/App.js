@@ -6028,18 +6028,36 @@ function App() {
       {showOcrModal && (
         <div className="modal-overlay">
           <div className="modal-content">
-            <h3 className="modal-header">Upload Document OCR</h3>
+            <h3 className="modal-header">
+              Upload {activeOcrTab === 'tickets-z' ? 'Ticket Z' : 'Facture(s)'}
+            </h3>
             
+            {/* Information automatique du type */}
             <div className="form-group">
-              <label className="form-label">Type de document</label>
-              <select
-                className="form-select"
-                value={ocrType}
-                onChange={(e) => setOcrType(e.target.value)}
-              >
-                <option value="z_report">Rapport Z</option>
-                <option value="facture_fournisseur">Facture Fournisseur</option>
-              </select>
+              <div style={{
+                padding: '10px 15px',
+                background: 'var(--color-background-card-light)',
+                borderRadius: '6px',
+                border: '1px solid var(--color-border)',
+                marginBottom: '15px'
+              }}>
+                <div style={{display: 'flex', alignItems: 'center', gap: '8px'}}>
+                  <span style={{fontSize: '20px'}}>
+                    {activeOcrTab === 'tickets-z' ? '📊' : '🧾'}
+                  </span>
+                  <div>
+                    <div style={{fontWeight: '600', fontSize: '14px'}}>
+                      Type détecté automatiquement : {activeOcrTab === 'tickets-z' ? 'Ticket Z' : 'Facture fournisseur'}
+                    </div>
+                    <div style={{fontSize: '12px', color: 'var(--color-text-muted)'}}>
+                      {activeOcrTab === 'tickets-z' 
+                        ? 'Rapport de caisse, Z de clôture' 
+                        : 'Une ou plusieurs factures seront détectées automatiquement'
+                      }
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
 
             <div className="form-group">
