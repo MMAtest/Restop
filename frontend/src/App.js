@@ -3386,47 +3386,65 @@ function App() {
                   </button>
                 </div>
 
-                {/* Historique des documents avec filtre et pagination */}
-                <div className="item-list">
-                  <div className="section-title">📄 Historique des Documents</div>
-                  
-                  {/* Filtre par type de document */}
-                  <div className="filter-section" style={{marginBottom: '20px'}}>
-                    <div className="filter-group" style={{display: 'flex', alignItems: 'center', gap: '10px'}}>
-                      <label className="filter-label" style={{fontSize: '14px', minWidth: '80px'}}>Type :</label>
-                      <select 
-                        className="filter-select"
-                        value={ocrFilterType}
-                        onChange={(e) => {
-                          setOcrFilterType(e.target.value);
-                          setOcrCurrentPage(1); // Reset à la page 1 lors du changement de filtre
-                        }}
-                        style={{
-                          padding: '6px 10px',
-                          borderRadius: '4px',
-                          border: '1px solid var(--color-border)',
-                          background: 'var(--color-background-card)',
-                          color: 'var(--color-text-primary)',
-                          fontSize: '13px',
-                          minWidth: '150px'
-                        }}
-                      >
-                        <option value="all">Tous les documents</option>
-                        <option value="z_report">📊 Rapports Z</option>
-                        <option value="facture_fournisseur">🧾 Factures</option>
-                      </select>
-                      
+                {/* Contenu spécifique aux Tickets Z */}
+                {activeOcrTab === 'tickets-z' && (
+                  <div className="item-list">
+                    <div className="section-title">📊 Historique des Tickets Z</div>
+                    
+                    {/* Validation des données pour Tickets Z */}
+                    {documentsOcr.filter(doc => doc.type_document === 'z_report').length > 0 && (
+                      <div className="validation-section" style={{
+                        marginBottom: '20px',
+                        padding: '15px',
+                        background: 'var(--color-background-card-light)',
+                        borderRadius: '8px',
+                        border: '1px solid var(--color-border)'
+                      }}>
+                        <h4 style={{marginBottom: '10px', color: 'var(--color-text-primary)'}}>
+                          ✅ Validation des Données Extraites
+                        </h4>
+                        {(() => {
+                          const latestZReport = documentsOcr
+                            .filter(doc => doc.type_document === 'z_report')
+                            .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))[0];
+                          
+                          if (!latestZReport?.donnees_extraites) return null;
+                          
+                          const data = latestZReport.donnees_extraites;
+                          return (
+                            <div style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '10px'}}>
+                              <div className="validation-card">
+                                <label>📅 Date:</label>
+                                <input type="date" defaultValue={data.date} style={{width: '100%', padding: '4px'}} />
+                              </div>
+                              <div className="validation-card">
+                                <label>🍽️ Couverts:</label>
+                                <input type="number" defaultValue={data.covers} style={{width: '100%', padding: '4px'}} />
+                              </div>
+                              <div className="validation-card">
+                                <label>💰 Total HT:</label>
+                                <input type="number" step="0.01" defaultValue={data.total_ht} style={{width: '100%', padding: '4px'}} />
+                              </div>
+                              <div className="validation-card">
+                                <label>💰 Total TTC:</label>
+                                <input type="number" step="0.01" defaultValue={data.total_ttc} style={{width: '100%', padding: '4px'}} />
+                              </div>
+                              <button className="button small success" style={{gridColumn: 'span 2'}}>
+                                ✅ Valider les corrections
+                              </button>
+                            </div>
+                          );
+                        })()}
+                      </div>
+                    )}
+                    
+                    {/* Filtre spécifique aux Tickets Z */}
+                    <div className="filter-section" style={{marginBottom: '20px'}}>
                       <div className="filter-info" style={{
                         fontSize: '14px', 
-                        color: 'var(--color-text-secondary)',
-                        marginLeft: '10px'
+                        color: 'var(--color-text-secondary)'
                       }}>
-                        {(() => {
-                          const filteredDocs = documentsOcr.filter(doc => 
-                            ocrFilterType === 'all' || doc.type_document === ocrFilterType
-                          );
-                          return `${filteredDocs.length} document(s)`;
-                        })()}
+                        {documentsOcr.filter(doc => doc.type_document === 'z_report').length} ticket(s) Z traité(s)
                       </div>
                     </div>
                   </div>
