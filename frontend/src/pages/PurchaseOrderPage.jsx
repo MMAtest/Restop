@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import OrderTimeline from '../components/OrderTimeline';
 
 const PurchaseOrderPage = () => {
   const [suppliers, setSuppliers] = useState([]);
@@ -8,11 +9,15 @@ const PurchaseOrderPage = () => {
   const [loading, setLoading] = useState(false);
   
   // États pour le module de commande automatique
-  const [activeOrderTab, setActiveOrderTab] = useState('manual'); // 'manual' ou 'auto'
+  const [activeOrderTab, setActiveOrderTab] = useState('manual'); // 'manual', 'auto', ou 'history'
   const [recipes, setRecipes] = useState([]);
   const [selectedRecipes, setSelectedRecipes] = useState([]);
   const [autoOrderResults, setAutoOrderResults] = useState([]);
   const [manualOrderSummary, setManualOrderSummary] = useState(null); // Pour le récapitulatif de commande manuelle
+  
+  // États pour l'historique des commandes
+  const [orders, setOrders] = useState([]);
+  const [deliveryEstimate, setDeliveryEstimate] = useState(null);
 
   const backendUrl = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8001';
 
