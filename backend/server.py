@@ -1025,39 +1025,47 @@ def extract_text_from_pdf(pdf_content: bytes) -> str:
     else:
         print("⏭️ PyPDF2 skipped - pdfplumber successful")
 
-    # PASS 3: Image-based fallback - rasterize each page and OCR
-    try:
-        # Use pdfplumber to rasterize each page to image then pytesseract
-        pdf_file = io.BytesIO(pdf_content)
-        with pdfplumber.open(pdf_file) as pdf:
-            for page in pdf.pages:
-                try:
-                    im = page.to_image(resolution=300).original
-                    # Convert PIL -> cv2 BGR
-                    import numpy as np
-                    im_np = np.array(im)
-                    # Ensure 3 channels
-                    if im_np.ndim == 2:
-                        im_np = cv2.cvtColor(im_np, cv2.COLOR_GRAY2BGR)
-                    elif im_np.shape[2] == 4:
-                        im_np = cv2.cvtColor(im_np, cv2.COLOR_RGBA2BGR)
-                    processed = preprocess_image(im_np)
-                    # Multi-PSM tries
-                    for psm in [6, 4, 3]:
-                        config = f"--oem 3 --psm {psm} -l fra+eng"
-                        try:
-                            txt = pytesseract.image_to_string(processed, config=config)
+    # PASS 3: Image-based OCR fallback - pour PDFs scannés
+    if len(extracted_parts) == 0 or sum(len(p) for p in extracted_parts) < 500:
+        print("🖼️ Trying OCR fallback (scanned PDF detected)...")
+        try:
+            # Use pdfplumber to rasterize each page to image then pytesseract
+            pdf_file = io.BytesIO(pdf_content)
+            with pdfplumber.open(pdf_file) as pdf:
+                print(f"📄 OCR fallback: processing {len(pdf.pages)} pages")
+                for i, page in enumerate(pdf.pages):
+                    try:
+                        print(f"   Page {i+1}: converting to image...")
+                        im = page.to_image(resolution=200).original  # 200 DPI suffit pour la plupart des cas
+                        # Convert PIL -> cv2 BGR
+                        import numpy as np
+                        im_np = np.array(im)
+                        # Ensure 3 channels
+                        if im_np.ndim == 2:
+                            im_np = cv2.cvtColor(im_np, cv2.COLOR_GRAY2BGR)
+                        elif im_np.shape[2] == 4:
+                            im_np = cv2.cvtColor(im_np, cv2.COLOR_RGBA2BGR)
+                        
+                        print(f"   Page {i+1}: preprocessing...")
+                        processed = preprocess_image(im_np)
+                        
+                        # Try OCR with best PSM for documents
+                        print(f"   Page {i+1}: OCR processing...")
+                        config = "--oem 3 --psm 6 -l fra+eng"
+                        txt = pytesseract.image_to_string(processed, config=config)
+                        if txt and len(txt.strip()) > 50:
                             append_text(txt)
-                        except Exception:
-                            pass
-                except Exception:
-                    continue
-        if extracted_parts:
-            combined = "\n".join(extracted_parts)
-            print(f"✅ PDF OCR fallback extracted: {len(combined)} chars")
-            return combined
-    except Exception as e:
-        print(f"⚠️ Image-based OCR fallback failed: {str(e)}")
+                            print(f"   Page {i+1}: {len(txt)} chars extracted via OCR")
+                    except Exception as e:
+                        print(f"   ⚠️ Page {i+1} OCR failed: {str(e)}")
+                        continue
+            
+            if extracted_parts:
+                print(f"✅ OCR fallback extracted {sum(len(p) for p in extracted_parts)} chars total")
+        except Exception as e:
+            print(f"❌ Image-based OCR fallback failed: {str(e)}")
+    else:
+        print("⏭️ OCR fallback skipped - sufficient text extracted")
 
     # If we gathered any text from previous passes, return it combined
     if extracted_parts:
