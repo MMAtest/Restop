@@ -1393,6 +1393,110 @@ async def create_user(user_create: UserCreate):
     await db.users.insert_one(user_obj.dict())
     return UserResponse(**user_obj.dict())
 
+def calculate_delivery_date(supplier: Fournisseur, order_date: datetime = None) -> dict:
+    """
+    Calcule la date de livraison estimée selon les règles du fournisseur
+    
+    Exemples de règles:
+    - METRO: Commandes Lun-Sam avant 11h, livraison lendemain midi (sauf samedi → lundi)
+    - Montaner: Commandes Mar/Ven avant 11h, livraison lendemain 11h
+    - Royaume des Mers: Commandes tous les jours avant midi, livraison Mar/Sam 11h
+    
+    Returns:
+        {
+            'estimated_date': datetime,
+            'can_order_today': bool,
+            'next_order_date': datetime,
+            'explanation': str
+        }
+    """
+    if order_date is None:
+        order_date = datetime.now()
+    
+    # Si pas de règles définies, utiliser le délai par défaut
+    if not supplier.delivery_rules:
+        estimated = order_date + timedelta(days=2)
+        return {
+            'estimated_date': estimated,
+            'can_order_today': True,
+            'next_order_date': order_date,
+            'explanation': 'Livraison estimée sous 2 jours (règles par défaut)'
+        }
+    
+    rules = supplier.delivery_rules
+    day_names_fr = ['lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi', 'dimanche']
+    current_day_name = day_names_fr[order_date.weekday()].lower()
+    current_hour = order_date.hour
+    
+    # Vérifier si on peut commander aujourd'hui
+    can_order_today = False
+    if rules.order_days:
+        order_days_lower = [d.lower() for d in rules.order_days]
+        if current_day_name in order_days_lower and current_hour < rules.order_deadline_hour:
+            can_order_today = True
+    else:
+        # Si pas de jours spécifiés, on peut commander tous les jours avant deadline
+        can_order_today = current_hour < rules.order_deadline_hour
+    
+    # Trouver la prochaine date de commande possible
+    next_order_date = order_date
+    if not can_order_today:
+        # Chercher le prochain jour de commande
+        for i in range(1, 8):
+            test_date = order_date + timedelta(days=i)
+            test_day_name = day_names_fr[test_date.weekday()].lower()
+            if rules.order_days:
+                order_days_lower = [d.lower() for d in rules.order_days]
+                if test_day_name in order_days_lower:
+                    next_order_date = test_date.replace(hour=9, minute=0, second=0)
+                    break
+            else:
+                next_order_date = test_date.replace(hour=9, minute=0, second=0)
+                break
+    
+    # Calculer la date de livraison
+    if rules.delivery_days:
+        # Livraison à des jours spécifiques (ex: Royaume des Mers → Mar/Sam)
+        delivery_days_lower = [d.lower() for d in rules.delivery_days]
+        base_date = next_order_date if not can_order_today else order_date
+        
+        # Chercher le prochain jour de livraison
+        for i in range(1, 15):  # Chercher jusqu'à 2 semaines
+            test_date = base_date + timedelta(days=i)
+            test_day_name = day_names_fr[test_date.weekday()].lower()
+            if test_day_name in delivery_days_lower:
+                estimated_date = test_date.replace(hour=int(rules.delivery_time.split(':')[0]), 
+                                                   minute=int(rules.delivery_time.split(':')[1]), 
+                                                   second=0)
+                break
+    else:
+        # Livraison après un délai fixe (ex: METRO → lendemain)
+        delay = rules.delivery_delay_days or 1
+        base_date = next_order_date if not can_order_today else order_date
+        estimated_date = base_date + timedelta(days=delay)
+        
+        # Gérer les règles spéciales (ex: METRO samedi → +1 jour)
+        if rules.special_rules and 'samedi' in rules.special_rules.lower():
+            if day_names_fr[estimated_date.weekday()].lower() == 'samedi':
+                estimated_date += timedelta(days=2)  # Samedi → Lundi
+        
+        estimated_date = estimated_date.replace(hour=int(rules.delivery_time.split(':')[0]), 
+                                               minute=int(rules.delivery_time.split(':')[1]), 
+                                               second=0)
+    
+    # Créer l'explication
+    if can_order_today:
+        explanation = f"Commande aujourd'hui avant {rules.order_deadline_hour}h → Livraison le {estimated_date.strftime('%A %d/%m/%Y à %Hh%M')}"
+    else:
+        explanation = f"Prochaine commande possible: {next_order_date.strftime('%A %d/%m/%Y')} avant {rules.order_deadline_hour}h → Livraison le {estimated_date.strftime('%A %d/%m/%Y à %Hh%M')}"
+    
+    return {
+        'estimated_date': estimated_date,
+        'can_order_today': can_order_today,
+        'next_order_date': next_order_date,
+        'explanation': explanation
+    }
+
 @api_router.get("/admin/users", response_model=List[UserResponse])
 async def get_users():
     """Get all users (Super Admin only)"""
