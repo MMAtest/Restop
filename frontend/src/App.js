@@ -4978,6 +4978,156 @@ function App() {
                   </div>
                 </div>
 
+                {/* Vue accordéon par catégories */}
+                {showCategoriesView ? (
+                  <div style={{display: 'grid', gap: '16px'}}>
+                    <div style={{
+                      padding: '16px', 
+                      background: 'var(--color-background-secondary)',
+                      borderRadius: '8px',
+                      border: '1px solid var(--color-border)',
+                      marginBottom: '16px'
+                    }}>
+                      <div style={{fontSize: '16px', fontWeight: 'bold', marginBottom: '8px'}}>
+                        📊 Résumé par catégories
+                      </div>
+                      <div style={{fontSize: '14px', color: 'var(--color-text-secondary)'}}>
+                        {produitsParCategories.total_categories} catégories • {produitsParCategories.total_products} produits total
+                      </div>
+                    </div>
+
+                    {Object.entries(produitsParCategories.categories).map(([categoryName, categoryData]) => (
+                      <div key={categoryName} style={{
+                        border: '1px solid var(--color-border)',
+                        borderRadius: '8px',
+                        overflow: 'hidden'
+                      }}>
+                        {/* En-tête de catégorie cliquable */}
+                        <div 
+                          style={{
+                            padding: '16px',
+                            background: categoriesExpanded[categoryName] ? 'var(--color-accent-green)' : 'var(--color-background-secondary)',
+                            color: categoriesExpanded[categoryName] ? 'white' : 'var(--color-text-primary)',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'space-between',
+                            fontWeight: 'bold',
+                            borderBottom: categoriesExpanded[categoryName] ? '1px solid var(--color-border)' : 'none'
+                          }}
+                          onClick={() => {
+                            setCategoriesExpanded(prev => ({
+                              ...prev,
+                              [categoryName]: !prev[categoryName]
+                            }));
+                          }}
+                        >
+                          <div style={{display: 'flex', alignItems: 'center', gap: '12px'}}>
+                            <span style={{fontSize: '20px'}}>{categoryData.icon}</span>
+                            <span>{categoryName}</span>
+                            <span style={{
+                              fontSize: '12px',
+                              padding: '4px 8px',
+                              borderRadius: '12px',
+                              background: categoriesExpanded[categoryName] ? 'rgba(255,255,255,0.2)' : 'var(--color-accent-orange)',
+                              color: 'white'
+                            }}>
+                              {categoryData.total_products}
+                            </span>
+                          </div>
+                          <span style={{fontSize: '18px'}}>
+                            {categoriesExpanded[categoryName] ? '▼' : '▶'}
+                          </span>
+                        </div>
+
+                        {/* Contenu de la catégorie */}
+                        {categoriesExpanded[categoryName] && (
+                          <div style={{padding: '0'}}>
+                            {categoryData.products.map((produit, index) => (
+                              <div key={produit.id} style={{
+                                padding: '12px 16px',
+                                borderBottom: index < categoryData.products.length - 1 ? '1px solid var(--color-border)' : 'none',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'space-between',
+                                background: index % 2 === 0 ? 'transparent' : 'var(--color-background-secondary)'
+                              }}>
+                                <div style={{display: 'flex', alignItems: 'center', gap: '12px'}}>
+                                  <div style={{
+                                    fontSize: '16px',
+                                    fontWeight: 'bold',
+                                    color: 'var(--color-text-primary)'
+                                  }}>
+                                    {produit.nom}
+                                  </div>
+                                  {produit.prix_achat && (
+                                    <div style={{
+                                      fontSize: '14px',
+                                      color: 'var(--color-text-secondary)',
+                                      padding: '2px 6px',
+                                      background: 'var(--color-background-tertiary)',
+                                      borderRadius: '4px'
+                                    }}>
+                                      {produit.prix_achat}€/{produit.unite}
+                                    </div>
+                                  )}
+                                  {produit.fournisseur_nom && (
+                                    <div style={{
+                                      fontSize: '12px',
+                                      color: 'var(--color-accent-green)',
+                                      fontStyle: 'italic'
+                                    }}>
+                                      {produit.fournisseur_nom}
+                                    </div>
+                                  )}
+                                </div>
+                                
+                                <div style={{display: 'flex', gap: '6px'}}>
+                                  <button 
+                                    className="button small"
+                                    onClick={() => handleEdit(produit, 'produit')}
+                                    style={{fontSize: '12px', padding: '4px 8px'}}
+                                  >
+                                    ✏️
+                                  </button>
+                                  <button 
+                                    className="button small warning"
+                                    onClick={async () => {
+                                      const reason = window.prompt(`Raison de l'archivage de "${produit.nom}" (optionnel):`);
+                                      if (reason !== null) {
+                                        const success = await archiveItem(produit.id, 'produit', reason || null);
+                                        if (success) {
+                                          alert(`${produit.nom} archivé avec succès !`);
+                                          // Recharger les données des catégories
+                                          const data = await fetchProduitsParCategories();
+                                          setProduitsParCategories(data);
+                                        } else {
+                                          alert("Erreur lors de l'archivage");
+                                        }
+                                      }
+                                    }}
+                                    style={{fontSize: '12px', padding: '4px 8px'}}
+                                  >
+                                    🗃️
+                                  </button>
+                                  <button 
+                                    className="button small danger"
+                                    onClick={() => handleDelete(produit.id, 'produit')}
+                                    style={{fontSize: '12px', padding: '4px 8px'}}
+                                  >
+                                    🗑️
+                                  </button>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  // Vue liste normale
+                  <>
                 {/* Liste des produits filtrés */}
                 {(filteredProduits.length > 0 ? filteredProduits : produits).map((produit, index) => {
                   // Fonction pour obtenir l'icône selon la catégorie
