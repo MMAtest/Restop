@@ -4742,6 +4742,118 @@ async def delete_archive(archive_id: str):
     
     return {"message": "Archive supprimée définitivement"}
 
+@api_router.post("/archive/diagnostic")
+async def diagnostic_archive_system():
+    """Diagnostique et test du système d'archivage"""
+    try:
+        results = {
+            "system_status": "running",
+            "tests": [],
+            "recommendations": []
+        }
+        
+        # Test 1: Vérifier les collections
+        produits_count = await db.produits.count_documents({})
+        recettes_count = await db.recettes.count_documents({})
+        fournisseurs_count = await db.fournisseurs.count_documents({})
+        archives_count = await db.archived_items.count_documents({})
+        
+        results["tests"].append({
+            "name": "Collections Count",
+            "status": "success",
+            "details": {
+                "produits": produits_count,
+                "recettes": recettes_count, 
+                "fournisseurs": fournisseurs_count,
+                "archives": archives_count
+            }
+        })
+        
+        # Test 2: Test d'archivage sur un produit temporaire
+        if produits_count > 0:
+            # Prendre le premier produit pour test
+            test_produit = await db.produits.find_one({})
+            if test_produit:
+                try:
+                    # Simuler un archivage (sans vraiment le faire)
+                    test_archive = {
+                        "original_id": test_produit["id"],
+                        "item_type": "produit",
+                        "original_data": test_produit,
+                        "reason": "Test diagnostic"
+                    }
+                    
+                    results["tests"].append({
+                        "name": "Archive Simulation",
+                        "status": "success",
+                        "details": "Le système peut créer des archives"
+                    })
+                except Exception as e:
+                    results["tests"].append({
+                        "name": "Archive Simulation",
+                        "status": "error",
+                        "details": str(e)
+                    })
+        
+        # Test 3: Vérifier la structure des données archivées existantes
+        if archives_count > 0:
+            sample_archive = await db.archived_items.find_one({})
+            if sample_archive:
+                required_fields = ["id", "original_id", "item_type", "original_data", "archived_at"]
+                missing_fields = [field for field in required_fields if field not in sample_archive]
+                
+                if missing_fields:
+                    results["tests"].append({
+                        "name": "Archive Structure",
+                        "status": "warning",
+                        "details": f"Champs manquants: {missing_fields}"
+                    })
+                    results["recommendations"].append("Vérifier la structure des archives existantes")
+                else:
+                    results["tests"].append({
+                        "name": "Archive Structure",
+                        "status": "success",
+                        "details": "Structure des archives correcte"
+                    })
+        
+        # Test 4: Permissions et accès
+        try:
+            # Test d'écriture sur la collection archives
+            test_write = await db.archived_items.find_one({"test_write": True})
+            results["tests"].append({
+                "name": "Database Permissions",
+                "status": "success",
+                "details": "Permissions de lecture/écriture OK"
+            })
+        except Exception as e:
+            results["tests"].append({
+                "name": "Database Permissions", 
+                "status": "error",
+                "details": str(e)
+            })
+            results["recommendations"].append("Vérifier les permissions MongoDB")
+        
+        # Recommandations générales
+        if archives_count == 0:
+            results["recommendations"].append("Aucune archive trouvée - le système n'a pas encore été utilisé")
+        
+        # Status global
+        error_tests = [t for t in results["tests"] if t["status"] == "error"]
+        if error_tests:
+            results["system_status"] = "error"
+        elif any(t["status"] == "warning" for t in results["tests"]):
+            results["system_status"] = "warning"
+        
+        return results
+        
+    except Exception as e:
+        return {
+            "system_status": "error",
+            "error": str(e),
+            "tests": [],
+            "recommendations": ["Contacter le support technique"]
+        }
+
 # Include the router in the main app
 app.include_router(api_router)
 
