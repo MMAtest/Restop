@@ -167,6 +167,9 @@ function App() {
   // État pour la répartition interactive
   const [selectedStockIndex, setSelectedStockIndex] = useState(null);
   
+  // États pour les onglets OCR
+  const [activeOcrTab, setActiveOcrTab] = useState('tickets-z'); // 'tickets-z' ou 'factures'
+  
   // États pour le module prévisionnel
   const [stocksPrevisionnels, setStocksPrevisionnels] = useState([
     { id: 1, produit: "Tomates", stock_actuel: 25, unite: "kg", productions_possibles: [
