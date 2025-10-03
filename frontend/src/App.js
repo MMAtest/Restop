@@ -164,6 +164,9 @@ function App() {
   const [showMoreTopProductions, setShowMoreTopProductions] = useState(false);
   const [showMoreFlopProductions, setShowMoreFlopProductions] = useState(false);
   
+  // État pour la répartition interactive
+  const [selectedStockIndex, setSelectedStockIndex] = useState(null);
+  
   // États pour le module prévisionnel
   const [stocksPrevisionnels, setStocksPrevisionnels] = useState([
     { id: 1, produit: "Tomates", stock_actuel: 25, unite: "kg", productions_possibles: [
