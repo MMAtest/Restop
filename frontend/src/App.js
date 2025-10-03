@@ -4367,7 +4367,13 @@ function App() {
                     <select
                       className="form-select"
                       value={selectedStockIndex || ''}
-                      onChange={(e) => setSelectedStockIndex(e.target.value)}
+                      onChange={(e) => {
+                        setSelectedStockIndex(e.target.value);
+                        // Réinitialiser la répartition quand on change de produit
+                        setRepartitionQuantities({});
+                        setProductionsCalculees([]);
+                        setStockUtiliseTotal(0);
+                      }}
                       style={{
                         padding: '10px 15px',
                         fontSize: '14px',
