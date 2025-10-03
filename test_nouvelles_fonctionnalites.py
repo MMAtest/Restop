@@ -160,7 +160,7 @@ class NouvellesFonctionnalitesTestSuite:
                         
                         # Vérifier la cohérence des totaux
                         actual_categories = len(categories)
-                        actual_products = sum(len(cat_data.get("produits", [])) for cat_data in categories.values())
+                        actual_products = sum(len(cat_data.get("products", [])) for cat_data in categories.values())
                         
                         if actual_categories == total_categories:
                             self.log_result("Total catégories cohérent", True, 
@@ -180,13 +180,13 @@ class NouvellesFonctionnalitesTestSuite:
                         categories_valides = 0
                         for cat_name, cat_data in categories.items():
                             if isinstance(cat_data, dict):
-                                required_cat_fields = ["produits", "icone", "total_produits", "prix_moyen"]
+                                required_cat_fields = ["products", "icon", "total_products"]
                                 if all(field in cat_data for field in required_cat_fields):
                                     categories_valides += 1
                                     
                                     # Vérifier les statistiques
-                                    produits_cat = cat_data.get("produits", [])
-                                    total_produits_cat = cat_data.get("total_produits", 0)
+                                    produits_cat = cat_data.get("products", [])
+                                    total_produits_cat = cat_data.get("total_products", 0)
                                     
                                     if len(produits_cat) == total_produits_cat:
                                         self.log_result(f"Catégorie {cat_name} - Cohérence", True, 
