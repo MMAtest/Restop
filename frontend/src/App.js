@@ -4254,11 +4254,14 @@ function App() {
                       }}
                     >
                       <option value="">-- Sélectionner un produit --</option>
-                      {stocksPrevisionnels.map((stock, index) => (
-                        <option key={index} value={index}>
-                          📦 {stock.produit} ({stock.stock_actuel} {stock.unite} disponible)
-                        </option>
-                      ))}
+                      {produits.map((produit, index) => {
+                        const stockProduit = stocks.find(s => s.produit_id === produit.id);
+                        return (
+                          <option key={produit.id} value={produit.id}>
+                            📦 {produit.nom} {stockProduit ? `(${stockProduit.quantite_actuelle} ${produit.unite} en stock)` : '(stock non défini)'}
+                          </option>
+                        );
+                      })}
                     </select>
                   </div>
                   
@@ -4266,10 +4269,10 @@ function App() {
                   {selectedStockIndex !== null && selectedStockIndex !== '' && (
                     <div style={{marginBottom: '24px', padding: '16px', background: '#ecfdf5', borderRadius: '8px', border: '1px solid #10b981'}}>
                       <label className="form-label" style={{marginBottom: '12px', display: 'block'}}>
-                        2️⃣ Préparations disponibles pour "{stocksPrevisionnels[selectedStockIndex]?.produit}" :
+                        2️⃣ Préparations disponibles pour "{produits.find(p => p.id === selectedStockIndex)?.nom}" :
                       </label>
                       {(() => {
-                        const produitId = produits.find(p => p.nom === stocksPrevisionnels[selectedStockIndex]?.produit)?.id;
+                        const produitId = selectedStockIndex;
                         const preparationsProduit = preparations.filter(prep => prep.produit_id === produitId);
                         
                         if (preparationsProduit.length === 0) {
