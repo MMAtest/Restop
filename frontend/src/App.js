@@ -4872,6 +4872,26 @@ function App() {
                 
                 <div style={{display: 'flex', gap: '10px', marginBottom: '20px', flexWrap: 'wrap'}}>
                   <button className="button" onClick={() => setShowProduitModal(true)}>➕ Nouveau Produit</button>
+                  <button 
+                    className={`button ${showCategoriesView ? 'secondary' : ''}`}
+                    onClick={async () => {
+                      if (!showCategoriesView) {
+                        // Charger les données par catégories
+                        const data = await fetchProduitsParCategories();
+                        setProduitsParCategories(data);
+                        // Ouvrir toutes les catégories par défaut
+                        const expanded = {};
+                        Object.keys(data.categories).forEach(cat => {
+                          expanded[cat] = true;
+                        });
+                        setCategoriesExpanded(expanded);
+                      }
+                      setShowCategoriesView(!showCategoriesView);
+                    }}
+                    style={{backgroundColor: showCategoriesView ? '#6366f1' : '', color: showCategoriesView ? 'white' : ''}}
+                  >
+                    {showCategoriesView ? '📋 Vue Liste' : '📁 Vue Catégories'}
+                  </button>
                 </div>
 
                 {/* Filtre universel par catégorie */}
