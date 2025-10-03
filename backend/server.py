@@ -3476,6 +3476,7 @@ async def get_formes_decoupe():
         {"id": "carre", "nom": "Carré", "description": "Cubes moyens"},
         {"id": "emince", "nom": "Émincé", "description": "Tranches fines"},
         {"id": "hache", "nom": "Haché", "description": "Haché grossier ou fin"},
+        {"id": "filets", "nom": "En filets", "description": "Levés en filets (poissons)"},
         {"id": "sauce", "nom": "Sauce", "description": "Transformé en sauce"},
         {"id": "puree", "nom": "Purée", "description": "Écrasé en purée"},
         {"id": "cuit", "nom": "Cuit", "description": "Cuit entier ou préparé"},
