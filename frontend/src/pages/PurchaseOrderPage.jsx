@@ -352,7 +352,7 @@ const PurchaseOrderPage = () => {
   return (
     <div className="bg-gradient-to-br from-gray-100 to-gray-200 min-h-screen">
       {/* Header */}
-      <div className="mb-8 px-6 pt-6">
+      <div className="mb-8 px-6 pt-2">
         <h1 className="text-3xl font-bold text-gray-800 mb-2">
           🛒 Gestion des Commandes
         </h1>
