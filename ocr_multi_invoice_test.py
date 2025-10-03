@@ -530,11 +530,11 @@ class OCRMultiInvoiceTestSuite:
                 if response.status_code in [200, 201]:
                     result = response.json()
                     
-                    # Vérifier que le fournisseur est détecté
+                    # Verifier que le fournisseur est detecte
                     if result.get("total_detected", 0) >= 1:
-                        self.log_result(f"Pattern Detection {fournisseur_text[:20]}...", True, "Fournisseur détecté")
+                        self.log_result(f"Pattern Detection {fournisseur_text[:20]}...", True, "Fournisseur detecte")
                     else:
-                        self.log_result(f"Pattern Detection {fournisseur_text[:20]}...", False, "Fournisseur non détecté")
+                        self.log_result(f"Pattern Detection {fournisseur_text[:20]}...", False, "Fournisseur non detecte")
                         
                 else:
                     self.log_result(f"Pattern Test {i}", False, f"Erreur {response.status_code}")
