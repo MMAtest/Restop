@@ -3535,103 +3535,234 @@ function App() {
             {/* ONGLET RÉPARTITION */}
             <div className={`production-tab ${activeStockTab === 'repartition' ? 'active' : ''}`}>
               <div className="section-card">
-                {/* Vue d'ensemble avec camembert */}
+                {/* Répartition interactive par produit */}
                 <div className="item-list" style={{marginBottom: '20px'}}>
-                  <div className="section-title">📊 Vue d'ensemble de la répartition</div>
-                  <div style={{
-                    display: 'flex', 
-                    flexDirection: 'row', 
-                    alignItems: 'center', 
-                    gap: '30px',
-                    flexWrap: 'wrap'
-                  }}>
-                    <div style={{flex: '1', minWidth: '250px', maxWidth: '400px'}}>
-                      <Pie
-                        data={{
-                          labels: stocksPrevisionnels.map(stock => stock.produit),
-                          datasets: [{
-                            data: stocksPrevisionnels.map(stock => {
-                              const stockUtilise = stock.productions_possibles.reduce((total, prod) => 
-                                total + (prod.portions_selectionnees * prod.quantite_needed), 0
-                              );
-                              return ((stockUtilise / stock.stock_actuel) * 100).toFixed(1);
-                            }),
-                            backgroundColor: [
-                              '#10B981', // Vert
-                              '#3B82F6', // Bleu  
-                              '#F59E0B', // Orange
-                              '#EF4444', // Rouge
-                              '#8B5CF6', // Violet
-                              '#06B6D4', // Cyan
-                            ],
-                            borderColor: '#FFFFFF',
-                            borderWidth: 2
-                          }]
-                        }}
-                        options={{
-                          responsive: true,
-                          maintainAspectRatio: true,
-                          plugins: {
-                            legend: {
-                              position: 'bottom',
-                              labels: {
-                                padding: 15,
-                                usePointStyle: true,
-                                font: {
-                                  size: 12
+                  <div className="section-title">📊 Répartition Interactive par Produit</div>
+                  
+                  {/* Sélecteur de produit */}
+                  <div className="form-group" style={{marginBottom: '20px'}}>
+                    <label className="form-label">Choisir un produit à répartir :</label>
+                    <select
+                      className="form-select"
+                      value={selectedStockIndex || ''}
+                      onChange={(e) => setSelectedStockIndex(e.target.value)}
+                      style={{
+                        padding: '10px 15px',
+                        fontSize: '14px',
+                        borderRadius: '8px',
+                        border: '1px solid var(--color-border)',
+                        background: 'var(--color-background-card)',
+                        color: 'var(--color-text-primary)',
+                        width: '100%',
+                        maxWidth: '400px'
+                      }}
+                    >
+                      <option value="">-- Sélectionner un produit --</option>
+                      {stocksPrevisionnels.map((stock, index) => (
+                        <option key={index} value={index}>
+                          📦 {stock.produit} ({stock.stock_actuel} {stock.unite} disponible)
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Interface de répartition avec camembert */}
+                  {selectedStockIndex !== null && selectedStockIndex !== '' && (
+                    <div style={{
+                      display: 'flex',
+                      flexDirection: window.innerWidth <= 768 ? 'column' : 'row',
+                      gap: '20px',
+                      alignItems: 'flex-start'
+                    }}>
+                      {/* Camembert interactif */}
+                      <div style={{
+                        flex: '1',
+                        minWidth: '280px',
+                        maxWidth: window.innerWidth <= 768 ? '100%' : '350px',
+                        textAlign: 'center'
+                      }}>
+                        <h4 style={{marginBottom: '15px', color: 'var(--color-text-primary)'}}>
+                          📦 {stocksPrevisionnels[selectedStockIndex]?.produit}
+                        </h4>
+                        <div style={{position: 'relative', height: '280px'}}>
+                          <Pie
+                            data={{
+                              labels: stocksPrevisionnels[selectedStockIndex]?.productions_possibles?.map(prod => 
+                                `${prod.nom} (${prod.portions_selectionnees})`
+                              ) || [],
+                              datasets: [{
+                                data: stocksPrevisionnels[selectedStockIndex]?.productions_possibles?.map(prod => 
+                                  prod.portions_selectionnees || 1
+                                ) || [],
+                                backgroundColor: [
+                                  '#10B981', '#3B82F6', '#F59E0B', '#EF4444', 
+                                  '#8B5CF6', '#06B6D4', '#84CC16', '#F97316'
+                                ],
+                                borderColor: '#FFFFFF',
+                                borderWidth: 3
+                              }]
+                            }}
+                            options={{
+                              responsive: true,
+                              maintainAspectRatio: false,
+                              onClick: (event, elements) => {
+                                if (elements.length > 0) {
+                                  const clickedIndex = elements[0].index;
+                                  // Augmenter les portions de la production cliquée
+                                  const updatedStocks = [...stocksPrevisionnels];
+                                  if (updatedStocks[selectedStockIndex]?.productions_possibles[clickedIndex]) {
+                                    updatedStocks[selectedStockIndex].productions_possibles[clickedIndex].portions_selectionnees += 1;
+                                    setStocksPrevisionnels(updatedStocks);
+                                  }
+                                }
+                              },
+                              plugins: {
+                                legend: {
+                                  display: false // Légende cachée, on utilise la liste à côté
+                                },
+                                tooltip: {
+                                  callbacks: {
+                                    label: function(context) {
+                                      const prod = stocksPrevisionnels[selectedStockIndex]?.productions_possibles[context.dataIndex];
+                                      const quantiteNeed = prod ? (prod.portions_selectionnees * prod.quantite_needed).toFixed(1) : '0';
+                                      return `${context.label}: ${quantiteNeed} ${stocksPrevisionnels[selectedStockIndex]?.unite}`;
+                                    }
+                                  }
                                 }
                               }
-                            },
-                            tooltip: {
-                              callbacks: {
-                                label: function(context) {
-                                  const stock = stocksPrevisionnels[context.dataIndex];
-                                  const stockUtilise = stock.productions_possibles.reduce((total, prod) => 
-                                    total + (prod.portions_selectionnees * prod.quantite_needed), 0
-                                  );
-                                  return `${context.label}: ${stockUtilise.toFixed(1)}/${stock.stock_actuel} ${stock.unite} (${context.parsed}%)`;
-                                }
-                              }
-                            }
-                          }
-                        }}
-                      />
-                    </div>
-                    <div style={{flex: '1', minWidth: '200px'}}>
-                      <div className="kpi-grid" style={{gridTemplateColumns: '1fr', gap: '10px'}}>
-                        {stocksPrevisionnels.map((stock, index) => {
-                          const stockUtilise = stock.productions_possibles.reduce((total, prod) => 
-                            total + (prod.portions_selectionnees * prod.quantite_needed), 0
-                          );
-                          const pourcentage = ((stockUtilise / stock.stock_actuel) * 100).toFixed(1);
-                          const stockRestant = stock.stock_actuel - stockUtilise;
-                          
-                          return (
-                            <div key={index} className="kpi-card" style={{textAlign: 'left', padding: '12px'}}>
-                              <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
-                                <div>
-                                  <div style={{fontSize: '14px', fontWeight: '600', marginBottom: '4px'}}>
-                                    📦 {stock.produit}
+                            }}
+                          />
+                        </div>
+                        <p style={{
+                          fontSize: '12px',
+                          color: 'var(--color-text-muted)',
+                          marginTop: '10px'
+                        }}>
+                          💡 Cliquez sur un segment pour ajouter une portion
+                        </p>
+                      </div>
+
+                      {/* Liste des productions avec contrôles */}
+                      <div style={{flex: '1', minWidth: '250px'}}>
+                        <h4 style={{marginBottom: '15px', color: 'var(--color-text-primary)'}}>
+                          🎯 Ajuster les portions
+                        </h4>
+                        <div style={{display: 'flex', flexDirection: 'column', gap: '10px'}}>
+                          {stocksPrevisionnels[selectedStockIndex]?.productions_possibles?.map((prod, prodIndex) => {
+                            const quantiteUtilisee = prod.portions_selectionnees * prod.quantite_needed;
+                            return (
+                              <div key={prodIndex} className="kpi-card" style={{
+                                padding: '15px',
+                                border: '1px solid var(--color-border)',
+                                borderRadius: '8px'
+                              }}>
+                                <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px'}}>
+                                  <div style={{fontWeight: '600', fontSize: '14px'}}>
+                                    {getCategoryIcon(prod.categorie)} {prod.nom}
                                   </div>
-                                  <div style={{fontSize: '12px', color: 'var(--color-text-muted)'}}>
-                                    {stockUtilise.toFixed(1)} / {stock.stock_actuel} {stock.unite}
-                                  </div>
+                                  <span style={{
+                                    padding: '2px 6px',
+                                    borderRadius: '12px',
+                                    fontSize: '10px',
+                                    background: getCategoryColor(prod.categorie),
+                                    color: 'white'
+                                  }}>
+                                    {prod.categorie}
+                                  </span>
                                 </div>
-                                <div style={{textAlign: 'right'}}>
-                                  <div style={{fontSize: '16px', fontWeight: '700', color: pourcentage > 90 ? 'var(--color-danger-red)' : pourcentage > 70 ? 'var(--color-warning-orange)' : 'var(--color-success-green)'}}>
-                                    {pourcentage}%
+                                
+                                <div style={{display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px'}}>
+                                  <button 
+                                    className="button small"
+                                    onClick={() => {
+                                      const updatedStocks = [...stocksPrevisionnels];
+                                      if (updatedStocks[selectedStockIndex].productions_possibles[prodIndex].portions_selectionnees > 0) {
+                                        updatedStocks[selectedStockIndex].productions_possibles[prodIndex].portions_selectionnees -= 1;
+                                        setStocksPrevisionnels(updatedStocks);
+                                      }
+                                    }}
+                                    style={{
+                                      width: '30px',
+                                      height: '30px',
+                                      display: 'flex',
+                                      alignItems: 'center',
+                                      justifyContent: 'center'
+                                    }}
+                                  >
+                                    -
+                                  </button>
+                                  
+                                  <div style={{
+                                    textAlign: 'center',
+                                    minWidth: '80px',
+                                    padding: '5px 10px',
+                                    background: 'var(--color-background-card-light)',
+                                    borderRadius: '4px',
+                                    fontSize: '14px',
+                                    fontWeight: '600'
+                                  }}>
+                                    {prod.portions_selectionnees} portions
                                   </div>
-                                  <div style={{fontSize: '10px', color: stockRestant < 0 ? 'var(--color-danger-red)' : 'var(--color-text-muted)'}}>
-                                    Restant: {stockRestant.toFixed(1)}
-                                  </div>
+                                  
+                                  <button 
+                                    className="button small"
+                                    onClick={() => {
+                                      const updatedStocks = [...stocksPrevisionnels];
+                                      updatedStocks[selectedStockIndex].productions_possibles[prodIndex].portions_selectionnees += 1;
+                                      setStocksPrevisionnels(updatedStocks);
+                                    }}
+                                    style={{
+                                      width: '30px',
+                                      height: '30px',
+                                      display: 'flex',
+                                      alignItems: 'center',
+                                      justifyContent: 'center'
+                                    }}
+                                  >
+                                    +
+                                  </button>
+                                </div>
+                                
+                                <div style={{fontSize: '12px', color: 'var(--color-text-muted)'}}>
+                                  Consomme: {quantiteUtilisee.toFixed(1)} {stocksPrevisionnels[selectedStockIndex]?.unite}
                                 </div>
                               </div>
-                            </div>
-                          );
-                        })}
+                            );
+                          })}
+                        </div>
+                        
+                        {/* Résumé du stock */}
+                        <div className="kpi-card" style={{
+                          marginTop: '15px',
+                          padding: '15px',
+                          background: 'var(--color-background-card-light)'
+                        }}>
+                          {(() => {
+                            const stockActuel = stocksPrevisionnels[selectedStockIndex]?.stock_actuel || 0;
+                            const stockUtilise = stocksPrevisionnels[selectedStockIndex]?.productions_possibles?.reduce((total, prod) => 
+                              total + (prod.portions_selectionnees * prod.quantite_needed), 0
+                            ) || 0;
+                            const stockRestant = stockActuel - stockUtilise;
+                            const pourcentage = stockActuel > 0 ? ((stockUtilise / stockActuel) * 100).toFixed(1) : 0;
+                            
+                            return (
+                              <div>
+                                <div style={{fontWeight: '600', marginBottom: '8px'}}>📊 Résumé du stock</div>
+                                <div style={{fontSize: '13px', lineHeight: '1.4'}}>
+                                  <div>Stock total: {stockActuel} {stocksPrevisionnels[selectedStockIndex]?.unite}</div>
+                                  <div>Stock utilisé: {stockUtilise.toFixed(1)} {stocksPrevisionnels[selectedStockIndex]?.unite}</div>
+                                  <div style={{color: stockRestant < 0 ? 'var(--color-danger-red)' : 'var(--color-success-green)'}}>
+                                    Stock restant: {stockRestant.toFixed(1)} {stocksPrevisionnels[selectedStockIndex]?.unite}
+                                  </div>
+                                  <div>Utilisation: {pourcentage}%</div>
+                                </div>
+                              </div>
+                            );
+                          })()}
+                        </div>
                       </div>
                     </div>
-                  </div>
+                  )}
                 </div>
                 
                 {/* Répartition optimale avec validation */}
