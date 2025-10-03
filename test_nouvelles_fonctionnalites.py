@@ -67,15 +67,14 @@ class NouvellesFonctionnalitesTestSuite:
                 result = response.json()
                 
                 # Vérifier la structure de la réponse
-                required_fields = ["message", "preparations_creees", "preparations_supprimees", "resume"]
+                required_fields = ["success", "message", "preparations_created", "details"]
                 if all(field in result for field in required_fields):
                     self.log_result("POST /api/preparations/auto-generate - Structure", True, 
                                   "Structure de réponse correcte")
                     
                     # Vérifier le contenu
-                    preparations_creees = result.get("preparations_creees", 0)
-                    preparations_supprimees = result.get("preparations_supprimees", 0)
-                    resume = result.get("resume", {})
+                    preparations_creees = result.get("preparations_created", 0)
+                    details = result.get("details", {})
                     
                     if preparations_creees > 0:
                         self.log_result("Préparations créées", True, 
