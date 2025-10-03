@@ -1172,11 +1172,38 @@ function App() {
         headers: {
           'Content-Type': 'multipart/form-data'
         },
-        timeout: 30000 // 30 secondes timeout pour OCR
+        timeout: 60000 // 60 secondes timeout pour OCR (augmenté pour factures multiples)
       });
 
       setOcrResult(response.data);
-      alert('Document traité avec succès !');
+      
+      // Gestion des réponses de factures multiples
+      if (response.data.multi_invoice) {
+        const data = response.data;
+        let message = `📊 Traitement de factures multiples terminé !\n\n`;
+        message += `🔍 Factures détectées: ${data.total_detected}\n`;
+        message += `✅ Traitées avec succès: ${data.successfully_processed}\n`;
+        
+        if (data.rejected_count > 0) {
+          message += `❌ Rejetées: ${data.rejected_count}\n\n`;
+          message += `📋 Détails des rejets:\n`;
+          
+          data.rejected_invoices.forEach(rejected => {
+            message += `• Facture ${rejected.index}: ${rejected.reason}\n`;
+            if (rejected.issues && rejected.issues.length > 0) {
+              message += `  Issues: ${rejected.issues.join(', ')}\n`;
+            }
+          });
+          
+          message += `\n💡 Les factures rejetées peuvent être re-uploadées individuellement pour un traitement manuel.`;
+        }
+        
+        alert(message);
+      } else {
+        // Traitement normal (facture unique)
+        alert('Document traité avec succès !');
+      }
+      
       fetchDocumentsOcr();
       
       // Réinitialiser le formulaire OCR
