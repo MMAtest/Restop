@@ -264,6 +264,28 @@ function App() {
   const [produitForm, setProduitForm] = useState({
     nom: "", description: "", categorie: "", unite: "", prix_achat: "", fournisseur_id: ""
   });
+  
+  // États pour les préparations
+  const [preparations, setPreparations] = useState([]);
+  const [formesDecoupe, setFormesDecoupe] = useState({ predefined: [], custom: [] });
+  const [showPreparationModal, setShowPreparationModal] = useState(false);
+  const [preparationForm, setPreparationForm] = useState({
+    nom: "",
+    produit_id: "",
+    forme_decoupe: "",
+    forme_decoupe_custom: "",
+    quantite_produit_brut: "",
+    unite_produit_brut: "kg",
+    quantite_preparee: "",
+    unite_preparee: "kg",
+    perte: "",
+    perte_pourcentage: "",
+    nombre_portions: "",
+    taille_portion: "",
+    unite_portion: "g",
+    dlc: "",
+    notes: ""
+  });
   const [fournisseurForm, setFournisseurForm] = useState({
     nom: "", contact: "", email: "", telephone: "", adresse: "", couleur: "#3B82F6", logo: "", categorie: "frais", deliveryCost: 0, extraCost: 0,
     delivery_rules: {
