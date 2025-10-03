@@ -3341,9 +3341,36 @@ function App() {
               <div className="section-card">
                 <div className="section-title">📱 Module OCR</div>
                 
-                {/* Actions OCR */}
+                {/* Navigation entre Tickets Z et Factures */}
+                <div className="tab-navigation" style={{marginBottom: '20px'}}>
+                  <button 
+                    className="button" 
+                    onClick={() => setActiveOcrTab('tickets-z')}
+                    style={{
+                      background: activeOcrTab === 'tickets-z' ? 'var(--color-primary-blue)' : 'var(--color-background-card-light)',
+                      color: activeOcrTab === 'tickets-z' ? 'white' : 'var(--color-text-secondary)',
+                      marginRight: '10px'
+                    }}
+                  >
+                    📊 Tickets Z
+                  </button>
+                  <button 
+                    className="button" 
+                    onClick={() => setActiveOcrTab('factures')}
+                    style={{
+                      background: activeOcrTab === 'factures' ? 'var(--color-primary-blue)' : 'var(--color-background-card-light)',
+                      color: activeOcrTab === 'factures' ? 'white' : 'var(--color-text-secondary)'
+                    }}
+                  >
+                    🧾 Factures
+                  </button>
+                </div>
+                
+                {/* Actions communes */}
                 <div style={{display: 'flex', gap: '10px', marginBottom: '20px', flexWrap: 'wrap'}}>
-                  <button className="button" onClick={() => setShowOcrModal(true)}>📁 Importer Document</button>
+                  <button className="button" onClick={() => setShowOcrModal(true)}>
+                    📁 Importer {activeOcrTab === 'tickets-z' ? 'Ticket Z' : 'Facture(s)'}
+                  </button>
                   <button className="button" onClick={handleTraitementAuto} disabled={loading}>🔄 Traitement Auto</button>
                   <button 
                     className="button" 
