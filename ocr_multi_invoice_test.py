@@ -484,7 +484,7 @@ class OCRMultiInvoiceTestSuite:
             self.log_result("Short PDF Test", False, f"Exception: {str(e)}")
         
         # ✅ Tester avec PDF de mauvaise qualité (beaucoup de caractères spéciaux)
-        bad_quality_pdf = b"PDF avec beaucoup de caracteres speciaux !!@#$%^&*()_+{}|:<>?[]\\;'\",./ et peu de contenu lisible"
+        bad_quality_pdf = b"PDF avec beaucoup de caracteres speciaux !!@#$%^&*()_+{}|:<>?[]; et peu de contenu lisible"
         
         try:
             files = {
