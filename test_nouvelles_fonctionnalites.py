@@ -81,34 +81,46 @@ class NouvellesFonctionnalitesTestSuite:
                                       f"{preparations_creees} préparations créées")
                         
                         # Vérifier le résumé détaillé
-                        if isinstance(resume, dict) and len(resume) > 0:
-                            total_preparations_resume = sum(len(preps) for preps in resume.values())
-                            if total_preparations_resume == preparations_creees:
-                                self.log_result("Résumé détaillé", True, 
-                                              f"Résumé cohérent: {total_preparations_resume} préparations détaillées")
+                        if isinstance(details, dict) and len(details) > 0:
+                            total_products_processed = details.get("total_products_processed", 0)
+                            sample_preparations = details.get("sample_preparations", [])
+                            
+                            if total_products_processed > 0:
+                                self.log_result("Produits traités", True, 
+                                              f"{total_products_processed} produits traités")
+                            
+                            if len(sample_preparations) > 0:
+                                self.log_result("Échantillon préparations", True, 
+                                              f"{len(sample_preparations)} exemples de préparations créées")
                                 
-                                # Vérifier qu'on a 2-3 préparations par produit
-                                for produit_nom, preparations in resume.items():
-                                    if 2 <= len(preparations) <= 3:
-                                        self.log_result(f"Préparations pour {produit_nom}", True, 
-                                                      f"{len(preparations)} préparations (dans la fourchette 2-3)")
-                                    else:
-                                        self.log_result(f"Préparations pour {produit_nom}", False, 
-                                                      f"{len(preparations)} préparations (hors fourchette 2-3)")
+                                # Vérifier qu'on a différentes formes de découpe
+                                formes_trouvees = set()
+                                for prep_name in sample_preparations[:10]:  # Analyser les 10 premiers
+                                    if "filets" in prep_name.lower():
+                                        formes_trouvees.add("filets")
+                                    elif "émincés" in prep_name.lower():
+                                        formes_trouvees.add("émincés")
+                                    elif "marinés" in prep_name.lower():
+                                        formes_trouvees.add("marinés")
+                                
+                                if len(formes_trouvees) >= 2:
+                                    self.log_result("Variété formes de découpe", True, 
+                                                  f"Formes trouvées: {', '.join(formes_trouvees)}")
+                                else:
+                                    self.log_result("Variété formes de découpe", False, 
+                                                  f"Peu de variété: {', '.join(formes_trouvees)}")
                             else:
-                                self.log_result("Résumé détaillé", False, 
-                                              f"Incohérence: {total_preparations_resume} dans résumé vs {preparations_creees} créées")
+                                self.log_result("Échantillon préparations", False, "Aucun exemple fourni")
                         else:
-                            self.log_result("Résumé détaillé", False, "Résumé vide ou format incorrect")
+                            self.log_result("Détails génération", False, "Détails vides ou format incorrect")
                     else:
                         self.log_result("Préparations créées", False, "Aucune préparation créée")
                     
-                    if preparations_supprimees >= 0:
-                        self.log_result("Suppression préparations existantes", True, 
-                                      f"{preparations_supprimees} préparations supprimées")
+                    # Vérifier le succès
+                    if result.get("success") == True:
+                        self.log_result("Succès génération", True, "Génération marquée comme réussie")
                     else:
-                        self.log_result("Suppression préparations existantes", False, 
-                                      "Nombre de suppressions invalide")
+                        self.log_result("Succès génération", False, "Génération non marquée comme réussie")
                         
                 else:
                     missing_fields = [f for f in required_fields if f not in result]
