@@ -212,9 +212,9 @@ body {
 }
 
 /* Remove top padding for orders page */
-#orders .content-wrapper,
-#orders {
+.wireframe-section#orders {
   padding-top: 0 !important;
+  margin-top: -16px !important;
 }
 
 /* ===== WIREFRAME SECTIONS ===== */
