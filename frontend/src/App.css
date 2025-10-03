@@ -593,6 +593,24 @@ body {
     max-height: calc(100vh - 60px);
     border-radius: var(--border-radius-md);
   }
+  
+  /* Optimisations pour la répartition mobile */
+  .kpi-grid {
+    grid-template-columns: 1fr;
+    gap: var(--spacing-sm);
+  }
+  
+  .form-row {
+    flex-direction: column !important;
+    gap: var(--spacing-sm) !important;
+  }
+  
+  /* Boutons plus grands pour le mobile */
+  .button.small {
+    min-height: 44px;
+    min-width: 44px;
+    font-size: 16px;
+  }
 }
 
 @media (max-width: 480px) {
@@ -604,6 +622,16 @@ body {
   .modal-header {
     font-size: 16px;
     margin-bottom: var(--spacing-md);
+  }
+  
+  /* Interface répartition encore plus compacte */
+  .section-title {
+    font-size: 16px;
+    margin-bottom: var(--spacing-sm);
+  }
+  
+  .kpi-card {
+    padding: var(--spacing-sm);
   }
 }
 
