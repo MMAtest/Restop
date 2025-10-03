@@ -3389,6 +3389,115 @@ async def get_delivery_estimate(supplier_id: str):
         "explanation": delivery_info['explanation']
     }
 
+# Routes pour les Préparations
+@api_router.post("/preparations", response_model=Preparation)
+async def create_preparation(prep_data: PreparationCreate):
+    """Créer une nouvelle préparation"""
+    # Récupérer le produit pour avoir son nom
+    produit = await db.produits.find_one({"id": prep_data.produit_id})
+    if not produit:
+        raise HTTPException(status_code=404, detail="Produit non trouvé")
+    
+    # Créer la préparation
+    preparation = Preparation(
+        **prep_data.dict(),
+        produit_nom=produit["nom"]
+    )
+    
+    await db.preparations.insert_one(preparation.dict())
+    return preparation
+
+@api_router.get("/preparations", response_model=List[Preparation])
+async def get_preparations(produit_id: Optional[str] = None):
+    """Récupérer toutes les préparations avec filtre optionnel par produit"""
+    query = {}
+    if produit_id:
+        query["produit_id"] = produit_id
+    
+    preparations = await db.preparations.find(query).sort("date_preparation", -1).to_list(1000)
+    return [Preparation(**prep) for prep in preparations]
+
+@api_router.get("/preparations/{preparation_id}", response_model=Preparation)
+async def get_preparation(preparation_id: str):
+    """Récupérer une préparation spécifique"""
+    preparation = await db.preparations.find_one({"id": preparation_id})
+    if not preparation:
+        raise HTTPException(status_code=404, detail="Préparation non trouvée")
+    return Preparation(**preparation)
+
+@api_router.put("/preparations/{preparation_id}", response_model=Preparation)
+async def update_preparation(preparation_id: str, prep_data: PreparationCreate):
+    """Mettre à jour une préparation"""
+    # Récupérer le produit pour avoir son nom
+    produit = await db.produits.find_one({"id": prep_data.produit_id})
+    if not produit:
+        raise HTTPException(status_code=404, detail="Produit non trouvé")
+    
+    update_data = prep_data.dict()
+    update_data["produit_nom"] = produit["nom"]
+    update_data["updated_at"] = datetime.utcnow()
+    
+    result = await db.preparations.update_one(
+        {"id": preparation_id},
+        {"$set": update_data}
+    )
+    
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Préparation non trouvée")
+    
+    updated_prep = await db.preparations.find_one({"id": preparation_id})
+    return Preparation(**updated_prep)
+
+@api_router.delete("/preparations/{preparation_id}")
+async def delete_preparation(preparation_id: str):
+    """Supprimer une préparation"""
+    result = await db.preparations.delete_one({"id": preparation_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Préparation non trouvée")
+    return {"message": "Préparation supprimée"}
+
+@api_router.get("/preparations/dlc/alerts")
+async def get_preparations_dlc_alerts(days: int = 3):
+    """Récupérer les préparations dont la DLC expire bientôt"""
+    limit_date = datetime.utcnow() + timedelta(days=days)
+    preparations = await db.preparations.find({
+        "dlc": {"$lte": limit_date, "$gte": datetime.utcnow()}
+    }).sort("dlc", 1).to_list(100)
+    
+    return [Preparation(**prep) for prep in preparations]
+
+# Routes pour les formes de découpe personnalisées
+@api_router.get("/formes-decoupe")
+async def get_formes_decoupe():
+    """Récupérer toutes les formes de découpe (prédéfinies + custom)"""
+    predefined = [
+        {"id": "julienne", "nom": "Julienne", "description": "Bâtonnets fins"},
+        {"id": "brunoise", "nom": "Brunoise", "description": "Petits dés réguliers"},
+        {"id": "carre", "nom": "Carré", "description": "Cubes moyens"},
+        {"id": "emince", "nom": "Émincé", "description": "Tranches fines"},
+        {"id": "hache", "nom": "Haché", "description": "Haché grossier ou fin"},
+        {"id": "sauce", "nom": "Sauce", "description": "Transformé en sauce"},
+        {"id": "puree", "nom": "Purée", "description": "Écrasé en purée"},
+        {"id": "cuit", "nom": "Cuit", "description": "Cuit entier ou préparé"},
+        {"id": "marine", "nom": "Mariné", "description": "Mariné"},
+        {"id": "rape", "nom": "Râpé", "description": "Râpé fin ou gros"},
+        {"id": "concasse", "nom": "Concassé", "description": "Grossièrement haché"},
+        {"id": "tourne", "nom": "Tourné", "description": "Taillé en forme régulière"}
+    ]
+    
+    # Récupérer les formes custom
+    custom_formes = await db.formes_decoupe_custom.find().to_list(100)
+    custom = [{"id": f["id"], "nom": f["nom"], "description": f.get("description", ""), "custom": True} for f in custom_formes]
+    
+    return {"predefined": predefined, "custom": custom}
+
+@api_router.post("/formes-decoupe")
+async def create_forme_decoupe_custom(nom: str, description: Optional[str] = None):
+    """Créer une forme de découpe personnalisée"""
+    forme = FormeDecoupeCustom(nom=nom, description=description)
+    await db.formes_decoupe_custom.insert_one(forme.dict())
+    return forme
+
 # Routes pour les produits
 @api_router.post("/produits", response_model=Produit)
 async def create_produit(produit: ProduitCreate):
