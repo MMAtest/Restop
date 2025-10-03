@@ -3576,6 +3576,229 @@ function App() {
                       </>
                     );
                   })()}
+                  </div>
+                )}
+
+                {/* Contenu spécifique aux Factures */}
+                {activeOcrTab === 'factures' && (
+                  <div className="item-list">
+                    <div className="section-title">🧾 Historique des Factures</div>
+                    
+                    {/* Message d'information pour les factures multiples */}
+                    <div className="info-section" style={{
+                      marginBottom: '20px',
+                      padding: '15px',
+                      background: 'var(--color-background-card-light)',
+                      borderRadius: '8px',
+                      border: '1px solid var(--color-primary-blue)'
+                    }}>
+                      <h4 style={{marginBottom: '10px', color: 'var(--color-primary-blue)'}}>
+                        📤 Détection automatique de factures multiples
+                      </h4>
+                      <p style={{fontSize: '14px', lineHeight: '1.4', color: 'var(--color-text-muted)'}}>
+                        L'OCR peut automatiquement détecter si votre document contient plusieurs factures et les traiter séparément. 
+                        Chaque facture sera analysée individuellement et apparaîtra comme un document distinct dans l'historique.
+                      </p>
+                    </div>
+                    
+                    {/* Validation des données pour Factures */}
+                    {documentsOcr.filter(doc => doc.type_document === 'facture_fournisseur').length > 0 && (
+                      <div className="validation-section" style={{
+                        marginBottom: '20px',
+                        padding: '15px',
+                        background: 'var(--color-background-card-light)',
+                        borderRadius: '8px',
+                        border: '1px solid var(--color-border)'
+                      }}>
+                        <h4 style={{marginBottom: '10px', color: 'var(--color-text-primary)'}}>
+                          ✅ Validation des Données Extraites
+                        </h4>
+                        {(() => {
+                          const latestInvoice = documentsOcr
+                            .filter(doc => doc.type_document === 'facture_fournisseur')
+                            .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))[0];
+                          
+                          if (!latestInvoice?.donnees_parsees) return null;
+                          
+                          const data = latestInvoice.donnees_parsees;
+                          return (
+                            <div style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '10px'}}>
+                              <div className="validation-card">
+                                <label>🏢 Fournisseur:</label>
+                                <input type="text" defaultValue={data.fournisseur || ''} style={{width: '100%', padding: '4px'}} />
+                              </div>
+                              <div className="validation-card">
+                                <label>📅 Date facture:</label>
+                                <input type="date" defaultValue={data.date_facture || ''} style={{width: '100%', padding: '4px'}} />
+                              </div>
+                              <div className="validation-card">
+                                <label>📄 N° facture:</label>
+                                <input type="text" defaultValue={data.numero_facture || ''} style={{width: '100%', padding: '4px'}} />
+                              </div>
+                              <div className="validation-card">
+                                <label>💰 Total HT:</label>
+                                <input type="number" step="0.01" defaultValue={data.total_ht || ''} style={{width: '100%', padding: '4px'}} />
+                              </div>
+                              <div className="validation-card">
+                                <label>💰 Total TTC:</label>
+                                <input type="number" step="0.01" defaultValue={data.total_ttc || ''} style={{width: '100%', padding: '4px'}} />
+                              </div>
+                              {data.separation_info?.is_multi_invoice && (
+                                <div className="validation-card" style={{gridColumn: 'span 2', background: 'var(--color-success-green)', color: 'white', padding: '8px', borderRadius: '4px'}}>
+                                  🎯 Facture {data.separation_info.invoice_index}/{data.separation_info.total_invoices} - {data.separation_info.header_detected}
+                                </div>
+                              )}
+                              <button className="button small success" style={{gridColumn: 'span 2'}}>
+                                ✅ Valider les corrections
+                              </button>
+                            </div>
+                          );
+                        })()}
+                      </div>
+                    )}
+                    
+                    {/* Filtre spécifique aux Factures */}
+                    <div className="filter-section" style={{marginBottom: '20px'}}>
+                      <div className="filter-info" style={{
+                        fontSize: '14px', 
+                        color: 'var(--color-text-secondary)'
+                      }}>
+                        {documentsOcr.filter(doc => doc.type_document === 'facture_fournisseur').length} facture(s) traitée(s)
+                      </div>
+                    </div>
+                    
+                    {/* Liste des factures avec pagination */}
+                    {(() => {
+                      // Filtrer uniquement les factures
+                      const filteredDocs = documentsOcr.filter(doc => doc.type_document === 'facture_fournisseur');
+                      
+                      // Calculer la pagination
+                      const totalPages = Math.ceil(filteredDocs.length / ocrDocumentsPerPage);
+                      const startIndex = (ocrCurrentPage - 1) * ocrDocumentsPerPage;
+                      const endIndex = startIndex + ocrDocumentsPerPage;
+                      const currentDocs = filteredDocs.slice(startIndex, endIndex);
+                      
+                      if (filteredDocs.length === 0) {
+                        return (
+                          <div style={{textAlign: 'center', padding: '40px', color: 'var(--color-text-muted)'}}>
+                            <div style={{fontSize: '48px', marginBottom: '15px'}}>🧾</div>
+                            <p>Aucune facture traitée</p>
+                            <p style={{fontSize: '14px'}}>Importez une ou plusieurs factures pour commencer</p>
+                          </div>
+                        );
+                      }
+                      
+                      return (
+                        <>
+                          <div style={{
+                            marginBottom: '15px',
+                            fontSize: '14px',
+                            color: 'var(--color-text-secondary)',
+                            padding: '8px 12px',
+                            background: 'var(--color-background-card-light)',
+                            borderRadius: '6px'
+                          }}>
+                            {filteredDocs.length} facture(s) • Page {ocrCurrentPage} sur {totalPages}
+                          </div>
+                          
+                          {currentDocs.map((doc) => (
+                            <div key={doc.id} className="item-row">
+                              <div className="item-info">
+                                <div className="item-name">
+                                  🧾 {doc.nom_fichier}
+                                  {doc.donnees_parsees?.separation_info?.is_multi_invoice && (
+                                    <span style={{
+                                      marginLeft: '8px',
+                                      padding: '2px 6px',
+                                      borderRadius: '12px',
+                                      fontSize: '10px',
+                                      background: 'var(--color-success-green)',
+                                      color: 'white'
+                                    }}>
+                                      Multi {doc.donnees_parsees.separation_info.invoice_index}/{doc.donnees_parsees.separation_info.total_invoices}
+                                    </span>
+                                  )}
+                                </div>
+                                <div className="item-details">
+                                  {doc.donnees_parsees?.fournisseur || 'Fournisseur non identifié'} • 
+                                  {doc.donnees_parsees?.total_ttc ? ` ${doc.donnees_parsees.total_ttc}€ TTC` : ' Montant non identifié'} • 
+                                  {new Date(doc.created_at).toLocaleDateString('fr-FR')}
+                                </div>
+                              </div>
+                              <div className="item-actions">
+                                <button className="button small" onClick={() => setSelectedDoc(doc)}>👁️ Aperçu</button>
+                              </div>
+                            </div>
+                          ))}
+                          
+                          {/* Contrôles de pagination pour factures */}
+                          {totalPages > 1 && (
+                            <div style={{
+                              display: 'flex', 
+                              justifyContent: 'space-between', 
+                              alignItems: 'center',
+                              marginTop: '20px',
+                              padding: '15px',
+                              background: 'var(--color-background-card-light)',
+                              borderRadius: '8px'
+                            }}>
+                              <div style={{fontSize: '14px', color: 'var(--color-text-secondary)'}}>
+                                Page {ocrCurrentPage} sur {totalPages} • 
+                                {startIndex + 1}-{Math.min(endIndex, filteredDocs.length)} sur {filteredDocs.length} factures
+                              </div>
+                              
+                              <div style={{display: 'flex', gap: '5px'}}>
+                                <button 
+                                  className="button small" 
+                                  onClick={() => setOcrCurrentPage(1)}
+                                  disabled={ocrCurrentPage === 1}
+                                  style={{
+                                    opacity: ocrCurrentPage === 1 ? 0.5 : 1,
+                                    cursor: ocrCurrentPage === 1 ? 'not-allowed' : 'pointer'
+                                  }}
+                                >
+                                  ⏮️ Début
+                                </button>
+                                <button 
+                                  className="button small" 
+                                  onClick={() => setOcrCurrentPage(ocrCurrentPage - 1)}
+                                  disabled={ocrCurrentPage === 1}
+                                  style={{
+                                    opacity: ocrCurrentPage === 1 ? 0.5 : 1,
+                                    cursor: ocrCurrentPage === 1 ? 'not-allowed' : 'pointer'
+                                  }}
+                                >
+                                  ⬅️ Précédent
+                                </button>
+                                <button 
+                                  className="button small" 
+                                  onClick={() => setOcrCurrentPage(ocrCurrentPage + 1)}
+                                  disabled={ocrCurrentPage === totalPages}
+                                  style={{
+                                    opacity: ocrCurrentPage === totalPages ? 0.5 : 1,
+                                    cursor: ocrCurrentPage === totalPages ? 'not-allowed' : 'pointer'
+                                  }}
+                                >
+                                  Suivant ➡️
+                                </button>
+                                <button 
+                                  className="button small" 
+                                  onClick={() => setOcrCurrentPage(totalPages)}
+                                  disabled={ocrCurrentPage === totalPages}
+                                  style={{
+                                    opacity: ocrCurrentPage === totalPages ? 0.5 : 1,
+                                    cursor: ocrCurrentPage === totalPages ? 'not-allowed' : 'pointer'
+                                  }}
+                                >
+                                  Fin ⏭️
+                                </button>
+                              </div>
+                            </div>
+                          )}
+                        </>
+                      );
+                    })()}
+                  </div>
                 )}
 
                 {/* Contenu spécifique aux Factures */}
