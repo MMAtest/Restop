@@ -320,6 +320,8 @@ function App() {
     fetchDocumentsOcr();
     fetchBatchSummary(); // Ajouter récupération des lots
     fetchCategoriesProduction(); // Récupérer les catégories
+    fetchPreparations(); // Récupérer les préparations
+    fetchFormesDecoupe(); // Récupérer les formes de découpe
   }, []);
 
   // Fonction pour récupérer les catégories de production
