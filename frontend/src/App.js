@@ -4674,6 +4674,16 @@ function App() {
               </button>
               <button 
                 className="button" 
+                onClick={() => setActiveProductionTab('preparations')}
+                style={{
+                  background: activeProductionTab === 'preparations' ? 'var(--color-primary-blue)' : 'var(--color-background-card-light)',
+                  color: activeProductionTab === 'preparations' ? 'white' : 'var(--color-text-secondary)'
+                }}
+              >
+                🔪 Préparations ({preparations.length})
+              </button>
+              <button 
+                className="button" 
                 onClick={() => setActiveProductionTab('recettes')}
                 style={{
                   background: activeProductionTab === 'recettes' ? 'var(--color-primary-blue)' : 'var(--color-background-card-light)',
