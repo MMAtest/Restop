@@ -473,72 +473,131 @@ def normalize_family(cat_name: str) -> str:
 def detect_multiple_invoices(text_content):
     """Détecter s'il y a plusieurs factures dans le document et les séparer"""
     try:
-        # Mots-clés typiques des factures pour détecter les séparateurs
+        # Patterns améliorés basés sur l'analyse du PDF METRO
         invoice_separators = [
-            r'FACTURE\s*N[°O]?\s*\d+',
-            r'INVOICE\s*N[°O]?\s*\d+',
-            r'DEVIS\s*N[°O]?\s*\d+', 
-            r'BL\s*N[°O]?\s*\d+',
-            r'BON\s*DE\s*LIVRAISON',
-            r'TOTAL\s*TTC\s*:\s*\d+[,.]?\d*',
-            r'NET\s*A\s*PAYER\s*:\s*\d+[,.]?\d*',
-            r'MONTANT\s*TOTAL\s*:\s*\d+[,.]?\d*'
+            # Patterns spécifiques METRO et autres fournisseurs français
+            r'METRO\s+(?:FRANCE\s+)?[A-Z\s]*(?:FACTURE|Facture)',
+            r'(?:FACTURE|Facture)\s*N[°O]?\s*:?\s*[A-Z0-9\/\-]+',
+            r'(?:INVOICE|Invoice)\s*N[°O]?\s*:?\s*[A-Z0-9\/\-]+',
+            r'BON\s*DE\s*LIVRAISON\s*N[°O]?\s*:?\s*[A-Z0-9\/\-]+',
+            r'BL\s*N[°O]?\s*:?\s*[A-Z0-9\/\-]+',
+            # Patterns pour fournisseurs spécifiques
+            r'LE\s+DIAMANT\s+DU\s+TERROIR',
+            r'RM\s+MAREE',
+            r'GFD\s+LERDA',
+            r'LE\s+ROYAUME\s+DES\s+MERS',
+            # Patterns génériques d'en-têtes de factures
+            r'(?:^|\n)\s*[A-Z][A-Z\s&]+(?:SARL|SAS|SA|EURL)\s*(?:\n|$)',
+            # Totaux qui indiquent la fin d'une facture
+            r'NET\s*[AÀ]\s*PAYER\s*:?\s*\d+[,.]?\d*\s*€?',
+            r'TOTAL\s*TTC\s*:?\s*\d+[,.]?\d*\s*€?',
+            r'MONTANT\s*TOTAL\s*:?\s*\d+[,.]?\d*\s*€?'
         ]
         
         # Rechercher tous les indicateurs de factures
         invoice_positions = []
         
-        for pattern in invoice_separators[:4]:  # Patterns de numéros de facture
-            for match in re.finditer(pattern, text_content, re.IGNORECASE):
+        for i, pattern in enumerate(invoice_separators):
+            for match in re.finditer(pattern, text_content, re.IGNORECASE | re.MULTILINE):
                 invoice_positions.append({
-                    'type': 'header',
+                    'type': 'header' if i < 10 else 'footer',
                     'position': match.start(),
-                    'text': match.group()
+                    'text': match.group().strip(),
+                    'pattern_index': i
                 })
         
-        # Si on trouve plus d'un en-tête de facture, on a probablement plusieurs factures
+        # Filtrer et nettoyer les positions
         if len(invoice_positions) > 1:
-            print(f"✅ Détection de {len(invoice_positions)} factures multiples")
-            
             # Trier par position
             invoice_positions.sort(key=lambda x: x['position'])
             
-            # Séparer le texte en sections
-            separated_invoices = []
+            # Grouper les headers proches (même facture)
+            grouped_positions = []
+            current_group = [invoice_positions[0]]
             
-            for i, invoice in enumerate(invoice_positions):
-                start_pos = invoice['position']
-                
-                # Déterminer la fin de cette facture (début de la suivante ou fin du document)
-                if i < len(invoice_positions) - 1:
-                    end_pos = invoice_positions[i + 1]['position']
+            for pos in invoice_positions[1:]:
+                # Si la position est dans les 500 caractères suivants, c'est probablement la même facture
+                if pos['position'] - current_group[-1]['position'] <= 500:
+                    current_group.append(pos)
                 else:
-                    end_pos = len(text_content)
-                
-                # Extraire le texte de cette facture
-                invoice_text = text_content[start_pos:end_pos].strip()
-                
-                if len(invoice_text) > 100:  # Filtrer les segments trop courts
-                    separated_invoices.append({
-                        'index': i + 1,
-                        'header': invoice['text'],
-                        'text_content': invoice_text,
-                        'start_position': start_pos,
-                        'end_position': end_pos
-                    })
+                    grouped_positions.append(current_group)
+                    current_group = [pos]
             
-            print(f"✅ {len(separated_invoices)} factures séparées avec succès")
-            return separated_invoices
+            grouped_positions.append(current_group)
+            
+            # Si on a plusieurs groupes, on a plusieurs factures
+            if len(grouped_positions) > 1:
+                print(f"✅ Détection de {len(grouped_positions)} factures multiples")
+                
+                separated_invoices = []
+                
+                for i, group in enumerate(grouped_positions):
+                    start_pos = group[0]['position']
+                    
+                    # Déterminer la fin : soit le début du groupe suivant, soit la fin du document
+                    if i < len(grouped_positions) - 1:
+                        # Chercher le dernier total/footer avant le prochain header
+                        end_pos = grouped_positions[i + 1][0]['position']
+                        
+                        # Chercher un footer/total dans cette section pour une coupe plus précise
+                        section_text = text_content[start_pos:end_pos]
+                        footer_patterns = [
+                            r'NET\s*[AÀ]\s*PAYER\s*:?\s*\d+[,.]?\d*\s*€?',
+                            r'TOTAL\s*TTC\s*:?\s*\d+[,.]?\d*\s*€?',
+                            r'Merci\s+de\s+votre\s+confiance',
+                            r'Conditions\s+de\s+vente'
+                        ]
+                        
+                        for footer_pattern in footer_patterns:
+                            footer_match = None
+                            for match in re.finditer(footer_pattern, section_text, re.IGNORECASE):
+                                footer_match = match
+                            if footer_match:
+                                end_pos = start_pos + footer_match.end() + 100  # Petit buffer après le total
+                                break
+                    else:
+                        end_pos = len(text_content)
+                    
+                    # Extraire le texte de cette facture
+                    invoice_text = text_content[start_pos:end_pos].strip()
+                    
+                    # Vérifier la qualité du texte extrait
+                    quality_check = check_invoice_quality(invoice_text)
+                    
+                    if len(invoice_text) > 200 and quality_check['is_valid']:  # Filtrer les segments trop courts ou de mauvaise qualité
+                        separated_invoices.append({
+                            'index': len(separated_invoices) + 1,
+                            'header': group[0]['text'],
+                            'text_content': invoice_text,
+                            'start_position': start_pos,
+                            'end_position': end_pos,
+                            'quality_score': quality_check['score'],
+                            'quality_issues': quality_check['issues']
+                        })
+                    else:
+                        print(f"⚠️ Facture {i+1} rejetée: qualité insuffisante ou trop courte")
+                        print(f"   - Longueur: {len(invoice_text)} caractères")
+                        print(f"   - Qualité: {quality_check}")
+                
+                print(f"✅ {len(separated_invoices)} factures de qualité suffisante séparées")
+                return separated_invoices
         
-        else:
-            print("✅ Facture unique détectée")
-            return [{
-                'index': 1,
-                'header': 'Facture unique',
-                'text_content': text_content,
-                'start_position': 0,
-                'end_position': len(text_content)
-            }]
+        # Facture unique
+        print("✅ Facture unique détectée")
+        quality_check = check_invoice_quality(text_content)
+        
+        if not quality_check['is_valid']:
+            print(f"⚠️ Qualité de la facture insuffisante: {quality_check['issues']}")
+        
+        return [{
+            'index': 1,
+            'header': 'Facture unique',
+            'text_content': text_content,
+            'start_position': 0,
+            'end_position': len(text_content),
+            'quality_score': quality_check['score'],
+            'quality_issues': quality_check['issues']
+        }]
     
     except Exception as e:
         print(f"❌ Erreur lors de la détection de factures multiples: {str(e)}")
@@ -547,8 +606,73 @@ def detect_multiple_invoices(text_content):
             'header': 'Facture (erreur détection)',
             'text_content': text_content,
             'start_position': 0,
-            'end_position': len(text_content)
+            'end_position': len(text_content),
+            'quality_score': 0.0,
+            'quality_issues': [f"Erreur de traitement: {str(e)}"]
         }]
+
+def check_invoice_quality(text_content):
+    """Vérifier la qualité d'une facture extraite"""
+    try:
+        quality_score = 1.0
+        issues = []
+        
+        # Vérifications de base
+        if len(text_content) < 200:
+            quality_score -= 0.5
+            issues.append("Texte trop court (< 200 caractères)")
+        
+        # Vérifier la présence d'éléments essentiels d'une facture
+        essential_patterns = [
+            (r'(?:FACTURE|INVOICE|BON)', 0.3, "Pas d'en-tête de facture détecté"),
+            (r'\d{2}[/\-\.]\d{2}[/\-\.]\d{2,4}', 0.2, "Pas de date détectée"), 
+            (r'\d+[,.]?\d*\s*€', 0.2, "Pas de montant en euros détecté"),
+            (r'(?:TOTAL|NET|PAYER)', 0.1, "Pas de total détecté")
+        ]
+        
+        for pattern, penalty, message in essential_patterns:
+            if not re.search(pattern, text_content, re.IGNORECASE):
+                quality_score -= penalty
+                issues.append(message)
+        
+        # Vérifier la lisibilité (ratio de caractères alphanumériques vs spéciaux)
+        total_chars = len(text_content)
+        alnum_chars = sum(1 for c in text_content if c.isalnum() or c.isspace())
+        if total_chars > 0:
+            readability_ratio = alnum_chars / total_chars
+            if readability_ratio < 0.7:  # Moins de 70% de caractères lisibles
+                quality_score -= 0.3
+                issues.append(f"Lisibilité faible ({readability_ratio:.1%})")
+        
+        # Détecter les erreurs OCR typiques
+        ocr_error_patterns = [
+            (r'[|]{3,}', "Lignes de séparation mal reconnues"),
+            (r'[#@$%^&*]{5,}', "Caractères spéciaux en série (erreur OCR)"),
+            (r'\s{10,}', "Espaces excessifs"),
+            (r'[A-Z]{20,}', "Texte en majuscules anormalement long")
+        ]
+        
+        for pattern, message in ocr_error_patterns:
+            if re.search(pattern, text_content):
+                quality_score -= 0.1
+                issues.append(message)
+        
+        # Score final
+        quality_score = max(0.0, min(1.0, quality_score))
+        is_valid = quality_score >= 0.6  # Seuil de qualité acceptable
+        
+        return {
+            'is_valid': is_valid,
+            'score': round(quality_score, 2),
+            'issues': issues
+        }
+        
+    except Exception as e:
+        return {
+            'is_valid': False,
+            'score': 0.0,
+            'issues': [f"Erreur d'analyse qualité: {str(e)}"]
+        }
 
 def analyze_z_report_categories(texte_ocr: str) -> dict:
     """
