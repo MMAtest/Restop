@@ -470,6 +470,86 @@ def normalize_family(cat_name: str) -> str:
                 return fam
     return "Autres"
 
+def detect_multiple_invoices(text_content):
+    """Détecter s'il y a plusieurs factures dans le document et les séparer"""
+    try:
+        # Mots-clés typiques des factures pour détecter les séparateurs
+        invoice_separators = [
+            r'FACTURE\s*N[°O]?\s*\d+',
+            r'INVOICE\s*N[°O]?\s*\d+',
+            r'DEVIS\s*N[°O]?\s*\d+', 
+            r'BL\s*N[°O]?\s*\d+',
+            r'BON\s*DE\s*LIVRAISON',
+            r'TOTAL\s*TTC\s*:\s*\d+[,.]?\d*',
+            r'NET\s*A\s*PAYER\s*:\s*\d+[,.]?\d*',
+            r'MONTANT\s*TOTAL\s*:\s*\d+[,.]?\d*'
+        ]
+        
+        # Rechercher tous les indicateurs de factures
+        invoice_positions = []
+        
+        for pattern in invoice_separators[:4]:  # Patterns de numéros de facture
+            for match in re.finditer(pattern, text_content, re.IGNORECASE):
+                invoice_positions.append({
+                    'type': 'header',
+                    'position': match.start(),
+                    'text': match.group()
+                })
+        
+        # Si on trouve plus d'un en-tête de facture, on a probablement plusieurs factures
+        if len(invoice_positions) > 1:
+            print(f"✅ Détection de {len(invoice_positions)} factures multiples")
+            
+            # Trier par position
+            invoice_positions.sort(key=lambda x: x['position'])
+            
+            # Séparer le texte en sections
+            separated_invoices = []
+            
+            for i, invoice in enumerate(invoice_positions):
+                start_pos = invoice['position']
+                
+                # Déterminer la fin de cette facture (début de la suivante ou fin du document)
+                if i < len(invoice_positions) - 1:
+                    end_pos = invoice_positions[i + 1]['position']
+                else:
+                    end_pos = len(text_content)
+                
+                # Extraire le texte de cette facture
+                invoice_text = text_content[start_pos:end_pos].strip()
+                
+                if len(invoice_text) > 100:  # Filtrer les segments trop courts
+                    separated_invoices.append({
+                        'index': i + 1,
+                        'header': invoice['text'],
+                        'text_content': invoice_text,
+                        'start_position': start_pos,
+                        'end_position': end_pos
+                    })
+            
+            print(f"✅ {len(separated_invoices)} factures séparées avec succès")
+            return separated_invoices
+        
+        else:
+            print("✅ Facture unique détectée")
+            return [{
+                'index': 1,
+                'header': 'Facture unique',
+                'text_content': text_content,
+                'start_position': 0,
+                'end_position': len(text_content)
+            }]
+    
+    except Exception as e:
+        print(f"❌ Erreur lors de la détection de factures multiples: {str(e)}")
+        return [{
+            'index': 1,
+            'header': 'Facture (erreur détection)',
+            'text_content': text_content,
+            'start_position': 0,
+            'end_position': len(text_content)
+        }]
+
 def analyze_z_report_categories(texte_ocr: str) -> dict:
     """
     Analyse optimisée des rapports Z selon les spécifications détaillées.
