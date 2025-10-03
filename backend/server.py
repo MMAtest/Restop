@@ -67,6 +67,15 @@ CATEGORIES_FOURNISSEURS = [
 ]
 
 # Models pour la gestion des stocks
+class DeliveryRules(BaseModel):
+    """Règles de livraison spécifiques pour un fournisseur"""
+    order_days: Optional[List[str]] = None  # Jours où on peut commander: ["lundi", "mardi", etc.]
+    order_deadline_hour: Optional[int] = 11  # Heure limite de commande (ex: 11h)
+    delivery_days: Optional[List[str]] = None  # Jours de livraison possibles
+    delivery_delay_days: Optional[int] = 1  # Délai en jours (ex: 1 = lendemain)
+    delivery_time: Optional[str] = "12:00"  # Heure de livraison (ex: "12:00", "11:00")
+    special_rules: Optional[str] = None  # Règles spéciales (texte libre)
+
 class Fournisseur(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     nom: str
@@ -77,6 +86,7 @@ class Fournisseur(BaseModel):
     couleur: Optional[str] = "#3B82F6"  # Couleur par défaut (bleu)
     logo: Optional[str] = None  # URL ou emoji pour le logo
     categorie: Optional[str] = "frais"  # Catégorie par défaut
+    delivery_rules: Optional[DeliveryRules] = None  # Règles de livraison
     created_at: datetime = Field(default_factory=datetime.utcnow)
 
 class FournisseurCreate(BaseModel):
