@@ -24,7 +24,15 @@ const PurchaseOrderPage = () => {
   useEffect(() => {
     fetchSuppliers();
     fetchRecipes();
+    fetchOrders();
   }, []);
+  
+  // Charger l'estimation de livraison quand on sélectionne un fournisseur
+  useEffect(() => {
+    if (selectedSupplier) {
+      fetchDeliveryEstimate(selectedSupplier.id);
+    }
+  }, [selectedSupplier]);
 
   const fetchRecipes = async () => {
     try {
