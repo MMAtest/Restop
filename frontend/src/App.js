@@ -4558,9 +4558,13 @@ function App() {
                                 <div><strong>Forme:</strong> {prep.forme_decoupe_custom || prep.forme_decoupe}</div>
                                 <div><strong>Taille portion:</strong> {prep.taille_portion}{prep.unite_portion}</div>
                                 <div><strong>Portions max:</strong> {prep.nombre_portions}</div>
+                                <div style={{color: '#10b981', marginTop: '4px'}}>
+                                  <strong>Max possible:</strong> {Math.max(0, quantiteMaxPossible).toFixed(1)} {prep.unite_preparee}
+                                </div>
                               </div>
                             </div>
-                          ))}
+                            );
+                          })}
                         </div>
                         
                         {/* Boutons d'actions rapides */}
