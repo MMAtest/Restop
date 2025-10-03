@@ -1113,6 +1113,80 @@ def extract_text_from_pdf(pdf_content: bytes) -> str:
     print(f"❌ PDF extraction FAILED - returning error message ({len(error_msg)} chars)")
     return error_msg
 
+def extract_text_from_pdf_google_vision(pdf_content: bytes) -> str:
+    """
+    Extract text from PDF using Google Cloud Vision API (Document Text Detection)
+    - Converts PDF pages to images using pdf2image
+    - Sends each image to Google Vision API for OCR
+    - Returns concatenated text from all pages
+    - Much faster and more accurate than Tesseract for scanned PDFs
+    """
+    print("🚀 Google Vision API - Starting PDF text extraction")
+    
+    try:
+        # Initialize Google Vision client
+        client = vision.ImageAnnotatorClient()
+        print("✅ Vision API client initialized")
+        
+        # Convert PDF to images (200 DPI for good quality/speed balance)
+        print(f"📄 Converting PDF to images ({len(pdf_content)} bytes)...")
+        images = convert_from_bytes(pdf_content, dpi=200, fmt='jpeg')
+        print(f"✅ Converted to {len(images)} images")
+        
+        extracted_texts = []
+        
+        # Process each page
+        for i, img in enumerate(images):
+            try:
+                print(f"   📄 Processing page {i+1}/{len(images)}...")
+                
+                # Convert PIL Image to bytes
+                img_byte_arr = io.BytesIO()
+                img.save(img_byte_arr, format='JPEG', quality=85)
+                img_bytes = img_byte_arr.getvalue()
+                
+                # Create Vision API image object
+                image = vision.Image(content=img_bytes)
+                
+                # Perform document text detection (optimized for documents)
+                response = client.document_text_detection(image=image)
+                
+                # Check for errors
+                if response.error.message:
+                    print(f"   ⚠️ Page {i+1} API error: {response.error.message}")
+                    continue
+                
+                # Extract full text annotation
+                if response.full_text_annotation:
+                    text = response.full_text_annotation.text
+                    if text and len(text.strip()) > 50:
+                        extracted_texts.append(text)
+                        print(f"   ✅ Page {i+1}: {len(text)} characters extracted")
+                    else:
+                        print(f"   ⚠️ Page {i+1}: Insufficient text ({len(text) if text else 0} chars)")
+                else:
+                    print(f"   ⚠️ Page {i+1}: No text detected")
+                    
+            except Exception as e:
+                print(f"   ❌ Page {i+1} error: {str(e)}")
+                continue
+        
+        # Combine all extracted text
+        if extracted_texts:
+            combined_text = "\n\n=== PAGE BREAK ===\n\n".join(extracted_texts)
+            print(f"✅ Google Vision extraction SUCCESS: {len(combined_text)} chars from {len(extracted_texts)} pages")
+            return combined_text
+        else:
+            error_msg = "Erreur: Aucun texte extrait par Google Vision API"
+            print(f"❌ {error_msg}")
+            return error_msg
+            
+    except Exception as e:
+        error_msg = f"Erreur Google Vision API: {str(e)}"
+        print(f"❌ {error_msg}")
+        return error_msg
+
+
 def detect_file_type(filename: str, content_type: str = None) -> str:
     """Detect if file is image or PDF"""
     filename_lower = filename.lower() if filename else ""
