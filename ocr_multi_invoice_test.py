@@ -149,7 +149,7 @@ class OCRMultiInvoiceTestSuite:
             }
             data = {'document_type': 'facture_fournisseur'}
             
-            print("🔄 Test avec PDF de mauvaise qualité...")
+            print("🔄 Test avec PDF de mauvaise qualite...")
             response = requests.post(f"{BASE_URL}/ocr/upload-document", files=files, data=data)
             
             if response.status_code in [200, 201]:
