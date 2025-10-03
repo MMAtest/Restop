@@ -615,10 +615,10 @@ class OCRMultiInvoiceTestSuite:
         print("\n" + "=" * 80)
         print("📊 RÉSUMÉ DES TESTS OCR MULTI-FACTURES")
         print("=" * 80)
-        print(f"⏱️  Durée totale: {duration:.2f} secondes")
-        print(f"📈 Taux de réussite: {success_rate:.1f}% ({passed_tests}/{total_tests})")
-        print(f"✅ Tests réussis: {passed_tests}")
-        print(f"❌ Tests échoués: {failed_tests}")
+        print(f"⏱️  Duree totale: {duration:.2f} secondes")
+        print(f"📈 Taux de reussite: {success_rate:.1f}% ({passed_tests}/{total_tests})")
+        print(f"✅ Tests reussis: {passed_tests}")
+        print(f"❌ Tests echoues: {failed_tests}")
         
         if failed_tests > 0:
             print("\n❌ TESTS ÉCHOUÉS:")
