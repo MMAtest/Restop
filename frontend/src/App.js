@@ -3447,14 +3447,11 @@ function App() {
                         {documentsOcr.filter(doc => doc.type_document === 'z_report').length} ticket(s) Z traité(s)
                       </div>
                     </div>
-                  </div>
-
-                  {/* Liste des documents avec pagination */}
-                  {(() => {
-                    // Filtrer les documents selon le type sélectionné
-                    const filteredDocs = documentsOcr.filter(doc => 
-                      ocrFilterType === 'all' || doc.type_document === ocrFilterType
-                    );
+                    
+                    {/* Liste des tickets Z avec pagination */}
+                    {(() => {
+                      // Filtrer uniquement les tickets Z
+                      const filteredDocs = documentsOcr.filter(doc => doc.type_document === 'z_report');
                     
                     // Calculer la pagination
                     const totalPages = Math.ceil(filteredDocs.length / ocrDocumentsPerPage);
