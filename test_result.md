@@ -705,6 +705,21 @@ test_plan:
         agent: "main"
         comment: "✅ STOCKS REDESIGN COMPLETE - Interface stocks modernisée avec barre recherche, actions rapides (Nouveau Produit/Rapport/Alertes/Inventaire), cartes statistiques (Stock Total €12,450, Produits Critiques, Rotation), liste produits avec icônes catégories et statuts visuels"
 
+  - task: "Répartition des quantités avec calcul automatique des productions"
+    implemented: true
+    working: true
+    file: "/app/frontend/src/App.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Nouvelle fonctionnalité Étape 3 - Répartition des quantités avec calcul automatique des productions implémentée dans la section Stock > Répartition"
+      - working: true
+        agent: "testing"
+        comment: "🎉 RÉPARTITION DES QUANTITÉS AVEC CALCUL AUTOMATIQUE - 100% RÉUSSITE ! Validation complète de la nouvelle fonctionnalité Étape 3 demandée : ✅ NAVIGATION : Stock > Répartition accessible via navigation bottom, onglet '🎯 Répartition' fonctionnel ✅ FLUX VISUEL : 'Produit → Préparation → Production' affiché avec icônes et étapes claires (Produit brut/Stock disponible, Préparation/Forme + Portions, Production/Plat final) ✅ ÉTAPE 1 - SÉLECTION PRODUIT : Dropdown 'Choisir un produit brut' fonctionnel avec produits disponibles (Supions, Moules, Tomates, Fromage de chèvre), affichage stock disponible après sélection ✅ ÉTAPE 2 - AFFICHAGE PRÉPARATIONS : Section 'Préparations disponibles pour [produit]' s'affiche après sélection, préparations auto-générées détectées (filets, émincés, marinés) avec cartes détaillées (forme découpe, quantité, portions, DLC) ✅ NOUVELLE ÉTAPE 3 - RÉPARTITION QUANTITÉS : Section '3️⃣ Répartir les quantités et voir les productions' implémentée avec champs input numériques pour chaque préparation, validation quantité max = quantité préparée, affichage stock disponible et utilisé en temps réel ✅ CALCUL AUTOMATIQUE PRODUCTIONS : Déclenchement automatique lors saisie quantité, section 'Productions calculées automatiquement' avec détails (quantité préparée, portions possibles, produit brut requis, forme découpe, recettes compatibles) ✅ BOUTONS ACTION RAPIDES : '📊 Utiliser tout', '⚖️ Répartir 50/50', '🗑️ Reset' présents et fonctionnels, mise à jour automatique des calculs ✅ RÉSUMÉ RÉPARTITION : Section '📊 Résumé de la répartition' avec stock utilisé/disponible, portions totales possibles, alerte stock insuffisant si dépassement ✅ VALIDATION STOCK : Contrôle automatique des quantités, alerte '⚠️ Attention: Stock insuffisant !' pour quantités excessives. Interface complète et fonctionnelle selon spécifications exactes de la review request, toutes les fonctionnalités demandées opérationnelles pour La Table d'Augustine !"
+
   - task: "Nouvelle Interface Historique Multi-Section"
     implemented: true
     working: true
