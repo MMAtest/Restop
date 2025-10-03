@@ -6329,6 +6329,246 @@ function App() {
         </div>
       )}
 
+      {/* Modal Préparation */}
+      {showPreparationModal && (
+        <div className="modal-overlay">
+          <div className="modal-content" style={{maxWidth: '800px'}}>
+            <h3 className="modal-header">
+              {editingItem ? "Modifier la préparation" : "Nouvelle préparation"}
+            </h3>
+            <form onSubmit={handlePreparationSubmit}>
+              {/* Nom et produit source */}
+              <div style={{display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '16px'}}>
+                <div className="form-group">
+                  <label className="form-label">Nom de la préparation *</label>
+                  <input
+                    type="text"
+                    className="form-input"
+                    value={preparationForm.nom}
+                    onChange={(e) => setPreparationForm({...preparationForm, nom: e.target.value})}
+                    placeholder="Ex: Carottes en julienne"
+                    required
+                  />
+                </div>
+                <div className="form-group">
+                  <label className="form-label">Produit source *</label>
+                  <select
+                    className="form-select"
+                    value={preparationForm.produit_id}
+                    onChange={(e) => setPreparationForm({...preparationForm, produit_id: e.target.value})}
+                    required
+                  >
+                    <option value="">-- Sélectionner un produit --</option>
+                    {produits.map(p => (
+                      <option key={p.id} value={p.id}>{p.nom}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              {/* Forme de découpe */}
+              <div className="form-group" style={{marginBottom: '16px'}}>
+                <label className="form-label">Forme de découpe *</label>
+                <select
+                  className="form-select"
+                  value={preparationForm.forme_decoupe}
+                  onChange={(e) => setPreparationForm({...preparationForm, forme_decoupe: e.target.value})}
+                  required
+                >
+                  <option value="">-- Sélectionner une forme --</option>
+                  <optgroup label="Formes prédéfinies">
+                    {formesDecoupe.predefined.map(f => (
+                      <option key={f.id} value={f.id}>{f.nom} - {f.description}</option>
+                    ))}
+                  </optgroup>
+                  {formesDecoupe.custom.length > 0 && (
+                    <optgroup label="Formes personnalisées">
+                      {formesDecoupe.custom.map(f => (
+                        <option key={f.id} value={f.nom}>{f.nom}</option>
+                      ))}
+                    </optgroup>
+                  )}
+                </select>
+              </div>
+
+              {/* Quantités */}
+              <div style={{background: '#f3f4f6', padding: '16px', borderRadius: '8px', marginBottom: '16px'}}>
+                <div style={{fontWeight: 'bold', marginBottom: '12px'}}>Quantités</div>
+                <div style={{display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px'}}>
+                  <div className="form-group">
+                    <label className="form-label">Produit brut *</label>
+                    <div style={{display: 'flex', gap: '8px'}}>
+                      <input
+                        type="number"
+                        step="0.01"
+                        className="form-input"
+                        value={preparationForm.quantite_produit_brut}
+                        onChange={(e) => setPreparationForm({...preparationForm, quantite_produit_brut: e.target.value})}
+                        onBlur={calculatePerte}
+                        placeholder="10"
+                        required
+                      />
+                      <select
+                        className="form-select"
+                        value={preparationForm.unite_produit_brut}
+                        onChange={(e) => setPreparationForm({...preparationForm, unite_produit_brut: e.target.value})}
+                        style={{width: '100px'}}
+                      >
+                        <option value="kg">kg</option>
+                        <option value="g">g</option>
+                        <option value="L">L</option>
+                        <option value="cl">cl</option>
+                        <option value="pièces">pièces</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div className="form-group">
+                    <label className="form-label">Quantité préparée *</label>
+                    <div style={{display: 'flex', gap: '8px'}}>
+                      <input
+                        type="number"
+                        step="0.01"
+                        className="form-input"
+                        value={preparationForm.quantite_preparee}
+                        onChange={(e) => setPreparationForm({...preparationForm, quantite_preparee: e.target.value})}
+                        onBlur={calculatePerte}
+                        placeholder="8.5"
+                        required
+                      />
+                      <select
+                        className="form-select"
+                        value={preparationForm.unite_preparee}
+                        onChange={(e) => setPreparationForm({...preparationForm, unite_preparee: e.target.value})}
+                        style={{width: '100px'}}
+                      >
+                        <option value="kg">kg</option>
+                        <option value="g">g</option>
+                        <option value="L">L</option>
+                        <option value="cl">cl</option>
+                        <option value="pièces">pièces</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Perte */}
+              <div style={{background: '#fee2e2', padding: '16px', borderRadius: '8px', marginBottom: '16px'}}>
+                <div style={{fontWeight: 'bold', marginBottom: '12px', color: '#dc2626'}}>Perte (calculée automatiquement)</div>
+                <div style={{display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px'}}>
+                  <div className="form-group">
+                    <label className="form-label">Perte (quantité)</label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      className="form-input"
+                      value={preparationForm.perte}
+                      readOnly
+                      style={{background: '#fef2f2'}}
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label className="form-label">Perte (%)</label>
+                    <input
+                      type="number"
+                      step="0.1"
+                      className="form-input"
+                      value={preparationForm.perte_pourcentage}
+                      readOnly
+                      style={{background: '#fef2f2'}}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Portions */}
+              <div style={{background: '#dbeafe', padding: '16px', borderRadius: '8px', marginBottom: '16px'}}>
+                <div style={{fontWeight: 'bold', marginBottom: '12px', color: '#1e40af'}}>Portions</div>
+                <div style={{display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '16px'}}>
+                  <div className="form-group">
+                    <label className="form-label">Taille portion *</label>
+                    <input
+                      type="number"
+                      step="0.1"
+                      className="form-input"
+                      value={preparationForm.taille_portion}
+                      onChange={(e) => setPreparationForm({...preparationForm, taille_portion: e.target.value})}
+                      onBlur={calculatePortions}
+                      placeholder="100"
+                      required
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label className="form-label">Unité</label>
+                    <select
+                      className="form-select"
+                      value={preparationForm.unite_portion}
+                      onChange={(e) => setPreparationForm({...preparationForm, unite_portion: e.target.value})}
+                    >
+                      <option value="g">g</option>
+                      <option value="kg">kg</option>
+                      <option value="cl">cl</option>
+                      <option value="L">L</option>
+                      <option value="pièces">pièces</option>
+                    </select>
+                  </div>
+                  <div className="form-group">
+                    <label className="form-label">Nombre portions</label>
+                    <input
+                      type="number"
+                      className="form-input"
+                      value={preparationForm.nombre_portions}
+                      readOnly
+                      style={{background: '#eff6ff', fontWeight: 'bold', fontSize: '18px'}}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* DLC et notes */}
+              <div style={{display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '16px', marginBottom: '16px'}}>
+                <div className="form-group">
+                  <label className="form-label">DLC</label>
+                  <input
+                    type="date"
+                    className="form-input"
+                    value={preparationForm.dlc}
+                    onChange={(e) => setPreparationForm({...preparationForm, dlc: e.target.value})}
+                  />
+                </div>
+                <div className="form-group">
+                  <label className="form-label">Notes</label>
+                  <input
+                    type="text"
+                    className="form-input"
+                    value={preparationForm.notes}
+                    onChange={(e) => setPreparationForm({...preparationForm, notes: e.target.value})}
+                    placeholder="Notes optionnelles"
+                  />
+                </div>
+              </div>
+
+              <div className="button-group">
+                <button
+                  type="button"
+                  className="button btn-cancel"
+                  onClick={() => {
+                    setShowPreparationModal(false);
+                    setEditingItem(null);
+                    resetPreparationForm();
+                  }}
+                >
+                  Annuler
+                </button>
+                <button type="submit" className="button" disabled={loading}>
+                  {loading ? "⏳ Enregistrement..." : editingItem ? "Modifier" : "Créer"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
       {/* Modal Recette */}
       {showRecetteModal && (
         <div className="modal-overlay">
