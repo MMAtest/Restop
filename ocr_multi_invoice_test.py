@@ -508,7 +508,7 @@ class OCRMultiInvoiceTestSuite:
         except Exception as e:
             self.log_result("Bad Quality Detection Test", False, f"Exception: {str(e)}")
         
-        # ✅ Vérifier que les patterns de détection fonctionnent pour différents fournisseurs français
+        # ✅ Verifier que les patterns de detection fonctionnent pour differents fournisseurs francais
         fournisseurs_test = [
             "METRO FRANCE FACTURE N°12345",
             "LE DIAMANT DU TERROIR BON DE LIVRAISON",
