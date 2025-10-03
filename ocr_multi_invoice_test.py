@@ -141,7 +141,7 @@ class OCRMultiInvoiceTestSuite:
         print("\n=== PRIORITY 2 - CONTRÔLE QUALITÉ ET REJET PAGES MAL SCANNÉES ===")
         
         # Test avec un PDF de mauvaise qualité (simulé)
-        bad_quality_content = b"PDF simulé de très mauvaise qualité avec très peu de contenu lisible !!@#$%^&*()"
+        bad_quality_content = b"PDF simule de tres mauvaise qualite avec tres peu de contenu lisible !!@#$%^&*()"
         
         try:
             files = {
