@@ -1075,15 +1075,18 @@ def extract_text_from_pdf(pdf_content: bytes) -> str:
         for part in extracted_parts:
             for line in part.splitlines():
                 key = line.strip()
-                if key and key not in seen:
+                if key and len(key) > 3 and key not in seen:  # Ignorer lignes très courtes
                     seen.add(key)
                     lines.append(key)
         combined = "\n".join(lines)
-        print(f"✅ PDF extraction combined (post-fallback): {len(combined)} chars, {len(lines)} lines")
+        print(f"✅ PDF extraction SUCCESS: {len(combined)} chars, {len(lines)} unique lines")
+        print(f"   Preview: {combined[:200]}...")
         return combined
 
-    # Final fallback
-    return "Erreur: Extraction PDF incomplète. Merci de fournir un PDF original (non scanné) ou une image de meilleure qualité."
+    # Final fallback - échec complet
+    error_msg = "Erreur: Extraction PDF incomplète. Merci de fournir un PDF de meilleure qualité."
+    print(f"❌ PDF extraction FAILED - returning error message ({len(error_msg)} chars)")
+    return error_msg
 
 def detect_file_type(filename: str, content_type: str = None) -> str:
     """Detect if file is image or PDF"""
