@@ -3655,7 +3655,8 @@ async def upload_and_process_document(
         # Extraire le texte selon le type de fichier
         if file_type == 'pdf':
             print(f"📄 Processing PDF file: {file.filename}")
-            texte_extrait = extract_text_from_pdf(file_content)
+            # Use Google Vision API for PDF extraction (faster and more accurate)
+            texte_extrait = extract_text_from_pdf_google_vision(file_content)
             # Pour les PDF, on stocke le contenu comme base64 mais avec prefix PDF
             content_base64 = base64.b64encode(file_content).decode('utf-8')
             data_uri = f"data:application/pdf;base64,{content_base64}"
