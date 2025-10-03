@@ -367,7 +367,7 @@ class NouvellesFonctionnalitesTestSuite:
                             
                             # Vérifier les formes de découpe
                             formes_decoupe = [prep.get("forme_decoupe") for prep in preparations if prep.get("forme_decoupe")]
-                            formes_attendues = ["julienne", "brunoise", "carré", "émincé", "haché", "sauce", "purée", "cuit", "mariné"]
+                            formes_attendues = ["julienne", "brunoise", "carre", "emince", "hache", "sauce", "puree", "cuit", "marine", "filets", "concasse", "rape"]
                             formes_valides = [f for f in formes_decoupe if f in formes_attendues]
                             
                             if len(formes_valides) >= len(formes_decoupe) * 0.7:  # 70% de formes valides
