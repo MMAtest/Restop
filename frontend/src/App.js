@@ -5731,6 +5731,168 @@ function App() {
                   </small>
                 </div>
               </div>
+
+              {/* Section Règles de Livraison */}
+              <div style={{marginTop: '20px', padding: '16px', backgroundColor: '#f8fafc', borderRadius: '8px', border: '1px solid #e2e8f0'}}>
+                <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px'}}>
+                  <h4 style={{margin: 0, fontSize: '16px', fontWeight: '600', color: '#334155'}}>
+                    🚚 Règles de Livraison
+                  </h4>
+                  <button
+                    type="button"
+                    onClick={() => setShowDeliveryRulesConfig(!showDeliveryRulesConfig)}
+                    className="button"
+                    style={{padding: '6px 12px', fontSize: '14px'}}
+                  >
+                    {showDeliveryRulesConfig ? 'Masquer' : 'Configurer'}
+                  </button>
+                </div>
+                
+                {showDeliveryRulesConfig && (
+                  <div style={{marginTop: '12px'}}>
+                    {/* Jours de commande */}
+                    <div className="form-group">
+                      <label className="form-label" style={{fontSize: '13px'}}>📅 Jours de prise de commande</label>
+                      <div style={{display: 'flex', gap: '6px', flexWrap: 'wrap'}}>
+                        {['lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi', 'dimanche'].map(day => (
+                          <button
+                            key={day}
+                            type="button"
+                            onClick={() => {
+                              const currentDays = fournisseurForm.delivery_rules?.order_days || [];
+                              const newDays = currentDays.includes(day)
+                                ? currentDays.filter(d => d !== day)
+                                : [...currentDays, day];
+                              setFournisseurForm({
+                                ...fournisseurForm,
+                                delivery_rules: { ...fournisseurForm.delivery_rules, order_days: newDays }
+                              });
+                            }}
+                            style={{
+                              padding: '6px 12px',
+                              borderRadius: '6px',
+                              border: 'none',
+                              fontSize: '12px',
+                              fontWeight: '500',
+                              cursor: 'pointer',
+                              backgroundColor: (fournisseurForm.delivery_rules?.order_days || []).includes(day) ? '#3b82f6' : '#e2e8f0',
+                              color: (fournisseurForm.delivery_rules?.order_days || []).includes(day) ? 'white' : '#64748b'
+                            }}
+                          >
+                            {day.charAt(0).toUpperCase() + day.slice(1, 3)}
+                          </button>
+                        ))}
+                      </div>
+                      <small style={{color: '#64748b', fontSize: '11px', marginTop: '4px', display: 'block'}}>
+                        Laisser vide = tous les jours
+                      </small>
+                    </div>
+
+                    {/* Heure limite */}
+                    <div className="form-group" style={{marginTop: '12px'}}>
+                      <label className="form-label" style={{fontSize: '13px'}}>⏰ Heure limite de commande</label>
+                      <input
+                        type="number"
+                        min="0"
+                        max="23"
+                        value={fournisseurForm.delivery_rules?.order_deadline_hour || 11}
+                        onChange={(e) => setFournisseurForm({
+                          ...fournisseurForm,
+                          delivery_rules: { ...fournisseurForm.delivery_rules, order_deadline_hour: parseInt(e.target.value) }
+                        })}
+                        className="form-input"
+                        style={{width: '100px'}}
+                      />
+                      <span style={{marginLeft: '8px', color: '#64748b'}}>heures</span>
+                    </div>
+
+                    {/* Jours de livraison */}
+                    <div className="form-group" style={{marginTop: '12px'}}>
+                      <label className="form-label" style={{fontSize: '13px'}}>🚚 Jours de livraison spécifiques</label>
+                      <div style={{display: 'flex', gap: '6px', flexWrap: 'wrap'}}>
+                        {['lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi', 'dimanche'].map(day => (
+                          <button
+                            key={day}
+                            type="button"
+                            onClick={() => {
+                              const currentDays = fournisseurForm.delivery_rules?.delivery_days || [];
+                              const newDays = currentDays.includes(day)
+                                ? currentDays.filter(d => d !== day)
+                                : [...currentDays, day];
+                              setFournisseurForm({
+                                ...fournisseurForm,
+                                delivery_rules: { ...fournisseurForm.delivery_rules, delivery_days: newDays }
+                              });
+                            }}
+                            style={{
+                              padding: '6px 12px',
+                              borderRadius: '6px',
+                              border: 'none',
+                              fontSize: '12px',
+                              fontWeight: '500',
+                              cursor: 'pointer',
+                              backgroundColor: (fournisseurForm.delivery_rules?.delivery_days || []).includes(day) ? '#10b981' : '#e2e8f0',
+                              color: (fournisseurForm.delivery_rules?.delivery_days || []).includes(day) ? 'white' : '#64748b'
+                            }}
+                          >
+                            {day.charAt(0).toUpperCase() + day.slice(1, 3)}
+                          </button>
+                        ))}
+                      </div>
+                      <small style={{color: '#64748b', fontSize: '11px', marginTop: '4px', display: 'block'}}>
+                        Laisser vide pour utiliser le délai en jours
+                      </small>
+                    </div>
+
+                    {/* Délai et heure */}
+                    <div style={{display: 'flex', gap: '12px', marginTop: '12px'}}>
+                      <div className="form-group" style={{flex: 1}}>
+                        <label className="form-label" style={{fontSize: '13px'}}>📦 Délai (jours)</label>
+                        <input
+                          type="number"
+                          min="0"
+                          max="14"
+                          value={fournisseurForm.delivery_rules?.delivery_delay_days || 1}
+                          onChange={(e) => setFournisseurForm({
+                            ...fournisseurForm,
+                            delivery_rules: { ...fournisseurForm.delivery_rules, delivery_delay_days: parseInt(e.target.value) }
+                          })}
+                          className="form-input"
+                        />
+                      </div>
+                      <div className="form-group" style={{flex: 1}}>
+                        <label className="form-label" style={{fontSize: '13px'}}>🕐 Heure livraison</label>
+                        <input
+                          type="time"
+                          value={fournisseurForm.delivery_rules?.delivery_time || "12:00"}
+                          onChange={(e) => setFournisseurForm({
+                            ...fournisseurForm,
+                            delivery_rules: { ...fournisseurForm.delivery_rules, delivery_time: e.target.value }
+                          })}
+                          className="form-input"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Règles spéciales */}
+                    <div className="form-group" style={{marginTop: '12px'}}>
+                      <label className="form-label" style={{fontSize: '13px'}}>📝 Règles spéciales</label>
+                      <textarea
+                        value={fournisseurForm.delivery_rules?.special_rules || ''}
+                        onChange={(e) => setFournisseurForm({
+                          ...fournisseurForm,
+                          delivery_rules: { ...fournisseurForm.delivery_rules, special_rules: e.target.value }
+                        })}
+                        placeholder="Ex: Commande samedi → livraison lundi"
+                        className="form-textarea"
+                        rows="2"
+                        style={{fontSize: '13px'}}
+                      />
+                    </div>
+                  </div>
+                )}
+              </div>
+
               <div className="button-group">
                 <button
                   type="button"
@@ -5738,7 +5900,11 @@ function App() {
                   onClick={() => {
                     setShowFournisseurModal(false);
                     setEditingItem(null);
-                    setFournisseurForm({ nom: "", contact: "", email: "", telephone: "", adresse: "", couleur: "#3B82F6", logo: "", categorie: "frais", deliveryCost: 0, extraCost: 0 });
+                    setShowDeliveryRulesConfig(false);
+                    setFournisseurForm({ 
+                      nom: "", contact: "", email: "", telephone: "", adresse: "", couleur: "#3B82F6", logo: "", categorie: "frais", deliveryCost: 0, extraCost: 0,
+                      delivery_rules: { order_days: [], order_deadline_hour: 11, delivery_days: [], delivery_delay_days: 1, delivery_time: "12:00", special_rules: "" }
+                    });
                   }}
                 >
                   Annuler
