@@ -660,7 +660,6 @@ metadata:
 
 test_plan:
   current_focus:
-    - "OCR - Séparation et Traitement Factures Multiples"
     - "Nouvelle Interface OCR Module Complet - Gestion réponses multi-factures"
   stuck_tasks: []
   test_all: false
