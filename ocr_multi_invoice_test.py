@@ -621,12 +621,12 @@ class OCRMultiInvoiceTestSuite:
         print(f"❌ Tests echoues: {failed_tests}")
         
         if failed_tests > 0:
-            print("\n❌ TESTS ÉCHOUÉS:")
+            print("\n❌ TESTS ECHOUES:")
             for result in self.test_results:
                 if not result["success"]:
                     print(f"   - {result['test']}: {result['message']}")
         
-        print("\n🎯 TESTS OCR MULTI-FACTURES TERMINÉS")
+        print("\n🎯 TESTS OCR MULTI-FACTURES TERMINES")
         
         return {
             "total_tests": total_tests,
