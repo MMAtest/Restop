@@ -3655,6 +3655,56 @@ async def get_produits():
     produits = await db.produits.find().to_list(1000)
     return [Produit(**p) for p in produits]
 
+@api_router.get("/produits/by-categories")
+async def get_produits_by_categories():
+    """Récupérer les produits regroupés par catégories pour affichage accordéon"""
+    produits = await db.produits.find().to_list(1000)
+    
+    # Grouper par catégorie
+    categories = {}
+    for produit in produits:
+        category = produit.get("categorie", "Sans catégorie")
+        if category not in categories:
+            categories[category] = []
+        categories[category].append(Produit(**produit))
+    
+    # Trier les catégories et les produits dans chaque catégorie
+    sorted_categories = {}
+    for category in sorted(categories.keys()):
+        sorted_categories[category] = sorted(categories[category], key=lambda p: p.nom)
+    
+    # Calculer des statistiques par catégorie
+    category_stats = {}
+    for category, products in sorted_categories.items():
+        category_stats[category] = {
+            "total_products": len(products),
+            "products": [p.dict() for p in products],
+            "icon": get_category_icon(category)
+        }
+    
+    return {
+        "categories": category_stats,
+        "total_categories": len(sorted_categories),
+        "total_products": len(produits)
+    }
+
+def get_category_icon(category: str) -> str:
+    """Retourne l'icône appropriée pour chaque catégorie"""
+    icons = {
+        "Légumes": "🥬",
+        "Fruits": "🍎", 
+        "Viandes": "🥩",
+        "Poissons": "🐟",
+        "Produits laitiers": "🧀",
+        "Céréales": "🌾",
+        "Épices": "🌶️",
+        "Autres": "📦",
+        "Service": "⚙️",
+        "Test": "🧪",
+        "Sans catégorie": "❓"
+    }
+    return icons.get(category, "📦")
+
 @api_router.get("/produits/{produit_id}", response_model=Produit)
 async def get_produit(produit_id: str):
     produit = await db.produits.find_one({"id": produit_id})
