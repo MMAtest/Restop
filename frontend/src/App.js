@@ -4210,13 +4210,34 @@ function App() {
             {/* ONGLET RÉPARTITION */}
             <div className={`production-tab ${activeStockTab === 'repartition' ? 'active' : ''}`}>
               <div className="section-card">
-                {/* Répartition interactive par produit */}
+                {/* Répartition interactive avec préparations */}
                 <div className="item-list" style={{marginBottom: '20px'}}>
-                  <div className="section-title">📊 Répartition Interactive par Produit</div>
+                  <div className="section-title">📊 Répartition : Produit → Préparation → Production</div>
+                  
+                  {/* Flux visuel */}
+                  <div style={{display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '24px', padding: '16px', background: '#f9fafb', borderRadius: '8px', flexWrap: 'wrap'}}>
+                    <div style={{flex: '1', minWidth: '150px', textAlign: 'center'}}>
+                      <div style={{fontSize: '32px', marginBottom: '4px'}}>📦</div>
+                      <div style={{fontWeight: 'bold', fontSize: '14px'}}>Produit brut</div>
+                      <div style={{fontSize: '12px', color: '#6b7280'}}>Stock disponible</div>
+                    </div>
+                    <div style={{fontSize: '24px', color: '#9ca3af'}}>→</div>
+                    <div style={{flex: '1', minWidth: '150px', textAlign: 'center'}}>
+                      <div style={{fontSize: '32px', marginBottom: '4px'}}>🔪</div>
+                      <div style={{fontWeight: 'bold', fontSize: '14px'}}>Préparation</div>
+                      <div style={{fontSize: '12px', color: '#6b7280'}}>Forme + Portions</div>
+                    </div>
+                    <div style={{fontSize: '24px', color: '#9ca3af'}}>→</div>
+                    <div style={{flex: '1', minWidth: '150px', textAlign: 'center'}}>
+                      <div style={{fontSize: '32px', marginBottom: '4px'}}>🍽️</div>
+                      <div style={{fontWeight: 'bold', fontSize: '14px'}}>Production</div>
+                      <div style={{fontSize: '12px', color: '#6b7280'}}>Plat final</div>
+                    </div>
+                  </div>
                   
                   {/* Sélecteur de produit */}
                   <div className="form-group" style={{marginBottom: '20px'}}>
-                    <label className="form-label">Choisir un produit à répartir :</label>
+                    <label className="form-label">1️⃣ Choisir un produit brut :</label>
                     <select
                       className="form-select"
                       value={selectedStockIndex || ''}
@@ -4240,6 +4261,64 @@ function App() {
                       ))}
                     </select>
                   </div>
+                  
+                  {/* Préparations disponibles pour ce produit */}
+                  {selectedStockIndex !== null && selectedStockIndex !== '' && (
+                    <div style={{marginBottom: '24px', padding: '16px', background: '#ecfdf5', borderRadius: '8px', border: '1px solid #10b981'}}>
+                      <label className="form-label" style={{marginBottom: '12px', display: 'block'}}>
+                        2️⃣ Préparations disponibles pour "{stocksPrevisionnels[selectedStockIndex]?.produit}" :
+                      </label>
+                      {(() => {
+                        const produitId = produits.find(p => p.nom === stocksPrevisionnels[selectedStockIndex]?.produit)?.id;
+                        const preparationsProduit = preparations.filter(prep => prep.produit_id === produitId);
+                        
+                        if (preparationsProduit.length === 0) {
+                          return (
+                            <div style={{padding: '16px', textAlign: 'center', color: '#6b7280'}}>
+                              <div style={{fontSize: '32px', marginBottom: '8px'}}>🔪</div>
+                              <div style={{fontWeight: '500', marginBottom: '4px'}}>Aucune préparation pour ce produit</div>
+                              <div style={{fontSize: '14px'}}>Créez une préparation dans l'onglet Production → Préparations</div>
+                            </div>
+                          );
+                        }
+                        
+                        return (
+                          <div style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))', gap: '12px'}}>
+                            {preparationsProduit.map(prep => (
+                              <div key={prep.id} style={{
+                                padding: '12px', 
+                                background: 'white', 
+                                borderRadius: '8px', 
+                                border: '2px solid #10b981',
+                                cursor: 'pointer',
+                                transition: 'transform 0.2s'
+                              }}
+                              onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.02)'}
+                              onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
+                              >
+                                <div style={{fontWeight: 'bold', fontSize: '14px', marginBottom: '6px'}}>
+                                  🔪 {prep.nom}
+                                </div>
+                                <div style={{fontSize: '12px', color: '#6b7280', display: 'flex', flexDirection: 'column', gap: '2px'}}>
+                                  <div><strong>Forme:</strong> {prep.forme_decoupe_custom || prep.forme_decoupe}</div>
+                                  <div><strong>Quantité:</strong> {prep.quantite_preparee} {prep.unite_preparee}</div>
+                                  <div><strong>Portions:</strong> {prep.nombre_portions} × {prep.taille_portion}{prep.unite_portion}</div>
+                                  {prep.dlc && (
+                                    <div style={{color: new Date(prep.dlc) < new Date(Date.now() + 3 * 24 * 60 * 60 * 1000) ? '#dc2626' : '#10b981'}}>
+                                      <strong>DLC:</strong> {new Date(prep.dlc).toLocaleDateString('fr-FR')}
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        );
+                      })()}
+                      <div style={{marginTop: '12px', fontSize: '13px', color: '#059669', fontWeight: '500'}}>
+                        💡 Les préparations servent d'étape intermédiaire entre le produit brut et la production finale
+                      </div>
+                    </div>
+                  )}
 
                   {/* Interface de répartition avec camembert */}
                   {selectedStockIndex !== null && selectedStockIndex !== '' && (
