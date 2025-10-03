@@ -710,6 +710,100 @@ function App() {
     });
     setIngredientForm({ produit_id: "", quantite: "", unite: "" });
   };
+  
+  // Fonctions pour les préparations
+  const handlePreparationSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    
+    try {
+      const preparationData = {
+        ...preparationForm,
+        quantite_produit_brut: parseFloat(preparationForm.quantite_produit_brut),
+        quantite_preparee: parseFloat(preparationForm.quantite_preparee),
+        perte: parseFloat(preparationForm.perte),
+        perte_pourcentage: parseFloat(preparationForm.perte_pourcentage),
+        nombre_portions: parseInt(preparationForm.nombre_portions),
+        taille_portion: parseFloat(preparationForm.taille_portion),
+        dlc: preparationForm.dlc ? new Date(preparationForm.dlc).toISOString() : null
+      };
+      
+      if (editingItem) {
+        await axios.put(`${API}/preparations/${editingItem.id}`, preparationData);
+        alert("✅ Préparation mise à jour");
+      } else {
+        await axios.post(`${API}/preparations`, preparationData);
+        alert("✅ Préparation créée");
+      }
+      
+      fetchPreparations();
+      setShowPreparationModal(false);
+      resetPreparationForm();
+      setEditingItem(null);
+    } catch (error) {
+      console.error("Erreur:", error);
+      alert("❌ Erreur lors de l'enregistrement");
+    }
+    
+    setLoading(false);
+  };
+  
+  const resetPreparationForm = () => {
+    setPreparationForm({
+      nom: "",
+      produit_id: "",
+      forme_decoupe: "",
+      forme_decoupe_custom: "",
+      quantite_produit_brut: "",
+      unite_produit_brut: "kg",
+      quantite_preparee: "",
+      unite_preparee: "kg",
+      perte: "",
+      perte_pourcentage: "",
+      nombre_portions: "",
+      taille_portion: "",
+      unite_portion: "g",
+      dlc: "",
+      notes: ""
+    });
+  };
+  
+  const calculatePerte = () => {
+    const brut = parseFloat(preparationForm.quantite_produit_brut) || 0;
+    const preparee = parseFloat(preparationForm.quantite_preparee) || 0;
+    
+    if (brut > 0 && preparee > 0) {
+      const perte = brut - preparee;
+      const pertePercent = (perte / brut) * 100;
+      
+      setPreparationForm({
+        ...preparationForm,
+        perte: perte.toFixed(2),
+        perte_pourcentage: pertePercent.toFixed(1)
+      });
+    }
+  };
+  
+  const calculatePortions = () => {
+    const preparee = parseFloat(preparationForm.quantite_preparee) || 0;
+    const taillePortionKg = parseFloat(preparationForm.taille_portion) || 0;
+    
+    // Convertir la taille de portion en kg si nécessaire
+    let taillePortionEnKg = taillePortionKg;
+    if (preparationForm.unite_portion === 'g') {
+      taillePortionEnKg = taillePortionKg / 1000;
+    } else if (preparationForm.unite_portion === 'cl') {
+      taillePortionEnKg = taillePortionKg / 100;
+    }
+    
+    if (preparee > 0 && taillePortionEnKg > 0) {
+      const portions = Math.floor(preparee / taillePortionEnKg);
+      setPreparationForm({
+        ...preparationForm,
+        nombre_portions: portions.toString()
+      });
+    }
+  };
 
   const addIngredient = () => {
     if (ingredientForm.produit_id && ingredientForm.quantite) {
