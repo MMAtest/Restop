@@ -1,6 +1,11 @@
 import React, { useState, useEffect } from "react";
 import "./App.css";
 import axios from "axios";
+import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
+import { Pie } from 'react-chartjs-2';
+
+// Enregistrer les composants Chart.js
+ChartJS.register(ArcElement, Tooltip, Legend);
 import HistoriqueZPage from "./pages/HistoriqueZPage";
 import AnalyticsPage from "./pages/AnalyticsPage";
 import AdvancedStockPage from "./pages/AdvancedStockPage";
