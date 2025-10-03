@@ -4611,39 +4611,105 @@ function App() {
                         {/* CALCUL AUTOMATIQUE DES PRODUCTIONS */}
                         {productionsCalculees.length > 0 && (
                           <div style={{marginTop: '20px', padding: '16px', background: 'white', borderRadius: '8px', border: '2px solid #10b981'}}>
-                            <div style={{fontWeight: 'bold', fontSize: '16px', marginBottom: '12px', color: '#065f46'}}>
-                              🍽️ Productions calculées automatiquement :
+                            <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px'}}>
+                              <div style={{fontWeight: 'bold', fontSize: '16px', color: '#065f46'}}>
+                                🍽️ Productions calculées automatiquement :
+                              </div>
+                              <button 
+                                className="button"
+                                onClick={() => {
+                                  const summary = productionsCalculees.map(prod => 
+                                    `${prod.preparationNom}: ${prod.portionsPossibles} portions\n` +
+                                    (prod.productionsPossibles ? prod.productionsPossibles.map(p => `  • ${p.nom}: ${p.portions_possibles} portions`).join('\n') : '')
+                                  ).join('\n\n');
+                                  
+                                  const confirmation = window.confirm(
+                                    `🍽️ VALIDATION DE LA RÉPARTITION\n\n` +
+                                    `Résumé des productions possibles:\n\n${summary}\n\n` +
+                                    `Stock utilisé: ${stockUtiliseTotal.toFixed(2)} ${produitSelectionne?.unite}\n` +
+                                    `Stock restant: ${((stockProduit?.quantite_actuelle || 0) - stockUtiliseTotal).toFixed(2)} ${produitSelectionne?.unite}\n\n` +
+                                    `Valider cette répartition ?`
+                                  );
+                                  
+                                  if (confirmation) {
+                                    alert("✅ Répartition validée avec succès !\n\nVous pouvez maintenant procéder à la production selon cette répartition.");
+                                  }
+                                }}
+                                style={{fontSize: '14px', padding: '8px 16px'}}
+                              >
+                                ✅ Valider la répartition
+                              </button>
                             </div>
                             
-                            <div style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '12px'}}>
+                            <div style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '16px'}}>
                               {productionsCalculees.map((prod, index) => (
                                 <div key={prod.preparationId} style={{
-                                  padding: '12px',
+                                  padding: '16px',
                                   background: '#ecfdf5',
-                                  borderRadius: '6px',
+                                  borderRadius: '8px',
                                   border: '1px solid #10b981'
                                 }}>
-                                  <div style={{fontWeight: 'bold', fontSize: '14px', marginBottom: '6px', color: '#065f46'}}>
+                                  <div style={{fontWeight: 'bold', fontSize: '15px', marginBottom: '8px', color: '#065f46'}}>
                                     🔪 {prod.preparationNom}
                                   </div>
                                   
-                                  <div style={{fontSize: '13px', color: '#059669', display: 'flex', flexDirection: 'column', gap: '3px'}}>
+                                  <div style={{fontSize: '13px', color: '#059669', display: 'flex', flexDirection: 'column', gap: '4px', marginBottom: '12px'}}>
                                     <div><strong>📏 Quantité préparée:</strong> {prod.quantitePreparation} {prod.unite}</div>
-                                    <div><strong>🍽️ Portions possibles:</strong> <span style={{fontSize: '16px', fontWeight: 'bold', color: '#10b981'}}>{prod.portionsPossibles}</span></div>
+                                    <div><strong>🍽️ Portions possibles:</strong> <span style={{fontSize: '18px', fontWeight: 'bold', color: '#10b981'}}>{prod.portionsPossibles}</span></div>
                                     <div><strong>📦 Produit brut requis:</strong> {prod.quantiteProduitBrut.toFixed(2)} {produitSelectionne?.unite}</div>
                                     <div><strong>🔪 Forme:</strong> {prod.formeDecoupe}</div>
-                                    
-                                    {prod.recettesCompatibles.length > 0 && (
-                                      <div style={{marginTop: '6px', padding: '6px', background: '#f0fdf4', borderRadius: '4px'}}>
-                                        <div style={{fontSize: '12px', fontWeight: 'bold', marginBottom: '3px'}}>📖 Recettes compatibles:</div>
-                                        {prod.recettesCompatibles.map((recette, i) => (
-                                          <div key={recette.id} style={{fontSize: '11px', color: '#166534'}}>
-                                            • {recette.nom} ({recette.portions} portions)
-                                          </div>
-                                        ))}
-                                      </div>
-                                    )}
                                   </div>
+
+                                  {/* PRODUCTIONS DIRECTES POSSIBLES */}
+                                  {prod.productionsPossibles && prod.productionsPossibles.length > 0 && (
+                                    <div style={{padding: '12px', background: '#f0fdf4', borderRadius: '6px', border: '1px solid #16a34a'}}>
+                                      <div style={{fontSize: '13px', fontWeight: 'bold', marginBottom: '8px', color: '#16a34a'}}>
+                                        🍽️ Productions directes possibles:
+                                      </div>
+                                      {prod.productionsPossibles.map((production, i) => (
+                                        <div key={i} style={{
+                                          fontSize: '12px', 
+                                          color: '#15803d',
+                                          marginBottom: '4px',
+                                          padding: '4px 6px',
+                                          background: 'white',
+                                          borderRadius: '4px',
+                                          display: 'flex',
+                                          justifyContent: 'space-between',
+                                          alignItems: 'center'
+                                        }}>
+                                          <span>
+                                            <strong>🍽️ {production.nom}</strong>
+                                            <br />
+                                            <span style={{fontSize: '11px', color: '#166534'}}>
+                                              {production.categorie} • {production.portions_recette} portions/recette
+                                            </span>
+                                          </span>
+                                          <span style={{
+                                            fontWeight: 'bold', 
+                                            fontSize: '14px', 
+                                            color: '#15803d',
+                                            background: '#dcfce7',
+                                            padding: '2px 8px',
+                                            borderRadius: '12px'
+                                          }}>
+                                            {production.portions_possibles}
+                                          </span>
+                                        </div>
+                                      ))}
+                                    </div>
+                                  )}
+                                  
+                                  {prod.recettesCompatibles.length > 0 && (
+                                    <div style={{marginTop: '8px', padding: '8px', background: '#fefefe', borderRadius: '4px', border: '1px solid #d1fae5'}}>
+                                      <div style={{fontSize: '12px', fontWeight: 'bold', marginBottom: '4px', color: '#166534'}}>📖 Autres recettes compatibles:</div>
+                                      {prod.recettesCompatibles.slice(0, 2).map((recette, i) => (
+                                        <div key={recette.id} style={{fontSize: '11px', color: '#166534'}}>
+                                          • {recette.nom} ({recette.portions} portions)
+                                        </div>
+                                      ))}
+                                    </div>
+                                  )}
                                 </div>
                               ))}
                             </div>
