@@ -24,6 +24,10 @@ import pdfplumber
 import base64
 import re
 
+# Google Cloud Vision imports
+from google.cloud import vision
+from pdf2image import convert_from_bytes
+
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
 
