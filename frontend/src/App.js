@@ -4956,6 +4956,105 @@ function App() {
               </div>
             )}
 
+            {/* ONGLET PRÉPARATIONS */}
+            {activeProductionTab === 'preparations' && (
+              <div className="item-list">
+                <div className="section-title">🔪 Préparations</div>
+                
+                <div style={{display: 'flex', gap: '10px', marginBottom: '20px', flexWrap: 'wrap'}}>
+                  <button className="button" onClick={() => setShowPreparationModal(true)}>➕ Nouvelle Préparation</button>
+                </div>
+
+                {/* Alertes DLC */}
+                {preparations.filter(p => p.dlc && new Date(p.dlc) < new Date(Date.now() + 3 * 24 * 60 * 60 * 1000)).length > 0 && (
+                  <div style={{background: '#fef3c7', border: '1px solid #fbbf24', borderRadius: '8px', padding: '12px', marginBottom: '20px'}}>
+                    <div style={{fontWeight: 'bold', color: '#92400e', marginBottom: '8px'}}>
+                      ⚠️ Alertes DLC - {preparations.filter(p => p.dlc && new Date(p.dlc) < new Date(Date.now() + 3 * 24 * 60 * 60 * 1000)).length} préparation(s)
+                    </div>
+                    {preparations.filter(p => p.dlc && new Date(p.dlc) < new Date(Date.now() + 3 * 24 * 60 * 60 * 1000)).map(prep => (
+                      <div key={prep.id} style={{fontSize: '14px', color: '#78350f', marginTop: '4px'}}>
+                        • {prep.nom} - DLC: {new Date(prep.dlc).toLocaleDateString('fr-FR')}
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* Liste des préparations */}
+                <div style={{display: 'grid', gap: '12px'}}>
+                  {preparations.length === 0 ? (
+                    <div style={{textAlign: 'center', padding: '40px', color: 'var(--color-text-secondary)'}}>
+                      <div style={{fontSize: '48px', marginBottom: '16px'}}>🔪</div>
+                      <div style={{fontSize: '18px', fontWeight: 'bold', marginBottom: '8px'}}>Aucune préparation</div>
+                      <div>Créez votre première préparation pour commencer</div>
+                    </div>
+                  ) : (
+                    preparations.map((prep) => {
+                      const dlcDate = prep.dlc ? new Date(prep.dlc) : null;
+                      const isDlcSoon = dlcDate && dlcDate < new Date(Date.now() + 3 * 24 * 60 * 60 * 1000);
+                      const isDlcExpired = dlcDate && dlcDate < new Date();
+                      
+                      return (
+                        <div key={prep.id} className="card" style={{padding: '16px', border: isDlcExpired ? '2px solid #dc2626' : isDlcSoon ? '2px solid #f59e0b' : '1px solid var(--color-border)'}}>
+                          <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'start', marginBottom: '12px'}}>
+                            <div style={{flex: 1}}>
+                              <div style={{fontSize: '18px', fontWeight: 'bold', color: 'var(--color-text-primary)', marginBottom: '4px'}}>
+                                {prep.nom}
+                              </div>
+                              <div style={{fontSize: '14px', color: 'var(--color-text-secondary)', marginBottom: '8px'}}>
+                                Produit source: {prep.produit_nom}
+                              </div>
+                              <div style={{display: 'flex', gap: '12px', flexWrap: 'wrap', fontSize: '13px'}}>
+                                <div>
+                                  <span style={{fontWeight: 'bold'}}>Forme:</span> {prep.forme_decoupe_custom || prep.forme_decoupe}
+                                </div>
+                                <div>
+                                  <span style={{fontWeight: 'bold'}}>Quantité:</span> {prep.quantite_preparee} {prep.unite_preparee}
+                                </div>
+                                <div>
+                                  <span style={{fontWeight: 'bold'}}>Portions:</span> {prep.nombre_portions} × {prep.taille_portion}{prep.unite_portion}
+                                </div>
+                                <div>
+                                  <span style={{fontWeight: 'bold', color: '#dc2626'}}>Perte:</span> {prep.perte} {prep.unite_produit_brut} ({prep.perte_pourcentage}%)
+                                </div>
+                                {dlcDate && (
+                                  <div>
+                                    <span style={{fontWeight: 'bold', color: isDlcExpired ? '#dc2626' : isDlcSoon ? '#f59e0b' : '#10b981'}}>
+                                      DLC:
+                                    </span> {dlcDate.toLocaleDateString('fr-FR')}
+                                    {isDlcExpired && <span style={{marginLeft: '4px', color: '#dc2626'}}>⚠️ Expirée</span>}
+                                    {isDlcSoon && !isDlcExpired && <span style={{marginLeft: '4px', color: '#f59e0b'}}>⚠️ Bientôt</span>}
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                            <div style={{display: 'flex', gap: '8px'}}>
+                              <button 
+                                className="button" 
+                                onClick={() => {
+                                  setEditingItem(prep);
+                                  handleEdit(prep, 'preparation');
+                                }}
+                                style={{padding: '6px 12px', fontSize: '14px'}}
+                              >
+                                ✏️
+                              </button>
+                              <button 
+                                className="button" 
+                                onClick={() => handleDelete(prep.id, 'preparation')}
+                                style={{padding: '6px 12px', fontSize: '14px', background: '#dc2626', color: 'white'}}
+                              >
+                                🗑️
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })
+                  )}
+                </div>
+              </div>
+            )}
+
             {/* ONGLET RECETTES */}
             {activeProductionTab === 'recettes' && (
               <div className="item-list">
