@@ -3535,9 +3535,108 @@ function App() {
             {/* ONGLET RÉPARTITION */}
             <div className={`production-tab ${activeStockTab === 'repartition' ? 'active' : ''}`}>
               <div className="section-card">
+                {/* Vue d'ensemble avec camembert */}
+                <div className="item-list" style={{marginBottom: '20px'}}>
+                  <div className="section-title">📊 Vue d'ensemble de la répartition</div>
+                  <div style={{
+                    display: 'flex', 
+                    flexDirection: 'row', 
+                    alignItems: 'center', 
+                    gap: '30px',
+                    flexWrap: 'wrap'
+                  }}>
+                    <div style={{flex: '1', minWidth: '250px', maxWidth: '400px'}}>
+                      <Pie
+                        data={{
+                          labels: stocksPrevisionnels.map(stock => stock.produit),
+                          datasets: [{
+                            data: stocksPrevisionnels.map(stock => {
+                              const stockUtilise = stock.productions_possibles.reduce((total, prod) => 
+                                total + (prod.portions_selectionnees * prod.quantite_needed), 0
+                              );
+                              return ((stockUtilise / stock.stock_actuel) * 100).toFixed(1);
+                            }),
+                            backgroundColor: [
+                              '#10B981', // Vert
+                              '#3B82F6', // Bleu  
+                              '#F59E0B', // Orange
+                              '#EF4444', // Rouge
+                              '#8B5CF6', // Violet
+                              '#06B6D4', // Cyan
+                            ],
+                            borderColor: '#FFFFFF',
+                            borderWidth: 2
+                          }]
+                        }}
+                        options={{
+                          responsive: true,
+                          maintainAspectRatio: true,
+                          plugins: {
+                            legend: {
+                              position: 'bottom',
+                              labels: {
+                                padding: 15,
+                                usePointStyle: true,
+                                font: {
+                                  size: 12
+                                }
+                              }
+                            },
+                            tooltip: {
+                              callbacks: {
+                                label: function(context) {
+                                  const stock = stocksPrevisionnels[context.dataIndex];
+                                  const stockUtilise = stock.productions_possibles.reduce((total, prod) => 
+                                    total + (prod.portions_selectionnees * prod.quantite_needed), 0
+                                  );
+                                  return `${context.label}: ${stockUtilise.toFixed(1)}/${stock.stock_actuel} ${stock.unite} (${context.parsed}%)`;
+                                }
+                              }
+                            }
+                          }
+                        }}
+                      />
+                    </div>
+                    <div style={{flex: '1', minWidth: '200px'}}>
+                      <div className="kpi-grid" style={{gridTemplateColumns: '1fr', gap: '10px'}}>
+                        {stocksPrevisionnels.map((stock, index) => {
+                          const stockUtilise = stock.productions_possibles.reduce((total, prod) => 
+                            total + (prod.portions_selectionnees * prod.quantite_needed), 0
+                          );
+                          const pourcentage = ((stockUtilise / stock.stock_actuel) * 100).toFixed(1);
+                          const stockRestant = stock.stock_actuel - stockUtilise;
+                          
+                          return (
+                            <div key={index} className="kpi-card" style={{textAlign: 'left', padding: '12px'}}>
+                              <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
+                                <div>
+                                  <div style={{fontSize: '14px', fontWeight: '600', marginBottom: '4px'}}>
+                                    📦 {stock.produit}
+                                  </div>
+                                  <div style={{fontSize: '12px', color: 'var(--color-text-muted)'}}>
+                                    {stockUtilise.toFixed(1)} / {stock.stock_actuel} {stock.unite}
+                                  </div>
+                                </div>
+                                <div style={{textAlign: 'right'}}>
+                                  <div style={{fontSize: '16px', fontWeight: '700', color: pourcentage > 90 ? 'var(--color-danger-red)' : pourcentage > 70 ? 'var(--color-warning-orange)' : 'var(--color-success-green)'}}>
+                                    {pourcentage}%
+                                  </div>
+                                  <div style={{fontSize: '10px', color: stockRestant < 0 ? 'var(--color-danger-red)' : 'var(--color-text-muted)'}}>
+                                    Restant: {stockRestant.toFixed(1)}
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
                 {/* Répartition optimale avec validation */}
                 <div className="item-list">
-                  <div className="section-title">🎯 Répartition Optimale avec Validation</div>
+                  <div className="section-title">🎯 Répartition Détaillée</div>
                   
                   {stocksPrevisionnels.map((stock, stockIndex) => {
                     const stockUtilise = stock.productions_possibles.reduce((total, prod) => 
