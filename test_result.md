@@ -363,6 +363,21 @@ backend:
         agent: "testing"
         comment: "✅ RAPPORTS Z ENDPOINTS - 100% RÉUSSITE (14/14 tests) ! Tous les nouveaux endpoints rapports Z fonctionnent parfaitement : POST /api/rapports_z crée rapport avec UUID auto-généré et created_at automatique. GET /api/rapports_z liste rapports triés par date décroissante avec structure complète (id, date, ca_total, produits, created_at). GET /api/rapports_z/{id} récupère rapport spécifique avec validation structure produits (nom, quantité, prix). DELETE /api/rapports_z/{id} supprime rapport avec validation 404 pour ID inexistant. Tests avec données réalistes La Table d'Augustine (Supions Persillade 24€, Bœuf Wellington 56€, Rigatoni truffe 31€). Correction bug sérialisation MongoDB ObjectId. Endpoints prêts pour production."
 
+  - task: "API Système d'Archivage Complet"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Système d'archivage complet implémenté avec endpoints POST /api/archive, GET /api/archives, POST /api/restore/{archive_id} pour produits, productions/recettes et fournisseurs"
+      - working: true
+        agent: "testing"
+        comment: "🎯 SYSTÈME D'ARCHIVAGE BACKEND - 100% RÉUSSITE (30/30 tests) ! Diagnostic complet du problème rapporté par l'utilisateur révèle que le BACKEND FONCTIONNE PARFAITEMENT : ✅ POST /api/archive fonctionne pour tous les types (produit, production, fournisseur) avec suppression automatique de la collection originale et création d'archive avec UUID ✅ GET /api/archives récupère toutes les archives avec filtrage par type optionnel, structure complète (id, original_id, item_type, original_data, archived_at, reason) ✅ POST /api/restore/{archive_id} restaure correctement les éléments dans leur collection d'origine et supprime l'archive ✅ Gestion d'erreurs appropriée (404 pour ID inexistant, 400 pour type invalide) ✅ Tests avec données réelles (Supions en persillade, fournisseurs authentiques) validés ✅ Vérifications de suppression/restauration confirmées ❌ PROBLÈME IDENTIFIÉ : Le problème est côté FRONTEND - les boutons d'archivage dans les sections Productions et Fournisseurs ne communiquent pas correctement avec l'API backend. Le code JavaScript archiveItem() est correct mais les événements onClick ne se déclenchent pas ou échouent silencieusement. RECOMMANDATION : Vérifier les console.log du navigateur et les appels réseau dans les DevTools pour identifier l'erreur JavaScript côté frontend."
+
 frontend:
   - task: "Interface Dashboard"
     implemented: true
