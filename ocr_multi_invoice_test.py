@@ -305,7 +305,7 @@ class OCRMultiInvoiceTestSuite:
                             self.log_result("Separation Info Complete", False, f"Champs manquants: {missing_sep_fields}")
                         
                         # Vérifier les valeurs
-                        if separation_info.get("is_multi_invoice") == True:
+                                if separation_info.get("is_multi_invoice") == True:
                             self.log_result("Multi-invoice Flag", True, "is_multi_invoice: true")
                         else:
                             self.log_result("Multi-invoice Flag", False, f"is_multi_invoice: {separation_info.get('is_multi_invoice')}")
