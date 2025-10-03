@@ -621,15 +621,18 @@ test_plan:
 
   - task: "Nouvelle Interface OCR Module Complet"
     implemented: true
-    working: true
+    working: "NA"
     file: "/app/frontend/src/App.js"
     stuck_count: 0
     priority: "high"
-    needs_retesting: false
+    needs_retesting: true
     status_history:
       - working: true
         agent: "main"
         comment: "✅ OCR REDESIGN COMPLETE - Module OCR entièrement repensé avec sidebar actions (Nouvelle Photo/Import/Traitement Auto), zone prévisualisation drag & drop, historique documents, extraction données fournisseurs, design two-column layout sophistiqué conforme template"
+      - working: "NA"
+        agent: "main"
+        comment: "🆕 OCR MULTI-FACTURES FRONTEND - Gestion des réponses multiples implémentée dans handleOcrUpload() (lignes 1181-1201 App.js) : Détection automatique du type selon activeOcrTab (tickets-z/factures), réponse multi_invoice avec affichage message détaillé incluant total_detected, successfully_processed, rejected_count, rejected_invoices avec raisons de rejet et issues. Appel automatique fetchDocumentsOcr() pour rafraîchir la liste. Modal OCR ferme après traitement. PRÊT POUR TEST avec METRO.pdf."
 
   - task: "Nouvelle Interface Gestion Stocks Complète"
     implemented: true
