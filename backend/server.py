@@ -1004,18 +1004,26 @@ def extract_text_from_pdf(pdf_content: bytes) -> str:
         print(f"❌ pdfplumber failed: {str(e)}")
 
     # PASS 2: PyPDF2 text extraction
-    try:
-        pdf_file = io.BytesIO(pdf_content)
-        reader = PyPDF2.PdfReader(pdf_file)
-        for page in reader.pages:
-            try:
-                append_text(page.extract_text())
-            except Exception:
-                continue
-        # Do not return yet; we may still add OCR fallback text
-        pass
-    except Exception as e:
-        print(f"⚠️ PyPDF2 failed: {str(e)}")
+    if len(extracted_parts) < 3:  # Seulement si pdfplumber n'a pas assez récupéré
+        try:
+            pdf_file = io.BytesIO(pdf_content)
+            reader = PyPDF2.PdfReader(pdf_file)
+            print(f"📄 PyPDF2: {len(reader.pages)} pages detected")
+            for i, page in enumerate(reader.pages):
+                try:
+                    txt = page.extract_text()
+                    if txt and len(txt.strip()) > 50:
+                        append_text(txt)
+                        print(f"   Page {i+1}: {len(txt)} chars extracted")
+                except Exception as e:
+                    print(f"   ⚠️ Page {i+1} failed: {str(e)}")
+                    continue
+            if extracted_parts:
+                print(f"✅ PyPDF2 extracted {sum(len(p) for p in extracted_parts)} chars total")
+        except Exception as e:
+            print(f"❌ PyPDF2 failed: {str(e)}")
+    else:
+        print("⏭️ PyPDF2 skipped - pdfplumber successful")
 
     # PASS 3: Image-based fallback - rasterize each page and OCR
     try:
