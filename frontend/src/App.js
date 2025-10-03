@@ -3780,17 +3780,96 @@ function App() {
                             const stockRestant = stockActuel - stockUtilise;
                             const pourcentage = stockActuel > 0 ? ((stockUtilise / stockActuel) * 100).toFixed(1) : 0;
                             
+                            // Déterminer la couleur selon le niveau d'utilisation
+                            let statusColor = 'var(--color-success-green)';
+                            let statusIcon = '✅';
+                            let statusText = 'Stock OK';
+                            
+                            if (stockRestant < 0) {
+                              statusColor = 'var(--color-danger-red)';
+                              statusIcon = '🚨';
+                              statusText = 'DÉPASSEMENT !';
+                            } else if (pourcentage >= 90) {
+                              statusColor = 'var(--color-warning-orange)';
+                              statusIcon = '⚠️';
+                              statusText = 'Limite atteinte';
+                            } else if (pourcentage >= 75) {
+                              statusColor = 'var(--color-accent-orange)';
+                              statusIcon = '🔶';
+                              statusText = 'Attention';
+                            }
+                            
                             return (
                               <div>
-                                <div style={{fontWeight: '600', marginBottom: '8px'}}>📊 Résumé du stock</div>
+                                <div style={{
+                                  fontWeight: '600', 
+                                  marginBottom: '8px',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  gap: '8px'
+                                }}>
+                                  📊 Résumé du stock
+                                  <span style={{color: statusColor, fontSize: '12px'}}>
+                                    {statusIcon} {statusText}
+                                  </span>
+                                </div>
+                                
+                                {/* Barre de progression visuelle */}
+                                <div style={{
+                                  width: '100%',
+                                  height: '8px',
+                                  background: '#e2e8f0',
+                                  borderRadius: '4px',
+                                  marginBottom: '8px',
+                                  overflow: 'hidden'
+                                }}>
+                                  <div style={{
+                                    width: `${Math.min(pourcentage, 100)}%`,
+                                    height: '100%',
+                                    background: pourcentage >= 100 ? 'var(--color-danger-red)' : 
+                                              pourcentage >= 90 ? 'var(--color-warning-orange)' : 
+                                              pourcentage >= 75 ? 'var(--color-accent-orange)' : 
+                                              'var(--color-success-green)',
+                                    transition: 'width 0.3s ease'
+                                  }}></div>
+                                </div>
+                                
                                 <div style={{fontSize: '13px', lineHeight: '1.4'}}>
-                                  <div>Stock total: {stockActuel} {stocksPrevisionnels[selectedStockIndex]?.unite}</div>
-                                  <div>Stock utilisé: {stockUtilise.toFixed(1)} {stocksPrevisionnels[selectedStockIndex]?.unite}</div>
-                                  <div style={{color: stockRestant < 0 ? 'var(--color-danger-red)' : 'var(--color-success-green)'}}>
+                                  <div>Stock total: <strong>{stockActuel} {stocksPrevisionnels[selectedStockIndex]?.unite}</strong></div>
+                                  <div>Stock utilisé: <strong>{stockUtilise.toFixed(1)} {stocksPrevisionnels[selectedStockIndex]?.unite}</strong></div>
+                                  <div style={{color: statusColor, fontWeight: '600'}}>
                                     Stock restant: {stockRestant.toFixed(1)} {stocksPrevisionnels[selectedStockIndex]?.unite}
                                   </div>
-                                  <div>Utilisation: {pourcentage}%</div>
+                                  <div>Utilisation: <strong>{pourcentage}%</strong></div>
                                 </div>
+                                
+                                {stockRestant <= 0 && (
+                                  <div style={{
+                                    marginTop: '8px',
+                                    padding: '8px',
+                                    background: 'var(--color-danger-red)',
+                                    color: 'white',
+                                    borderRadius: '4px',
+                                    fontSize: '12px',
+                                    textAlign: 'center'
+                                  }}>
+                                    ⚠️ ATTENTION : Stock dépassé de {Math.abs(stockRestant).toFixed(1)} {stocksPrevisionnels[selectedStockIndex]?.unite}
+                                  </div>
+                                )}
+                                
+                                {stockRestant > 0 && stockRestant <= (stockActuel * 0.1) && (
+                                  <div style={{
+                                    marginTop: '8px',
+                                    padding: '6px',
+                                    background: 'var(--color-warning-orange)',
+                                    color: 'white',
+                                    borderRadius: '4px',
+                                    fontSize: '11px',
+                                    textAlign: 'center'
+                                  }}>
+                                    💡 Presque épuisé ! Plus que {stockRestant.toFixed(1)} {stocksPrevisionnels[selectedStockIndex]?.unite}
+                                  </div>
+                                )}
                               </div>
                             );
                           })()}
