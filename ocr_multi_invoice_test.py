@@ -430,7 +430,7 @@ class OCRMultiInvoiceTestSuite:
         except Exception as e:
             self.log_result("Single Invoice Test", False, f"Exception: {str(e)}")
         
-        # ✅ Vérifier que les tickets Z ne sont PAS affectés
+        # ✅ Verifier que les tickets Z ne sont PAS affectes
         z_report_content = b"RAPPORT Z Service: Soir Date: 01/01/2025 Total CA: 1250.50 EUR Couverts: 45"
         
         try:
