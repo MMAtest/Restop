@@ -893,17 +893,39 @@ function App() {
       const quantitePreparation = repartition[prep.id] || 0;
       
       if (quantitePreparation > 0) {
-        // Calculer combien de produit brut nécessaire
+        // Calculer combien de produit brut nécessaire  
         const ratioPreparation = prep.quantite_preparee / prep.quantite_produit_brut;
         const quantiteProduitBrutNecessaire = quantitePreparation / ratioPreparation;
         
         // Calculer le nombre de portions possibles
         const portionsPossibles = Math.floor(quantitePreparation / prep.taille_portion);
         
-        // Trouver des recettes qui utilisent ce type de préparation
+        // Trouver des recettes qui utilisent ce type de préparation ou le produit original
         const recettesCompatibles = recettes.filter(recette => {
-          return recette.ingredients.some(ing => ing.produit_id === produitId);
+          // Chercher des recettes qui utilisent le produit original
+          return recette.ingredients.some(ing => ing.produit_id === produitId) ||
+                 // Chercher des recettes qui pourraient utiliser cette forme de préparation
+                 recette.nom.toLowerCase().includes(prep.forme_decoupe.toLowerCase());
         });
+        
+        // Calculer les productions possibles en se basant sur les recettes
+        const productionsPossibles = recettesCompatibles.map(recette => {
+          const ingredient = recette.ingredients.find(ing => ing.produit_id === produitId);
+          if (ingredient) {
+            // Calculer combien de portions de cette recette on peut faire
+            const quantiteParPortion = ingredient.quantite / recette.portions;
+            const portionsRecettePossibles = Math.floor(quantitePreparation / quantiteParPortion);
+            
+            return {
+              nom: recette.nom,
+              portions_recette: recette.portions,
+              portions_possibles: portionsRecettePossibles,
+              categorie: recette.categorie || "Non classé",
+              prix_vente: recette.prix_vente || 0
+            };
+          }
+          return null;
+        }).filter(Boolean);
         
         stockTotalUtilise += quantiteProduitBrutNecessaire;
         
@@ -913,7 +935,8 @@ function App() {
           quantitePreparation: quantitePreparation,
           quantiteProduitBrut: quantiteProduitBrutNecessaire,
           portionsPossibles: portionsPossibles,
-          recettesCompatibles: recettesCompatibles.slice(0, 3), // Limiter à 3 recettes
+          recettesCompatibles: recettesCompatibles.slice(0, 3), // Limiter à 3 recettes pour l'affichage
+          productionsPossibles: productionsPossibles.slice(0, 5), // Limiter à 5 productions
           formeDecoupe: prep.forme_decoupe_custom || prep.forme_decoupe,
           unite: prep.unite_preparee
         });
