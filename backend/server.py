@@ -3228,6 +3228,106 @@ async def update_supplier_cost_config(supplier_id: str, config: SupplierCostConf
     updated_config = await db.supplier_cost_configs.find_one({"supplier_id": supplier_id})
     return SupplierCostConfig(**updated_config)
 
+# Routes pour les commandes (Orders)
+@api_router.post("/orders", response_model=Order)
+async def create_order(order_data: OrderCreate):
+    """Créer une nouvelle commande"""
+    # Récupérer le fournisseur
+    supplier = await db.fournisseurs.find_one({"id": order_data.supplier_id})
+    if not supplier:
+        raise HTTPException(status_code=404, detail="Fournisseur non trouvé")
+    
+    # Calculer le montant total
+    total_amount = sum(item.total_price for item in order_data.items)
+    
+    # Calculer la date de livraison estimée
+    supplier_obj = Fournisseur(**supplier)
+    delivery_info = calculate_delivery_date(supplier_obj)
+    
+    # Créer le numéro de commande
+    order_number = f"CMD-{datetime.now().strftime('%Y%m%d')}-{str(uuid.uuid4())[:6].upper()}"
+    
+    # Créer l'objet commande
+    order = Order(
+        order_number=order_number,
+        supplier_id=order_data.supplier_id,
+        supplier_name=supplier["nom"],
+        items=order_data.items,
+        total_amount=total_amount,
+        estimated_delivery_date=delivery_info['estimated_date'],
+        notes=order_data.notes,
+        status="pending"
+    )
+    
+    # Sauvegarder en base
+    await db.orders.insert_one(order.dict())
+    
+    return order
+
+@api_router.get("/orders", response_model=List[Order])
+async def get_orders(status: Optional[str] = None, supplier_id: Optional[str] = None):
+    """Récupérer les commandes avec filtres optionnels"""
+    query = {}
+    if status:
+        query["status"] = status
+    if supplier_id:
+        query["supplier_id"] = supplier_id
+    
+    orders = await db.orders.find(query).sort("order_date", -1).to_list(1000)
+    return [Order(**order) for order in orders]
+
+@api_router.get("/orders/{order_id}", response_model=Order)
+async def get_order(order_id: str):
+    """Récupérer une commande spécifique"""
+    order = await db.orders.find_one({"id": order_id})
+    if not order:
+        raise HTTPException(status_code=404, detail="Commande non trouvée")
+    return Order(**order)
+
+@api_router.put("/orders/{order_id}/status")
+async def update_order_status(order_id: str, status: str, actual_delivery_date: Optional[str] = None):
+    """Mettre à jour le statut d'une commande"""
+    valid_statuses = ["pending", "confirmed", "in_transit", "delivered", "cancelled"]
+    if status not in valid_statuses:
+        raise HTTPException(status_code=400, detail=f"Statut invalide. Utilisez: {', '.join(valid_statuses)}")
+    
+    update_data = {
+        "status": status,
+        "updated_at": datetime.utcnow()
+    }
+    
+    if status == "delivered" and actual_delivery_date:
+        update_data["actual_delivery_date"] = datetime.fromisoformat(actual_delivery_date)
+    
+    result = await db.orders.update_one(
+        {"id": order_id},
+        {"$set": update_data}
+    )
+    
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Commande non trouvée")
+    
+    return {"message": "Statut mis à jour", "status": status}
+
+@api_router.get("/suppliers/{supplier_id}/delivery-estimate")
+async def get_delivery_estimate(supplier_id: str):
+    """Calculer la date de livraison estimée pour un fournisseur"""
+    supplier = await db.fournisseurs.find_one({"id": supplier_id})
+    if not supplier:
+        raise HTTPException(status_code=404, detail="Fournisseur non trouvé")
+    
+    supplier_obj = Fournisseur(**supplier)
+    delivery_info = calculate_delivery_date(supplier_obj)
+    
+    return {
+        "supplier_id": supplier_id,
+        "supplier_name": supplier["nom"],
+        "estimated_delivery_date": delivery_info['estimated_date'].isoformat(),
+        "can_order_today": delivery_info['can_order_today'],
+        "next_order_date": delivery_info['next_order_date'].isoformat(),
+        "explanation": delivery_info['explanation']
+    }
+
 # Routes pour les produits
 @api_router.post("/produits", response_model=Produit)
 async def create_produit(produit: ProduitCreate):
