@@ -170,7 +170,7 @@ class OCRMultiInvoiceTestSuite:
                 if rejected_count > 0:
                     self.log_result("Low Quality Rejection", True, f"{rejected_count} facture(s) rejetée(s)")
                 else:
-                    self.log_result("Low Quality Rejection", False, "Aucune facture rejetée malgré la mauvaise qualité")
+                    self.log_result("Low Quality Rejection", False, "Aucune facture rejetee malgre la mauvaise qualite")
                 
                 # ✅ Vérifier rejected_count dans la réponse
                 if "rejected_count" in result:
