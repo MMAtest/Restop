@@ -3720,23 +3720,42 @@ function App() {
                                     {prod.portions_selectionnees} portions
                                   </div>
                                   
-                                  <button 
-                                    className="button small"
-                                    onClick={() => {
-                                      const updatedStocks = [...stocksPrevisionnels];
-                                      updatedStocks[selectedStockIndex].productions_possibles[prodIndex].portions_selectionnees += 1;
-                                      setStocksPrevisionnels(updatedStocks);
-                                    }}
-                                    style={{
-                                      width: '30px',
-                                      height: '30px',
-                                      display: 'flex',
-                                      alignItems: 'center',
-                                      justifyContent: 'center'
-                                    }}
-                                  >
-                                    +
-                                  </button>
+                                  {(() => {
+                                    // Calculer si on peut ajouter une portion
+                                    const stock = stocksPrevisionnels[selectedStockIndex];
+                                    const currentStock = stock?.productions_possibles?.reduce((total, p) => 
+                                      total + (p.portions_selectionnees * p.quantite_needed), 0
+                                    ) || 0;
+                                    const additionalStock = prod.quantite_needed;
+                                    const wouldExceedStock = (currentStock + additionalStock) > stock?.stock_actuel;
+                                    
+                                    return (
+                                      <button 
+                                        className="button small"
+                                        disabled={wouldExceedStock}
+                                        onClick={() => {
+                                          if (!wouldExceedStock) {
+                                            const updatedStocks = [...stocksPrevisionnels];
+                                            updatedStocks[selectedStockIndex].productions_possibles[prodIndex].portions_selectionnees += 1;
+                                            setStocksPrevisionnels(updatedStocks);
+                                          }
+                                        }}
+                                        style={{
+                                          width: '30px',
+                                          height: '30px',
+                                          display: 'flex',
+                                          alignItems: 'center',
+                                          justifyContent: 'center',
+                                          opacity: wouldExceedStock ? 0.5 : 1,
+                                          cursor: wouldExceedStock ? 'not-allowed' : 'pointer',
+                                          background: wouldExceedStock ? 'var(--color-border)' : 'var(--color-primary-blue)'
+                                        }}
+                                        title={wouldExceedStock ? 'Stock insuffisant' : 'Ajouter une portion'}
+                                      >
+                                        +
+                                      </button>
+                                    );
+                                  })()}
                                 </div>
                                 
                                 <div style={{fontSize: '12px', color: 'var(--color-text-muted)'}}>
