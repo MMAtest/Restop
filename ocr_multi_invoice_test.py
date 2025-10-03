@@ -580,7 +580,7 @@ class OCRMultiInvoiceTestSuite:
                 try:
                     response = requests.delete(f"{BASE_URL}/ocr/document/{doc_id}")
                     if response.status_code == 200:
-                        self.log_result(f"Cleanup Document {doc_id[:8]}...", True, "Document supprimé")
+                        self.log_result(f"Cleanup Document {doc_id[:8]}...", True, "Document supprime")
                     else:
                         self.log_result(f"Cleanup Document {doc_id[:8]}...", False, f"Erreur {response.status_code}")
                 except Exception as e:
