@@ -265,8 +265,17 @@ function App() {
     nom: "", description: "", categorie: "", unite: "", prix_achat: "", fournisseur_id: ""
   });
   const [fournisseurForm, setFournisseurForm] = useState({
-    nom: "", contact: "", email: "", telephone: "", adresse: "", couleur: "#3B82F6", logo: "", categorie: "frais", deliveryCost: 0, extraCost: 0
+    nom: "", contact: "", email: "", telephone: "", adresse: "", couleur: "#3B82F6", logo: "", categorie: "frais", deliveryCost: 0, extraCost: 0,
+    delivery_rules: {
+      order_days: [],
+      order_deadline_hour: 11,
+      delivery_days: [],
+      delivery_delay_days: 1,
+      delivery_time: "12:00",
+      special_rules: ""
+    }
   });
+  const [showDeliveryRulesConfig, setShowDeliveryRulesConfig] = useState(false);
   const [mouvementForm, setMouvementForm] = useState({
     produit_id: "", type: "entree", quantite: "", reference: "", commentaire: "", lot: "", unite: ""
   });
