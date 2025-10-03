@@ -393,6 +393,66 @@ backend:
         agent: "main"
         comment: "✅ FONCTIONNALITÉ MULTI-FACTURES OPÉRATIONNELLE ! Corrections critiques appliquées : 1) extract_text_from_pdf() améliorée avec logging détaillé, extraction simple+layout pdfplumber, OCR fallback pour PDFs scannés (lignes 945-1094). 2) Paramètre document_type corrigé avec Form() pour multipart data (ligne 3550). 3) Logique de groupement refactorée pour identifier vrais headers forts au lieu de grouper par distance (lignes 509-546). 4) Response model retiré pour permettre réponses flexibles multi-invoice. TESTS VALIDÉS : PDF 4 factures → 2 documents détectés et créés (test_multi_factures.pdf), extraction texte 780 chars, quality 100%, response structure complète (multi_invoice:true, total_detected:2, successfully_processed:2, rejected_count:0, document_ids:[2], processing_summary). Documents créés en MongoDB avec noms explicites 'Facture 1/2', 'Facture 2/2'. Prêt pour test METRO.pdf réel (14 documents attendus)."
 
+  - task: "Auto-génération des préparations"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Implémentation de l'endpoint POST /api/preparations/auto-generate pour analyser tous les produits avec catégories et créer 2-3 préparations cohérentes par produit basées sur les recettes existantes"
+      - working: true
+        agent: "testing"
+        comment: "✅ AUTO-GÉNÉRATION PRÉPARATIONS - 100% RÉUSSITE ! Validation complète de la nouvelle fonctionnalité d'auto-génération des préparations : ✅ ENDPOINT FONCTIONNEL : POST /api/preparations/auto-generate fonctionne parfaitement avec structure de réponse correcte (success, message, preparations_created, details) ✅ GÉNÉRATION MASSIVE : 128 préparations créées automatiquement à partir de 64 produits avec catégories ✅ TRAITEMENT INTELLIGENT : 10 catégories traitées (Produits laitiers, Épices, Légumes, Viandes, Poissons, etc.) avec variété de formes de découpe (émincés, marinés, filets) ✅ COHÉRENCE DONNÉES : Préparations générées avec données cohérentes (quantités, pertes, portions) et formes de découpe valides (128/128) ✅ INTÉGRATION RECETTES : 24 produits communs entre préparations et recettes existantes confirmant la cohérence avec le système. Fonctionnalité d'auto-génération entièrement opérationnelle pour production avec génération intelligente basée sur les données existantes de La Table d'Augustine."
+
+  - task: "Produits par catégories"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Implémentation de l'endpoint GET /api/produits/by-categories pour regrouper les produits par catégories avec icônes et statistiques pour affichage accordéon"
+      - working: true
+        agent: "testing"
+        comment: "✅ PRODUITS PAR CATÉGORIES - 100% RÉUSSITE ! Validation complète de l'endpoint de regroupement par catégories : ✅ STRUCTURE PARFAITE : GET /api/produits/by-categories retourne structure correcte (categories, total_categories, total_products) avec cohérence totale (10 catégories, 64 produits) ✅ CATÉGORIES COMPLÈTES : Toutes les 10 catégories bien structurées avec champs requis (products, icon, total_products) et cohérence interne validée ✅ CATÉGORIES RESTAURANT : Catégories attendues présentes (Légumes, Viandes, Poissons, Épices) avec icônes appropriées (🥬, 🥩, 🐟, 🌶️) ✅ DONNÉES DÉTAILLÉES : Chaque catégorie contient produits complets avec informations fournisseur, prix, unités pour affichage accordéon ✅ RÉPARTITION ÉQUILIBRÉE : Distribution logique (Légumes: 13, Service: 16, Poissons: 7, Viandes: 6, Produits laitiers: 6, Céréales: 5, Épices: 4, Test: 4, Fruits: 2, Autres: 1). Endpoint produits par catégories entièrement fonctionnel pour affichage accordéon avec icônes et statistiques complètes."
+
+  - task: "Diagnostic d'archivage"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Implémentation de l'endpoint POST /api/archive/diagnostic pour tester le système d'archivage existant, vérifier les permissions et la structure des données"
+      - working: true
+        agent: "testing"
+        comment: "✅ DIAGNOSTIC D'ARCHIVAGE - 100% RÉUSSITE ! Validation complète du système de diagnostic d'archivage : ✅ ENDPOINT FONCTIONNEL : POST /api/archive/diagnostic répond avec structure correcte (system_status, tests) et statut système 'running' ✅ TESTS COMPLETS : 4 tests de diagnostic exécutés avec succès (Collections Count, Archive Simulation, Archive Structure, Database Permissions) ✅ COLLECTIONS TESTÉES : Vérification complète des collections (produits: 64, recettes: 19, fournisseurs: 28, archives: 3) ✅ PERMISSIONS VALIDÉES : Permissions de lecture/écriture confirmées, système peut créer des archives, structure des archives correcte ✅ SYSTÈME OPÉRATIONNEL : Tous les 4/4 tests réussis confirmant que le système d'archivage est entièrement fonctionnel. Diagnostic d'archivage entièrement opérationnel avec vérifications complètes des permissions et structure des données pour production."
+
+  - task: "Vérification préparations existantes"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Endpoint GET /api/preparations existant pour vérifier les préparations créées par l'auto-génération"
+      - working: true
+        agent: "testing"
+        comment: "✅ PRÉPARATIONS EXISTANTES - 100% RÉUSSITE ! Validation complète des préparations auto-générées : ✅ ENDPOINT FONCTIONNEL : GET /api/preparations retourne liste de 128 préparations avec structure complète (15/15 champs requis présents) ✅ DONNÉES COHÉRENTES : Toutes préparations testées (5/5) ont des données cohérentes avec calculs de perte corrects (10-25% selon type de découpe) ✅ FORMES VALIDES : 128/128 formes de découpe valides (brunoise, carré, émincé, haché, julienne, filets, mariné, cuit, concassé, râpé, purée) ✅ INTÉGRATION SYSTÈME : 24 produits communs entre préparations et recettes existantes confirmant la cohérence avec le système global ✅ QUALITÉ DONNÉES : Préparations avec quantités réalistes, pertes calculées correctement, portions définies, dates de préparation. Vérification des préparations existantes entièrement validée avec données cohérentes et intégration parfaite au système La Table d'Augustine."
+
 frontend:
   - task: "Interface Dashboard"
     implemented: true
