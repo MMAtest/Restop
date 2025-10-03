@@ -832,3 +832,25 @@ body {
 ::-webkit-scrollbar-thumb:hover {
   background: var(--color-border-light);
 }
+
+/* ===== MASQUER PASTILLE EMERGENT ===== */
+/* Masquer tous les éléments qui pourraient contenir "Made with Emergent" */
+div[style*="position: fixed"][style*="bottom"],
+div[style*="position: absolute"][style*="bottom"],
+.emergent-badge,
+.made-with-emergent,
+[class*="emergent"],
+[id*="emergent"],
+/* Cibler les éléments en position fixe en bas à droite */
+div[style*="position: fixed"][style*="right"][style*="bottom"],
+div[style*="position: absolute"][style*="right"][style*="bottom"] {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+}
+
+/* Cibler spécifiquement les badges en bas de page */
+body > div:last-child,
+body > div[style*="z-index"]:last-child {
+  display: none !important;
+}
