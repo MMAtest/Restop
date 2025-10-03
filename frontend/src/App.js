@@ -4449,6 +4449,199 @@ function App() {
                     </div>
                   )}
 
+                  {/* ÉTAPE 3: Répartition des quantités */}
+                  {selectedStockIndex !== null && selectedStockIndex !== '' && (() => {
+                    const produitId = selectedStockIndex;
+                    const preparationsProduit = preparations.filter(prep => prep.produit_id === produitId);
+                    const produitSelectionne = produits.find(p => p.id === produitId);
+                    const stockProduit = stocks.find(s => s.produit_id === produitId);
+                    
+                    if (preparationsProduit.length === 0) return null;
+                    
+                    return (
+                      <div style={{marginBottom: '24px', padding: '20px', background: '#fef3c7', borderRadius: '8px', border: '1px solid #f59e0b'}}>
+                        <label className="form-label" style={{marginBottom: '16px', display: 'block', fontSize: '16px', fontWeight: 'bold'}}>
+                          3️⃣ Répartir les quantités et voir les productions :
+                        </label>
+                        
+                        {/* Stock disponible */}
+                        <div style={{marginBottom: '16px', padding: '12px', background: 'white', borderRadius: '6px', border: '1px solid #d97706'}}>
+                          <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
+                            <div>
+                              <strong>📦 Stock disponible:</strong> {stockProduit ? stockProduit.quantite_actuelle : 0} {produitSelectionne?.unite}
+                            </div>
+                            <div style={{fontSize: '14px', color: stockUtiliseTotal > (stockProduit?.quantite_actuelle || 0) ? '#dc2626' : '#059669'}}>
+                              <strong>Utilisé:</strong> {stockUtiliseTotal.toFixed(2)} {produitSelectionne?.unite} 
+                              {stockUtiliseTotal > 0 && (
+                                <span style={{marginLeft: '8px'}}>
+                                  ({((stockUtiliseTotal / (stockProduit?.quantite_actuelle || 1)) * 100).toFixed(1)}%)
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Saisie des quantités pour chaque préparation */}
+                        <div style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '16px', marginBottom: '20px'}}>
+                          {preparationsProduit.map(prep => (
+                            <div key={prep.id} style={{
+                              padding: '16px', 
+                              background: 'white', 
+                              borderRadius: '8px', 
+                              border: '2px solid #f59e0b'
+                            }}>
+                              <div style={{fontWeight: 'bold', fontSize: '14px', marginBottom: '8px', color: '#92400e'}}>
+                                🔪 {prep.nom}
+                              </div>
+                              
+                              <div style={{display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px'}}>
+                                <input
+                                  type="number"
+                                  min="0"
+                                  max={prep.quantite_preparee}
+                                  step="0.1"
+                                  placeholder="Quantité..."
+                                  value={repartitionQuantities[prep.id] || ''}
+                                  onChange={(e) => updateRepartitionQuantity(prep.id, e.target.value)}
+                                  style={{
+                                    flex: 1,
+                                    padding: '8px',
+                                    border: '1px solid #d97706',
+                                    borderRadius: '4px',
+                                    fontSize: '14px'
+                                  }}
+                                />
+                                <span style={{fontSize: '14px', color: '#78350f', minWidth: '60px'}}>
+                                  / {prep.quantite_preparee} {prep.unite_preparee}
+                                </span>
+                              </div>
+                              
+                              <div style={{fontSize: '12px', color: '#78350f', display: 'flex', flexDirection: 'column', gap: '2px'}}>
+                                <div><strong>Forme:</strong> {prep.forme_decoupe_custom || prep.forme_decoupe}</div>
+                                <div><strong>Taille portion:</strong> {prep.taille_portion}{prep.unite_portion}</div>
+                                <div><strong>Portions max:</strong> {prep.nombre_portions}</div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                        
+                        {/* Boutons d'actions rapides */}
+                        <div style={{display: 'flex', gap: '8px', marginBottom: '16px', flexWrap: 'wrap'}}>
+                          <button 
+                            className="button small secondary"
+                            onClick={() => {
+                              const newRepartition = {};
+                              preparationsProduit.forEach(prep => {
+                                newRepartition[prep.id] = prep.quantite_preparee;
+                              });
+                              setRepartitionQuantities(newRepartition);
+                              calculateProductionsFromRepartition(newRepartition);
+                            }}
+                            style={{fontSize: '12px'}}
+                          >
+                            📊 Utiliser tout
+                          </button>
+                          
+                          <button 
+                            className="button small secondary"
+                            onClick={() => {
+                              const newRepartition = {};
+                              preparationsProduit.forEach(prep => {
+                                newRepartition[prep.id] = prep.quantite_preparee / 2;
+                              });
+                              setRepartitionQuantities(newRepartition);
+                              calculateProductionsFromRepartition(newRepartition);
+                            }}
+                            style={{fontSize: '12px'}}
+                          >
+                            ⚖️ Répartir 50/50
+                          </button>
+                          
+                          <button 
+                            className="button small danger"
+                            onClick={resetRepartition}
+                            style={{fontSize: '12px'}}
+                          >
+                            🗑️ Reset
+                          </button>
+                        </div>
+
+                        {/* CALCUL AUTOMATIQUE DES PRODUCTIONS */}
+                        {productionsCalculees.length > 0 && (
+                          <div style={{marginTop: '20px', padding: '16px', background: 'white', borderRadius: '8px', border: '2px solid #10b981'}}>
+                            <div style={{fontWeight: 'bold', fontSize: '16px', marginBottom: '12px', color: '#065f46'}}>
+                              🍽️ Productions calculées automatiquement :
+                            </div>
+                            
+                            <div style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '12px'}}>
+                              {productionsCalculees.map((prod, index) => (
+                                <div key={prod.preparationId} style={{
+                                  padding: '12px',
+                                  background: '#ecfdf5',
+                                  borderRadius: '6px',
+                                  border: '1px solid #10b981'
+                                }}>
+                                  <div style={{fontWeight: 'bold', fontSize: '14px', marginBottom: '6px', color: '#065f46'}}>
+                                    🔪 {prod.preparationNom}
+                                  </div>
+                                  
+                                  <div style={{fontSize: '13px', color: '#059669', display: 'flex', flexDirection: 'column', gap: '3px'}}>
+                                    <div><strong>📏 Quantité préparée:</strong> {prod.quantitePreparation} {prod.unite}</div>
+                                    <div><strong>🍽️ Portions possibles:</strong> <span style={{fontSize: '16px', fontWeight: 'bold', color: '#10b981'}}>{prod.portionsPossibles}</span></div>
+                                    <div><strong>📦 Produit brut requis:</strong> {prod.quantiteProduitBrut.toFixed(2)} {produitSelectionne?.unite}</div>
+                                    <div><strong>🔪 Forme:</strong> {prod.formeDecoupe}</div>
+                                    
+                                    {prod.recettesCompatibles.length > 0 && (
+                                      <div style={{marginTop: '6px', padding: '6px', background: '#f0fdf4', borderRadius: '4px'}}>
+                                        <div style={{fontSize: '12px', fontWeight: 'bold', marginBottom: '3px'}}>📖 Recettes compatibles:</div>
+                                        {prod.recettesCompatibles.map((recette, i) => (
+                                          <div key={recette.id} style={{fontSize: '11px', color: '#166534'}}>
+                                            • {recette.nom} ({recette.portions} portions)
+                                          </div>
+                                        ))}
+                                      </div>
+                                    )}
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                            
+                            {/* Résumé total */}
+                            <div style={{
+                              marginTop: '16px', 
+                              padding: '12px', 
+                              background: stockUtiliseTotal > (stockProduit?.quantite_actuelle || 0) ? '#fecaca' : '#dcfce7',
+                              borderRadius: '6px',
+                              border: `1px solid ${stockUtiliseTotal > (stockProduit?.quantite_actuelle || 0) ? '#dc2626' : '#10b981'}`
+                            }}>
+                              <div style={{
+                                fontWeight: 'bold', 
+                                fontSize: '14px',
+                                color: stockUtiliseTotal > (stockProduit?.quantite_actuelle || 0) ? '#dc2626' : '#065f46'
+                              }}>
+                                📊 Résumé de la répartition :
+                              </div>
+                              <div style={{
+                                fontSize: '13px', 
+                                color: stockUtiliseTotal > (stockProduit?.quantite_actuelle || 0) ? '#991b1b' : '#059669',
+                                marginTop: '4px'
+                              }}>
+                                Stock utilisé: <strong>{stockUtiliseTotal.toFixed(2)} {produitSelectionne?.unite}</strong> sur {stockProduit?.quantite_actuelle || 0} disponible
+                                <br />
+                                Portions totales possibles: <strong>{productionsCalculees.reduce((sum, prod) => sum + prod.portionsPossibles, 0)}</strong>
+                                {stockUtiliseTotal > (stockProduit?.quantite_actuelle || 0) && (
+                                  <div style={{color: '#dc2626', fontWeight: 'bold', marginTop: '4px'}}>
+                                    ⚠️ Attention: Stock insuffisant !
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })()}
+
                   {/* Interface de répartition avec camembert */}
                   {selectedStockIndex !== null && selectedStockIndex !== '' && (
                     <div style={{
