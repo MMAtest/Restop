@@ -729,7 +729,18 @@ function App() {
         telephone: item.telephone || "",
         adresse: item.adresse || "",
         couleur: item.couleur || "#3B82F6",
-        logo: item.logo || ""
+        logo: item.logo || "",
+        categorie: item.categorie || "frais",
+        deliveryCost: 0,
+        extraCost: 0,
+        delivery_rules: item.delivery_rules || {
+          order_days: [],
+          order_deadline_hour: 11,
+          delivery_days: [],
+          delivery_delay_days: 1,
+          delivery_time: "12:00",
+          special_rules: ""
+        }
       });
       setShowFournisseurModal(true);
     } else if (type === "recette") {
