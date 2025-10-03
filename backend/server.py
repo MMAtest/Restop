@@ -946,6 +946,8 @@ def extract_text_from_pdf(pdf_content: bytes) -> str:
     """Extract text from PDF using a robust multi-pass strategy for completeness"""
     import io
     extracted_parts = []
+    
+    print(f"🔍 PDF extraction starting - {len(pdf_content)} bytes")
 
     # Helper to append unique chunks
     def append_text(txt):
@@ -954,78 +956,52 @@ def extract_text_from_pdf(pdf_content: bytes) -> str:
         txt = txt.strip()
         if not txt:
             return
-        extracted_parts.append(txt)
+        # Avoid adding duplicates
+        if txt not in extracted_parts:
+            extracted_parts.append(txt)
+            print(f"   ✓ Added {len(txt)} chars")
 
-    # PASS 1: pdfplumber - PRÉSERVATION INDENTATION AMÉLIORÉE
+    # PASS 1: pdfplumber - SIMPLE TEXT EXTRACTION FIRST
     try:
         pdf_file = io.BytesIO(pdf_content)
         with pdfplumber.open(pdf_file) as pdf:
-            for page in pdf.pages:
-                # APPROCHE 1: Extraction standard qui préserve souvent mieux l'indentation
-                txt1 = page.extract_text(layout=True)  # layout=True préserve mieux la mise en forme
-                if txt1:
+            print(f"📄 pdfplumber: {len(pdf.pages)} pages detected")
+            for i, page in enumerate(pdf.pages):
+                # APPROCHE 1: Extraction simple et rapide
+                txt1 = page.extract_text()
+                if txt1 and len(txt1.strip()) > 50:  # Au moins 50 caractères
                     append_text(txt1)
+                    print(f"   Page {i+1}: {len(txt1)} chars extracted (simple)")
                 
-                # APPROCHE 2: Extraction basée sur les caractères avec positions
-                try:
-                    chars = page.chars
-                    if chars:
-                        # Grouper les caractères par ligne basé sur leur position Y
-                        lines_dict = {}
-                        for char in chars:
-                            y = round(char['y0'], 1)  # Arrondir pour grouper sur même ligne
-                            if y not in lines_dict:
-                                lines_dict[y] = []
-                            lines_dict[y].append(char)
-                        
-                        # Reconstruire le texte ligne par ligne en préservant l'indentation
-                        sorted_lines = sorted(lines_dict.keys(), reverse=True)  # Du haut vers le bas
-                        reconstructed_lines = []
-                        
-                        for y in sorted_lines:
-                            line_chars = sorted(lines_dict[y], key=lambda c: c['x0'])  # De gauche à droite
-                            if not line_chars:
-                                continue
-                            
-                            # Calculer l'indentation basée sur la position X du premier caractère
-                            first_x = line_chars[0]['x0']
-                            base_x = 50  # Position X de base (à ajuster selon le PDF)
-                            indent_spaces = max(0, int((first_x - base_x) / 10))  # 10 pixels ≈ 1 espace
-                            
-                            # Construire la ligne avec indentation
-                            line_text = ''.join([c['text'] for c in line_chars])
-                            indented_line = ' ' * indent_spaces + line_text.strip()
-                            
-                            if indented_line.strip():  # Ignorer lignes vides
-                                reconstructed_lines.append(indented_line)
-                        
-                        if reconstructed_lines:
-                            reconstructed_text = '\n'.join(reconstructed_lines)
-                            append_text(reconstructed_text)
+                # APPROCHE 2: Extraction avec layout
+                txt2 = page.extract_text(layout=True)
+                if txt2 and len(txt2.strip()) > 50 and txt2 != txt1:
+                    append_text(txt2)
+                    print(f"   Page {i+1}: {len(txt2)} chars extracted (layout)")
                 
-                except Exception as e:
-                    print(f"⚠️ Erreur extraction par caractères: {str(e)}")
-                
-                # table-aware extraction if tables exist
+                # APPROCHE 3: table-aware extraction if tables exist
                 try:
                     tables = page.extract_tables()
                     if tables:
                         for t in tables:
-                            # Flatten table rows into text lines
                             lines = []
                             for row in t:
                                 if row:
-                                    line = " ".join([c for c in row if c])
+                                    line = " ".join([str(c) for c in row if c])
                                     if line:
                                         lines.append(line)
                             if lines:
-                                append_text("\n".join(lines))
-                except Exception:
-                    pass
-        # Do not return yet; we'll merge with other passes for completeness
-        pass
+                                table_text = "\n".join(lines)
+                                if len(table_text) > 50:
+                                    append_text(table_text)
+                                    print(f"   Page {i+1}: {len(table_text)} chars from tables")
+                except Exception as e:
+                    print(f"   ⚠️ Table extraction failed: {str(e)}")
+        
+        if extracted_parts:
+            print(f"✅ pdfplumber extracted {len(extracted_parts)} parts, {sum(len(p) for p in extracted_parts)} chars total")
     except Exception as e:
-        print(f"⚠️ pdfplumber failed: {str(e)}")
+        print(f"❌ pdfplumber failed: {str(e)}")
 
     # PASS 2: PyPDF2 text extraction
     try:
