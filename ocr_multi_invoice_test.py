@@ -496,12 +496,12 @@ class OCRMultiInvoiceTestSuite:
             if response.status_code in [200, 201]:
                 result = response.json()
                 
-                # Doit détecter via quality_score
+                # Doit detecter via quality_score
                 has_quality_issues = result.get("has_quality_issues", False)
                 if has_quality_issues:
-                    self.log_result("Quality Issues Detection", True, "Problèmes de qualité détectés")
+                    self.log_result("Quality Issues Detection", True, "Problemes de qualite detectes")
                 else:
-                    self.log_result("Quality Issues Detection", False, "Problèmes de qualité non détectés")
+                    self.log_result("Quality Issues Detection", False, "Problemes de qualite non detectes")
                     
             else:
                 self.log_result("Bad Quality Detection Test", False, f"Erreur {response.status_code}")
