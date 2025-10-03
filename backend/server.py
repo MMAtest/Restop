@@ -3463,31 +3463,109 @@ async def upload_and_process_document(
             z_summary = analyze_z_report_categories(texte_extrait)
             donnees_parsees["z_analysis"] = z_summary
         elif document_type == "facture_fournisseur":
-            facture_data = parse_facture_fournisseur(texte_extrait)
-            donnees_parsees = facture_data.dict()
+            # Détecter s'il y a plusieurs factures dans le document
+            separated_invoices = detect_multiple_invoices(texte_extrait)
+            
+            if len(separated_invoices) == 1:
+                # Facture unique - traitement normal
+                facture_data = parse_facture_fournisseur(texte_extrait)
+                donnees_parsees = facture_data.dict()
+                
+                # Créer le document dans la base
+                document = DocumentOCR(
+                    type_document=document_type,
+                    nom_fichier=file.filename,
+                    image_base64=data_uri,
+                    texte_extrait=texte_extrait,
+                    donnees_parsees=donnees_parsees,
+                    statut="traite",
+                    date_traitement=datetime.utcnow(),
+                    file_type=file_type
+                )
+                
+                await db.documents_ocr.insert_one(document.dict())
+                
+                return DocumentUploadResponse(
+                    document_id=document.id,
+                    type_document=document_type,
+                    texte_extrait=texte_extrait,
+                    donnees_parsees=donnees_parsees,
+                    message=f"Facture unique traitée avec succès",
+                    file_type=file_type
+                )
+                
+            else:
+                # Factures multiples - traiter chaque facture séparément
+                created_documents = []
+                
+                for i, invoice in enumerate(separated_invoices):
+                    try:
+                        # Parser chaque facture individuellement
+                        facture_data = parse_facture_fournisseur(invoice['text_content'])
+                        donnees_parsees = facture_data.dict()
+                        
+                        # Ajouter des métadonnées sur la séparation
+                        donnees_parsees["separation_info"] = {
+                            "is_multi_invoice": True,
+                            "invoice_index": invoice['index'],
+                            "total_invoices": len(separated_invoices),
+                            "header_detected": invoice['header']
+                        }
+                        
+                        # Créer un document pour chaque facture
+                        document = DocumentOCR(
+                            type_document=document_type,
+                            nom_fichier=f"{file.filename} - Facture {invoice['index']}/{len(separated_invoices)}",
+                            image_base64=data_uri,  # Même image/PDF source
+                            texte_extrait=invoice['text_content'],  # Texte de cette facture uniquement
+                            donnees_parsees=donnees_parsees,
+                            statut="traite",
+                            date_traitement=datetime.utcnow(),
+                            file_type=file_type
+                        )
+                        
+                        await db.documents_ocr.insert_one(document.dict())
+                        created_documents.append(document.id)
+                        
+                        print(f"✅ Facture {invoice['index']}/{len(separated_invoices)} créée avec ID: {document.id}")
+                        
+                    except Exception as e:
+                        print(f"❌ Erreur lors du traitement de la facture {invoice['index']}: {str(e)}")
+                        continue
+                
+                # Retourner un résumé des documents créés
+                return {
+                    "multi_invoice": True,
+                    "total_invoices": len(separated_invoices),
+                    "created_documents": len(created_documents),
+                    "document_ids": created_documents,
+                    "message": f"{len(created_documents)} factures traitées avec succès sur {len(separated_invoices)} détectées",
+                    "file_type": file_type
+                }
         
-        # Créer le document dans la base
-        document = DocumentOCR(
-            type_document=document_type,
-            nom_fichier=file.filename,
-            image_base64=data_uri,  # Peut être une image ou un PDF encodé
-            texte_extrait=texte_extrait,
-            donnees_parsees=donnees_parsees,
-            statut="traite",
-            date_traitement=datetime.utcnow(),
-            file_type=file_type  # Nouveau champ pour identifier le type
-        )
-        
-        await db.documents_ocr.insert_one(document.dict())
-        
-        return DocumentUploadResponse(
-            document_id=document.id,
-            type_document=document_type,
-            texte_extrait=texte_extrait,
-            donnees_parsees=donnees_parsees,
-            message=f"Document {document_type} traité avec succès",
-            file_type=file_type
-        )
+        # Pour les tickets Z (traitement normal inchangé)
+        if document_type == "z_report":
+            document = DocumentOCR(
+                type_document=document_type,
+                nom_fichier=file.filename,
+                image_base64=data_uri,
+                texte_extrait=texte_extrait,
+                donnees_parsees=donnees_parsees,
+                statut="traite",
+                date_traitement=datetime.utcnow(),
+                file_type=file_type
+            )
+            
+            await db.documents_ocr.insert_one(document.dict())
+            
+            return DocumentUploadResponse(
+                document_id=document.id,
+                type_document=document_type,
+                texte_extrait=texte_extrait,
+                donnees_parsees=donnees_parsees,
+                message=f"Document {document_type} traité avec succès",
+                file_type=file_type
+            )
         
     except HTTPException:
         raise
