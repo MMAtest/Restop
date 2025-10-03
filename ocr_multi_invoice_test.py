@@ -563,11 +563,11 @@ class OCRMultiInvoiceTestSuite:
                     self.log_result("Error Handling Graceful", False, "Pas de gestion d'erreur appropriee")
                     
             else:
-                # Même une erreur HTTP peut être acceptable si elle est gérée proprement
+                # Meme une erreur HTTP peut etre acceptable si elle est geree proprement
                 if response.status_code in [400, 422]:  # Erreurs de validation acceptables
-                    self.log_result("Error Handling HTTP", True, f"Erreur gérée proprement: {response.status_code}")
+                    self.log_result("Error Handling HTTP", True, f"Erreur geree proprement: {response.status_code}")
                 else:
-                    self.log_result("Error Handling HTTP", False, f"Erreur non gérée: {response.status_code}")
+                    self.log_result("Error Handling HTTP", False, f"Erreur non geree: {response.status_code}")
         except Exception as e:
             self.log_result("Error Handling Test", False, f"Exception: {str(e)}")
     
