@@ -3621,29 +3621,51 @@ async def upload_and_process_document(
             else:
                 # Factures multiples - traiter chaque facture séparément
                 created_documents = []
+                rejected_invoices = []
+                processing_summary = []
                 
                 for i, invoice in enumerate(separated_invoices):
                     try:
-                        # Parser chaque facture individuellement
+                        # Vérifier la qualité avant traitement
+                        if invoice['quality_score'] < 0.6:
+                            rejected_invoices.append({
+                                'index': invoice['index'],
+                                'header': invoice['header'],
+                                'quality_score': invoice['quality_score'],
+                                'issues': invoice['quality_issues'],
+                                'reason': 'Qualité insuffisante pour traitement automatique'
+                            })
+                            processing_summary.append(f"❌ Facture {invoice['index']}: Rejetée (qualité {invoice['quality_score']:.1%})")
+                            print(f"⚠️ Facture {invoice['index']} rejetée - Qualité: {invoice['quality_score']:.1%}")
+                            print(f"   Issues: {', '.join(invoice['quality_issues'])}")
+                            continue
+                        
+                        # Parser chaque facture de qualité suffisante
                         facture_data = parse_facture_fournisseur(invoice['text_content'])
                         donnees_parsees = facture_data.dict()
                         
-                        # Ajouter des métadonnées sur la séparation
+                        # Ajouter des métadonnées complètes
                         donnees_parsees["separation_info"] = {
                             "is_multi_invoice": True,
                             "invoice_index": invoice['index'],
                             "total_invoices": len(separated_invoices),
-                            "header_detected": invoice['header']
+                            "total_processed": len([inv for inv in separated_invoices if inv['quality_score'] >= 0.6]),
+                            "header_detected": invoice['header'],
+                            "quality_score": invoice['quality_score'],
+                            "quality_issues": invoice['quality_issues']
                         }
                         
-                        # Créer un document pour chaque facture
+                        # Déterminer le statut selon la qualité
+                        statut = "traite" if invoice['quality_score'] >= 0.8 else "traite_avec_avertissement"
+                        
+                        # Créer un document pour chaque facture valide
                         document = DocumentOCR(
                             type_document=document_type,
-                            nom_fichier=f"{file.filename} - Facture {invoice['index']}/{len(separated_invoices)}",
+                            nom_fichier=f"{file.filename} - Facture {invoice['index']}/{len(separated_invoices)} (Q:{invoice['quality_score']:.1%})",
                             image_base64=data_uri,  # Même image/PDF source
                             texte_extrait=invoice['text_content'],  # Texte de cette facture uniquement
                             donnees_parsees=donnees_parsees,
-                            statut="traite",
+                            statut=statut,
                             date_traitement=datetime.utcnow(),
                             file_type=file_type
                         )
@@ -3651,20 +3673,33 @@ async def upload_and_process_document(
                         await db.documents_ocr.insert_one(document.dict())
                         created_documents.append(document.id)
                         
-                        print(f"✅ Facture {invoice['index']}/{len(separated_invoices)} créée avec ID: {document.id}")
+                        processing_summary.append(f"✅ Facture {invoice['index']}: Traitée avec succès (qualité {invoice['quality_score']:.1%})")
+                        print(f"✅ Facture {invoice['index']}/{len(separated_invoices)} créée - Qualité: {invoice['quality_score']:.1%}")
                         
                     except Exception as e:
-                        print(f"❌ Erreur lors du traitement de la facture {invoice['index']}: {str(e)}")
+                        rejected_invoices.append({
+                            'index': invoice.get('index', i+1),
+                            'header': invoice.get('header', 'En-tête non détecté'),
+                            'quality_score': invoice.get('quality_score', 0.0),
+                            'issues': [f"Erreur de traitement: {str(e)}"],
+                            'reason': f'Erreur lors du parsing: {str(e)}'
+                        })
+                        processing_summary.append(f"❌ Facture {invoice.get('index', i+1)}: Erreur de traitement")
+                        print(f"❌ Erreur lors du traitement de la facture {invoice.get('index', i+1)}: {str(e)}")
                         continue
                 
-                # Retourner un résumé des documents créés
+                # Retourner un résumé détaillé
                 return {
                     "multi_invoice": True,
-                    "total_invoices": len(separated_invoices),
-                    "created_documents": len(created_documents),
+                    "total_detected": len(separated_invoices),
+                    "successfully_processed": len(created_documents),
+                    "rejected_count": len(rejected_invoices),
                     "document_ids": created_documents,
-                    "message": f"{len(created_documents)} factures traitées avec succès sur {len(separated_invoices)} détectées",
-                    "file_type": file_type
+                    "rejected_invoices": rejected_invoices,
+                    "processing_summary": processing_summary,
+                    "message": f"{len(created_documents)} factures traitées avec succès, {len(rejected_invoices)} rejetées sur {len(separated_invoices)} détectées",
+                    "file_type": file_type,
+                    "has_quality_issues": len(rejected_invoices) > 0
                 }
         
         # Pour les tickets Z (traitement normal inchangé)
