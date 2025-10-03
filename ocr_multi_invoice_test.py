@@ -326,7 +326,7 @@ class OCRMultiInvoiceTestSuite:
                     statut = doc_data.get("statut", "")
                     
                     if statut in ["traite", "traite_avec_avertissement"]:
-                        self.log_result("Document Status", True, f"Statut approprié: {statut}")
+                        self.log_result("Document Status", True, f"Statut approprie: {statut}")
                     else:
                         self.log_result("Document Status", False, f"Statut inattendu: {statut}")
                 else:
