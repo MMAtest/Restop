@@ -866,6 +866,71 @@ function App() {
     }
   };
 
+  // ✅ Fonctions pour la répartition des quantités de préparations
+  const updateRepartitionQuantity = (preparationId, quantity) => {
+    const newRepartition = {
+      ...repartitionQuantities,
+      [preparationId]: parseFloat(quantity) || 0
+    };
+    setRepartitionQuantities(newRepartition);
+    
+    // Calculer automatiquement les productions
+    calculateProductionsFromRepartition(newRepartition);
+  };
+
+  const calculateProductionsFromRepartition = (repartition) => {
+    if (!selectedStockIndex) return;
+    
+    const produitId = selectedStockIndex;
+    const preparationsProduit = preparations.filter(prep => prep.produit_id === produitId);
+    const produitSelectionne = produits.find(p => p.id === produitId);
+    const stockProduit = stocks.find(s => s.produit_id === produitId);
+    
+    const productions = [];
+    let stockTotalUtilise = 0;
+    
+    preparationsProduit.forEach(prep => {
+      const quantitePreparation = repartition[prep.id] || 0;
+      
+      if (quantitePreparation > 0) {
+        // Calculer combien de produit brut nécessaire
+        const ratioPreparation = prep.quantite_preparee / prep.quantite_produit_brut;
+        const quantiteProduitBrutNecessaire = quantitePreparation / ratioPreparation;
+        
+        // Calculer le nombre de portions possibles
+        const portionsPossibles = Math.floor(quantitePreparation / prep.taille_portion);
+        
+        // Trouver des recettes qui utilisent ce type de préparation
+        const recettesCompatibles = recettes.filter(recette => {
+          return recette.ingredients.some(ing => ing.produit_id === produitId);
+        });
+        
+        stockTotalUtilise += quantiteProduitBrutNecessaire;
+        
+        productions.push({
+          preparationId: prep.id,
+          preparationNom: prep.nom,
+          quantitePreparation: quantitePreparation,
+          quantiteProduitBrut: quantiteProduitBrutNecessaire,
+          portionsPossibles: portionsPossibles,
+          recettesCompatibles: recettesCompatibles.slice(0, 3), // Limiter à 3 recettes
+          formeDecoupe: prep.forme_decoupe_custom || prep.forme_decoupe,
+          unite: prep.unite_preparee
+        });
+      }
+    });
+    
+    setProductionsCalculees(productions);
+    setStockUtiliseTotal(stockTotalUtilise);
+  };
+
+  const resetRepartition = () => {
+    setRepartitionQuantities({});
+    setProductionsCalculees([]);
+    setStockUtiliseTotal(0);
+    setSelectedStockIndex(null);
+  };
+
   const addIngredient = () => {
     if (ingredientForm.produit_id && ingredientForm.quantite) {
       const produit = produits.find(p => p.id === ingredientForm.produit_id);
