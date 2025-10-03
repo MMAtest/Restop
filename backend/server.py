@@ -511,23 +511,44 @@ def detect_multiple_invoices(text_content):
             # Trier par position
             invoice_positions.sort(key=lambda x: x['position'])
             
-            # Grouper les headers proches (même facture)
-            grouped_positions = []
-            current_group = [invoice_positions[0]]
+            # NOUVELLE APPROCHE: Identifier les vrais débuts de factures (headers forts)
+            # Headers forts = patterns 0-9 (fournisseurs, numéros de facture/BL)
+            # Footers = patterns 10-12 (totaux)
+            strong_headers = [pos for pos in invoice_positions if pos['type'] == 'header']
             
-            for pos in invoice_positions[1:]:
-                # Si la position est dans les 500 caractères suivants, c'est probablement la même facture
-                if pos['position'] - current_group[-1]['position'] <= 500:
-                    current_group.append(pos)
-                else:
+            print(f"📊 Analyse: {len(invoice_positions)} positions totales, {len(strong_headers)} headers forts")
+            
+            # Si on a plusieurs headers forts, on a probablement plusieurs factures
+            if len(strong_headers) > 1:
+                print(f"✅ Détection de {len(strong_headers)} factures potentielles (basé sur headers forts)")
+                
+                # Grouper par header fort : chaque header fort démarre une nouvelle facture
+                grouped_positions = []
+                current_group = []
+                
+                for pos in invoice_positions:
+                    if pos['type'] == 'header' and current_group:
+                        # Nouveau header -> nouvelle facture (sauf si c'est le tout premier)
+                        # Vérifier que ce n'est pas juste le même header répété (delta < 50 chars)
+                        if pos['position'] - current_group[0]['position'] > 50:
+                            grouped_positions.append(current_group)
+                            current_group = [pos]
+                        else:
+                            current_group.append(pos)
+                    else:
+                        current_group.append(pos)
+                
+                if current_group:
                     grouped_positions.append(current_group)
-                    current_group = [pos]
-            
-            grouped_positions.append(current_group)
+                
+                print(f"📋 {len(grouped_positions)} groupes créés")
+                for i, group in enumerate(grouped_positions):
+                    headers_in_group = [p for p in group if p['type'] == 'header']
+                    print(f"   Groupe {i+1}: {len(group)} éléments, headers: {[h['text'][:30] for h in headers_in_group]}")
             
             # Si on a plusieurs groupes, on a plusieurs factures
             if len(grouped_positions) > 1:
-                print(f"✅ Détection de {len(grouped_positions)} factures multiples")
+                print(f"✅ Confirmation: {len(grouped_positions)} factures multiples détectées")
                 
                 separated_invoices = []
                 
