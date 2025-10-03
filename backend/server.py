@@ -3545,7 +3545,7 @@ async def get_dashboard_stats():
     }
 
 # Routes pour le traitement OCR
-@api_router.post("/ocr/upload-document", response_model=DocumentUploadResponse)
+@api_router.post("/ocr/upload-document")  # No response_model to allow flexible multi-invoice responses
 async def upload_and_process_document(
     file: UploadFile = File(...),
     document_type: str = Form("z_report")  # "z_report" ou "facture_fournisseur" - MUST use Form() for multipart data
