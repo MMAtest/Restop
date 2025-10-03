@@ -556,11 +556,11 @@ class OCRMultiInvoiceTestSuite:
             if response.status_code in [200, 201]:
                 result = response.json()
                 
-                # Vérifier que le système continue malgré l'erreur
+                # Verifier que le systeme continue malgre l'erreur
                 if "message" in result:
-                    self.log_result("Error Handling Graceful", True, "Système continue malgré erreur de parsing")
+                    self.log_result("Error Handling Graceful", True, "Systeme continue malgre erreur de parsing")
                 else:
-                    self.log_result("Error Handling Graceful", False, "Pas de gestion d'erreur appropriée")
+                    self.log_result("Error Handling Graceful", False, "Pas de gestion d'erreur appropriee")
                     
             else:
                 # Même une erreur HTTP peut être acceptable si elle est gérée proprement
