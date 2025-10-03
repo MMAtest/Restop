@@ -413,7 +413,7 @@ const PurchaseOrderPage = () => {
       </div>
 
       {/* Effectuer une commande */}
-      <div className="bg-white rounded-lg shadow-sm mb-8">
+      <div className="bg-white rounded-lg shadow-sm mb-8 mx-6">
         <div className="p-6 border-b border-gray-200">
           <h2 className="text-xl font-semibold">Effectuer une Commande</h2>
           <p className="text-gray-600 mt-1">Créez vos commandes manuellement ou automatiquement</p>
