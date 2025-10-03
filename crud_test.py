@@ -8,7 +8,7 @@ import json
 from datetime import datetime
 
 # Configuration
-BASE_URL = "https://smart-zreports.preview.emergentagent.com/api"
+BASE_URL = "https://ocrstockpro.preview.emergentagent.com/api"
 HEADERS = {"Content-Type": "application/json"}
 
 class CRUDTestSuite:
