@@ -541,7 +541,7 @@ class OCRMultiInvoiceTestSuite:
             except Exception as e:
                 self.log_result(f"Pattern Test {i}", False, f"Exception: {str(e)}")
         
-        # ✅ Tester la gestion d'erreurs si un document ne peut pas être parsé
+        # ✅ Tester la gestion d'erreurs si un document ne peut pas etre parse
         corrupted_pdf = b"PDF corrompu avec contenu invalide qui ne peut pas etre parse correctement"
         
         try:
