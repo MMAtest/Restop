@@ -6377,18 +6377,21 @@ function App() {
                 >
                   <option value="">-- Sélectionner une forme --</option>
                   <optgroup label="Formes prédéfinies">
-                    {formesDecoupe.predefined.map(f => (
+                    {(formesDecoupe.predefined || []).map(f => (
                       <option key={f.id} value={f.id}>{f.nom} - {f.description}</option>
                     ))}
                   </optgroup>
-                  {formesDecoupe.custom.length > 0 && (
+                  {(formesDecoupe.custom || []).length > 0 && (
                     <optgroup label="Formes personnalisées">
-                      {formesDecoupe.custom.map(f => (
+                      {(formesDecoupe.custom || []).map(f => (
                         <option key={f.id} value={f.nom}>{f.nom}</option>
                       ))}
                     </optgroup>
                   )}
                 </select>
+                <small style={{color: '#6b7280', fontSize: '12px', marginTop: '4px', display: 'block'}}>
+                  {(formesDecoupe.predefined || []).length} formes disponibles
+                </small>
               </div>
 
               {/* Quantités */}
