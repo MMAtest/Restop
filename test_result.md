@@ -661,6 +661,7 @@ metadata:
 test_plan:
   current_focus:
     - "Nouvelle Interface OCR Module Complet - Gestion réponses multi-factures"
+    - "Répartition des quantités avec calcul automatique des productions"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
