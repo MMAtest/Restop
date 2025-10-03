@@ -100,6 +100,31 @@ const PurchaseOrderPage = () => {
       console.error('Erreur lors du chargement des fournisseurs:', error);
     }
   };
+  
+  const fetchOrders = async () => {
+    try {
+      const response = await fetch(`${backendUrl}/api/orders`);
+      if (response.ok) {
+        const data = await response.json();
+        setOrders(data);
+      }
+    } catch (error) {
+      console.error('Erreur lors du chargement des commandes:', error);
+    }
+  };
+  
+  const fetchDeliveryEstimate = async (supplierId) => {
+    try {
+      const response = await fetch(`${backendUrl}/api/suppliers/${supplierId}/delivery-estimate`);
+      if (response.ok) {
+        const data = await response.json();
+        setDeliveryEstimate(data);
+      }
+    } catch (error) {
+      console.error('Erreur lors du calcul de livraison:', error);
+      setDeliveryEstimate(null);
+    }
+  };
 
   const handleSupplierSelect = async (supplier) => {
     setSelectedSupplier(supplier);
