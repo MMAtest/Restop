@@ -133,6 +133,67 @@ class OrderCreate(BaseModel):
     items: List[OrderItem]
     notes: Optional[str] = None
 
+# ✅ Préparations - Étape intermédiaire entre produit brut et production
+class Preparation(BaseModel):
+    """Préparation d'un produit brut"""
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    nom: str  # Nom de la préparation (ex: "Carottes en julienne")
+    produit_id: str  # ID du produit brut source
+    produit_nom: str  # Nom du produit pour affichage
+    
+    # Forme de découpe/transformation
+    forme_decoupe: str  # julienne, brunoise, carré, émincé, haché, sauce, purée, cuit, mariné, custom
+    forme_decoupe_custom: Optional[str] = None  # Si forme custom
+    
+    # Quantités
+    quantite_produit_brut: float  # Quantité de produit brut utilisée
+    unite_produit_brut: str  # kg, g, L, cl, pièces
+    quantite_preparee: float  # Quantité après préparation
+    unite_preparee: str  # kg, g, L, cl, pièces
+    
+    # Perte
+    perte: float  # Perte en unité (ex: 1.5 kg)
+    perte_pourcentage: float  # Perte en % (ex: 15%)
+    
+    # Portions
+    nombre_portions: int  # Nombre de portions obtenues
+    taille_portion: float  # Taille d'une portion (ex: 100g)
+    unite_portion: str  # kg, g, L, cl, pièces
+    
+    # DLC et dates
+    date_preparation: datetime = Field(default_factory=datetime.utcnow)
+    dlc: Optional[datetime] = None  # Date limite de consommation spécifique
+    
+    # Informations complémentaires
+    notes: Optional[str] = None
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+    updated_at: datetime = Field(default_factory=datetime.utcnow)
+
+class PreparationCreate(BaseModel):
+    """Création d'une préparation"""
+    nom: str
+    produit_id: str
+    forme_decoupe: str
+    forme_decoupe_custom: Optional[str] = None
+    quantite_produit_brut: float
+    unite_produit_brut: str
+    quantite_preparee: float
+    unite_preparee: str
+    perte: float
+    perte_pourcentage: float
+    nombre_portions: int
+    taille_portion: float
+    unite_portion: str
+    dlc: Optional[datetime] = None
+    notes: Optional[str] = None
+
+class FormeDecoupeCustom(BaseModel):
+    """Forme de découpe personnalisée"""
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    nom: str
+    description: Optional[str] = None
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+
 # ✅ Version 3 - Enhanced User Management with RBAC
 class User(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
