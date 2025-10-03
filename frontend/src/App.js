@@ -5101,6 +5101,17 @@ function App() {
                 
                 <div style={{display: 'flex', gap: '10px', marginBottom: '20px', flexWrap: 'wrap'}}>
                   <button className="button" onClick={() => setShowPreparationModal(true)}>➕ Nouvelle Préparation</button>
+                  <button 
+                    className="button secondary" 
+                    onClick={handleAutoGeneratePreparations}
+                    disabled={loading}
+                    style={{backgroundColor: '#10b981', color: 'white', border: 'none'}}
+                  >
+                    🤖 {loading ? 'Génération...' : 'Auto-générer'}
+                  </button>
+                  <div style={{fontSize: '14px', alignSelf: 'center', color: 'var(--color-text-secondary)'}}>
+                    💡 L'auto-génération crée 2-3 préparations par produit
+                  </div>
                 </div>
 
                 {/* Alertes DLC */}
