@@ -3611,11 +3611,24 @@ function App() {
                               onClick: (event, elements) => {
                                 if (elements.length > 0) {
                                   const clickedIndex = elements[0].index;
-                                  // Augmenter les portions de la production cliquée
                                   const updatedStocks = [...stocksPrevisionnels];
-                                  if (updatedStocks[selectedStockIndex]?.productions_possibles[clickedIndex]) {
-                                    updatedStocks[selectedStockIndex].productions_possibles[clickedIndex].portions_selectionnees += 1;
-                                    setStocksPrevisionnels(updatedStocks);
+                                  const stock = updatedStocks[selectedStockIndex];
+                                  
+                                  if (stock?.productions_possibles[clickedIndex]) {
+                                    // Calculer le stock total qui serait utilisé après ajout
+                                    const currentStock = stock.productions_possibles.reduce((total, prod) => 
+                                      total + (prod.portions_selectionnees * prod.quantite_needed), 0
+                                    );
+                                    const additionalStock = stock.productions_possibles[clickedIndex].quantite_needed;
+                                    const newTotalStock = currentStock + additionalStock;
+                                    
+                                    // Vérifier si on ne dépasse pas le stock disponible
+                                    if (newTotalStock <= stock.stock_actuel) {
+                                      updatedStocks[selectedStockIndex].productions_possibles[clickedIndex].portions_selectionnees += 1;
+                                      setStocksPrevisionnels(updatedStocks);
+                                    } else {
+                                      alert(`⚠️ Stock insuffisant ! Il ne reste que ${(stock.stock_actuel - currentStock).toFixed(1)} ${stock.unite} disponible.`);
+                                    }
                                   }
                                 }
                               },
