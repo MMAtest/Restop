@@ -254,6 +254,24 @@ const PurchaseOrderPage = () => {
     }
   };
 
+  const updateOrderStatus = async (orderId, newStatus) => {
+    try {
+      const response = await fetch(`${backendUrl}/api/orders/${orderId}/status?status=${newStatus}`, {
+        method: 'PUT'
+      });
+      
+      if (response.ok) {
+        alert(`✅ Statut mis à jour: ${newStatus}`);
+        fetchOrders();
+      } else {
+        alert('❌ Erreur lors de la mise à jour du statut');
+      }
+    } catch (error) {
+      console.error('Erreur:', error);
+      alert('❌ Erreur de connexion');
+    }
+  };
+
   const calculateAutoOrder = async () => {
     if (selectedRecipes.length === 0) {
       alert('Veuillez sélectionner au moins une production');
