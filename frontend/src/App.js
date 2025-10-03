@@ -167,6 +167,11 @@ function App() {
   // État pour la répartition interactive
   const [selectedStockIndex, setSelectedStockIndex] = useState(null);
   
+  // ✅ États pour la répartition des quantités de préparations
+  const [repartitionQuantities, setRepartitionQuantities] = useState({}); // {preparation_id: quantity}
+  const [productionsCalculees, setProductionsCalculees] = useState([]); // Productions calculées automatiquement
+  const [stockUtiliseTotal, setStockUtiliseTotal] = useState(0); // Stock total utilisé
+  
   // États pour les onglets OCR
   const [activeOcrTab, setActiveOcrTab] = useState('tickets-z'); // 'tickets-z' ou 'factures'
   
