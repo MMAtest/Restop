@@ -3499,6 +3499,133 @@ async def create_forme_decoupe_custom(nom: str, description: Optional[str] = Non
     await db.formes_decoupe_custom.insert_one(forme.dict())
     return forme
 
+# ✅ Auto-generation des préparations intelligentes
+@api_router.post("/preparations/auto-generate")
+async def auto_generate_preparations():
+    """Génère automatiquement 2-3 préparations cohérentes pour chaque produit avec catégorie"""
+    try:
+        # Récupérer tous les produits avec catégories
+        produits = await db.produits.find({"categorie": {"$exists": True, "$ne": None, "$ne": ""}}).to_list(1000)
+        
+        # Récupérer toutes les recettes pour l'intelligence de génération
+        recettes = await db.recettes.find().to_list(1000)
+        
+        # Supprimer toutes les préparations existantes avant régénération
+        await db.preparations.delete_many({})
+        
+        preparations_created = []
+        
+        # Mapping intelligent des préparations par catégorie et relation avec les recettes
+        preparation_mapping = {
+            "Légumes": [
+                {"forme": "julienne", "nom_suffix": "en julienne", "rendement": 0.85, "portions_base": 8},
+                {"forme": "brunoise", "nom_suffix": "en brunoise", "rendement": 0.80, "portions_base": 12},
+                {"forme": "emince", "nom_suffix": "émincés", "rendement": 0.90, "portions_base": 10}
+            ],
+            "Poissons": [
+                {"forme": "filets", "nom_suffix": "en filets", "rendement": 0.75, "portions_base": 4},
+                {"forme": "emince", "nom_suffix": "émincés", "rendement": 0.70, "portions_base": 6},
+                {"forme": "marine", "nom_suffix": "marinés", "rendement": 0.85, "portions_base": 5}
+            ],
+            "Viandes": [
+                {"forme": "emince", "nom_suffix": "émincés", "rendement": 0.85, "portions_base": 6},
+                {"forme": "hache", "nom_suffix": "hachés", "rendement": 0.90, "portions_base": 8},
+                {"forme": "cuit", "nom_suffix": "cuits", "rendement": 0.75, "portions_base": 4}
+            ],
+            "Fruits": [
+                {"forme": "carre", "nom_suffix": "en cubes", "rendement": 0.85, "portions_base": 12},
+                {"forme": "puree", "nom_suffix": "en purée", "rendement": 0.75, "portions_base": 10},
+                {"forme": "concasse", "nom_suffix": "concassés", "rendement": 0.90, "portions_base": 8}
+            ],
+            "Produits laitiers": [
+                {"forme": "emince", "nom_suffix": "tranchés", "rendement": 0.95, "portions_base": 10},
+                {"forme": "rape", "nom_suffix": "râpés", "rendement": 0.90, "portions_base": 15},
+                {"forme": "carre", "nom_suffix": "en cubes", "rendement": 0.85, "portions_base": 12}
+            ],
+            "Épices": [
+                {"forme": "hache", "nom_suffix": "hachées", "rendement": 0.95, "portions_base": 20},
+                {"forme": "concasse", "nom_suffix": "concassées", "rendement": 0.90, "portions_base": 25}
+            ]
+        }
+        
+        # Définir des préparations génériques pour les catégories non mappées
+        generic_preparations = [
+            {"forme": "emince", "nom_suffix": "émincés", "rendement": 0.85, "portions_base": 8},
+            {"forme": "hache", "nom_suffix": "hachés", "rendement": 0.80, "portions_base": 10},
+            {"forme": "carre", "nom_suffix": "en cubes", "rendement": 0.75, "portions_base": 6}
+        ]
+        
+        for produit in produits:
+            if not produit.get("categorie") or produit["categorie"] in ["Service", "Test"]:
+                continue
+                
+            # Sélectionner les préparations appropriées pour cette catégorie
+            preparations_config = preparation_mapping.get(produit["categorie"], generic_preparations)
+            
+            # Limiter à 2-3 préparations par produit
+            selected_preparations = preparations_config[:3]
+            
+            for i, config in enumerate(selected_preparations):
+                # Analyser les recettes pour ajuster intelligemment les quantités
+                recettes_utilisant_produit = [r for r in recettes if any(ing.get("produit_id") == produit["id"] for ing in r.get("ingredients", []))]
+                
+                # Calculs de base
+                quantite_brute = 2.0 if produit.get("unite") == "kg" else (500.0 if produit.get("unite") == "g" else 1.0)
+                rendement = config["rendement"]
+                quantite_preparee = quantite_brute * rendement
+                perte = quantite_brute - quantite_preparee
+                perte_pourcentage = (perte / quantite_brute) * 100
+                
+                # Ajuster les portions selon les recettes trouvées
+                portions_base = config["portions_base"]
+                if recettes_utilisant_produit:
+                    # Prendre la moyenne des portions des recettes qui utilisent ce produit
+                    moyenne_portions_recettes = sum(r.get("portions", 4) for r in recettes_utilisant_produit) / len(recettes_utilisant_produit)
+                    portions_base = max(int(moyenne_portions_recettes * 1.5), config["portions_base"])
+                
+                taille_portion = quantite_preparee / portions_base if portions_base > 0 else 0.1
+                
+                # Créer la préparation
+                preparation = Preparation(
+                    nom=f"{produit['nom']} {config['nom_suffix']}",
+                    produit_id=produit["id"],
+                    produit_nom=produit["nom"],
+                    forme_decoupe=config["forme"],
+                    quantite_produit_brut=quantite_brute,
+                    unite_produit_brut=produit.get("unite", "kg"),
+                    quantite_preparee=round(quantite_preparee, 2),
+                    unite_preparee=produit.get("unite", "kg"),
+                    perte=round(perte, 2),
+                    perte_pourcentage=round(perte_pourcentage, 1),
+                    nombre_portions=portions_base,
+                    taille_portion=round(taille_portion, 3),
+                    unite_portion=produit.get("unite", "kg"),
+                    notes=f"Génération automatique - Catégorie: {produit['categorie']}" + 
+                          (f" - Basé sur {len(recettes_utilisant_produit)} recette(s)" if recettes_utilisant_produit else "")
+                )
+                
+                await db.preparations.insert_one(preparation.dict())
+                preparations_created.append(preparation.nom)
+        
+        return {
+            "success": True,
+            "message": f"✅ Génération automatique terminée !",
+            "preparations_created": len(preparations_created),
+            "details": {
+                "total_products_processed": len(produits),
+                "categories_processed": list(set(p.get("categorie") for p in produits if p.get("categorie"))),
+                "sample_preparations": preparations_created[:10]  # Montrer 10 exemples
+            }
+        }
+        
+    except Exception as e:
+        print(f"❌ Erreur lors de la génération automatique: {str(e)}")
+        return {
+            "success": False,
+            "message": f"❌ Erreur lors de la génération: {str(e)}",
+            "preparations_created": 0
+        }
+
 # Routes pour les produits
 @api_router.post("/produits", response_model=Produit)
 async def create_produit(produit: ProduitCreate):
