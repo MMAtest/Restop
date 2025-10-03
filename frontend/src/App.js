@@ -1161,9 +1161,12 @@ function App() {
     setProcessingOcr(true);
     
     try {
+      // Déterminer le type automatiquement selon l'onglet actuel
+      const documentType = activeOcrTab === 'tickets-z' ? 'z_report' : 'facture_fournisseur';
+      
       const formData = new FormData();
       formData.append('file', ocrFile);
-      formData.append('document_type', ocrType);
+      formData.append('document_type', documentType);
 
       const response = await axios.post(`${API}/ocr/upload-document`, formData, {
         headers: {
