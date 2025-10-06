@@ -206,6 +206,89 @@ class User(BaseModel):
     created_at: datetime = Field(default_factory=datetime.utcnow)
     last_login: Optional[datetime] = None
 
+# ✅ Mission & Notification System Models
+class Mission(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    title: str  # Titre de la mission
+    description: str  # Description détaillée
+    type: str  # Type de mission (stock_check, preparation, cleaning, etc.)
+    category: str  # Catégorie (cuisine, stock, hygiene, commande)
+    assigned_to_user_id: str  # ID de l'utilisateur assigné
+    assigned_by_user_id: str  # ID de l'utilisateur qui a créé la mission
+    assigned_to_name: str  # Nom de l'employé assigné
+    assigned_by_name: str  # Nom de l'assignateur
+    
+    # Statuts et états
+    status: str = "en_cours"  # en_cours, terminee_attente, validee, en_retard, annulee
+    priority: str = "normale"  # basse, normale, haute, urgente
+    
+    # Dates
+    assigned_date: datetime = Field(default_factory=datetime.utcnow)
+    due_date: Optional[datetime] = None  # Date limite
+    completed_by_employee_date: Optional[datetime] = None  # Quand l'employé l'a marquée terminée
+    validated_date: Optional[datetime] = None  # Quand le chef/patron a validé
+    
+    # Données liées à la mission
+    related_product_id: Optional[str] = None  # Si lié à un produit
+    related_preparation_id: Optional[str] = None  # Si lié à une préparation
+    related_supplier_id: Optional[str] = None  # Si lié à un fournisseur
+    target_quantity: Optional[float] = None  # Quantité cible (ex: 15 portions)
+    target_unit: Optional[str] = None  # Unité cible
+    
+    # Notes et suivi
+    employee_notes: Optional[str] = None  # Notes de l'employé lors de la completion
+    validation_notes: Optional[str] = None  # Notes du chef lors de la validation
+    updated_at: datetime = Field(default_factory=datetime.utcnow)
+
+class MissionCreate(BaseModel):
+    title: str
+    description: str
+    type: str
+    category: str
+    assigned_to_user_id: str
+    priority: str = "normale"
+    due_date: Optional[datetime] = None
+    related_product_id: Optional[str] = None
+    related_preparation_id: Optional[str] = None
+    related_supplier_id: Optional[str] = None
+    target_quantity: Optional[float] = None
+    target_unit: Optional[str] = None
+
+class MissionUpdate(BaseModel):
+    status: Optional[str] = None
+    employee_notes: Optional[str] = None
+    validation_notes: Optional[str] = None
+
+class Notification(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    user_id: str  # Utilisateur destinataire
+    title: str
+    message: str
+    type: str  # mission, alert, info, system
+    read: bool = False
+    mission_id: Optional[str] = None  # Si liée à une mission
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+    read_at: Optional[datetime] = None
+
+# ✅ Session Management for Simple Auth
+class UserSession(BaseModel):
+    user_id: str
+    username: str
+    role: str
+    full_name: str
+    login_time: datetime = Field(default_factory=datetime.utcnow)
+    last_activity: datetime = Field(default_factory=datetime.utcnow)
+
+class LoginRequest(BaseModel):
+    username: str
+    password: str
+
+class LoginResponse(BaseModel):
+    success: bool
+    user: Optional[UserResponse] = None
+    session_id: Optional[str] = None
+    message: str
+
 class UserCreate(BaseModel):
     username: str
     email: str
