@@ -768,6 +768,7 @@ metadata:
 
 test_plan:
   current_focus:
+    - "Restrictions Employé de Cuisine - Tests Complets"
     - "Module de suivi des livraisons dans Orders"
     - "Titres de catégories Par Préparation"
   stuck_tasks: []
