@@ -5804,16 +5804,17 @@ function App() {
                               const reason = window.prompt(`Raison de l'archivage de "${produit.nom}" (optionnel):`);
                               if (reason !== null) {
                                 const success = await archiveItem(produit.id, 'produit', reason || null);
-                              if (success) {
-                                alert(`${produit.nom} archivé avec succès !`);
-                              } else {
-                                alert("Erreur lors de l'archivage");
+                                if (success) {
+                                  alert(`${produit.nom} archivé avec succès !`);
+                                } else {
+                                  alert("Erreur lors de l'archivage");
+                                }
                               }
-                            }
-                          }}
-                        >
-                          📁 Archiver
-                        </button>
+                            }}
+                          >
+                            📁 Archiver
+                          </button>
+                        )}
                       </div>
                     </div>
                   );
