@@ -3699,7 +3699,11 @@ function App() {
                                   >
                                     <div style={{display: 'flex', alignItems: 'center', gap: '12px'}}>
                                       <span style={{fontSize: '20px'}}>{getCategoryIcon(categoryName)}</span>
-                                      <span>{categoryName}</span>
+                                      <span style={{
+                                        color: categoriesPreparationsExpanded[categoryName] ? '#ffffff !important' : '#000000 !important',
+                                        fontWeight: 'bold',
+                                        fontSize: '16px'
+                                      }}>{categoryName}</span>
                                       <span style={{
                                         fontSize: '12px',
                                         padding: '4px 8px',
