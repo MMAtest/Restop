@@ -4263,19 +4263,23 @@ function App() {
               <div className="section-card">
                 <div className="section-title">📱 Module OCR</div>
                 
-                {/* Navigation entre Tickets Z et Factures */}
+                {/* Navigation entre Tickets Z et Factures - Tickets Z masqué pour employé cuisine */}
                 <div className="tab-navigation" style={{marginBottom: '20px'}}>
-                  <button 
-                    className="button" 
-                    onClick={() => setActiveOcrTab('tickets-z')}
-                    style={{
-                      background: activeOcrTab === 'tickets-z' ? 'var(--color-primary-blue)' : 'var(--color-background-card-light)',
-                      color: activeOcrTab === 'tickets-z' ? 'white' : 'var(--color-text-secondary)',
-                      marginRight: '10px'
-                    }}
-                  >
-                    📊 Tickets Z
-                  </button>
+                  {/* Tickets Z - MASQUÉ pour employé cuisine */}
+                  {canAccessOcrTicketsZ() && (
+                    <button 
+                      className="button" 
+                      onClick={() => setActiveOcrTab('tickets-z')}
+                      style={{
+                        background: activeOcrTab === 'tickets-z' ? 'var(--color-primary-blue)' : 'var(--color-background-card-light)',
+                        color: activeOcrTab === 'tickets-z' ? 'white' : 'var(--color-text-secondary)',
+                        marginRight: '10px'
+                      }}
+                    >
+                      📊 Tickets Z
+                    </button>
+                  )}
+                  
                   <button 
                     className="button" 
                     onClick={() => setActiveOcrTab('factures')}
