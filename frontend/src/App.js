@@ -181,7 +181,7 @@ function App() {
   const [stockUtiliseTotal, setStockUtiliseTotal] = useState(0); // Stock total utilisé
   
   // États pour les onglets OCR
-  const [activeOcrTab, setActiveOcrTab] = useState('tickets-z'); // 'tickets-z' ou 'factures'
+  const [activeOcrTab, setActiveOcrTab] = useState('factures'); // 'tickets-z' ou 'factures' - défaut factures pour employé cuisine
   
   // États pour le module prévisionnel
   const [stocksPrevisionnels, setStocksPrevisionnels] = useState([
