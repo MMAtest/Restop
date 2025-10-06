@@ -3453,8 +3453,8 @@ function App() {
               >
                 📦 Stocks & DLC
               </button>
-              {/* Répartition - MASQUÉ pour employé cuisine */}
-              {currentUser?.role !== 'employe_cuisine' && (
+              {/* Répartition - MASQUÉ pour employé cuisine ET barman */}
+              {canAccessRepartition() && (
                 <button 
                   className="button" 
                   onClick={() => setActiveStockTab('repartition')}
