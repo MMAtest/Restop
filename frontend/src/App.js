@@ -620,6 +620,22 @@ function App() {
     return currentUser?.role === 'super_admin' || currentUser?.role === 'chef_cuisine';
   };
 
+  // ✅ Permissions spécifiques BAR pour le barman
+  const canEditBarItems = () => {
+    return currentUser?.role === 'super_admin' || 
+           currentUser?.role === 'chef_cuisine' || 
+           (currentUser?.role === 'barman');
+  };
+
+  const canAccessOrders = () => {
+    return currentUser?.role === 'super_admin' || currentUser?.role === 'chef_cuisine' || currentUser?.role === 'employe_cuisine';
+  };
+
+  const isBarItem = (item) => {
+    // Vérifier si un produit/recette est de catégorie Bar
+    return item?.categorie === 'Bar' || item?.categorie === 'bar';
+  };
+
   const fetchProduits = async () => {
     try {
       const response = await axios.get(`${API}/produits`);
