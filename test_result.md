@@ -678,8 +678,8 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Nouvelle Interface OCR Module Complet - Gestion réponses multi-factures"
-    - "Répartition des quantités avec calcul automatique des productions"
+    - "Module de suivi des livraisons dans Orders"
+    - "Titres de catégories Par Préparation"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
