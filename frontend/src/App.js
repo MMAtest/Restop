@@ -5791,13 +5791,19 @@ function App() {
                         </div>
                       </div>
                       <div className="item-actions">
-                        <button className="button small" onClick={() => handleEdit(produit, 'produit')}>✏️ Éditer</button>
-                        <button 
-                          className="button small warning" 
-                          onClick={async () => {
-                            const reason = window.prompt(`Raison de l'archivage de "${produit.nom}" (optionnel):`);
-                            if (reason !== null) {
-                              const success = await archiveItem(produit.id, 'produit', reason || null);
+                        {/* Éditer produit - MASQUÉ pour employé cuisine */}
+                        {canEditItems() && (
+                          <button className="button small" onClick={() => handleEdit(produit, 'produit')}>✏️ Éditer</button>
+                        )}
+                        
+                        {/* Archiver produit - MASQUÉ pour employé cuisine */}
+                        {canArchiveItems() && (
+                          <button 
+                            className="button small warning" 
+                            onClick={async () => {
+                              const reason = window.prompt(`Raison de l'archivage de "${produit.nom}" (optionnel):`);
+                              if (reason !== null) {
+                                const success = await archiveItem(produit.id, 'produit', reason || null);
                               if (success) {
                                 alert(`${produit.nom} archivé avec succès !`);
                               } else {
