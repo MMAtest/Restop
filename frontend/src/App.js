@@ -7676,7 +7676,11 @@ function App() {
                   <div style={{fontSize: '11px', color: '#6b7280', marginTop: '4px'}}>
                     {currentUser?.role === 'super_admin' ? 
                       '👑 En tant que patron, vous pouvez assigner à tout le monde' : 
-                      '👨‍🍳 En tant que chef, vous pouvez assigner à vous-même et aux cuisiniers'
+                      currentUser?.role === 'chef_cuisine' ?
+                      '👨‍🍳 En tant que chef, vous pouvez assigner à tout le monde' :
+                      currentUser?.role === 'caissier' ?
+                      '💰 En tant que responsable caisse, vous pouvez assigner au barman et aux caissiers' :
+                      'Permissions d\'assignation limitées'
                     }
                   </div>
                 </div>
