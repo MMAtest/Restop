@@ -1930,16 +1930,19 @@ function App() {
           {/* Menu déroulant */}
           {showBurgerMenu && (
             <div className="burger-dropdown">
-              <button 
-                className="button" 
-                onClick={() => {
-                  setActiveTab("users");
-                  setShowBurgerMenu(false);
-                }}
-                style={{width: '100%', marginBottom: '8px'}}
-              >
-                👑 Utilisateurs
-              </button>
+              {/* Bouton Utilisateurs - Accès PATRON uniquement */}
+              {currentUser?.role === 'super_admin' && (
+                <button 
+                  className="button" 
+                  onClick={() => {
+                    setActiveTab("users");
+                    setShowBurgerMenu(false);
+                  }}
+                  style={{width: '100%', marginBottom: '8px'}}
+                >
+                  👑 Utilisateurs
+                </button>
+              )}
               
               <button 
                 className="button secondary" 
