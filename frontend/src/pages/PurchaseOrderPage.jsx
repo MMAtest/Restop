@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import OrderTimeline from '../components/OrderTimeline';
 
-const PurchaseOrderPage = () => {
+const PurchaseOrderPage = ({ currentUser }) => {
   const [suppliers, setSuppliers] = useState([]);
   const [selectedSupplier, setSelectedSupplier] = useState(null);
   const [supplierProducts, setSupplierProducts] = useState([]);
