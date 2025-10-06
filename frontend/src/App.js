@@ -3460,32 +3460,34 @@ function App() {
                   </div>
                 )}
 
-                {/* KPIs Stocks */}
-                <div className="kpi-grid">
-                  <div className="kpi-card">
-                    <div className="icon">📈</div>
-                    <div className="title">Stock Total</div>
-                    <div className="value">385 produits</div>
+                {/* KPIs Stocks - MASQUÉS pour employé cuisine */}
+                {currentUser?.role !== 'employe_cuisine' && (
+                  <div className="kpi-grid">
+                    <div className="kpi-card">
+                      <div className="icon">📈</div>
+                      <div className="title">Stock Total</div>
+                      <div className="value">385 produits</div>
+                    </div>
+                    
+                    <div className="kpi-card">
+                      <div className="icon">⚠️</div>
+                      <div className="title">Stocks Critiques</div>
+                      <div className="value warning">42 alertes</div>
+                    </div>
+                    
+                    <div className="kpi-card">
+                      <div className="icon">💰</div>
+                      <div className="title">Valeur Totale</div>
+                      <div className="value">16 326,05 €</div>
+                    </div>
+                    
+                    <div className="kpi-card">
+                      <div className="icon">⏰</div>
+                      <div className="title">DLC &lt; 3 jours</div>
+                      <div className="value" style={{color: 'var(--color-warning-orange)'}}>8 produits</div>
+                    </div>
                   </div>
-                  
-                  <div className="kpi-card">
-                    <div className="icon">⚠️</div>
-                    <div className="title">Stocks Critiques</div>
-                    <div className="value warning">42 alertes</div>
-                  </div>
-                  
-                  <div className="kpi-card">
-                    <div className="icon">💰</div>
-                    <div className="title">Valeur Totale</div>
-                    <div className="value">16 326,05 €</div>
-                  </div>
-                  
-                  <div className="kpi-card">
-                    <div className="icon">⏰</div>
-                    <div className="title">DLC &lt; 3 jours</div>
-                    <div className="value" style={{color: 'var(--color-warning-orange)'}}>8 produits</div>
-                  </div>
-                </div>
+                )}
 
                 {/* Liste des produits en stock avec recherche et filtres */}
                 <div className="item-list">
