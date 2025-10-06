@@ -3393,16 +3393,19 @@ function App() {
               >
                 📦 Stocks & DLC
               </button>
-              <button 
-                className="button" 
-                onClick={() => setActiveStockTab('repartition')}
-                style={{
-                  background: activeStockTab === 'repartition' ? 'var(--color-primary-blue)' : 'var(--color-background-card-light)',
-                  color: activeStockTab === 'repartition' ? 'white' : 'var(--color-text-secondary)'
-                }}
-              >
-                🎯 Répartition
-              </button>
+              {/* Répartition - MASQUÉ pour employé cuisine */}
+              {currentUser?.role !== 'employe_cuisine' && (
+                <button 
+                  className="button" 
+                  onClick={() => setActiveStockTab('repartition')}
+                  style={{
+                    background: activeStockTab === 'repartition' ? 'var(--color-primary-blue)' : 'var(--color-background-card-light)',
+                    color: activeStockTab === 'repartition' ? 'white' : 'var(--color-text-secondary)'
+                  }}
+                >
+                  🎯 Répartition
+                </button>
+              )}
               <button 
                 className="button" 
                 onClick={() => setActiveStockTab('ocr')}
