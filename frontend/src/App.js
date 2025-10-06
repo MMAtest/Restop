@@ -3964,32 +3964,38 @@ function App() {
                                                 📝 Ajuster
                                               </button>
                                               
-                                              <button 
-                                                className="button small"
-                                                onClick={() => {
-                                                  const preparation = preparations.find(p => p.id === stockPrep.preparation_id);
-                                                  if (preparation) {
-                                                    handleEdit(preparation, 'preparation');
-                                                  }
-                                                }}
-                                                style={{fontSize: '12px', padding: '4px 8px'}}
-                                              >
-                                                ✏️
-                                              </button>
+                                              {/* Éditer préparation - MASQUÉ pour employé cuisine */}
+                                              {canEditItems() && (
+                                                <button 
+                                                  className="button small"
+                                                  onClick={() => {
+                                                    const preparation = preparations.find(p => p.id === stockPrep.preparation_id);
+                                                    if (preparation) {
+                                                      handleEdit(preparation, 'preparation');
+                                                    }
+                                                  }}
+                                                  style={{fontSize: '12px', padding: '4px 8px'}}
+                                                >
+                                                  ✏️
+                                                </button>
+                                              )}
                                               
-                                              <button 
-                                                className="button small warning"
-                                                onClick={async () => {
-                                                  const preparation = preparations.find(p => p.id === stockPrep.preparation_id);
-                                                  if (preparation) {
-                                                    const reason = window.prompt(`Raison de l'archivage de "${preparation.nom}" (optionnel):`);
-                                                    if (reason !== null) {
-                                                      const success = await archiveItem(preparation.id, 'preparation', reason || null);
-                                                      if (success) {
-                                                        alert(`${preparation.nom} archivée avec succès !`);
-                                                        fetchStocksPreparations(); // Recharger
-                                                      } else {
-                                                        alert("Erreur lors de l'archivage");
+                                              {/* Archiver préparation - MASQUÉ pour employé cuisine */}
+                                              {canArchiveItems() && (
+                                                <button 
+                                                  className="button small warning"
+                                                  onClick={async () => {
+                                                    const preparation = preparations.find(p => p.id === stockPrep.preparation_id);
+                                                    if (preparation) {
+                                                      const reason = window.prompt(`Raison de l'archivage de "${preparation.nom}" (optionnel):`);
+                                                      if (reason !== null) {
+                                                        const success = await archiveItem(preparation.id, 'preparation', reason || null);
+                                                        if (success) {
+                                                          alert(`${preparation.nom} archivée avec succès !`);
+                                                          fetchStocksPreparations(); // Recharger
+                                                        } else {
+                                                          alert("Erreur lors de l'archivage");
+                                                        }
                                                       }
                                                     }
                                                   }
