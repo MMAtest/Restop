@@ -1921,7 +1921,21 @@ function App() {
   };
 
   return (
-    <div className="App">
+    <>
+      {/* Système d'authentification */}
+      {!isAuthenticated ? (
+        <LoginPage onLoginSuccess={handleLoginSuccess} />
+      ) : (
+        <>
+          {/* Interface spécifique aux rôles */}
+          {showRoleBasedDashboard ? (
+            <RoleBasedDashboard 
+              user={currentUser} 
+              sessionId={sessionId}
+              onSwitchToFullApp={() => setShowRoleBasedDashboard(false)}
+            />
+          ) : (
+            <div className="App">
       {/* Header Mobile */}
       <div className="header">
         <h1>ResTop : La Table d'Augustine</h1>
