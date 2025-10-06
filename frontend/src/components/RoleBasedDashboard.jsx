@@ -314,8 +314,8 @@ const RoleBasedDashboard = ({ user, sessionId, onNavigateToPage, onCreateMission
         </div>
       )}
 
-      {/* Bouton Créer Mission pour Chef et Patron */}
-      {(user.role === 'super_admin' || user.role === 'chef_cuisine') && (
+      {/* Bouton Créer Mission pour Chef, Patron ET Caissier */}
+      {(user.role === 'super_admin' || user.role === 'chef_cuisine' || user.role === 'caissier') && (
         <div style={{
           background: 'white',
           borderRadius: '12px',
