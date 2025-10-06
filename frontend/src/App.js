@@ -591,6 +591,35 @@ function App() {
     }
   };
 
+  // ✅ Helper pour vérifier les permissions selon le rôle
+  const canEditItems = () => {
+    return currentUser?.role !== 'employe_cuisine';
+  };
+
+  const canArchiveItems = () => {
+    return currentUser?.role !== 'employe_cuisine';
+  };
+
+  const canCreateItems = () => {
+    return currentUser?.role !== 'employe_cuisine';
+  };
+
+  const canAccessOcrTicketsZ = () => {
+    return currentUser?.role !== 'employe_cuisine';
+  };
+
+  const canAccessRepartition = () => {
+    return currentUser?.role !== 'employe_cuisine';
+  };
+
+  const canAccessAnalytics = () => {
+    return currentUser?.role !== 'employe_cuisine';
+  };
+
+  const canValidateOrders = () => {
+    return currentUser?.role === 'super_admin' || currentUser?.role === 'chef_cuisine';
+  };
+
   const fetchProduits = async () => {
     try {
       const response = await axios.get(`${API}/produits`);
