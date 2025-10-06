@@ -344,6 +344,7 @@ function App() {
 
   // Charger les données initiales
   useEffect(() => {
+    checkSession(); // Vérifier la session utilisateur
     fetchDashboardStats();
     fetchProduits();
     fetchFournisseurs();
