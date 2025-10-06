@@ -3614,15 +3614,42 @@ function App() {
                           }}
                         >
                           <option value="all">Toutes catégories</option>
-                          <option value="légumes">🥕 Légumes</option>
-                          <option value="viandes">🥩 Viandes</option>
-                          <option value="poissons">🐟 Poissons</option>
-                          <option value="produits laitiers">🧀 Produits laitiers</option>
-                          <option value="épices">🌶️ Épices</option>
-                          <option value="fruits">🍎 Fruits</option>
-                          <option value="céréales">🌾 Céréales</option>
-                          <option value="boissons">🥤 Boissons</option>
-                          <option value="autres">📦 Autres</option>
+                          {/* Options dynamiques selon le mode d'affichage */}
+                          {stockViewMode === 'productions' ? (
+                            // Catégories de productions
+                            <>
+                              <option value="entrée">🥗 Entrées</option>
+                              <option value="plat">🍽️ Plats</option>
+                              <option value="dessert">🍰 Desserts</option>
+                              <option value="bar">🍹 Bar</option>
+                              <option value="autres">📝 Autres</option>
+                            </>
+                          ) : stockViewMode === 'preparations' ? (
+                            // Catégories basées sur les produits sources des préparations
+                            <>
+                              <option value="légumes">🥕 Légumes</option>
+                              <option value="viandes">🥩 Viandes</option>
+                              <option value="poissons">🐟 Poissons</option>
+                              <option value="produits laitiers">🧀 Produits laitiers</option>
+                              <option value="épices">🌶️ Épices</option>
+                              <option value="fruits">🍎 Fruits</option>
+                              <option value="céréales">🌾 Céréales</option>
+                              <option value="autres">📦 Autres</option>
+                            </>
+                          ) : (
+                            // Catégories de produits (mode par défaut)
+                            <>
+                              <option value="légumes">🥕 Légumes</option>
+                              <option value="viandes">🥩 Viandes</option>
+                              <option value="poissons">🐟 Poissons</option>
+                              <option value="produits laitiers">🧀 Produits laitiers</option>
+                              <option value="épices">🌶️ Épices</option>
+                              <option value="fruits">🍎 Fruits</option>
+                              <option value="céréales">🌾 Céréales</option>
+                              <option value="boissons">🥤 Boissons</option>
+                              <option value="autres">📦 Autres</option>
+                            </>
+                          )}
                         </select>
                       </div>
                     </div>
