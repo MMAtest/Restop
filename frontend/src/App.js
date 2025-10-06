@@ -2053,8 +2053,8 @@ function App() {
       <div className="content-wrapper">
         <div id="dashboard" className={`wireframe-section ${activeTab === "dashboard" ? "active" : ""}`}>
           
-          {/* Sélecteur de période - MASQUÉ pour employé cuisine */}
-          {currentUser?.role !== 'employe_cuisine' && (
+          {/* Sélecteur de période - MASQUÉ pour employé cuisine ET barman */}
+          {currentUser?.role !== 'employe_cuisine' && currentUser?.role !== 'barman' && (
             <DateRangePicker 
               onDateRangeChange={handleDateRangeChange}
             />
