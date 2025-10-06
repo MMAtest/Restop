@@ -3692,7 +3692,7 @@ async def auto_generate_preparations():
         
         return {
             "success": True,
-            "message": f"✅ Génération automatique terminée !",
+            "message": "✅ Génération automatique terminée !",
             "preparations_created": len(preparations_created),
             "details": {
                 "total_products_processed": len(produits),
@@ -4390,7 +4390,7 @@ async def upload_and_process_document(
                     type_document=document_type,
                     texte_extrait=texte_extrait,
                     donnees_parsees=donnees_parsees,
-                    message=f"Facture unique traitée avec succès",
+                    message="Facture unique traitée avec succès",
                     file_type=file_type
                 )
                 
@@ -4724,7 +4724,7 @@ async def delete_all_ocr_documents():
     try:
         result = await db.documents_ocr.delete_many({})
         return {
-            "message": f"Tous les documents OCR ont été supprimés",
+            "message": "Tous les documents OCR ont été supprimés",
             "deleted_count": result.deleted_count
         }
     except Exception as e:
