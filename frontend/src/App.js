@@ -3378,7 +3378,10 @@ function App() {
                       </button>
                       <button 
                         className="button small"
-                        onClick={() => setStockViewMode('preparations')}
+                        onClick={() => {
+                          setStockViewMode('preparations');
+                          fetchStocksPreparations(); // Recharger les données des préparations
+                        }}
                         style={{
                           background: stockViewMode === 'preparations' ? 'var(--color-primary-blue)' : 'var(--color-background-card)',
                           color: stockViewMode === 'preparations' ? 'white' : 'var(--color-text-secondary)',
