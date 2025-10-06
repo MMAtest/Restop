@@ -3680,13 +3680,14 @@ function App() {
                                   <div 
                                     style={{
                                       padding: '16px',
-                                      background: categoriesPreparationsExpanded[categoryName] ? 'var(--color-accent-green)' : 'var(--color-background-secondary)',
-                                      color: categoriesPreparationsExpanded[categoryName] ? 'white' : '#1f2937', // Forcer couleur foncée pour visibilité
+                                      background: categoriesPreparationsExpanded[categoryName] ? 'var(--color-accent-green)' : '#f8fafc',
+                                      color: categoriesPreparationsExpanded[categoryName] ? 'white' : '#374151', // Gris foncé pour contraste
                                       cursor: 'pointer',
                                       display: 'flex',
                                       alignItems: 'center',
                                       justifyContent: 'space-between',
-                                      fontWeight: 'bold'
+                                      fontWeight: 'bold',
+                                      border: categoriesPreparationsExpanded[categoryName] ? 'none' : '1px solid #e5e7eb'
                                     }}
                                     onClick={() => {
                                       setCategoriesPreparationsExpanded(prev => ({
