@@ -3999,7 +3999,7 @@ function App() {
                                                       }
                                                     }
                                                   }
-                                                }}
+                                                }
                                                 style={{fontSize: '12px', padding: '4px 8px'}}
                                               >
                                                 🗃️
