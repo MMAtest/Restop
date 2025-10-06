@@ -283,6 +283,16 @@ class LoginRequest(BaseModel):
     username: str
     password: str
 
+class UserResponse(BaseModel):
+    id: str
+    username: str
+    email: str
+    role: str
+    full_name: Optional[str] = None
+    is_active: bool
+    created_at: datetime
+    last_login: Optional[datetime] = None
+
 class LoginResponse(BaseModel):
     success: bool
     user: Optional[UserResponse] = None
@@ -295,16 +305,6 @@ class UserCreate(BaseModel):
     password: str
     role: str
     full_name: Optional[str] = None
-
-class UserResponse(BaseModel):
-    id: str
-    username: str
-    email: str
-    role: str
-    full_name: Optional[str] = None
-    is_active: bool
-    created_at: datetime
-    last_login: Optional[datetime] = None
 
 # ✅ Version 3 - Enhanced Product Model with Reference Price and Supplier Relations
 class Produit(BaseModel):
