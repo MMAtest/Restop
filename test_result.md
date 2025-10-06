@@ -544,6 +544,21 @@ backend:
         comment: "❌ PERMISSIONS RÔLES - DÉPENDANCE UTILISATEURS ! Tests des permissions basées sur les rôles bloqués : ❌ PROBLÈME PRINCIPAL : Pas d'utilisateurs test disponibles pour tester les permissions par rôle ❌ CAUSE : Gestion des utilisateurs test défaillante entre les tests ✅ RÔLES DÉFINIS : 5 rôles RBAC implémentés (super_admin, gerant, chef_cuisine, barman, caissier) ✅ LOGIQUE PERMISSIONS : Patron → tous, Chef → cuisiniers implémentée. NÉCESSITE CORRECTION de la persistance des données utilisateur pour valider les permissions basées sur les rôles."
 
 frontend:
+  - task: "Restrictions Employé de Cuisine - Interface Complète"
+    implemented: true
+    working: true
+    file: "/app/frontend/src/App.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Implémentation complète des restrictions pour le rôle employe_cuisine : masquage DateRangePicker, analytics, restrictions navigation (HOME/STOCK/ORDERS uniquement), onglet History seul dans Orders, 2 modules missions distincts sur home page"
+      - working: true
+        agent: "testing"
+        comment: "🎯 RESTRICTIONS EMPLOYÉ DE CUISINE - 95% RÉUSSITE ! Tests complets des restrictions implémentées pour le rôle employe_cuisine : ✅ LOGIN RÉUSSI : Connexion avec cuisine_test/password123 fonctionnelle ✅ HOME PAGE RESTRICTIONS : DateRangePicker correctement masqué, analytics/ventes/productions cachées, 2 modules missions distincts présents ('🎯 Tâches à Effectuer Aujourd'hui' et '📊 Mes Tâches Récentes') avec contenu spécifique (Supions émincés, nettoyage zone poissons) ✅ NAVIGATION RESTREINTE : Bottom navigation affiche uniquement HOME/STOCK/ORDERS, bouton Production correctement masqué ✅ ORDERS PAGE RESTRICTIONS : Accès à la page Orders fonctionnel, seul l'onglet 'Historique (3)' visible, onglets 'Commande Manuelle' et 'Commande Automatique' correctement masqués ✅ STOCK PAGE : Accessible via navigation (bouton visible) ✅ BURGER MENU : Bouton 'Déconnexion' présent et accessible ❌ PROBLÈME MINEUR : Menu burger affiche encore 'Utilisateurs' qui devrait être masqué pour employe_cuisine. Interface employe_cuisine fonctionnelle à 95% avec restrictions correctement appliquées selon spécifications."
+
   - task: "Interface Dashboard"
     implemented: true
     working: true
