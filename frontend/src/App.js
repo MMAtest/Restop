@@ -2001,6 +2001,15 @@ function App() {
             onDateRangeChange={handleDateRangeChange}
           />
 
+          {/* Section Missions intégrée (visible selon le rôle) */}
+          {currentUser && (
+            <RoleBasedDashboard 
+              user={currentUser} 
+              sessionId={sessionId}
+              onNavigateToPage={(page) => setActiveTab(page)}
+            />
+          )}
+
           {/* ONGLET VENTES */}
           {activeDashboardTab === "ventes" && (
             <div className="section-card">
