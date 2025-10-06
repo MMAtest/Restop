@@ -3374,6 +3374,7 @@ function App() {
           )}
 
         </div>
+        )}
 
         {/* GESTION DE STOCKS - avec OCR et Grilles de données */}
         <div id="stocks" className={`wireframe-section ${activeTab === "stocks" ? "active" : ""}`}>
