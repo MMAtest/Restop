@@ -7590,6 +7590,188 @@ function App() {
         </div>
       )}
 
+      {/* Modal Création Mission */}
+      {showMissionModal && (
+        <div className="modal-overlay">
+          <div className="modal-content" style={{maxWidth: '700px'}}>
+            <h3 className="modal-header">
+              ➕ Créer une Nouvelle Mission
+            </h3>
+            <form onSubmit={handleCreateMission}>
+              <div className="form-row">
+                <div className="form-group">
+                  <label className="form-label">Titre de la mission *</label>
+                  <input
+                    className="form-input"
+                    type="text"
+                    value={missionForm.title}
+                    onChange={(e) => setMissionForm({...missionForm, title: e.target.value})}
+                    placeholder="Ex: Préparer 20 portions de..."
+                    required
+                  />
+                </div>
+                
+                <div className="form-group">
+                  <label className="form-label">Type de mission</label>
+                  <select
+                    className="form-select"
+                    value={missionForm.type}
+                    onChange={(e) => {
+                      const newType = e.target.value;
+                      setMissionForm({
+                        ...missionForm, 
+                        type: newType,
+                        // Suggérer un titre selon le type
+                        title: missionForm.title || {
+                          'preparation': 'Préparer X portions de...',
+                          'stock_check': 'Vérifier stock critique :',
+                          'cleaning': 'Nettoyer la zone de...',
+                          'delivery_check': 'Réceptionner livraison...',
+                          'equipment_check': 'Contrôler la température...'
+                        }[newType] || ''
+                      });
+                    }}
+                  >
+                    <option value="preparation">🔪 Préparation</option>
+                    <option value="stock_check">📦 Vérification Stock</option>
+                    <option value="cleaning">🧽 Nettoyage/Hygiène</option>
+                    <option value="delivery_check">🚚 Réception Livraison</option>
+                    <option value="equipment_check">⚙️ Contrôle Équipement</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="form-group">
+                <label className="form-label">Description détaillée *</label>
+                <textarea
+                  className="form-textarea"
+                  value={missionForm.description}
+                  onChange={(e) => setMissionForm({...missionForm, description: e.target.value})}
+                  placeholder="Décrivez précisément la tâche à effectuer..."
+                  rows="3"
+                  required
+                />
+              </div>
+
+              <div className="form-row">
+                <div className="form-group">
+                  <label className="form-label">Assigner à *</label>
+                  <select
+                    className="form-select"
+                    value={missionForm.assigned_to_user_id}
+                    onChange={(e) => setMissionForm({...missionForm, assigned_to_user_id: e.target.value})}
+                    required
+                  >
+                    <option value="">-- Sélectionner un employé --</option>
+                    {getFilteredUsersForAssignment().map(availableUser => (
+                      <option key={availableUser.id} value={availableUser.id}>
+                        {availableUser.full_name || availableUser.username} ({availableUser.role})
+                      </option>
+                    ))}
+                  </select>
+                  <div style={{fontSize: '11px', color: '#6b7280', marginTop: '4px'}}>
+                    {currentUser?.role === 'super_admin' ? 
+                      '👑 En tant que patron, vous pouvez assigner à tout le monde' : 
+                      '👨‍🍳 En tant que chef, vous pouvez assigner à vous-même et aux cuisiniers'
+                    }
+                  </div>
+                </div>
+
+                <div className="form-group">
+                  <label className="form-label">Priorité</label>
+                  <select
+                    className="form-select"
+                    value={missionForm.priority}
+                    onChange={(e) => setMissionForm({...missionForm, priority: e.target.value})}
+                  >
+                    <option value="basse">🔵 Basse</option>
+                    <option value="normale">📝 Normale</option>
+                    <option value="haute">⚡ Haute</option>
+                    <option value="urgente">🚨 Urgente</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="form-row">
+                <div className="form-group">
+                  <label className="form-label">Échéance (optionnel)</label>
+                  <input
+                    className="form-input"
+                    type="datetime-local"
+                    value={missionForm.due_date}
+                    onChange={(e) => setMissionForm({...missionForm, due_date: e.target.value})}
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label className="form-label">Catégorie</label>
+                  <select
+                    className="form-select"
+                    value={missionForm.category}
+                    onChange={(e) => setMissionForm({...missionForm, category: e.target.value})}
+                  >
+                    <option value="cuisine">🥘 Cuisine</option>
+                    <option value="stock">📦 Stock</option>
+                    <option value="hygiene">🧽 Hygiène</option>
+                    <option value="commande">🚚 Commandes</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="form-row">
+                <div className="form-group">
+                  <label className="form-label">Quantité cible (optionnel)</label>
+                  <input
+                    className="form-input"
+                    type="number"
+                    step="0.1"
+                    value={missionForm.target_quantity}
+                    onChange={(e) => setMissionForm({...missionForm, target_quantity: e.target.value})}
+                    placeholder="Ex: 15, 2.5..."
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label className="form-label">Unité (optionnel)</label>
+                  <select
+                    className="form-select"
+                    value={missionForm.target_unit}
+                    onChange={(e) => setMissionForm({...missionForm, target_unit: e.target.value})}
+                  >
+                    <option value="">-- Choisir unité --</option>
+                    <option value="portions">portions</option>
+                    <option value="kg">kg</option>
+                    <option value="L">L</option>
+                    <option value="pièces">pièces</option>
+                    <option value="zones">zones</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="button-group">
+                <button
+                  type="button"
+                  className="button btn-cancel"
+                  onClick={() => {
+                    setShowMissionModal(false);
+                    resetMissionForm();
+                  }}
+                >
+                  Annuler
+                </button>
+                <button
+                  type="submit"
+                  className="button btn-primary"
+                  disabled={loading}
+                >
+                  {loading ? 'Création...' : '➕ Créer Mission'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
       {/* Modal Préparation */}
       {showPreparationModal && (
         <div className="modal-overlay">
