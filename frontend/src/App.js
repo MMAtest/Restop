@@ -2178,6 +2178,10 @@ function App() {
               user={currentUser} 
               sessionId={sessionId}
               onNavigateToPage={(page) => setActiveTab(page)}
+              onCreateMission={() => {
+                setShowMissionModal(true);
+                fetchAvailableUsers(); // Charger les utilisateurs disponibles
+              }}
             />
           )}
 
