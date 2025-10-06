@@ -536,6 +536,69 @@ function App() {
     }
   };
 
+  // ✅ Fonctions d'authentification
+  const handleLoginSuccess = (user, session_id) => {
+    setCurrentUser(user);
+    setSessionId(session_id);
+    setIsAuthenticated(true);
+    
+    // Décider quelle interface afficher selon le rôle
+    if (user.role === 'super_admin' || user.role === 'chef_cuisine') {
+      // Patron et Chef voient l'interface complète + leur dashboard de missions
+      setShowRoleBasedDashboard(false); // Interface complète
+    } else {
+      // Autres rôles voient prioritairement leur dashboard de missions
+      setShowRoleBasedDashboard(true); // Dashboard spécifique au rôle
+    }
+  };
+
+  const checkSession = async () => {
+    try {
+      const stored = localStorage.getItem('user_session');
+      if (stored) {
+        const session = JSON.parse(stored);
+        
+        // Vérifier que la session est encore valide
+        const response = await axios.get(`${API}/auth/session/${session.session_id}`);
+        
+        if (response.data.valid) {
+          setCurrentUser(session.user);
+          setSessionId(session.session_id);
+          setIsAuthenticated(true);
+          
+          // Déterminer l'interface selon le rôle
+          if (session.user.role === 'super_admin' || session.user.role === 'chef_cuisine') {
+            setShowRoleBasedDashboard(false);
+          } else {
+            setShowRoleBasedDashboard(true);
+          }
+        } else {
+          // Session expirée
+          localStorage.removeItem('user_session');
+        }
+      }
+    } catch (error) {
+      console.error('Erreur vérification session:', error);
+      localStorage.removeItem('user_session');
+    }
+  };
+
+  const logout = async () => {
+    try {
+      if (sessionId) {
+        await axios.post(`${API}/auth/logout?session_id=${sessionId}`);
+      }
+      
+      localStorage.removeItem('user_session');
+      setIsAuthenticated(false);
+      setCurrentUser(null);
+      setSessionId(null);
+      setShowRoleBasedDashboard(false);
+    } catch (error) {
+      console.error('Erreur déconnexion:', error);
+    }
+  };
+
   const fetchProduits = async () => {
     try {
       const response = await axios.get(`${API}/produits`);
