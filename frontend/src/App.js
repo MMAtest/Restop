@@ -7150,6 +7150,121 @@ function App() {
         </div>
       )}
 
+      {/* Modal Mouvement Préparation */}
+      {showMovementPreparationModal && (
+        <div className="modal-overlay">
+          <div className="modal-content">
+            <h3 className="modal-header">
+              Mouvement de stock - Préparation
+            </h3>
+            <form onSubmit={handleMovementPreparation}>
+              <div className="form-group">
+                <label className="form-label">Préparation</label>
+                <select
+                  className="form-select"
+                  value={movementPreparationForm.preparation_id}
+                  onChange={(e) => setMovementPreparationForm({...movementPreparationForm, preparation_id: e.target.value})}
+                  required
+                >
+                  <option value="">-- Sélectionner une préparation --</option>
+                  {preparations.map(prep => (
+                    <option key={prep.id} value={prep.id}>
+                      🔪 {prep.nom} ({prep.quantite_preparee} {prep.unite_preparee})
+                    </option>
+                  ))}
+                </select>
+              </div>
+              
+              <div className="form-row">
+                <div className="form-group">
+                  <label className="form-label">Type de mouvement</label>
+                  <select
+                    className="form-select"
+                    value={movementPreparationForm.type}
+                    onChange={(e) => setMovementPreparationForm({...movementPreparationForm, type: e.target.value})}
+                  >
+                    <option value="entree">➕ Entrée (Nouvelle préparation)</option>
+                    <option value="sortie">➖ Sortie (Utilisation)</option>
+                    <option value="ajustement">🔄 Ajustement</option>
+                  </select>
+                </div>
+                
+                <div className="form-group">
+                  <label className="form-label">Quantité</label>
+                  <input
+                    className="form-input"
+                    type="number"
+                    step="0.1"
+                    value={movementPreparationForm.quantite}
+                    onChange={(e) => setMovementPreparationForm({...movementPreparationForm, quantite: e.target.value})}
+                    required
+                  />
+                </div>
+              </div>
+              
+              <div className="form-row">
+                <div className="form-group">
+                  <label className="form-label">Référence</label>
+                  <input
+                    className="form-input"
+                    type="text"
+                    value={movementPreparationForm.reference}
+                    onChange={(e) => setMovementPreparationForm({...movementPreparationForm, reference: e.target.value})}
+                  />
+                </div>
+                
+                <div className="form-group">
+                  <label className="form-label">Nouvelle DLC (si applicable)</label>
+                  <input
+                    className="form-input"
+                    type="date"
+                    value={movementPreparationForm.dlc}
+                    onChange={(e) => setMovementPreparationForm({...movementPreparationForm, dlc: e.target.value})}
+                  />
+                </div>
+              </div>
+              
+              <div className="form-group">
+                <label className="form-label">Commentaire</label>
+                <textarea
+                  className="form-textarea"
+                  value={movementPreparationForm.commentaire}
+                  onChange={(e) => setMovementPreparationForm({...movementPreparationForm, commentaire: e.target.value})}
+                  placeholder="Raison du mouvement, notes..."
+                />
+              </div>
+              
+              <div className="button-group">
+                <button
+                  type="button"
+                  className="button btn-cancel"
+                  onClick={() => {
+                    setShowMovementPreparationModal(false);
+                    setMovementPreparationForm({
+                      preparation_id: "",
+                      type: "entree",
+                      quantite: "",
+                      reference: "",
+                      commentaire: "",
+                      dlc: ""
+                    });
+                  }}
+                >
+                  Annuler
+                </button>
+                <button
+                  type="submit"
+                  className="button btn-primary"
+                  disabled={loading}
+                >
+                  {loading ? "Sauvegarde..." : "Enregistrer"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
       {/* Modal Préparation */}
       {showPreparationModal && (
         <div className="modal-overlay">
