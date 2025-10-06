@@ -4937,6 +4937,420 @@ async def diagnostic_archive_system():
             "recommendations": ["Contacter le support technique"]
         }
 
+# ✅ Authentication Endpoints
+@api_router.post("/auth/login", response_model=LoginResponse)
+async def login(request: LoginRequest):
+    """Connexion simple avec username/password"""
+    try:
+        # Chercher l'utilisateur
+        user = await db.users.find_one({"username": request.username})
+        
+        if not user:
+            return LoginResponse(success=False, message="Nom d'utilisateur incorrect")
+        
+        # Vérification simple du mot de passe (en production, utiliser bcrypt)
+        user_obj = User(**user)
+        
+        # Pour l'instant, vérification simple - en production utiliser bcrypt
+        if request.password != "password123":  # Mot de passe par défaut pour les comptes test
+            return LoginResponse(success=False, message="Mot de passe incorrect")
+        
+        # Créer une session
+        session_id = str(uuid.uuid4())
+        session = UserSession(
+            user_id=user_obj.id,
+            username=user_obj.username,
+            role=user_obj.role,
+            full_name=user_obj.full_name or user_obj.username
+        )
+        
+        # Sauvegarder la session (simple stockage en mémoire pour l'instant)
+        await db.user_sessions.insert_one({**session.dict(), "session_id": session_id})
+        
+        # Mettre à jour la dernière connexion
+        await db.users.update_one(
+            {"id": user_obj.id},
+            {"$set": {"last_login": datetime.utcnow()}}
+        )
+        
+        return LoginResponse(
+            success=True,
+            user=UserResponse(**user_obj.dict()),
+            session_id=session_id,
+            message="Connexion réussie"
+        )
+        
+    except Exception as e:
+        return LoginResponse(success=False, message=f"Erreur de connexion: {str(e)}")
+
+@api_router.post("/auth/logout")
+async def logout(session_id: str):
+    """Déconnexion"""
+    try:
+        await db.user_sessions.delete_one({"session_id": session_id})
+        return {"success": True, "message": "Déconnexion réussie"}
+    except Exception as e:
+        return {"success": False, "message": f"Erreur lors de la déconnexion: {str(e)}"}
+
+@api_router.get("/auth/session/{session_id}")
+async def get_session(session_id: str):
+    """Vérifier une session"""
+    try:
+        session = await db.user_sessions.find_one({"session_id": session_id})
+        if not session:
+            return {"valid": False, "message": "Session expirée"}
+        
+        # Mettre à jour l'activité
+        await db.user_sessions.update_one(
+            {"session_id": session_id},
+            {"$set": {"last_activity": datetime.utcnow()}}
+        )
+        
+        return {"valid": True, "user": UserSession(**session)}
+    except Exception as e:
+        return {"valid": False, "message": f"Erreur session: {str(e)}"}
+
+# ✅ Mission Management Endpoints
+@api_router.post("/missions", response_model=Mission)
+async def create_mission(mission: MissionCreate, assigned_by_user_id: str):
+    """Créer une nouvelle mission"""
+    try:
+        # Récupérer les noms des utilisateurs
+        assigned_to_user = await db.users.find_one({"id": mission.assigned_to_user_id})
+        assigned_by_user = await db.users.find_one({"id": assigned_by_user_id})
+        
+        if not assigned_to_user:
+            raise HTTPException(status_code=404, detail="Utilisateur assigné non trouvé")
+        if not assigned_by_user:
+            raise HTTPException(status_code=404, detail="Utilisateur assignateur non trouvé")
+        
+        mission_obj = Mission(
+            **mission.dict(),
+            assigned_by_user_id=assigned_by_user_id,
+            assigned_to_name=assigned_to_user.get("full_name", assigned_to_user["username"]),
+            assigned_by_name=assigned_by_user.get("full_name", assigned_by_user["username"])
+        )
+        
+        await db.missions.insert_one(mission_obj.dict())
+        
+        # Créer une notification pour l'employé
+        notification = Notification(
+            user_id=mission.assigned_to_user_id,
+            title="Nouvelle mission assignée",
+            message=f"Mission: {mission.title}",
+            type="mission",
+            mission_id=mission_obj.id
+        )
+        
+        await db.notifications.insert_one(notification.dict())
+        
+        return mission_obj
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Erreur lors de la création: {str(e)}")
+
+@api_router.get("/missions", response_model=List[Mission])
+async def get_missions(user_id: Optional[str] = None, status: Optional[str] = None):
+    """Récupérer les missions"""
+    query = {}
+    if user_id:
+        query["assigned_to_user_id"] = user_id
+    if status:
+        query["status"] = status
+    
+    missions = await db.missions.find(query).sort("assigned_date", -1).to_list(1000)
+    return [Mission(**m) for m in missions]
+
+@api_router.get("/missions/by-user/{user_id}")
+async def get_missions_by_user(user_id: str):
+    """Récupérer toutes les missions pour un utilisateur (assignées à lui ET créées par lui)"""
+    assigned_to_missions = await db.missions.find({"assigned_to_user_id": user_id}).sort("assigned_date", -1).to_list(1000)
+    created_by_missions = await db.missions.find({"assigned_by_user_id": user_id}).sort("assigned_date", -1).to_list(1000)
+    
+    return {
+        "assigned_to_me": [Mission(**m) for m in assigned_to_missions],
+        "created_by_me": [Mission(**m) for m in created_by_missions],
+        "total_assigned": len(assigned_to_missions),
+        "total_created": len(created_by_missions)
+    }
+
+@api_router.put("/missions/{mission_id}", response_model=Mission)
+async def update_mission(mission_id: str, update: MissionUpdate, user_id: str):
+    """Mettre à jour une mission"""
+    try:
+        mission = await db.missions.find_one({"id": mission_id})
+        if not mission:
+            raise HTTPException(status_code=404, detail="Mission non trouvée")
+        
+        update_data = update.dict(exclude_unset=True)
+        
+        # Si l'employé marque comme terminée
+        if update_data.get("status") == "terminee_attente":
+            update_data["completed_by_employee_date"] = datetime.utcnow()
+            
+            # Créer notification pour le chef/patron
+            manager = await db.users.find_one({"id": mission["assigned_by_user_id"]})
+            if manager:
+                notification = Notification(
+                    user_id=mission["assigned_by_user_id"],
+                    title="Mission terminée - À valider",
+                    message=f"{mission['assigned_to_name']} a terminé: {mission['title']}",
+                    type="mission",
+                    mission_id=mission_id
+                )
+                await db.notifications.insert_one(notification.dict())
+        
+        # Si le chef/patron valide
+        elif update_data.get("status") == "validee":
+            update_data["validated_date"] = datetime.utcnow()
+            
+            # Créer notification pour l'employé
+            notification = Notification(
+                user_id=mission["assigned_to_user_id"],
+                title="Mission validée",
+                message=f"Votre mission '{mission['title']}' a été validée !",
+                type="mission",
+                mission_id=mission_id
+            )
+            await db.notifications.insert_one(notification.dict())
+        
+        update_data["updated_at"] = datetime.utcnow()
+        
+        await db.missions.update_one({"id": mission_id}, {"$set": update_data})
+        
+        updated_mission = await db.missions.find_one({"id": mission_id})
+        return Mission(**updated_mission)
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Erreur mise à jour: {str(e)}")
+
+@api_router.delete("/missions/{mission_id}")
+async def delete_mission(mission_id: str):
+    """Supprimer une mission"""
+    result = await db.missions.delete_one({"id": mission_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Mission non trouvée")
+    
+    # Supprimer les notifications liées
+    await db.notifications.delete_many({"mission_id": mission_id})
+    
+    return {"message": "Mission supprimée"}
+
+@api_router.get("/notifications/{user_id}")
+async def get_user_notifications(user_id: str, limit: int = 50):
+    """Récupérer les notifications d'un utilisateur"""
+    notifications = await db.notifications.find({"user_id": user_id}).sort("created_at", -1).limit(limit).to_list(limit)
+    return [Notification(**n) for n in notifications]
+
+@api_router.put("/notifications/{notification_id}/read")
+async def mark_notification_read(notification_id: str):
+    """Marquer une notification comme lue"""
+    result = await db.notifications.update_one(
+        {"id": notification_id},
+        {"$set": {"read": True, "read_at": datetime.utcnow()}}
+    )
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Notification non trouvée")
+    
+    return {"message": "Notification marquée comme lue"}
+
+# ✅ Demo Data Creation for Missions System
+@api_router.post("/demo/init-missions-users")
+async def init_demo_missions_and_users():
+    """Créer les utilisateurs test et missions de démonstration"""
+    try:
+        # Supprimer les données existantes
+        await db.users.delete_many({})
+        await db.missions.delete_many({})
+        await db.notifications.delete_many({})
+        await db.user_sessions.delete_many({})
+        
+        # Créer les utilisateurs test
+        test_users = [
+            User(
+                id="patron-001",
+                username="patron_test",
+                email="patron@table-augustine.fr",
+                password_hash="hashed_password123",  # En production: bcrypt
+                role="super_admin",
+                full_name="Pierre Dupont (Patron)",
+                is_active=True
+            ),
+            User(
+                id="chef-001", 
+                username="chef_test",
+                email="chef@table-augustine.fr",
+                password_hash="hashed_password123",
+                role="chef_cuisine",
+                full_name="Marie Dubois (Chef de Cuisine)",
+                is_active=True
+            ),
+            User(
+                id="caisse-001",
+                username="caisse_test", 
+                email="caisse@table-augustine.fr",
+                password_hash="hashed_password123",
+                role="caissier",
+                full_name="Jean Martin (Responsable Caisse)",
+                is_active=True
+            ),
+            User(
+                id="barman-001",
+                username="barman_test",
+                email="barman@table-augustine.fr", 
+                password_hash="hashed_password123",
+                role="barman",
+                full_name="Sophie Leroy (Barman)",
+                is_active=True
+            ),
+            User(
+                id="cuisine-001",
+                username="cuisine_test",
+                email="cuisine@table-augustine.fr",
+                password_hash="hashed_password123", 
+                role="gerant",
+                full_name="Lucas Petit (Employé Cuisine)",
+                is_active=True
+            )
+        ]
+        
+        # Insérer les utilisateurs
+        for user in test_users:
+            await db.users.insert_one(user.dict())
+        
+        # Créer des missions de démonstration
+        demo_missions = [
+            # Mission du Chef vers Employé Cuisine
+            Mission(
+                title="Préparer 15 portions de Supions émincés",
+                description="Découper les supions en fines lamelles pour le service du soir. Vérifier la fraîcheur et noter toute anomalie.",
+                type="preparation",
+                category="cuisine",
+                assigned_to_user_id="cuisine-001",
+                assigned_by_user_id="chef-001", 
+                assigned_to_name="Lucas Petit (Employé Cuisine)",
+                assigned_by_name="Marie Dubois (Chef de Cuisine)",
+                priority="haute",
+                due_date=datetime.utcnow() + timedelta(hours=2),
+                target_quantity=15,
+                target_unit="portions"
+            ),
+            
+            # Mission du Patron vers Chef
+            Mission(
+                title="Vérifier stock critique : Huile d'olive",
+                description="Le stock d'huile d'olive est critique (2L restant). Vérifier la qualité, commander si nécessaire.",
+                type="stock_check", 
+                category="stock",
+                assigned_to_user_id="chef-001",
+                assigned_by_user_id="patron-001",
+                assigned_to_name="Marie Dubois (Chef de Cuisine)",
+                assigned_by_name="Pierre Dupont (Patron)",
+                priority="urgente",
+                due_date=datetime.utcnow() + timedelta(hours=1)
+            ),
+            
+            # Mission du Chef vers Barman
+            Mission(
+                title="Contrôler la température des chambres froides",
+                description="Vérifier que les chambres froides du bar maintiennent la température correcte (2-4°C).",
+                type="equipment_check",
+                category="hygiene", 
+                assigned_to_user_id="barman-001",
+                assigned_by_user_id="chef-001",
+                assigned_to_name="Sophie Leroy (Barman)",
+                assigned_by_name="Marie Dubois (Chef de Cuisine)",
+                priority="normale",
+                due_date=datetime.utcnow() + timedelta(hours=4)
+            ),
+            
+            # Mission terminée en attente de validation
+            Mission(
+                title="Nettoyer la zone de découpe des poissons", 
+                description="Nettoyage complet et désinfection de la zone poissons après le service.",
+                type="cleaning",
+                category="hygiene",
+                assigned_to_user_id="cuisine-001",
+                assigned_by_user_id="chef-001",
+                assigned_to_name="Lucas Petit (Employé Cuisine)", 
+                assigned_by_name="Marie Dubois (Chef de Cuisine)",
+                status="terminee_attente",
+                priority="normale",
+                completed_by_employee_date=datetime.utcnow() - timedelta(minutes=15),
+                employee_notes="Zone nettoyée et désinfectée. Produits rangés au frais."
+            ),
+            
+            # Mission validée
+            Mission(
+                title="Réceptionner livraison Pêcherie des Sanguinaires",
+                description="Contrôler la livraison de poissons : supions (5kg), moules (3kg), sardines (2kg).",
+                type="delivery_check",
+                category="commande",
+                assigned_to_user_id="caisse-001", 
+                assigned_by_user_id="chef-001",
+                assigned_to_name="Jean Martin (Responsable Caisse)",
+                assigned_by_name="Marie Dubois (Chef de Cuisine)",
+                status="validee",
+                priority="haute",
+                completed_by_employee_date=datetime.utcnow() - timedelta(hours=2),
+                validated_date=datetime.utcnow() - timedelta(hours=1),
+                employee_notes="Livraison conforme. Poissons de qualité excellent.",
+                validation_notes="Parfait, merci Jean !"
+            )
+        ]
+        
+        # Insérer les missions
+        for mission in demo_missions:
+            await db.missions.insert_one(mission.dict())
+        
+        # Créer quelques notifications de démonstration
+        demo_notifications = [
+            Notification(
+                user_id="cuisine-001",
+                title="Nouvelle mission urgente",
+                message="Préparer 15 portions de Supions émincés - À terminer avant 18h30",
+                type="mission",
+                mission_id=demo_missions[0].id
+            ),
+            Notification(
+                user_id="chef-001", 
+                title="Mission terminée - À valider",
+                message="Lucas a terminé le nettoyage de la zone poissons",
+                type="mission",
+                mission_id=demo_missions[3].id
+            ),
+            Notification(
+                user_id="barman-001",
+                title="Rappel DLC",
+                message="3 produits Bar arrivent à expiration dans 2 jours",
+                type="alert"
+            )
+        ]
+        
+        for notification in demo_notifications:
+            await db.notifications.insert_one(notification.dict())
+        
+        return {
+            "success": True,
+            "message": "✅ Système missions et utilisateurs initialisé !",
+            "users_created": len(test_users),
+            "missions_created": len(demo_missions),
+            "notifications_created": len(demo_notifications),
+            "test_accounts": [
+                {"username": "patron_test", "password": "password123", "role": "Patron"},
+                {"username": "chef_test", "password": "password123", "role": "Chef de Cuisine"}, 
+                {"username": "caisse_test", "password": "password123", "role": "Responsable Caisse"},
+                {"username": "barman_test", "password": "password123", "role": "Barman"},
+                {"username": "cuisine_test", "password": "password123", "role": "Employé Cuisine"}
+            ]
+        }
+        
+    except Exception as e:
+        return {
+            "success": False,
+            "message": f"Erreur initialisation: {str(e)}"
+        }
+
 # Include the router in the main app
 app.include_router(api_router)
 
