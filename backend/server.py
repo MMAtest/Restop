@@ -39,7 +39,8 @@ ROLES = {
     "gerant": "Gérant (Manager)", 
     "chef_cuisine": "Chef de cuisine (Head Chef)",
     "barman": "Barman (Bartender)",
-    "caissier": "Caissier (Cashier)"
+    "caissier": "Caissier (Cashier)",
+    "employe_cuisine": "Employé de Cuisine"
 }
 
 mongo_url = os.environ['MONGO_URL']
