@@ -5709,15 +5709,21 @@ function App() {
                                 </div>
                                 
                                 <div style={{display: 'flex', gap: '6px'}}>
-                                  <button 
-                                    className="button small"
-                                    onClick={() => handleEdit(produit, 'produit')}
-                                    style={{fontSize: '12px', padding: '4px 8px'}}
-                                  >
-                                    ✏️
-                                  </button>
-                                  <button 
-                                    className="button small warning"
+                                  {/* Éditer produit accordéon - MASQUÉ pour employé cuisine */}
+                                  {canEditItems() && (
+                                    <button 
+                                      className="button small"
+                                      onClick={() => handleEdit(produit, 'produit')}
+                                      style={{fontSize: '12px', padding: '4px 8px'}}
+                                    >
+                                      ✏️
+                                    </button>
+                                  )}
+                                  
+                                  {/* Archiver produit accordéon - MASQUÉ pour employé cuisine */}
+                                  {canArchiveItems() && (
+                                    <button 
+                                      className="button small warning"
                                     onClick={async () => {
                                       const reason = window.prompt(`Raison de l'archivage de "${produit.nom}" (optionnel):`);
                                       if (reason !== null) {
