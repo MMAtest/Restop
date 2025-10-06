@@ -3564,7 +3564,7 @@ function App() {
                         onClick={() => {
                           setStockViewMode('productions');
                           setStockFilterCategory('all'); // Reset filtre
-                        }}}
+                        }}
                         style={{
                           background: stockViewMode === 'productions' ? 'var(--color-primary-blue)' : 'var(--color-background-card)',
                           color: stockViewMode === 'productions' ? 'white' : 'var(--color-text-secondary)',
