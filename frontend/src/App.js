@@ -637,6 +637,84 @@ function App() {
     return currentUser?.role === 'super_admin' || currentUser?.role === 'chef_cuisine';
   };
 
+  // ✅ Fonctions pour la création de missions
+  const fetchAvailableUsers = async () => {
+    try {
+      const response = await axios.get(`${API}/admin/users`);
+      setAvailableUsers(response.data);
+    } catch (error) {
+      console.error('Erreur lors du chargement des utilisateurs:', error);
+    }
+  };
+
+  const handleCreateMission = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+
+    try {
+      const missionData = {
+        ...missionForm,
+        target_quantity: missionForm.target_quantity ? parseFloat(missionForm.target_quantity) : null,
+        due_date: missionForm.due_date ? new Date(missionForm.due_date).toISOString() : null
+      };
+
+      await axios.post(`${API}/missions?assigned_by_user_id=${currentUser.id}`, missionData);
+      
+      alert('✅ Mission créée et assignée avec succès !');
+      
+      // Rafraîchir les données
+      if (window.RoleBasedDashboard_fetchMissionsAndNotifications) {
+        window.RoleBasedDashboard_fetchMissionsAndNotifications();
+      }
+      
+      setShowMissionModal(false);
+      resetMissionForm();
+    } catch (error) {
+      console.error('Erreur lors de la création:', error);
+      alert(`❌ Erreur lors de la création: ${error.response?.data?.detail || error.message}`);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const resetMissionForm = () => {
+    setMissionForm({
+      title: '',
+      description: '',
+      type: 'preparation',
+      category: 'cuisine',
+      assigned_to_user_id: '',
+      priority: 'normale',
+      due_date: '',
+      target_quantity: '',
+      target_unit: '',
+      related_product_id: '',
+      related_preparation_id: ''
+    });
+  };
+
+  const getFilteredUsersForAssignment = () => {
+    if (!currentUser || !availableUsers) return [];
+    
+    if (currentUser.role === 'super_admin') {
+      // Patron peut assigner à tout le monde
+      return availableUsers;
+    } else if (currentUser.role === 'chef_cuisine') {
+      // Chef peut assigner à lui-même et aux cuisiniers
+      return availableUsers.filter(user => 
+        user.id === currentUser.id || 
+        user.role === 'employe_cuisine' || 
+        user.role === 'gerant'
+      );
+    }
+    
+    return [];
+  };
+
+  const canCreateMissions = () => {
+    return currentUser?.role === 'super_admin' || currentUser?.role === 'chef_cuisine';
+  };
+
   // ✅ Permissions spécifiques BAR pour le barman
   const canEditBarItems = () => {
     return currentUser?.role === 'super_admin' || 
