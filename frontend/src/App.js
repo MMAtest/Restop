@@ -296,6 +296,21 @@ function App() {
   const [produitsParCategories, setProduitsParCategories] = useState({ categories: {}, total_categories: 0, total_products: 0 });
   const [categoriesExpanded, setCategoriesExpanded] = useState({}); // Quelles catégories sont ouvertes
   const [showCategoriesView, setShowCategoriesView] = useState(false); // Vue liste normale vs accordéon
+  
+  // ✅ États pour la gestion des stocks de préparations
+  const [stocksPreparations, setStocksPreparations] = useState([]); // Stocks des préparations avec quantités
+  const [mouvementsPreparations, setMouvementsPreparations] = useState([]); // Mouvements de stock des préparations
+  const [showMovementPreparationModal, setShowMovementPreparationModal] = useState(false);
+  const [movementPreparationForm, setMovementPreparationForm] = useState({
+    preparation_id: "",
+    type: "entree", // entree, sortie, ajustement
+    quantite: "",
+    reference: "",
+    commentaire: "",
+    dlc: ""
+  });
+  const [preparationsParCategories, setPreparationsParCategories] = useState({});
+  const [categoriesPreparationsExpanded, setCategoriesPreparationsExpanded] = useState({});
   const [fournisseurForm, setFournisseurForm] = useState({
     nom: "", contact: "", email: "", telephone: "", adresse: "", couleur: "#3B82F6", logo: "", categorie: "frais", deliveryCost: 0, extraCost: 0,
     delivery_rules: {
