@@ -3680,14 +3680,15 @@ function App() {
                                   <div 
                                     style={{
                                       padding: '16px',
-                                      background: categoriesPreparationsExpanded[categoryName] ? 'var(--color-accent-green)' : '#f8fafc',
-                                      color: categoriesPreparationsExpanded[categoryName] ? 'white' : '#374151', // Gris foncé pour contraste
+                                      background: categoriesPreparationsExpanded[categoryName] ? '#059669' : '#f9fafb',
+                                      color: categoriesPreparationsExpanded[categoryName] ? '#ffffff' : '#111827',
                                       cursor: 'pointer',
                                       display: 'flex',
                                       alignItems: 'center',
                                       justifyContent: 'space-between',
                                       fontWeight: 'bold',
-                                      border: categoriesPreparationsExpanded[categoryName] ? 'none' : '1px solid #e5e7eb'
+                                      border: '1px solid #d1d5db',
+                                      fontSize: '14px'
                                     }}
                                     onClick={() => {
                                       setCategoriesPreparationsExpanded(prev => ({
