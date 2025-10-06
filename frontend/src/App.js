@@ -90,6 +90,12 @@ function App() {
   const [isDarkMode, setIsDarkMode] = useState(false); // State pour le thème (false = light par défaut)
   const [alerteStockType, setAlerteStockType] = useState("produits"); // State pour le switch Produits/Productions dans les alertes
   
+  // ✅ États pour l'authentification et les rôles
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [currentUser, setCurrentUser] = useState(null);
+  const [sessionId, setSessionId] = useState(null);
+  const [showRoleBasedDashboard, setShowRoleBasedDashboard] = useState(false);
+  
   // États pour la sélection de dates et données filtrées
   const [selectedDateRange, setSelectedDateRange] = useState(null);
   const [selectedProductionCategory, setSelectedProductionCategory] = useState(''); // Filtre pour les top productions
