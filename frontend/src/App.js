@@ -3681,7 +3681,7 @@ function App() {
                                     style={{
                                       padding: '16px',
                                       background: categoriesPreparationsExpanded[categoryName] ? 'var(--color-accent-green)' : 'var(--color-background-secondary)',
-                                      color: categoriesPreparationsExpanded[categoryName] ? 'white' : 'var(--color-text-primary)',
+                                      color: categoriesPreparationsExpanded[categoryName] ? 'white' : '#1f2937', // Forcer couleur foncée pour visibilité
                                       cursor: 'pointer',
                                       display: 'flex',
                                       alignItems: 'center',
