@@ -2010,10 +2010,12 @@ function App() {
       <div className="content-wrapper">
         <div id="dashboard" className={`wireframe-section ${activeTab === "dashboard" ? "active" : ""}`}>
           
-          {/* Sélecteur de période - visible sur tous les onglets */}
-          <DateRangePicker 
-            onDateRangeChange={handleDateRangeChange}
-          />
+          {/* Sélecteur de période - MASQUÉ pour employé cuisine */}
+          {currentUser?.role !== 'employe_cuisine' && (
+            <DateRangePicker 
+              onDateRangeChange={handleDateRangeChange}
+            />
+          )}
 
           {/* Section Missions intégrée (visible selon le rôle) */}
           {currentUser && (
