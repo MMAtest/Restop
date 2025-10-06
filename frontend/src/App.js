@@ -544,12 +544,12 @@ function App() {
     setIsAuthenticated(true);
     
     // Décider quelle interface afficher selon le rôle
-    if (user.role === 'super_admin' || user.role === 'chef_cuisine') {
-      // Patron et Chef voient l'interface complète + leur dashboard de missions
-      setShowRoleBasedDashboard(false); // Interface complète
+    if (user.role === 'super_admin') {
+      // PATRON : Accès complet à l'interface originale + dashboard missions
+      setShowRoleBasedDashboard(false); // Interface complète ResTop
     } else {
-      // Autres rôles voient prioritairement leur dashboard de missions
-      setShowRoleBasedDashboard(true); // Dashboard spécifique au rôle
+      // TOUS LES AUTRES (y compris Chef) : Dashboard spécifique au rôle uniquement
+      setShowRoleBasedDashboard(true); // Dashboard limité selon rôle
     }
   };
 
@@ -567,11 +567,11 @@ function App() {
           setSessionId(session.session_id);
           setIsAuthenticated(true);
           
-          // Déterminer l'interface selon le rôle
-          if (session.user.role === 'super_admin' || session.user.role === 'chef_cuisine') {
-            setShowRoleBasedDashboard(false);
+          // Seul le PATRON a accès à l'interface complète
+          if (session.user.role === 'super_admin') {
+            setShowRoleBasedDashboard(false); // Interface complète pour PATRON seulement
           } else {
-            setShowRoleBasedDashboard(true);
+            setShowRoleBasedDashboard(true); // Dashboard spécifique pour tous les autres
           }
         } else {
           // Session expirée
