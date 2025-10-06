@@ -3660,13 +3660,19 @@ function App() {
                                 </div>
                               </div>
                               <div className="item-actions">
-                                <button className="button small" onClick={() => handleEdit(production, 'recette')}>✏️ Éditer</button>
-                                <button 
-                                  className="button small warning" 
-                                  onClick={async () => {
-                                    const reason = window.prompt(`Raison de l'archivage de "${production.nom}" (optionnel):`);
-                                    if (reason !== null) {
-                                      const success = await archiveItem(production.id, 'production', reason || null);
+                                {/* Éditer production - MASQUÉ pour employé cuisine */}
+                                {canEditItems() && (
+                                  <button className="button small" onClick={() => handleEdit(production, 'recette')}>✏️ Éditer</button>
+                                )}
+                                
+                                {/* Archiver production - MASQUÉ pour employé cuisine */}
+                                {canArchiveItems() && (
+                                  <button 
+                                    className="button small warning" 
+                                    onClick={async () => {
+                                      const reason = window.prompt(`Raison de l'archivage de "${production.nom}" (optionnel):`);
+                                      if (reason !== null) {
+                                        const success = await archiveItem(production.id, 'production', reason || null);
                                       if (success) {
                                         alert(`${production.nom} archivé avec succès !`);
                                       } else {
