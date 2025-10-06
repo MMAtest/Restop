@@ -1548,6 +1548,20 @@ function App() {
       setIsDarkMode(false);
     }
   }, []);
+  
+  // Initialiser l'onglet OCR par défaut selon le rôle utilisateur
+  useEffect(() => {
+    if (currentUser) {
+      // Si l'utilisateur peut accéder aux tickets Z, définir comme onglet par défaut
+      if (canAccessOcrTicketsZ()) {
+        setActiveOcrTab('tickets-z');
+      } else {
+        // Sinon, rester sur factures
+        setActiveOcrTab('factures');
+      }
+    }
+  }, [currentUser]);
+  
   const handleVoirAlertes = () => {
     const stocksCritiques = stocks.filter(stock => {
       const produit = produits.find(p => p.id === stock.produit_id);
