@@ -543,14 +543,9 @@ function App() {
     setSessionId(session_id);
     setIsAuthenticated(true);
     
-    // Décider quelle interface afficher selon le rôle
-    if (user.role === 'super_admin') {
-      // PATRON : Accès complet à l'interface originale + dashboard missions
-      setShowRoleBasedDashboard(false); // Interface complète ResTop
-    } else {
-      // TOUS LES AUTRES (y compris Chef) : Dashboard spécifique au rôle uniquement
-      setShowRoleBasedDashboard(true); // Dashboard limité selon rôle
-    }
+    // TOUT LE MONDE utilise l'interface normale ResTop
+    // Les restrictions se feront sur les onglets individuels
+    setShowRoleBasedDashboard(false);
   };
 
   const checkSession = async () => {
@@ -567,12 +562,8 @@ function App() {
           setSessionId(session.session_id);
           setIsAuthenticated(true);
           
-          // Seul le PATRON a accès à l'interface complète
-          if (session.user.role === 'super_admin') {
-            setShowRoleBasedDashboard(false); // Interface complète pour PATRON seulement
-          } else {
-            setShowRoleBasedDashboard(true); // Dashboard spécifique pour tous les autres
-          }
+          // TOUT LE MONDE utilise l'interface normale
+          setShowRoleBasedDashboard(false);
         } else {
           // Session expirée
           localStorage.removeItem('user_session');
