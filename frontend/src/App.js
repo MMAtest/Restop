@@ -1959,6 +1959,20 @@ function App() {
                 👑 Utilisateurs
               </button>
               
+              {/* Bouton pour basculer vers dashboard missions (chef/patron) */}
+              {(currentUser?.role === 'super_admin' || currentUser?.role === 'chef_cuisine') && (
+                <button 
+                  className="button secondary" 
+                  onClick={() => {
+                    setShowRoleBasedDashboard(true);
+                    setShowBurgerMenu(false);
+                  }}
+                  style={{width: '100%', marginBottom: '8px'}}
+                >
+                  📋 Mes Missions
+                </button>
+              )}
+              
               <button 
                 className="button secondary" 
                 onClick={() => {
