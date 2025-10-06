@@ -6262,13 +6262,16 @@ function App() {
           <div className="bottom-nav-label">Stock</div>
         </button>
         
-        <button 
-          className={`bottom-nav-item ${activeTab === "production" ? "active" : ""}`}
-          onClick={() => setActiveTab("production")}
-        >
-          <div className="bottom-nav-icon">🍳</div>
-          <div className="bottom-nav-label">Production</div>
-        </button>
+        {/* Production - MASQUÉ pour employé cuisine */}
+        {currentUser?.role !== 'employe_cuisine' && (
+          <button 
+            className={`bottom-nav-item ${activeTab === "production" ? "active" : ""}`}
+            onClick={() => setActiveTab("production")}
+          >
+            <div className="bottom-nav-icon">🍳</div>
+            <div className="bottom-nav-label">Production</div>
+          </button>
+        )}
         
         {/* Orders - Accès limité au Chef et Patron */}
         {(currentUser?.role === 'super_admin' || currentUser?.role === 'chef_cuisine') && (
