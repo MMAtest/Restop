@@ -6322,7 +6322,7 @@ function App() {
 
       {/* PURCHASE ORDERS */}
       <div id="orders" className={`wireframe-section ${activeTab === "orders" ? "active" : ""}`}>
-        <PurchaseOrderPage />
+        <PurchaseOrderPage currentUser={currentUser} />
       </div>
 
       {/* OCR */}
