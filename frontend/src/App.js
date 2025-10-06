@@ -1967,8 +1967,8 @@ function App() {
         </div>
       </div>
 
-      {/* Top Navigation Tabs (Analytics) */}
-      {activeTab === "dashboard" && (
+      {/* Top Navigation Tabs (Analytics) - UNIQUEMENT POUR LE PATRON */}
+      {activeTab === "dashboard" && currentUser?.role === 'super_admin' && (
         <div className="top-nav-tabs">
           <button 
             className={`top-nav-tab ${activeDashboardTab === "ventes" ? "active" : ""}`}
