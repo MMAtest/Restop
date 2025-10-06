@@ -3249,7 +3249,9 @@ function App() {
                 {/* Liste des produits en stock avec recherche et filtres */}
                 <div className="item-list">
                   <div className="section-title">
-                    📋 {stockViewMode === 'produits' ? 'Produits en Stock' : 'Stock par Production'}
+                    📋 {stockViewMode === 'produits' ? 'Produits en Stock' : 
+                         stockViewMode === 'preparations' ? 'Préparations en Stock' : 
+                         'Stock par Production'}
                     
                     {/* Toggle View Mode */}
                     <div style={{display: 'flex', gap: '5px', marginLeft: '15px', display: 'inline-flex'}}>
@@ -3264,6 +3266,18 @@ function App() {
                         }}
                       >
                         📦 Par Produit
+                      </button>
+                      <button 
+                        className="button small"
+                        onClick={() => setStockViewMode('preparations')}
+                        style={{
+                          background: stockViewMode === 'preparations' ? 'var(--color-primary-blue)' : 'var(--color-background-card)',
+                          color: stockViewMode === 'preparations' ? 'white' : 'var(--color-text-secondary)',
+                          padding: '4px 8px',
+                          fontSize: '12px'
+                        }}
+                      >
+                        🔪 Par Préparation
                       </button>
                       <button 
                         className="button small"
