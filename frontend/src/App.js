@@ -1959,8 +1959,8 @@ function App() {
                 👑 Utilisateurs
               </button>
               
-              {/* Bouton pour basculer vers dashboard missions (chef/patron) */}
-              {(currentUser?.role === 'super_admin' || currentUser?.role === 'chef_cuisine') && (
+              {/* Bouton pour basculer vers dashboard missions (PATRON seulement) */}
+              {currentUser?.role === 'super_admin' && (
                 <button 
                   className="button secondary" 
                   onClick={() => {
