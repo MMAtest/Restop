@@ -2085,8 +2085,8 @@ function App() {
             />
           )}
 
-          {/* Analytics et données business - MASQUÉS pour employé cuisine ET barman */}
-          {currentUser?.role !== 'employe_cuisine' && currentUser?.role !== 'barman' && (
+          {/* Analytics et données business - MASQUÉS pour employé cuisine, barman ET caissier */}
+          {currentUser?.role !== 'employe_cuisine' && currentUser?.role !== 'barman' && currentUser?.role !== 'caissier' && (
             <>
               {/* ONGLET VENTES */}
               {activeDashboardTab === "ventes" && (
