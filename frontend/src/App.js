@@ -701,11 +701,13 @@ function App() {
       // Patron peut assigner à tout le monde
       return availableUsers;
     } else if (currentUser.role === 'chef_cuisine') {
-      // Chef peut assigner à lui-même et aux cuisiniers
+      // Chef peut assigner à tout le monde
+      return availableUsers;
+    } else if (currentUser.role === 'caissier') {
+      // Caissier peut assigner au barman et à d'autres caissiers
       return availableUsers.filter(user => 
-        user.id === currentUser.id || 
-        user.role === 'employe_cuisine' || 
-        user.role === 'gerant'
+        user.role === 'barman' || 
+        user.role === 'caissier'
       );
     }
     
@@ -713,7 +715,9 @@ function App() {
   };
 
   const canCreateMissions = () => {
-    return currentUser?.role === 'super_admin' || currentUser?.role === 'chef_cuisine';
+    return currentUser?.role === 'super_admin' || 
+           currentUser?.role === 'chef_cuisine' || 
+           currentUser?.role === 'caissier';
   };
 
   // ✅ Permissions spécifiques BAR pour le barman
