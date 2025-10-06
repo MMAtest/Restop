@@ -5209,7 +5209,7 @@ async def init_demo_missions_and_users():
                 username="cuisine_test",
                 email="cuisine@table-augustine.fr",
                 password_hash="hashed_password123", 
-                role="gerant",
+                role="employe_cuisine",
                 full_name="Lucas Petit (Employé Cuisine)",
                 is_active=True
             )
