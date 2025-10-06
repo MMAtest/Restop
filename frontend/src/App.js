@@ -1951,6 +1951,17 @@ function App() {
               >
                 {isDarkMode ? '☀️ Mode Clair' : '🌙 Mode Sombre'}
               </button>
+              
+              {/* Bouton déconnexion */}
+              {currentUser && (
+                <button 
+                  className="button danger" 
+                  onClick={logout}
+                  style={{width: '100%', marginBottom: '8px'}}
+                >
+                  🚪 Déconnexion
+                </button>
+              )}
             </div>
           )}
         </div>
