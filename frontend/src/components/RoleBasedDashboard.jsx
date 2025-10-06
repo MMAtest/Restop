@@ -225,11 +225,25 @@ const RoleBasedDashboard = ({ user, sessionId }) => {
           </div>
         );
 
-      case 'chef_cuisine': // CHEF DE CUISINE
+      case 'chef_cuisine': // CHEF DE CUISINE - ACCÈS LIMITÉ
         return (
           <div>
+            {/* Message d'information sur les restrictions */}
+            <div style={{
+              background: '#eff6ff',
+              border: '1px solid #93c5fd',
+              borderRadius: '8px',
+              padding: '12px',
+              marginBottom: '20px',
+              fontSize: '14px',
+              color: '#1e40af'
+            }}>
+              👨‍🍳 <strong>Interface Chef de Cuisine</strong> - Accès aux missions, production et stocks. 
+              Pas d'accès aux analytics business et OCR tickets Z.
+            </div>
+
             <div style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '20px', marginBottom: '24px'}}>
-              {/* Todo List prioritaire */}
+              {/* Mes tâches prioritaires */}
               <div style={{background: 'white', borderRadius: '12px', padding: '20px', border: '1px solid #e5e7eb'}}>
                 <h3 style={{fontSize: '18px', fontWeight: 'bold', color: '#059669', marginBottom: '16px'}}>
                   📋 Mes Tâches ({missions.assigned_to_me?.filter(m => m.status === 'en_cours').length || 0})
@@ -278,10 +292,10 @@ const RoleBasedDashboard = ({ user, sessionId }) => {
                 )}
               </div>
 
-              {/* Équipe et missions données */}
+              {/* Gestion de l'équipe cuisine */}
               <div style={{background: 'white', borderRadius: '12px', padding: '20px', border: '1px solid #e5e7eb'}}>
-                <h3 style={{fontSize: '18px', fontWeight: 'bold', color: '#2563eb', marginBottom: '16px'}}>
-                  👥 Équipe & Missions ({missions.created_by_me?.length || 0})
+                <h3 style={{fontSize: '18px', fontWeight: 'bold', color: '#ea580c', marginBottom: '16px'}}>
+                  👥 Équipe Cuisine ({missions.created_by_me?.length || 0})
                 </h3>
                 {missions.created_by_me?.slice(0, 4).map(mission => (
                   <div key={mission.id} style={{
@@ -322,6 +336,56 @@ const RoleBasedDashboard = ({ user, sessionId }) => {
                     Aucune mission donnée
                   </div>
                 )}
+              </div>
+            </div>
+
+            {/* Accès limité aux fonctions production/stock */}
+            <div style={{background: 'white', borderRadius: '12px', padding: '20px', border: '1px solid #e5e7eb'}}>
+              <h3 style={{fontSize: '18px', fontWeight: 'bold', color: '#1f2937', marginBottom: '16px'}}>
+                🔧 Accès Autorisés - Chef de Cuisine
+              </h3>
+              
+              <div style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '12px'}}>
+                {[
+                  { icon: '🥘', label: 'Productions', desc: 'Gestion recettes', color: '#059669' },
+                  { icon: '📦', label: 'Stocks', desc: 'Gestion inventaire', color: '#2563eb' },
+                  { icon: '🔪', label: 'Préparations', desc: 'Découpes & mise en place', color: '#ea580c' },
+                  { icon: '🚚', label: 'Fournisseurs', desc: 'Contacts & livraisons', color: '#7c3aed' },
+                  { icon: '🛒', label: 'Commandes', desc: 'Suivi des commandes', color: '#dc2626' },
+                  { icon: '👥', label: 'Équipe', desc: 'Missions cuisiniers', color: '#059669' }
+                ].map((access, index) => (
+                  <div key={index} style={{
+                    padding: '12px',
+                    background: '#f9fafb',
+                    borderRadius: '6px',
+                    border: '1px solid #e5e7eb',
+                    textAlign: 'center'
+                  }}>
+                    <div style={{fontSize: '24px', marginBottom: '4px'}}>{access.icon}</div>
+                    <div style={{fontSize: '12px', fontWeight: '600', color: access.color, marginBottom: '2px'}}>
+                      {access.label}
+                    </div>
+                    <div style={{fontSize: '10px', color: '#6b7280'}}>
+                      {access.desc}
+                    </div>
+                  </div>
+                ))}
+              </div>
+              
+              {/* Restrictions explicites */}
+              <div style={{
+                marginTop: '16px',
+                padding: '12px',
+                background: '#fef2f2',
+                borderRadius: '6px',
+                border: '1px solid #fecaca'
+              }}>
+                <div style={{fontSize: '12px', color: '#dc2626', fontWeight: '600', marginBottom: '4px'}}>
+                  🚫 Accès restreints :
+                </div>
+                <div style={{fontSize: '11px', color: '#991b1b'}}>
+                  • Analytics & chiffres d'affaires • OCR Tickets Z • Gestion utilisateurs • Vue business complète
+                </div>
               </div>
             </div>
           </div>
