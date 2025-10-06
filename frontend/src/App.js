@@ -6303,8 +6303,8 @@ function App() {
           </button>
         )}
         
-        {/* Orders - Accès limité au Chef et Patron */}
-        {(currentUser?.role === 'super_admin' || currentUser?.role === 'chef_cuisine') && (
+        {/* Orders - Accès Chef, Patron ET Employé Cuisine (mais limité historique) */}
+        {(currentUser?.role === 'super_admin' || currentUser?.role === 'chef_cuisine' || currentUser?.role === 'employe_cuisine') && (
           <button 
             className={`bottom-nav-item ${activeTab === "orders" ? "active" : ""}`}
             onClick={() => setActiveTab("orders")}
