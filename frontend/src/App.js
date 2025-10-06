@@ -609,7 +609,7 @@ function App() {
   };
 
   const canAccessRepartition = () => {
-    return currentUser?.role !== 'employe_cuisine';
+    return currentUser?.role !== 'employe_cuisine' && currentUser?.role !== 'barman';
   };
 
   const canAccessAnalytics = () => {
