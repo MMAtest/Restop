@@ -5912,6 +5912,18 @@ Nombre de couverts: 32"""
         
         self.test_user_management_rbac_apis()
         
+        # 🆕 NOUVEAUX TESTS AUTHENTIFICATION ET GESTION DES MISSIONS
+        print("\n" + "="*60)
+        print("🆕 TESTS AUTHENTIFICATION ET GESTION DES MISSIONS")
+        print("="*60)
+        
+        self.test_demo_init_missions_users()
+        self.test_authentication_system()
+        self.test_mission_management_system()
+        self.test_notification_system()
+        self.test_role_based_permissions()
+        self.test_mission_workflow_complete()
+        
         # 🔥 TEST SPÉCIFIQUE: OCR AVEC ITEMS INCONNUS (NOUVEAUX)
         print("\n" + "="*60)
         print("🔥 TEST SPÉCIFIQUE: OCR AVEC ITEMS INCONNUS (NOUVEAUX)")
