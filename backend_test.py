@@ -5284,6 +5284,534 @@ Nombre de couverts: 32"""
             print(f"Erreur création image: {e}")
             return b"PNG_MOCK_CONTENT_FOR_TEST"
 
+    def test_demo_init_missions_users(self):
+        """Test initialisation des données de démonstration avec utilisateurs et missions"""
+        print("\n=== TEST INITIALISATION DONNÉES DÉMONSTRATION MISSIONS & UTILISATEURS ===")
+        
+        try:
+            response = requests.post(f"{BASE_URL}/demo/init-missions-users", headers=HEADERS)
+            if response.status_code == 200:
+                result = response.json()
+                if "succès" in result.get("message", "").lower():
+                    self.log_result("POST /demo/init-missions-users", True, 
+                                  f"Données créées: {result.get('users_created', 0)} utilisateurs, "
+                                  f"{result.get('missions_created', 0)} missions, {result.get('notifications_created', 0)} notifications")
+                    
+                    # Vérifier que les 5 utilisateurs test ont été créés
+                    expected_users = ["patron_test", "chef_test", "caisse_test", "barman_test", "cuisine_test"]
+                    for username in expected_users:
+                        # Tenter de se connecter avec chaque utilisateur
+                        login_data = {"username": username, "password": "password123"}
+                        login_response = requests.post(f"{BASE_URL}/auth/login", json=login_data, headers=HEADERS)
+                        if login_response.status_code == 200:
+                            login_result = login_response.json()
+                            if login_result.get("success"):
+                                self.test_users[username] = login_result.get("user")
+                                self.log_result(f"Utilisateur {username} créé", True, f"Rôle: {login_result['user']['role']}")
+                            else:
+                                self.log_result(f"Utilisateur {username} créé", False, "Login échoué")
+                        else:
+                            self.log_result(f"Utilisateur {username} créé", False, f"Erreur login: {login_response.status_code}")
+                    
+                    # Vérifier que des missions ont été créées
+                    missions_response = requests.get(f"{BASE_URL}/missions")
+                    if missions_response.status_code == 200:
+                        missions = missions_response.json()
+                        if len(missions) > 0:
+                            self.log_result("Missions démo créées", True, f"{len(missions)} missions créées")
+                            self.created_missions = missions[:3]  # Garder les 3 premières pour les tests
+                        else:
+                            self.log_result("Missions démo créées", False, "Aucune mission trouvée")
+                    
+                else:
+                    self.log_result("POST /demo/init-missions-users", False, f"Message inattendu: {result.get('message')}")
+            else:
+                self.log_result("POST /demo/init-missions-users", False, f"Erreur {response.status_code}", response.text)
+        except Exception as e:
+            self.log_result("POST /demo/init-missions-users", False, "Exception", str(e))
+
+    def test_authentication_system(self):
+        """Test complet du système d'authentification"""
+        print("\n=== TEST SYSTÈME D'AUTHENTIFICATION ===")
+        
+        # Test 1: Login avec utilisateur valide
+        if "patron_test" in self.test_users:
+            login_data = {"username": "patron_test", "password": "password123"}
+            try:
+                response = requests.post(f"{BASE_URL}/auth/login", json=login_data, headers=HEADERS)
+                if response.status_code == 200:
+                    result = response.json()
+                    if result.get("success") and result.get("session_id"):
+                        session_id = result["session_id"]
+                        self.test_sessions["patron_test"] = session_id
+                        user_data = result.get("user", {})
+                        self.log_result("POST /auth/login (patron)", True, 
+                                      f"Login réussi - Rôle: {user_data.get('role')}, Session: {session_id[:8]}...")
+                        
+                        # Test 2: Vérification de session
+                        session_response = requests.get(f"{BASE_URL}/auth/session/{session_id}")
+                        if session_response.status_code == 200:
+                            session_data = session_response.json()
+                            if session_data.get("username") == "patron_test":
+                                self.log_result("GET /auth/session/{session_id}", True, 
+                                              f"Session valide pour {session_data.get('username')}")
+                            else:
+                                self.log_result("GET /auth/session/{session_id}", False, "Données session incorrectes")
+                        else:
+                            self.log_result("GET /auth/session/{session_id}", False, f"Erreur {session_response.status_code}")
+                        
+                        # Test 3: Logout
+                        logout_data = {"session_id": session_id}
+                        logout_response = requests.post(f"{BASE_URL}/auth/logout", json=logout_data, headers=HEADERS)
+                        if logout_response.status_code == 200:
+                            logout_result = logout_response.json()
+                            if "déconnecté" in logout_result.get("message", "").lower():
+                                self.log_result("POST /auth/logout", True, "Déconnexion réussie")
+                                
+                                # Vérifier que la session n'est plus valide
+                                verify_response = requests.get(f"{BASE_URL}/auth/session/{session_id}")
+                                if verify_response.status_code == 404:
+                                    self.log_result("Validation logout", True, "Session invalidée après logout")
+                                else:
+                                    self.log_result("Validation logout", False, "Session encore active après logout")
+                            else:
+                                self.log_result("POST /auth/logout", False, "Message logout incorrect")
+                        else:
+                            self.log_result("POST /auth/logout", False, f"Erreur logout: {logout_response.status_code}")
+                    else:
+                        self.log_result("POST /auth/login (patron)", False, "Login échoué ou session manquante")
+                else:
+                    self.log_result("POST /auth/login (patron)", False, f"Erreur {response.status_code}", response.text)
+            except Exception as e:
+                self.log_result("POST /auth/login (patron)", False, "Exception", str(e))
+        
+        # Test 4: Login avec tous les utilisateurs test
+        test_users = ["chef_test", "caisse_test", "barman_test", "cuisine_test"]
+        for username in test_users:
+            login_data = {"username": username, "password": "password123"}
+            try:
+                response = requests.post(f"{BASE_URL}/auth/login", json=login_data, headers=HEADERS)
+                if response.status_code == 200:
+                    result = response.json()
+                    if result.get("success"):
+                        self.test_sessions[username] = result.get("session_id")
+                        user_role = result.get("user", {}).get("role", "unknown")
+                        self.log_result(f"Login {username}", True, f"Rôle: {user_role}")
+                    else:
+                        self.log_result(f"Login {username}", False, "Login échoué")
+                else:
+                    self.log_result(f"Login {username}", False, f"Erreur {response.status_code}")
+            except Exception as e:
+                self.log_result(f"Login {username}", False, "Exception", str(e))
+        
+        # Test 5: Login avec identifiants incorrects
+        try:
+            bad_login = {"username": "inexistant", "password": "mauvais"}
+            response = requests.post(f"{BASE_URL}/auth/login", json=bad_login, headers=HEADERS)
+            if response.status_code == 401:
+                self.log_result("Login identifiants incorrects", True, "Rejet approprié des mauvais identifiants")
+            else:
+                self.log_result("Login identifiants incorrects", False, f"Code retour inattendu: {response.status_code}")
+        except Exception as e:
+            self.log_result("Login identifiants incorrects", False, "Exception", str(e))
+
+    def test_mission_management_system(self):
+        """Test complet du système de gestion des missions"""
+        print("\n=== TEST SYSTÈME GESTION DES MISSIONS ===")
+        
+        # S'assurer qu'on a des utilisateurs connectés
+        if not self.test_sessions:
+            self.log_result("Mission Management", False, "Pas de sessions utilisateur disponibles")
+            return
+        
+        patron_session = self.test_sessions.get("patron_test")
+        chef_session = self.test_sessions.get("chef_test")
+        cuisine_session = self.test_sessions.get("cuisine_test")
+        
+        if not patron_session:
+            self.log_result("Mission Management", False, "Session patron non disponible")
+            return
+        
+        # Test 1: Création de mission par le patron
+        mission_data = {
+            "title": "Vérification stock légumes",
+            "description": "Contrôler les stocks de légumes frais et noter les quantités",
+            "type": "stock_check",
+            "category": "stock",
+            "assigned_to_user_id": self.test_users.get("cuisine_test", {}).get("id", ""),
+            "priority": "haute",
+            "target_quantity": 15.0,
+            "target_unit": "kg"
+        }
+        
+        if mission_data["assigned_to_user_id"]:
+            try:
+                # Ajouter l'ID de l'assignateur
+                mission_data["assigned_by_user_id"] = self.test_users.get("patron_test", {}).get("id", "")
+                mission_data["assigned_to_name"] = self.test_users.get("cuisine_test", {}).get("full_name", "Employé Cuisine")
+                mission_data["assigned_by_name"] = self.test_users.get("patron_test", {}).get("full_name", "Patron")
+                
+                response = requests.post(f"{BASE_URL}/missions", json=mission_data, headers=HEADERS)
+                if response.status_code == 200:
+                    created_mission = response.json()
+                    mission_id = created_mission["id"]
+                    self.created_missions.append(created_mission)
+                    self.log_result("POST /missions (création)", True, 
+                                  f"Mission créée: {created_mission['title']} - Priorité: {created_mission['priority']}")
+                    
+                    # Test 2: Récupération de toutes les missions
+                    missions_response = requests.get(f"{BASE_URL}/missions")
+                    if missions_response.status_code == 200:
+                        missions = missions_response.json()
+                        if len(missions) > 0:
+                            self.log_result("GET /missions", True, f"{len(missions)} missions récupérées")
+                        else:
+                            self.log_result("GET /missions", False, "Aucune mission trouvée")
+                    else:
+                        self.log_result("GET /missions", False, f"Erreur {missions_response.status_code}")
+                    
+                    # Test 3: Récupération missions par utilisateur
+                    if cuisine_session:
+                        user_id = self.test_users.get("cuisine_test", {}).get("id")
+                        if user_id:
+                            user_missions_response = requests.get(f"{BASE_URL}/missions/by-user/{user_id}")
+                            if user_missions_response.status_code == 200:
+                                user_missions = user_missions_response.json()
+                                assigned_count = user_missions.get("total_assigned", 0)
+                                created_count = user_missions.get("total_created", 0)
+                                self.log_result("GET /missions/by-user/{user_id}", True, 
+                                              f"Missions assignées: {assigned_count}, créées: {created_count}")
+                            else:
+                                self.log_result("GET /missions/by-user/{user_id}", False, 
+                                              f"Erreur {user_missions_response.status_code}")
+                    
+                    # Test 4: Mise à jour mission - Employé marque terminée
+                    update_data = {
+                        "status": "terminee_attente",
+                        "employee_notes": "Stock vérifié, 12kg de légumes disponibles"
+                    }
+                    
+                    update_response = requests.put(f"{BASE_URL}/missions/{mission_id}", 
+                                                 json=update_data, headers=HEADERS)
+                    if update_response.status_code == 200:
+                        updated_mission = update_response.json()
+                        if updated_mission["status"] == "terminee_attente":
+                            self.log_result("PUT /missions/{id} (employé termine)", True, 
+                                          f"Mission marquée terminée par employé")
+                            
+                            # Test 5: Chef valide la mission
+                            validation_data = {
+                                "status": "validee",
+                                "validation_notes": "Travail bien fait, stock conforme"
+                            }
+                            
+                            validation_response = requests.put(f"{BASE_URL}/missions/{mission_id}", 
+                                                             json=validation_data, headers=HEADERS)
+                            if validation_response.status_code == 200:
+                                validated_mission = validation_response.json()
+                                if validated_mission["status"] == "validee":
+                                    self.log_result("PUT /missions/{id} (chef valide)", True, 
+                                                  "Mission validée par le chef")
+                                else:
+                                    self.log_result("PUT /missions/{id} (chef valide)", False, 
+                                                  "Statut non mis à jour")
+                            else:
+                                self.log_result("PUT /missions/{id} (chef valide)", False, 
+                                              f"Erreur validation: {validation_response.status_code}")
+                        else:
+                            self.log_result("PUT /missions/{id} (employé termine)", False, 
+                                          "Statut non mis à jour")
+                    else:
+                        self.log_result("PUT /missions/{id} (employé termine)", False, 
+                                      f"Erreur mise à jour: {update_response.status_code}")
+                    
+                else:
+                    self.log_result("POST /missions (création)", False, f"Erreur {response.status_code}", response.text)
+            except Exception as e:
+                self.log_result("POST /missions (création)", False, "Exception", str(e))
+        else:
+            self.log_result("POST /missions (création)", False, "ID utilisateur cuisine non disponible")
+        
+        # Test 6: Filtrage des missions par statut
+        try:
+            status_filter_response = requests.get(f"{BASE_URL}/missions?status=validee")
+            if status_filter_response.status_code == 200:
+                filtered_missions = status_filter_response.json()
+                validated_missions = [m for m in filtered_missions if m["status"] == "validee"]
+                if len(validated_missions) == len(filtered_missions):
+                    self.log_result("GET /missions?status=validee", True, 
+                                  f"{len(validated_missions)} missions validées trouvées")
+                else:
+                    self.log_result("GET /missions?status=validee", False, 
+                                  "Filtrage par statut incorrect")
+            else:
+                self.log_result("GET /missions?status=validee", False, 
+                              f"Erreur filtrage: {status_filter_response.status_code}")
+        except Exception as e:
+            self.log_result("GET /missions?status=validee", False, "Exception", str(e))
+
+    def test_notification_system(self):
+        """Test complet du système de notifications"""
+        print("\n=== TEST SYSTÈME NOTIFICATIONS ===")
+        
+        if not self.test_users:
+            self.log_result("Notification System", False, "Pas d'utilisateurs test disponibles")
+            return
+        
+        # Test 1: Récupération des notifications pour un utilisateur
+        cuisine_user = self.test_users.get("cuisine_test")
+        if cuisine_user:
+            user_id = cuisine_user.get("id")
+            try:
+                response = requests.get(f"{BASE_URL}/notifications/{user_id}")
+                if response.status_code == 200:
+                    notifications = response.json()
+                    if isinstance(notifications, list):
+                        self.log_result("GET /notifications/{user_id}", True, 
+                                      f"{len(notifications)} notifications récupérées")
+                        
+                        # Stocker quelques notifications pour les tests suivants
+                        if len(notifications) > 0:
+                            self.created_notifications = notifications[:2]
+                            
+                            # Test 2: Marquer une notification comme lue
+                            first_notification = notifications[0]
+                            notification_id = first_notification["id"]
+                            
+                            read_response = requests.put(f"{BASE_URL}/notifications/{notification_id}/read", 
+                                                       headers=HEADERS)
+                            if read_response.status_code == 200:
+                                read_result = read_response.json()
+                                if read_result.get("read") == True:
+                                    self.log_result("PUT /notifications/{id}/read", True, 
+                                                  "Notification marquée comme lue")
+                                else:
+                                    self.log_result("PUT /notifications/{id}/read", False, 
+                                                  "Statut 'read' non mis à jour")
+                            else:
+                                self.log_result("PUT /notifications/{id}/read", False, 
+                                              f"Erreur {read_response.status_code}")
+                        else:
+                            self.log_result("Notifications disponibles", False, 
+                                          "Aucune notification pour tester le marquage")
+                    else:
+                        self.log_result("GET /notifications/{user_id}", False, 
+                                      "Format de réponse incorrect")
+                else:
+                    self.log_result("GET /notifications/{user_id}", False, 
+                                  f"Erreur {response.status_code}", response.text)
+            except Exception as e:
+                self.log_result("GET /notifications/{user_id}", False, "Exception", str(e))
+        
+        # Test 3: Vérifier les notifications pour différents utilisateurs
+        for username, user_data in self.test_users.items():
+            if username != "cuisine_test":  # Déjà testé ci-dessus
+                user_id = user_data.get("id")
+                if user_id:
+                    try:
+                        response = requests.get(f"{BASE_URL}/notifications/{user_id}")
+                        if response.status_code == 200:
+                            notifications = response.json()
+                            self.log_result(f"Notifications {username}", True, 
+                                          f"{len(notifications)} notifications")
+                        else:
+                            self.log_result(f"Notifications {username}", False, 
+                                          f"Erreur {response.status_code}")
+                    except Exception as e:
+                        self.log_result(f"Notifications {username}", False, "Exception", str(e))
+
+    def test_role_based_permissions(self):
+        """Test des permissions basées sur les rôles"""
+        print("\n=== TEST PERMISSIONS BASÉES SUR LES RÔLES ===")
+        
+        if not self.test_users:
+            self.log_result("Role-based Permissions", False, "Pas d'utilisateurs test disponibles")
+            return
+        
+        # Test 1: Patron peut assigner des missions à tout le monde
+        patron_user = self.test_users.get("patron_test")
+        if patron_user:
+            # Créer une mission du patron vers le barman
+            barman_user = self.test_users.get("barman_test")
+            if barman_user:
+                mission_data = {
+                    "title": "Inventaire bar",
+                    "description": "Compter toutes les bouteilles en stock",
+                    "type": "inventory",
+                    "category": "bar",
+                    "assigned_to_user_id": barman_user["id"],
+                    "assigned_by_user_id": patron_user["id"],
+                    "assigned_to_name": barman_user.get("full_name", "Barman"),
+                    "assigned_by_name": patron_user.get("full_name", "Patron"),
+                    "priority": "normale"
+                }
+                
+                try:
+                    response = requests.post(f"{BASE_URL}/missions", json=mission_data, headers=HEADERS)
+                    if response.status_code == 200:
+                        self.log_result("Patron → Barman mission", True, 
+                                      "Patron peut assigner mission au barman")
+                    else:
+                        self.log_result("Patron → Barman mission", False, 
+                                      f"Erreur {response.status_code}")
+                except Exception as e:
+                    self.log_result("Patron → Barman mission", False, "Exception", str(e))
+        
+        # Test 2: Chef peut assigner des missions aux cuisiniers
+        chef_user = self.test_users.get("chef_test")
+        cuisine_user = self.test_users.get("cuisine_test")
+        if chef_user and cuisine_user:
+            mission_data = {
+                "title": "Préparation légumes",
+                "description": "Préparer les légumes pour le service du soir",
+                "type": "preparation",
+                "category": "cuisine",
+                "assigned_to_user_id": cuisine_user["id"],
+                "assigned_by_user_id": chef_user["id"],
+                "assigned_to_name": cuisine_user.get("full_name", "Cuisinier"),
+                "assigned_by_name": chef_user.get("full_name", "Chef"),
+                "priority": "haute"
+            }
+            
+            try:
+                response = requests.post(f"{BASE_URL}/missions", json=mission_data, headers=HEADERS)
+                if response.status_code == 200:
+                    self.log_result("Chef → Cuisinier mission", True, 
+                                  "Chef peut assigner mission au cuisinier")
+                else:
+                    self.log_result("Chef → Cuisinier mission", False, 
+                                  f"Erreur {response.status_code}")
+            except Exception as e:
+                self.log_result("Chef → Cuisinier mission", False, "Exception", str(e))
+        
+        # Test 3: Vérifier les rôles des utilisateurs créés
+        expected_roles = {
+            "patron_test": "super_admin",
+            "chef_test": "chef_cuisine", 
+            "caisse_test": "caissier",
+            "barman_test": "barman",
+            "cuisine_test": "chef_cuisine"  # ou un autre rôle cuisine
+        }
+        
+        for username, expected_role in expected_roles.items():
+            user_data = self.test_users.get(username)
+            if user_data:
+                actual_role = user_data.get("role")
+                if actual_role:
+                    self.log_result(f"Rôle {username}", True, 
+                                  f"Rôle assigné: {actual_role}")
+                else:
+                    self.log_result(f"Rôle {username}", False, "Rôle manquant")
+
+    def test_mission_workflow_complete(self):
+        """Test du workflow complet des missions selon les spécifications"""
+        print("\n=== TEST WORKFLOW COMPLET DES MISSIONS ===")
+        
+        if not self.test_users:
+            self.log_result("Mission Workflow", False, "Pas d'utilisateurs test disponibles")
+            return
+        
+        chef_user = self.test_users.get("chef_test")
+        cuisine_user = self.test_users.get("cuisine_test")
+        
+        if not chef_user or not cuisine_user:
+            self.log_result("Mission Workflow", False, "Utilisateurs chef/cuisine non disponibles")
+            return
+        
+        # Étape 1: Chef crée une mission pour l'employé cuisine
+        mission_data = {
+            "title": "Préparation sauce tomate",
+            "description": "Préparer 5L de sauce tomate pour le service",
+            "type": "preparation",
+            "category": "cuisine",
+            "assigned_to_user_id": cuisine_user["id"],
+            "assigned_by_user_id": chef_user["id"],
+            "assigned_to_name": cuisine_user.get("full_name", "Employé Cuisine"),
+            "assigned_by_name": chef_user.get("full_name", "Chef de Cuisine"),
+            "priority": "haute",
+            "target_quantity": 5.0,
+            "target_unit": "L"
+        }
+        
+        try:
+            # Créer la mission
+            response = requests.post(f"{BASE_URL}/missions", json=mission_data, headers=HEADERS)
+            if response.status_code == 200:
+                created_mission = response.json()
+                mission_id = created_mission["id"]
+                
+                if created_mission["status"] == "en_cours":
+                    self.log_result("Workflow Étape 1 - Création mission", True, 
+                                  f"Mission créée avec statut 'en_cours'")
+                    
+                    # Étape 2: Employé marque la mission comme terminée
+                    update_data = {
+                        "status": "terminee_attente",
+                        "employee_notes": "Sauce tomate préparée, 5L prêts pour le service"
+                    }
+                    
+                    update_response = requests.put(f"{BASE_URL}/missions/{mission_id}", 
+                                                 json=update_data, headers=HEADERS)
+                    if update_response.status_code == 200:
+                        updated_mission = update_response.json()
+                        
+                        if updated_mission["status"] == "terminee_attente":
+                            self.log_result("Workflow Étape 2 - Employé termine", True, 
+                                          "Mission marquée 'terminee_attente'")
+                            
+                            # Étape 3: Chef valide la mission
+                            validation_data = {
+                                "status": "validee",
+                                "validation_notes": "Excellente sauce, qualité parfaite"
+                            }
+                            
+                            validation_response = requests.put(f"{BASE_URL}/missions/{mission_id}", 
+                                                             json=validation_data, headers=HEADERS)
+                            if validation_response.status_code == 200:
+                                validated_mission = validation_response.json()
+                                
+                                if validated_mission["status"] == "validee":
+                                    self.log_result("Workflow Étape 3 - Chef valide", True, 
+                                                  "Mission validée par le chef")
+                                    
+                                    # Vérifier que les notifications automatiques ont été créées
+                                    # Notification pour l'employé quand mission assignée
+                                    cuisine_notifications_response = requests.get(f"{BASE_URL}/notifications/{cuisine_user['id']}")
+                                    if cuisine_notifications_response.status_code == 200:
+                                        cuisine_notifications = cuisine_notifications_response.json()
+                                        mission_notifications = [n for n in cuisine_notifications 
+                                                               if n.get("mission_id") == mission_id]
+                                        if len(mission_notifications) > 0:
+                                            self.log_result("Notifications automatiques", True, 
+                                                          f"{len(mission_notifications)} notifications créées pour la mission")
+                                        else:
+                                            self.log_result("Notifications automatiques", False, 
+                                                          "Aucune notification trouvée pour la mission")
+                                    
+                                    # Test complet réussi
+                                    self.log_result("Workflow Complet Mission", True, 
+                                                  "Workflow création → terminée → validée réussi")
+                                else:
+                                    self.log_result("Workflow Étape 3 - Chef valide", False, 
+                                                  f"Statut incorrect: {validated_mission['status']}")
+                            else:
+                                self.log_result("Workflow Étape 3 - Chef valide", False, 
+                                              f"Erreur validation: {validation_response.status_code}")
+                        else:
+                            self.log_result("Workflow Étape 2 - Employé termine", False, 
+                                          f"Statut incorrect: {updated_mission['status']}")
+                    else:
+                        self.log_result("Workflow Étape 2 - Employé termine", False, 
+                                      f"Erreur mise à jour: {update_response.status_code}")
+                else:
+                    self.log_result("Workflow Étape 1 - Création mission", False, 
+                                  f"Statut initial incorrect: {created_mission['status']}")
+            else:
+                self.log_result("Workflow Étape 1 - Création mission", False, 
+                              f"Erreur création: {response.status_code}")
+        except Exception as e:
+            self.log_result("Workflow Complet Mission", False, "Exception", str(e))
+
     def run_all_tests(self):
         """Exécute tous les tests"""
         print("🚀 DÉBUT DES TESTS BACKEND - GESTION STOCKS RESTAURANT + OCR")
