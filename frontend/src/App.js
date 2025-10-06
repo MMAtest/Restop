@@ -4097,7 +4097,10 @@ function App() {
                                 </div>
                               </div>
                               <div className="item-actions">
-                                <button className="button small" onClick={() => handleEdit(produit, 'produit')}>✏️ Produit</button>
+                                {/* Éditer produit - MASQUÉ pour employé cuisine */}
+                                {canEditItems() && (
+                                  <button className="button small" onClick={() => handleEdit(produit, 'produit')}>✏️ Produit</button>
+                                )}
                                 <button className="button small success" onClick={() => handleAjusterStock(stock)}>📊 Ajuster</button>
                               </div>
                             </div>
