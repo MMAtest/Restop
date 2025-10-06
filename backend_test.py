@@ -27,6 +27,10 @@ class StockTestSuite:
         self.demo_produits_ids = []
         self.created_document_id = None
         self.created_rapport_id = None
+        self.test_users = {}  # Store created test users
+        self.test_sessions = {}  # Store active sessions
+        self.created_missions = []  # Store created missions
+        self.created_notifications = []  # Store created notifications
         
     def log_result(self, test_name, success, message="", details=None):
         """Enregistre le résultat d'un test"""
