@@ -619,6 +619,21 @@ frontend:
         agent: "testing"
         comment: "✅ GRILLES DE DONNÉES RÉPARÉES - 100% RÉUSSITE ! Problème résolu par ajout de 'ModuleRegistry.registerModules([AllCommunityModule])' dans DataGrid.jsx. Corrections supplémentaires : migration ag-theme-quartz, propriétés AG-Grid v34 (rowSelection object, localeText), filtres community. Navigation Stock > Grilles Données fonctionnelle, 3 onglets opérationnels (Produits & Ingrédients, Fournisseurs, Recettes & Plats), toutes fonctionnalités AG-Grid validées (tri, filtres, pagination, sélection, actions). Affichage données réelles La Table d'Augustine confirmé. Module grilles de données professionnelles entièrement opérationnel pour production."
 
+  - task: "Onglet Par Préparation dans Section Stock"
+    implemented: true
+    working: true
+    file: "/app/frontend/src/App.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Nouvelle fonctionnalité 'Par Préparation' ajoutée dans la section Stock avec bouton positionné entre 'Par Produit' et 'Par Production'. Interface complète avec titre '📋 Préparations en Stock', 4 cartes KPIs (Total Préparations, DLC < 3 jours, Stocks Critiques, Catégories), affichage par catégories en accordéon, gestion individuelle des préparations avec boutons d'action, modal de mouvement de stock, et bouton d'alertes DLC/Stock."
+      - working: true
+        agent: "testing"
+        comment: "🎉 ONGLET PAR PRÉPARATION - 100% RÉUSSITE ! Validation complète de la nouvelle fonctionnalité '🔪 Par Préparation' dans la section Stock selon toutes les spécifications demandées : ✅ NAVIGATION : Bouton '🔪 Par Préparation' correctement positionné entre '📦 Par Produit' et '🍽️ Par Production', navigation vers Stock via bottom navigation fonctionnelle ✅ CHANGEMENT DE TITRE : Titre change correctement vers '📋 Préparations en Stock' lors du clic sur l'onglet ✅ CARTES STATISTIQUES (4 KPIs) : Total Préparations (127), DLC < 3 jours (0), Stocks Critiques (65), Catégories (8) - toutes cartes affichées avec valeurs correctes ✅ BOUTONS D'ACTION : '📋 Mouvement Stock' et '⚠️ Alertes DLC/Stock' présents et fonctionnels ✅ AFFICHAGE PAR CATÉGORIES : Préparations organisées par catégories avec accordéons, boutons d'expansion/collapse détectés ✅ GESTION INDIVIDUELLE : Préparations individuelles affichées avec informations détaillées (quantité disponible, DLC, forme découpe, produit source, portions), boutons d'action (📝 Ajuster, ✏️ Éditer, 🗃️ Archiver) présents ✅ MODAL MOUVEMENT STOCK : Modal s'ouvre correctement avec champs formulaire (sélection préparation, type mouvement, quantité, référence, DLC, commentaire) ✅ INDICATEURS STATUT : Statuts visuels (✅ OK / ⚠️ Critique) présents sur les préparations ✅ DONNÉES EXISTANTES : 127 préparations auto-générées pour 'La Table d'Augustine' confirmées et affichées ✅ BOUTON ALERTES : Test du bouton alertes réussi avec gestion appropriée des alertes DLC/Stock. Nouvelle fonctionnalité '🔪 Par Préparation' entièrement opérationnelle et conforme à toutes les exigences spécifiées dans la review request !"
+
 metadata:
   created_by: "main_agent"
   version: "1.0"
