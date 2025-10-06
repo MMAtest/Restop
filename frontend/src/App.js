@@ -3660,7 +3660,7 @@ function App() {
                             
                             <div className="kpi-card">
                               <div className="icon">⚠️</div>
-                              <div className="title">DLC < 3 jours</div>
+                              <div className="title">DLC &lt; 3 jours</div>
                               <div className="value warning">
                                 {stocksPreparations.filter(s => s.dlc && new Date(s.dlc) < new Date(Date.now() + 3 * 24 * 60 * 60 * 1000)).length}
                               </div>
