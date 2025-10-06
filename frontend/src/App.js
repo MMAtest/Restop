@@ -969,6 +969,114 @@ function App() {
     setSelectedStockIndex(null);
   };
 
+  // ✅ Fonctions pour la gestion des stocks de préparations
+  const fetchStocksPreparations = async () => {
+    try {
+      const response = await axios.get(`${API}/preparations`);
+      const preparationsData = response.data;
+      
+      // Créer des stocks fictifs pour les préparations (pour l'instant)
+      // Dans une vraie application, on aurait un endpoint séparé pour les stocks de préparations
+      const stocksPrep = preparationsData.map(prep => ({
+        preparation_id: prep.id,
+        preparation_nom: prep.nom,
+        produit_categorie: produits.find(p => p.id === prep.produit_id)?.categorie || 'Autres',
+        produit_nom: prep.produit_nom,
+        quantite_disponible: prep.quantite_preparee, // Par défaut, toute la quantité préparée est disponible
+        quantite_min: Math.max(1, Math.floor(prep.nombre_portions * 0.2)), // 20% des portions comme minimum
+        quantite_max: prep.quantite_preparee * 2, // Double comme maximum
+        unite: prep.unite_preparee,
+        dlc: prep.dlc,
+        forme_decoupe: prep.forme_decoupe_custom || prep.forme_decoupe,
+        nombre_portions: prep.nombre_portions,
+        taille_portion: prep.taille_portion,
+        derniere_maj: new Date()
+      }));
+      
+      setStocksPreparations(stocksPrep);
+      
+      // Organiser par catégories
+      const parCategories = {};
+      stocksPrep.forEach(stock => {
+        const category = stock.produit_categorie;
+        if (!parCategories[category]) {
+          parCategories[category] = [];
+        }
+        parCategories[category].push(stock);
+      });
+      
+      setPreparationsParCategories(parCategories);
+      
+      // Ouvrir toutes les catégories par défaut
+      const expanded = {};
+      Object.keys(parCategories).forEach(cat => {
+        expanded[cat] = true;
+      });
+      setCategoriesPreparationsExpanded(expanded);
+      
+    } catch (error) {
+      console.error("Erreur lors du chargement des stocks de préparations:", error);
+    }
+  };
+
+  const handleMovementPreparation = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    
+    try {
+      // Pour l'instant, simulation du mouvement
+      // Dans une vraie application, on aurait un endpoint pour les mouvements de préparations
+      const movement = {
+        ...movementPreparationForm,
+        quantite: parseFloat(movementPreparationForm.quantite),
+        date: new Date()
+      };
+      
+      // Mettre à jour le stock de la préparation
+      setStocksPreparations(prev => prev.map(stock => {
+        if (stock.preparation_id === movement.preparation_id) {
+          let nouveleQuantite = stock.quantite_disponible;
+          
+          if (movement.type === 'entree') {
+            nouveleQuantite += movement.quantite;
+          } else if (movement.type === 'sortie') {
+            nouveleQuantite = Math.max(0, nouveleQuantite - movement.quantite);
+          } else if (movement.type === 'ajustement') {
+            nouveleQuantite = movement.quantite;
+          }
+          
+          return {
+            ...stock,
+            quantite_disponible: nouveleQuantite,
+            derniere_maj: new Date()
+          };
+        }
+        return stock;
+      }));
+      
+      // Rafraîchir l'organisation par catégories
+      fetchStocksPreparations();
+      
+      setShowMovementPreparationModal(false);
+      setMovementPreparationForm({
+        preparation_id: "",
+        type: "entree",
+        quantite: "",
+        reference: "",
+        commentaire: "",
+        dlc: ""
+      });
+      
+      alert("✅ Mouvement de préparation enregistré");
+      
+    } catch (error) {
+      console.error("Erreur lors de l'enregistrement:", error);
+      alert("❌ Erreur lors de l'enregistrement");
+    }
+    
+    setLoading(false);
+  };
+
   const addIngredient = () => {
     if (ingredientForm.produit_id && ingredientForm.quantite) {
       const produit = produits.find(p => p.id === ingredientForm.produit_id);
