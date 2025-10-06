@@ -6256,13 +6256,16 @@ function App() {
           <div className="bottom-nav-label">Production</div>
         </button>
         
-        <button 
-          className={`bottom-nav-item ${activeTab === "orders" ? "active" : ""}`}
-          onClick={() => setActiveTab("orders")}
-        >
-          <div className="bottom-nav-icon">🛒</div>
-          <div className="bottom-nav-label">Orders</div>
-        </button>
+        {/* Orders - Accès limité au Chef et Patron */}
+        {(currentUser?.role === 'super_admin' || currentUser?.role === 'chef_cuisine') && (
+          <button 
+            className={`bottom-nav-item ${activeTab === "orders" ? "active" : ""}`}
+            onClick={() => setActiveTab("orders")}
+          >
+            <div className="bottom-nav-icon">🛒</div>
+            <div className="bottom-nav-label">Orders</div>
+          </button>
+        )}
       </div>
 
       {/* PROFESSIONAL DATA GRIDS */}
