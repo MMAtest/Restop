@@ -1950,20 +1950,6 @@ function App() {
                 👑 Utilisateurs
               </button>
               
-              {/* Bouton pour basculer vers dashboard missions (PATRON seulement) */}
-              {currentUser?.role === 'super_admin' && (
-                <button 
-                  className="button secondary" 
-                  onClick={() => {
-                    setShowRoleBasedDashboard(true);
-                    setShowBurgerMenu(false);
-                  }}
-                  style={{width: '100%', marginBottom: '8px'}}
-                >
-                  📋 Mes Missions
-                </button>
-              )}
-              
               <button 
                 className="button secondary" 
                 onClick={() => {
