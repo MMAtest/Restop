@@ -313,6 +313,42 @@ const RoleBasedDashboard = ({ user, sessionId, onNavigateToPage, onCreateMission
           </div>
         </div>
       )}
+
+      {/* Bouton Créer Mission pour Chef et Patron */}
+      {(user.role === 'super_admin' || user.role === 'chef_cuisine') && (
+        <div style={{
+          background: 'white',
+          borderRadius: '12px',
+          padding: '16px',
+          marginBottom: '16px',
+          border: '1px solid #e5e7eb'
+        }}>
+          <button
+            onClick={() => {
+              if (onCreateMission) {
+                onCreateMission();
+              }
+            }}
+            style={{
+              width: '100%',
+              padding: '14px 20px',
+              background: 'linear-gradient(135deg, #3b82f6 0%, #1e40af 100%)',
+              color: 'white',
+              border: 'none',
+              borderRadius: '8px',
+              fontSize: '16px',
+              fontWeight: '600',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '8px'
+            }}
+          >
+            ➕ Créer une Nouvelle Mission
+          </button>
+        </div>
+      )}
     </div>
   );
 };
