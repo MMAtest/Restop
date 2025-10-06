@@ -437,18 +437,36 @@ const PurchaseOrderPage = ({ currentUser }) => {
         {/* Onglets avec surbrillance jaune */}
         <div className="p-4 border-b border-gray-200">
           <div className="flex space-x-1">
-            <button
-              onClick={() => setActiveOrderTab('manual')}
-              className={`flex items-center px-4 py-2 rounded-md text-sm font-medium transition-all ${
-                activeOrderTab === 'manual'
-                  ? 'bg-yellow-400 text-gray-900 shadow-sm'
-                  : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'
-              }`}
-            >
-              <span className="mr-2">✋</span>
-              Commande Manuelle
-            </button>
-            <button
+          {/* Commandes Manuelle et Auto - MASQUÉES pour employé cuisine */}
+          {currentUser?.role !== 'employe_cuisine' && (
+            <>
+              <button
+                onClick={() => setActiveOrderTab('manual')}
+                className={`flex items-center px-4 py-2 rounded-md text-sm font-medium transition-all ${
+                  activeOrderTab === 'manual'
+                    ? 'bg-yellow-400 text-gray-900 shadow-sm'
+                    : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'
+                }`}
+              >
+                <span className="mr-2">✋</span>
+                Commande Manuelle
+              </button>
+              <button
+                onClick={() => setActiveOrderTab('auto')}
+                className={`flex items-center px-4 py-2 rounded-md text-sm font-medium transition-all ${
+                  activeOrderTab === 'auto'
+                    ? 'bg-yellow-400 text-gray-900 shadow-sm'
+                    : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'
+                }`}
+              >
+                <span className="mr-2">🤖</span>
+                Commande Automatique
+              </button>
+            </>
+          )}
+          
+          {/* Onglet Historique - Accessible à tous */}
+          <button
               onClick={() => setActiveOrderTab('auto')}
               className={`flex items-center px-4 py-2 rounded-md text-sm font-medium transition-all ${
                 activeOrderTab === 'auto'
