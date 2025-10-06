@@ -3530,7 +3530,10 @@ function App() {
                     <div style={{display: 'flex', gap: '5px', marginLeft: '15px', display: 'inline-flex'}}>
                       <button 
                         className="button small"
-                        onClick={() => setStockViewMode('produits')}
+                        onClick={() => {
+                          setStockViewMode('produits');
+                          setStockFilterCategory('all'); // Reset filtre
+                        }}
                         style={{
                           background: stockViewMode === 'produits' ? 'var(--color-primary-blue)' : 'var(--color-background-card)',
                           color: stockViewMode === 'produits' ? 'white' : 'var(--color-text-secondary)',
@@ -3544,6 +3547,7 @@ function App() {
                         className="button small"
                         onClick={() => {
                           setStockViewMode('preparations');
+                          setStockFilterCategory('all'); // Reset filtre
                           fetchStocksPreparations(); // Recharger les données des préparations
                         }}
                         style={{
@@ -3557,7 +3561,10 @@ function App() {
                       </button>
                       <button 
                         className="button small"
-                        onClick={() => setStockViewMode('productions')}
+                        onClick={() => {
+                          setStockViewMode('productions');
+                          setStockFilterCategory('all'); // Reset filtre
+                        }}}
                         style={{
                           background: stockViewMode === 'productions' ? 'var(--color-primary-blue)' : 'var(--color-background-card)',
                           color: stockViewMode === 'productions' ? 'white' : 'var(--color-text-secondary)',
