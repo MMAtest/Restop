@@ -124,7 +124,7 @@ const RoleBasedDashboard = ({ user, sessionId, onNavigateToPage }) => {
 
   return (
     <div style={{marginBottom: '20px'}}>
-      {/* Missions personnelles prioritaires */}
+      {/* Module 1 : Tâches urgentes à effectuer aujourd'hui */}
       {missionsEnCours.length > 0 && (
         <div style={{
           background: 'linear-gradient(135deg, #fff7ed 0%, #fed7aa 100%)',
@@ -134,55 +134,132 @@ const RoleBasedDashboard = ({ user, sessionId, onNavigateToPage }) => {
           border: '2px solid #ea580c'
         }}>
           <div style={{fontSize: '16px', fontWeight: 'bold', color: '#c2410c', marginBottom: '12px'}}>
-            🎯 Mes Tâches Urgentes ({missionsEnCours.length})
+            🎯 Tâches à Effectuer Aujourd'hui ({missionsEnCours.length})
           </div>
           
           <div style={{display: 'grid', gap: '12px'}}>
-            {missionsEnCours.slice(0, 2).map(mission => (
+            {missionsEnCours.map(mission => (
               <div key={mission.id} style={{
-                padding: '12px',
+                padding: '14px',
                 background: 'white',
                 borderRadius: '8px',
-                border: '1px solid #fdba74',
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center'
+                border: '1px solid #fdba74'
               }}>
-                <div>
-                  <div style={{fontSize: '14px', fontWeight: '600', marginBottom: '4px'}}>
-                    {mission.title}
-                  </div>
-                  <div style={{fontSize: '12px', color: '#ea580c', marginBottom: '6px'}}>
-                    {mission.description.substring(0, 60)}...
-                  </div>
-                  {getPriorityBadge(mission.priority)}
+                <div style={{fontSize: '15px', fontWeight: '600', marginBottom: '6px', color: '#c2410c'}}>
+                  {mission.title}
                 </div>
-                <button 
-                  onClick={() => {
-                    const notes = window.prompt('Commentaires sur la tâche terminée:');
-                    if (notes !== null) {
-                      markMissionCompleted(mission.id, notes);
-                    }
-                  }}
-                  style={{
-                    fontSize: '12px',
-                    padding: '6px 12px',
-                    borderRadius: '6px',
-                    background: '#ea580c',
-                    color: 'white',
-                    border: 'none',
-                    cursor: 'pointer'
-                  }}
-                >
-                  ✅ Fait
-                </button>
+                <div style={{fontSize: '13px', color: '#ea580c', marginBottom: '8px'}}>
+                  {mission.description}
+                </div>
+                
+                <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
+                  <div style={{display: 'flex', gap: '8px', alignItems: 'center'}}>
+                    {getPriorityBadge(mission.priority)}
+                    {mission.due_date && (
+                      <span style={{
+                        fontSize: '11px',
+                        color: '#dc2626', 
+                        fontWeight: '600',
+                        padding: '2px 6px',
+                        background: '#fee2e2',
+                        borderRadius: '4px'
+                      }}>
+                        ⏰ {new Date(mission.due_date).toLocaleTimeString('fr-FR', {hour: '2-digit', minute: '2-digit'})}
+                      </span>
+                    )}
+                    {mission.target_quantity && (
+                      <span style={{
+                        fontSize: '11px',
+                        color: '#92400e',
+                        fontWeight: '600',
+                        padding: '2px 6px',
+                        background: '#fdba74',
+                        borderRadius: '4px'
+                      }}>
+                        🎯 {mission.target_quantity} {mission.target_unit}
+                      </span>
+                    )}
+                  </div>
+                  
+                  <button 
+                    onClick={() => {
+                      const notes = window.prompt('Détails sur l\'accomplissement de la tâche (obligatoire):');
+                      if (notes && notes.trim()) {
+                        markMissionCompleted(mission.id, notes);
+                      } else if (notes === '') {
+                        alert('❌ Une note est obligatoire pour marquer la tâche comme terminée.');
+                      }
+                    }}
+                    style={{
+                      fontSize: '13px',
+                      padding: '8px 16px',
+                      borderRadius: '6px',
+                      background: '#ea580c',
+                      color: 'white',
+                      border: 'none',
+                      cursor: 'pointer',
+                      fontWeight: '600'
+                    }}
+                  >
+                    ✅ Terminé
+                  </button>
+                </div>
               </div>
             ))}
           </div>
         </div>
       )}
 
-      {/* Missions à valider (chef/patron) */}
+      {/* Module 2 : Tâches en cours ou déjà effectuées (en attente validation) */}
+      {missions.assigned_to_me?.filter(m => m.status === 'terminee_attente' || m.status === 'validee').length > 0 && (
+        <div style={{
+          background: 'linear-gradient(135deg, #f0fdf4 0%, #bbf7d0 100%)',
+          borderRadius: '12px',
+          padding: '16px',
+          marginBottom: '16px',
+          border: '2px solid #10b981'
+        }}>
+          <div style={{fontSize: '16px', fontWeight: 'bold', color: '#065f46', marginBottom: '12px'}}>
+            📊 Mes Tâches Récentes ({missions.assigned_to_me?.filter(m => m.status === 'terminee_attente' || m.status === 'validee').length || 0})
+          </div>
+          
+          <div style={{display: 'grid', gap: '10px'}}>
+            {missions.assigned_to_me?.filter(m => m.status === 'terminee_attente' || m.status === 'validee').slice(0, 4).map(mission => (
+              <div key={mission.id} style={{
+                padding: '12px',
+                background: 'white',
+                borderRadius: '6px',
+                border: '1px solid #bbf7d0',
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center'
+              }}>
+                <div>
+                  <div style={{fontSize: '14px', fontWeight: '600', marginBottom: '3px', color: '#065f46'}}>
+                    {mission.title}
+                  </div>
+                  <div style={{fontSize: '11px', color: '#10b981'}}>
+                    {mission.completed_by_employee_date && 
+                      `Terminé le ${new Date(mission.completed_by_employee_date).toLocaleDateString('fr-FR')} à ${new Date(mission.completed_by_employee_date).toLocaleTimeString('fr-FR', {hour: '2-digit', minute: '2-digit'})}`
+                    }
+                  </div>
+                  {mission.employee_notes && (
+                    <div style={{fontSize: '11px', color: '#059669', fontStyle: 'italic'}}>
+                      💬 "{mission.employee_notes}"
+                    </div>
+                  )}
+                </div>
+                
+                <div>
+                  {getStatusBadge(mission.status)}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Module pour Chef/Patron : Missions à valider */}
       {(user.role === 'super_admin' || user.role === 'chef_cuisine') && missionsAValider.length > 0 && (
         <div style={{
           background: 'linear-gradient(135deg, #fef3c7 0%, #fbbf24 100%)',
