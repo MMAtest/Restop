@@ -605,7 +605,7 @@ function App() {
   };
 
   const canAccessOcrTicketsZ = () => {
-    return currentUser?.role !== 'employe_cuisine' && currentUser?.role !== 'barman';
+    return currentUser?.role === 'super_admin' || currentUser?.role === 'caissier';
   };
 
   const canAccessRepartition = () => {
