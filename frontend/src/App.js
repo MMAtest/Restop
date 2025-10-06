@@ -3420,10 +3420,12 @@ function App() {
               <div className="section-card">
                 <div className="section-title">📦 Gestion des Stocks</div>
                 
-                {/* Actions rapides */}
-                <div style={{display: 'flex', gap: '10px', marginBottom: '20px', flexWrap: 'wrap'}}>
-                  <button className="button" onClick={() => setShowProduitModal(true)}>➕ Nouveau Produit</button>
-                </div>
+                {/* Actions rapides - MASQUÉ pour employé cuisine */}
+                {currentUser?.role !== 'employe_cuisine' && (
+                  <div style={{display: 'flex', gap: '10px', marginBottom: '20px', flexWrap: 'wrap'}}>
+                    <button className="button" onClick={() => setShowProduitModal(true)}>➕ Nouveau Produit</button>
+                  </div>
+                )}
 
                 {/* KPIs Stocks */}
                 <div className="kpi-grid">
