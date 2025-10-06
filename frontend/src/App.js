@@ -319,6 +319,23 @@ function App() {
   });
   const [preparationsParCategories, setPreparationsParCategories] = useState({});
   const [categoriesPreparationsExpanded, setCategoriesPreparationsExpanded] = useState({});
+  
+  // ✅ États pour la création de missions
+  const [showMissionModal, setShowMissionModal] = useState(false);
+  const [missionForm, setMissionForm] = useState({
+    title: '',
+    description: '',
+    type: 'preparation',
+    category: 'cuisine',
+    assigned_to_user_id: '',
+    priority: 'normale',
+    due_date: '',
+    target_quantity: '',
+    target_unit: '',
+    related_product_id: '',
+    related_preparation_id: ''
+  });
+  const [availableUsers, setAvailableUsers] = useState([]);
   const [fournisseurForm, setFournisseurForm] = useState({
     nom: "", contact: "", email: "", telephone: "", adresse: "", couleur: "#3B82F6", logo: "", categorie: "frais", deliveryCost: 0, extraCost: 0,
     delivery_rules: {
