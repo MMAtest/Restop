@@ -347,6 +347,7 @@ function App() {
     fetchCategoriesProduction(); // Récupérer les catégories
     fetchPreparations(); // Récupérer les préparations
     fetchFormesDecoupe(); // Récupérer les formes de découpe
+    fetchStocksPreparations(); // Récupérer les stocks de préparations
   }, []);
 
   // Fonction pour récupérer les catégories de production
