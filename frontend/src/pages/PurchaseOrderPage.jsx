@@ -9,7 +9,9 @@ const PurchaseOrderPage = ({ currentUser }) => {
   const [loading, setLoading] = useState(false);
   
   // États pour le module de commande automatique
-  const [activeOrderTab, setActiveOrderTab] = useState('manual'); // 'manual', 'auto', ou 'history'
+  const [activeOrderTab, setActiveOrderTab] = useState(
+    currentUser?.role === 'employe_cuisine' ? 'history' : 'manual'
+  ); // 'manual', 'auto', ou 'history'
   const [recipes, setRecipes] = useState([]);
   const [selectedRecipes, setSelectedRecipes] = useState([]);
   const [autoOrderResults, setAutoOrderResults] = useState([]);
