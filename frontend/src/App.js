@@ -5742,12 +5742,16 @@ function App() {
                                   >
                                     🗃️
                                   </button>
-                                  <button 
-                                    className="button small danger"
-                                    onClick={() => handleDelete(produit.id, 'produit')}
-                                    style={{fontSize: '12px', padding: '4px 8px'}}
-                                  >
-                                    🗑️
+                                  )}
+                                  
+                                  {/* Supprimer produit - MASQUÉ pour employé cuisine */}
+                                  {canEditItems() && (
+                                    <button 
+                                      className="button small danger"
+                                      onClick={() => handleDelete(produit.id, 'produit')}
+                                      style={{fontSize: '12px', padding: '4px 8px'}}
+                                    >
+                                      🗑️
                                   </button>
                                 </div>
                               </div>
