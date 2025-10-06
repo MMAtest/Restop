@@ -3650,37 +3650,6 @@ function App() {
                             </button>
                           </div>
 
-                          {/* Statistiques des préparations */}
-                          <div className="kpi-grid" style={{marginBottom: '20px'}}>
-                            <div className="kpi-card">
-                              <div className="icon">🔪</div>
-                              <div className="title">Total Préparations</div>
-                              <div className="value">{stocksPreparations.length}</div>
-                            </div>
-                            
-                            <div className="kpi-card">
-                              <div className="icon">⚠️</div>
-                              <div className="title">DLC &lt; 3 jours</div>
-                              <div className="value warning">
-                                {stocksPreparations.filter(s => s.dlc && new Date(s.dlc) < new Date(Date.now() + 3 * 24 * 60 * 60 * 1000)).length}
-                              </div>
-                            </div>
-                            
-                            <div className="kpi-card">
-                              <div className="icon">📉</div>
-                              <div className="title">Stocks Critiques</div>
-                              <div className="value warning">
-                                {stocksPreparations.filter(s => s.quantite_disponible <= s.quantite_min).length}
-                              </div>
-                            </div>
-                            
-                            <div className="kpi-card">
-                              <div className="icon">📦</div>
-                              <div className="title">Catégories</div>
-                              <div className="value">{Object.keys(preparationsParCategories).length}</div>
-                            </div>
-                          </div>
-
                           {/* Affichage par catégories en accordéon */}
                           <div style={{display: 'grid', gap: '16px'}}>
                             {Object.entries(preparationsParCategories).map(([categoryName, preparationsCategory]) => {
