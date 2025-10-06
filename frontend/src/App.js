@@ -3613,6 +3613,303 @@ function App() {
                           )}
                         </>
                       );
+                    } else if (stockViewMode === 'preparations') {
+                      // ✅ AFFICHAGE PAR PRÉPARATIONS AVEC STOCK
+                      return (
+                        <>
+                          {/* Actions rapides pour les préparations */}
+                          <div style={{display: 'flex', gap: '10px', marginBottom: '20px', flexWrap: 'wrap'}}>
+                            <button 
+                              className="button"
+                              onClick={() => setShowMovementPreparationModal(true)}
+                            >
+                              📋 Mouvement Stock
+                            </button>
+                            <button 
+                              className="button secondary"
+                              onClick={() => {
+                                const alertes = stocksPreparations.filter(stock => 
+                                  (stock.dlc && new Date(stock.dlc) < new Date(Date.now() + 3 * 24 * 60 * 60 * 1000)) ||
+                                  stock.quantite_disponible <= stock.quantite_min
+                                );
+                                
+                                if (alertes.length === 0) {
+                                  alert("✅ Aucune alerte pour les préparations !");
+                                } else {
+                                  const message = `⚠️ ALERTES PRÉPARATIONS (${alertes.length}):\n\n` +
+                                    alertes.map(a => 
+                                      `• ${a.preparation_nom}: ${a.quantite_disponible} ${a.unite} ` +
+                                      (a.quantite_disponible <= a.quantite_min ? '(Stock critique)' : '') +
+                                      (a.dlc && new Date(a.dlc) < new Date(Date.now() + 3 * 24 * 60 * 60 * 1000) ? ` DLC: ${new Date(a.dlc).toLocaleDateString('fr-FR')}` : '')
+                                    ).join('\n');
+                                  alert(message);
+                                }
+                              }}
+                            >
+                              ⚠️ Alertes DLC/Stock
+                            </button>
+                          </div>
+
+                          {/* Statistiques des préparations */}
+                          <div className="kpi-grid" style={{marginBottom: '20px'}}>
+                            <div className="kpi-card">
+                              <div className="icon">🔪</div>
+                              <div className="title">Total Préparations</div>
+                              <div className="value">{stocksPreparations.length}</div>
+                            </div>
+                            
+                            <div className="kpi-card">
+                              <div className="icon">⚠️</div>
+                              <div className="title">DLC < 3 jours</div>
+                              <div className="value warning">
+                                {stocksPreparations.filter(s => s.dlc && new Date(s.dlc) < new Date(Date.now() + 3 * 24 * 60 * 60 * 1000)).length}
+                              </div>
+                            </div>
+                            
+                            <div className="kpi-card">
+                              <div className="icon">📉</div>
+                              <div className="title">Stocks Critiques</div>
+                              <div className="value warning">
+                                {stocksPreparations.filter(s => s.quantite_disponible <= s.quantite_min).length}
+                              </div>
+                            </div>
+                            
+                            <div className="kpi-card">
+                              <div className="icon">📦</div>
+                              <div className="title">Catégories</div>
+                              <div className="value">{Object.keys(preparationsParCategories).length}</div>
+                            </div>
+                          </div>
+
+                          {/* Affichage par catégories en accordéon */}
+                          <div style={{display: 'grid', gap: '16px'}}>
+                            {Object.entries(preparationsParCategories).map(([categoryName, preparationsCategory]) => {
+                              const getCategoryIcon = (categorie) => {
+                                const icons = {
+                                  "Légumes": "🥬", "Viandes": "🥩", "Poissons": "🐟", 
+                                  "Produits laitiers": "🧀", "Épices": "🌶️", "Fruits": "🍎", 
+                                  "Céréales": "🌾", "Autres": "📦"
+                                };
+                                return icons[categorie] || "📦";
+                              };
+
+                              const preparationsCritiques = preparationsCategory.filter(p => 
+                                p.quantite_disponible <= p.quantite_min
+                              );
+
+                              const preparationsDlc = preparationsCategory.filter(p => 
+                                p.dlc && new Date(p.dlc) < new Date(Date.now() + 3 * 24 * 60 * 60 * 1000)
+                              );
+
+                              return (
+                                <div key={categoryName} style={{
+                                  border: '1px solid var(--color-border)',
+                                  borderRadius: '8px',
+                                  overflow: 'hidden'
+                                }}>
+                                  {/* En-tête de catégorie */}
+                                  <div 
+                                    style={{
+                                      padding: '16px',
+                                      background: categoriesPreparationsExpanded[categoryName] ? 'var(--color-accent-green)' : 'var(--color-background-secondary)',
+                                      color: categoriesPreparationsExpanded[categoryName] ? 'white' : 'var(--color-text-primary)',
+                                      cursor: 'pointer',
+                                      display: 'flex',
+                                      alignItems: 'center',
+                                      justifyContent: 'space-between',
+                                      fontWeight: 'bold'
+                                    }}
+                                    onClick={() => {
+                                      setCategoriesPreparationsExpanded(prev => ({
+                                        ...prev,
+                                        [categoryName]: !prev[categoryName]
+                                      }));
+                                    }}
+                                  >
+                                    <div style={{display: 'flex', alignItems: 'center', gap: '12px'}}>
+                                      <span style={{fontSize: '20px'}}>{getCategoryIcon(categoryName)}</span>
+                                      <span>{categoryName}</span>
+                                      <span style={{
+                                        fontSize: '12px',
+                                        padding: '4px 8px',
+                                        borderRadius: '12px',
+                                        background: categoriesPreparationsExpanded[categoryName] ? 'rgba(255,255,255,0.2)' : 'var(--color-accent-orange)',
+                                        color: 'white'
+                                      }}>
+                                        {preparationsCategory.length}
+                                      </span>
+                                      {/* Badges d'alerte */}
+                                      {preparationsCritiques.length > 0 && (
+                                        <span style={{
+                                          fontSize: '11px',
+                                          padding: '2px 6px',
+                                          borderRadius: '10px',
+                                          background: '#dc2626',
+                                          color: 'white'
+                                        }}>
+                                          {preparationsCritiques.length} critique(s)
+                                        </span>
+                                      )}
+                                      {preparationsDlc.length > 0 && (
+                                        <span style={{
+                                          fontSize: '11px',
+                                          padding: '2px 6px',
+                                          borderRadius: '10px',
+                                          background: '#f59e0b',
+                                          color: 'white'
+                                        }}>
+                                          {preparationsDlc.length} DLC
+                                        </span>
+                                      )}
+                                    </div>
+                                    <span style={{fontSize: '18px'}}>
+                                      {categoriesPreparationsExpanded[categoryName] ? '▼' : '▶'}
+                                    </span>
+                                  </div>
+
+                                  {/* Contenu de la catégorie */}
+                                  {categoriesPreparationsExpanded[categoryName] && (
+                                    <div style={{padding: '0'}}>
+                                      {preparationsCategory.map((stockPrep, index) => {
+                                        const isStockCritique = stockPrep.quantite_disponible <= stockPrep.quantite_min;
+                                        const isDlcProche = stockPrep.dlc && new Date(stockPrep.dlc) < new Date(Date.now() + 3 * 24 * 60 * 60 * 1000);
+                                        
+                                        return (
+                                          <div key={stockPrep.preparation_id} style={{
+                                            padding: '16px',
+                                            borderBottom: index < preparationsCategory.length - 1 ? '1px solid var(--color-border)' : 'none',
+                                            background: index % 2 === 0 ? 'transparent' : 'var(--color-background-secondary)',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'space-between'
+                                          }}>
+                                            <div style={{flex: 1}}>
+                                              <div style={{display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '6px'}}>
+                                                <div style={{fontWeight: 'bold', fontSize: '14px'}}>
+                                                  🔪 {stockPrep.preparation_nom}
+                                                </div>
+                                                <div style={{
+                                                  fontSize: '12px',
+                                                  padding: '2px 6px',
+                                                  borderRadius: '12px',
+                                                  background: 'var(--color-accent-blue)',
+                                                  color: 'white'
+                                                }}>
+                                                  {stockPrep.forme_decoupe}
+                                                </div>
+                                              </div>
+                                              
+                                              <div style={{fontSize: '13px', color: 'var(--color-text-secondary)', display: 'flex', flexDirection: 'column', gap: '2px'}}>
+                                                <div>📦 <strong>Produit source:</strong> {stockPrep.produit_nom}</div>
+                                                <div>📏 <strong>Quantité disponible:</strong> 
+                                                  <span style={{
+                                                    color: isStockCritique ? '#dc2626' : '#059669',
+                                                    fontWeight: 'bold',
+                                                    marginLeft: '4px'
+                                                  }}>
+                                                    {stockPrep.quantite_disponible} {stockPrep.unite}
+                                                  </span>
+                                                  <span style={{fontSize: '11px', color: '#6b7280'}}>
+                                                    {' '}(Min: {stockPrep.quantite_min}, Max: {stockPrep.quantite_max})
+                                                  </span>
+                                                </div>
+                                                <div>🍽️ <strong>Portions:</strong> {stockPrep.nombre_portions} × {stockPrep.taille_portion}{stockPrep.unite}</div>
+                                                {stockPrep.dlc && (
+                                                  <div style={{
+                                                    color: isDlcProche ? '#dc2626' : '#059669'
+                                                  }}>
+                                                    📅 <strong>DLC:</strong> {new Date(stockPrep.dlc).toLocaleDateString('fr-FR')}
+                                                    {isDlcProche && <span style={{fontWeight: 'bold'}}> ⚠️</span>}
+                                                  </div>
+                                                )}
+                                              </div>
+                                            </div>
+                                            
+                                            <div style={{display: 'flex', gap: '6px'}}>
+                                              {/* Statut visuel */}
+                                              <div style={{
+                                                padding: '6px 10px',
+                                                borderRadius: '20px',
+                                                fontSize: '11px',
+                                                fontWeight: 'bold',
+                                                background: isStockCritique ? '#fecaca' : '#dcfce7',
+                                                color: isStockCritique ? '#991b1b' : '#166534'
+                                              }}>
+                                                {isStockCritique ? '⚠️ Critique' : '✅ OK'}
+                                              </div>
+                                              
+                                              {/* Actions */}
+                                              <button 
+                                                className="button small"
+                                                onClick={() => {
+                                                  setMovementPreparationForm({
+                                                    ...movementPreparationForm,
+                                                    preparation_id: stockPrep.preparation_id,
+                                                    type: "ajustement",
+                                                    reference: `ADJ-${Date.now()}`
+                                                  });
+                                                  setShowMovementPreparationModal(true);
+                                                }}
+                                                style={{fontSize: '12px', padding: '4px 8px'}}
+                                              >
+                                                📝 Ajuster
+                                              </button>
+                                              
+                                              <button 
+                                                className="button small"
+                                                onClick={() => {
+                                                  const preparation = preparations.find(p => p.id === stockPrep.preparation_id);
+                                                  if (preparation) {
+                                                    handleEdit(preparation, 'preparation');
+                                                  }
+                                                }}
+                                                style={{fontSize: '12px', padding: '4px 8px'}}
+                                              >
+                                                ✏️
+                                              </button>
+                                              
+                                              <button 
+                                                className="button small warning"
+                                                onClick={async () => {
+                                                  const preparation = preparations.find(p => p.id === stockPrep.preparation_id);
+                                                  if (preparation) {
+                                                    const reason = window.prompt(`Raison de l'archivage de "${preparation.nom}" (optionnel):`);
+                                                    if (reason !== null) {
+                                                      const success = await archiveItem(preparation.id, 'preparation', reason || null);
+                                                      if (success) {
+                                                        alert(`${preparation.nom} archivée avec succès !`);
+                                                        fetchStocksPreparations(); // Recharger
+                                                      } else {
+                                                        alert("Erreur lors de l'archivage");
+                                                      }
+                                                    }
+                                                  }
+                                                }}
+                                                style={{fontSize: '12px', padding: '4px 8px'}}
+                                              >
+                                                🗃️
+                                              </button>
+                                            </div>
+                                          </div>
+                                        );
+                                      })}
+                                    </div>
+                                  )}
+                                </div>
+                              );
+                            })}
+                          </div>
+                          
+                          {/* Message si aucune préparation */}
+                          {Object.keys(preparationsParCategories).length === 0 && (
+                            <div style={{textAlign: 'center', padding: '40px', color: 'var(--color-text-secondary)'}}>
+                              <div style={{fontSize: '48px', marginBottom: '16px'}}>🔪</div>
+                              <div style={{fontSize: '18px', fontWeight: 'bold', marginBottom: '8px'}}>Aucune préparation</div>
+                              <div>Utilisez l'auto-génération dans Production > Préparations</div>
+                            </div>
+                          )}
+                        </>
+                      );
                     } else {
                       // Affichage par produits (mode par défaut)
                       // Filtrer les stocks selon la recherche et la catégorie
