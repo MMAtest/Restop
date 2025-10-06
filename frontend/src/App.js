@@ -2026,8 +2026,11 @@ function App() {
             />
           )}
 
-          {/* ONGLET VENTES */}
-          {activeDashboardTab === "ventes" && (
+          {/* Analytics et données business - MASQUÉS pour employé cuisine */}
+          {currentUser?.role !== 'employe_cuisine' && (
+            <>
+              {/* ONGLET VENTES */}
+              {activeDashboardTab === "ventes" && (
             <div className="section-card">
               <div className="section-title">
                 💰 Analyse des Ventes
