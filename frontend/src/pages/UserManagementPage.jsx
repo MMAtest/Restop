@@ -455,7 +455,16 @@ const UserManagementPage = () => {
                     setEditingUser(null);
                     resetUserForm();
                   }}
-                  className="px-4 py-2 text-gray-600 hover:text-gray-800 transition-colors"
+                  style={{
+                    background: '#6b7280',
+                    color: 'white',
+                    padding: '8px 16px',
+                    borderRadius: '8px',
+                    border: 'none',
+                    cursor: 'pointer',
+                    fontSize: '14px',
+                    fontWeight: '600'
+                  }}
                 >
                   Annuler
                 </button>
