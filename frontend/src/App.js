@@ -657,6 +657,78 @@ function App() {
     setMissionRefreshKey(Date.now());
   };
 
+  // ✅ Fonction pour récupérer l'historique des opérations production
+  const fetchHistoriqueProduction = async () => {
+    try {
+      // Récupérer différentes données pour construire l'historique
+      const [mouvementsResp, rapportsResp, missionsResp] = await Promise.all([
+        axios.get(`${API}/mouvements`),
+        axios.get(`${API}/rapports_z`),
+        axios.get(`${API}/missions`)
+      ]);
+
+      const mouvements = mouvementsResp.data || [];
+      const rapports = rapportsResp.data || [];
+      const missions = missionsResp.data || [];
+
+      // Construire l'historique avec différents types d'opérations
+      const operations = [];
+
+      // Ajouter les mouvements de stock récents
+      mouvements.slice(0, 5).forEach(mouvement => {
+        operations.push({
+          id: mouvement.id,
+          type: 'mouvement',
+          nom: `${mouvement.type === 'entree' ? '📈' : mouvement.type === 'sortie' ? '📉' : '🔄'} ${mouvement.type} - ${mouvement.produit_nom}`,
+          details: `${new Date(mouvement.date).toLocaleDateString('fr-FR')} • ${mouvement.quantite} ${mouvement.produit_nom ? (produits.find(p => p.id === mouvement.produit_id)?.unite || '') : ''} • ${mouvement.commentaire || 'Aucun commentaire'}`,
+          statut: mouvement.type === 'entree' ? '✅ Entrée' : mouvement.type === 'sortie' ? '📉 Sortie' : '🔄 Ajusté',
+          date: new Date(mouvement.date),
+          couleur: mouvement.type === 'entree' ? 'positive' : mouvement.type === 'sortie' ? 'negative' : 'neutral'
+        });
+      });
+
+      // Ajouter les rapports Z récents
+      rapports.slice(0, 3).forEach(rapport => {
+        operations.push({
+          id: rapport.id,
+          type: 'rapport',
+          nom: `📊 Rapport Z - Service ${new Date(rapport.date).getHours() < 15 ? 'Déjeuner' : 'Dîner'}`,
+          details: `${new Date(rapport.date).toLocaleDateString('fr-FR')} ${new Date(rapport.date).toLocaleTimeString('fr-FR', {hour: '2-digit', minute: '2-digit'})} • CA: ${rapport.ca_total.toFixed(2)}€ • ${rapport.produits.length} produits`,
+          statut: '✅ Traité',
+          date: new Date(rapport.date),
+          couleur: 'positive'
+        });
+      });
+
+      // Ajouter les missions récentes liées à la production
+      missions.filter(m => m.category === 'cuisine' || m.type === 'preparation').slice(0, 4).forEach(mission => {
+        const statusText = mission.status === 'validee' ? '✅ Validée' : 
+                          mission.status === 'terminee_attente' ? '⏳ En attente' : 
+                          '🔄 En cours';
+        
+        operations.push({
+          id: mission.id,
+          type: 'mission',
+          nom: `📝 ${mission.title}`,
+          details: `${new Date(mission.assigned_date).toLocaleDateString('fr-FR')} • ${mission.assigned_to_name} • ${mission.priority}`,
+          statut: statusText,
+          date: new Date(mission.assigned_date),
+          couleur: mission.status === 'validee' ? 'positive' : mission.status === 'terminee_attente' ? 'warning' : 'neutral'
+        });
+      });
+
+      // Trier par date décroissante et limiter à 10 opérations
+      const historiqueTrié = operations
+        .sort((a, b) => b.date - a.date)
+        .slice(0, 10);
+
+      setHistoriqueProduction(historiqueTrié);
+
+    } catch (error) {
+      console.error('Erreur lors du chargement historique production:', error);
+    }
+  };
+
   const handleCreateMission = async (e) => {
     e.preventDefault();
     setLoading(true);
