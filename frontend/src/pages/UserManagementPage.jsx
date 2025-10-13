@@ -461,7 +461,17 @@ const UserManagementPage = () => {
                 </button>
                 <button
                   type="submit"
-                  className="bg-primary-500 hover:bg-primary-600 text-white px-4 py-2 rounded-lg font-medium transition-colors"
+                  className="font-medium transition-colors"
+                  style={{
+                    background: '#10b981',
+                    color: 'white',
+                    padding: '8px 16px',
+                    borderRadius: '8px',
+                    border: 'none',
+                    cursor: 'pointer',
+                    fontSize: '14px',
+                    fontWeight: '600'
+                  }}
                 >
                   {editingUser ? 'Modifier' : 'Créer'} l'utilisateur
                 </button>
