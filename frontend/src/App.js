@@ -648,6 +648,13 @@ function App() {
     }
   };
 
+  // ✅ Fonction de rafraîchissement des missions pour le RoleBasedDashboard
+  const refreshMissions = () => {
+    // Déclencher un rechargement des données dans le composant RoleBasedDashboard
+    // En forçant un re-render avec une clé unique
+    setMissionRefreshKey(Date.now());
+  };
+
   const handleCreateMission = async (e) => {
     e.preventDefault();
     setLoading(true);
