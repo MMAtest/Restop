@@ -337,6 +337,7 @@ function App() {
   });
   const [availableUsers, setAvailableUsers] = useState([]);
   const [missionRefreshKey, setMissionRefreshKey] = useState(0); // Pour forcer le refresh du RoleBasedDashboard
+  const [historiqueProduction, setHistoriqueProduction] = useState([]); // Historique des opérations production
   const [fournisseurForm, setFournisseurForm] = useState({
     nom: "", contact: "", email: "", telephone: "", adresse: "", couleur: "#3B82F6", logo: "", categorie: "frais", deliveryCost: 0, extraCost: 0,
     delivery_rules: {
