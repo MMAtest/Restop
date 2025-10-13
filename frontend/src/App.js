@@ -2182,6 +2182,7 @@ function App() {
               user={currentUser} 
               sessionId={sessionId}
               activeDashboardTab={activeDashboardTab}
+              selectedDateRange={selectedDateRange}
               onNavigateToPage={(page) => setActiveTab(page)}
               onCreateMission={() => {
                 setShowMissionModal(true);
