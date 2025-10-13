@@ -206,6 +206,7 @@ const LoginPage = ({ onLoginSuccess }) => {
             {[
               { username: 'patron_test', role: '👑 Patron', color: '#dc2626' },
               { username: 'chef_test', role: '👨‍🍳 Chef de Cuisine', color: '#059669' },
+              { username: 'souschef_test', role: '👨‍🍳 Sous-Chef', color: '#16a34a' },
               { username: 'caisse_test', role: '💰 Responsable Caisse', color: '#2563eb' },
               { username: 'barman_test', role: '🍹 Barman', color: '#7c3aed' },
               { username: 'cuisine_test', role: '🥘 Employé Cuisine', color: '#ea580c' }
