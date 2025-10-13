@@ -109,6 +109,43 @@ const RoleBasedDashboard = ({ user, sessionId, onNavigateToPage, onCreateMission
       </span>
     );
   };
+  // ✅ Filtrer missions selon la période sélectionnée
+  const filterMissionsByDateRange = (missionsList, dateRange) => {
+    if (!dateRange || !missionsList) return missionsList;
+    
+    return missionsList.filter(mission => {
+      const missionDate = new Date(mission.assigned_date);
+      return missionDate >= dateRange.startDate && missionDate <= dateRange.endDate;
+    });
+  };
+
+  const getFilteredMissions = () => {
+    const today = new Date();
+    const startOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+    const endOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 23, 59, 59);
+    
+    // Utiliser la période sélectionnée ou par défaut aujourd'hui
+    const dateRange = selectedDateRange || {
+      startDate: startOfDay,
+      endDate: endOfDay,
+      label: "Aujourd'hui"
+    };
+
+    // Missions créées par moi dans la période
+    const missionsCreatedInPeriod = filterMissionsByDateRange(missions.created_by_me || [], dateRange);
+    
+    // Missions terminées à valider dans la période
+    const missionsToValidateInPeriod = filterMissionsByDateRange(
+      (missions.created_by_me || []).filter(m => m.status === 'terminee_attente'),
+      dateRange
+    );
+
+    return {
+      createdToday: missionsCreatedInPeriod,
+      toValidateToday: missionsToValidateInPeriod,
+      dateLabel: dateRange.label || 'Période sélectionnée'
+    };
+  };
 
   // Rendu compact intégré selon le rôle - Section missions visible sur la home
   const missionsEnCours = missions.assigned_to_me?.filter(m => m.status === 'en_cours') || [];
