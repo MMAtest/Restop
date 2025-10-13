@@ -5238,6 +5238,176 @@ function App() {
                     })()}
                   </div>
                 )}
+
+                {/* Contenu spécifique aux Mercuriales */}
+                {activeOcrTab === 'mercuriales' && (
+                  <div className="item-list">
+                    <div className="section-title">📋 Import Mercuriales - Création Produits</div>
+                    
+                    {/* Instructions d'utilisation */}
+                    <div style={{
+                      marginBottom: '20px',
+                      padding: '16px',
+                      background: 'linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%)',
+                      borderRadius: '8px',
+                      border: '1px solid #3b82f6'
+                    }}>
+                      <h4 style={{marginBottom: '12px', color: '#1e40af', fontSize: '16px', fontWeight: 'bold'}}>
+                        📋 Comment utiliser les Mercuriales
+                      </h4>
+                      <div style={{fontSize: '14px', color: '#1e40af', lineHeight: '1.5'}}>
+                        <div style={{marginBottom: '8px'}}>
+                          <strong>1. 📁 Uploadez</strong> la liste de prix PDF/image de votre fournisseur
+                        </div>
+                        <div style={{marginBottom: '8px'}}>
+                          <strong>2. 🤖 Extraction</strong> automatique des produits et prix
+                        </div>
+                        <div style={{marginBottom: '8px'}}>
+                          <strong>3. ✅ Validation</strong> et création des nouveaux produits en un clic
+                        </div>
+                        <div style={{fontSize: '12px', marginTop: '8px', padding: '8px', background: 'white', borderRadius: '4px'}}>
+                          💡 <strong>Conseil :</strong> Les mercuriales permettent d'importer rapidement tous les nouveaux produits saisonniers de vos fournisseurs
+                        </div>
+                      </div>
+                    </div>
+                    
+                    {/* Upload et traitement mercuriales */}
+                    <div style={{
+                      padding: '20px',
+                      background: 'white', 
+                      borderRadius: '10px',
+                      border: '2px solid #10b981',
+                      marginBottom: '20px'
+                    }}>
+                      <h4 style={{color: '#059669', marginBottom: '16px', fontSize: '16px', fontWeight: 'bold'}}>
+                        📤 Upload Mercuriale Fournisseur
+                      </h4>
+                      
+                      <div style={{display: 'grid', gap: '16px'}}>
+                        {/* Sélectionner fournisseur */}
+                        <div>
+                          <label style={{display: 'block', marginBottom: '8px', fontWeight: '600', color: '#374151'}}>
+                            🏪 Fournisseur concerné :
+                          </label>
+                          <select
+                            style={{
+                              width: '100%',
+                              padding: '10px 12px',
+                              border: '1px solid #d1d5db',
+                              borderRadius: '6px',
+                              fontSize: '14px'
+                            }}
+                            onChange={(e) => {
+                              // Logique de sélection fournisseur pour mercuriale
+                              console.log('Fournisseur sélectionné:', e.target.value);
+                            }}
+                          >
+                            <option value="">-- Sélectionner le fournisseur --</option>
+                            {fournisseurs.map(fournisseur => (
+                              <option key={fournisseur.id} value={fournisseur.id}>
+                                {fournisseur.logo || '🏪'} {fournisseur.nom} ({fournisseur.categorie})
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                        
+                        {/* Zone de drop pour mercuriale */}
+                        <div style={{
+                          border: '2px dashed #10b981',
+                          borderRadius: '8px',
+                          padding: '32px',
+                          textAlign: 'center',
+                          background: '#f0fdf4'
+                        }}>
+                          <div style={{fontSize: '48px', marginBottom: '16px'}}>📋</div>
+                          <div style={{fontSize: '16px', fontWeight: '600', color: '#059669', marginBottom: '8px'}}>
+                            Glissez votre mercuriale ici
+                          </div>
+                          <div style={{fontSize: '14px', color: '#065f46', marginBottom: '16px'}}>
+                            ou cliquez pour sélectionner (PDF, JPG, PNG)
+                          </div>
+                          <button 
+                            className="button"
+                            onClick={() => setShowOcrModal(true)}
+                            style={{
+                              background: '#10b981',
+                              color: 'white',
+                              border: 'none',
+                              padding: '10px 20px',
+                              borderRadius: '6px',
+                              cursor: 'pointer'
+                            }}
+                          >
+                            📁 Sélectionner Mercuriale
+                          </button>
+                        </div>
+                        
+                        {/* Instructions */}
+                        <div style={{fontSize: '12px', color: '#6b7280', textAlign: 'center'}}>
+                          Les formats supportés : PDF, JPG, PNG • Taille max : 10 MB
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Historique des mercuriales importées */}
+                    <div>
+                      <h4 style={{marginBottom: '16px', color: '#374151', fontSize: '16px', fontWeight: 'bold'}}>
+                        📊 Mercuriales Importées Récemment
+                      </h4>
+                      
+                      {documentsOcr.filter(doc => doc.type_document === 'mercuriale').length > 0 ? (
+                        documentsOcr.filter(doc => doc.type_document === 'mercuriale').slice(0, 5).map(doc => (
+                          <div key={doc.id} style={{
+                            padding: '16px',
+                            background: 'white',
+                            borderRadius: '8px',
+                            border: '1px solid #e5e7eb',
+                            marginBottom: '12px'
+                          }}>
+                            <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
+                              <div>
+                                <div style={{fontWeight: '600', marginBottom: '4px'}}>
+                                  📋 {doc.nom_fichier}
+                                </div>
+                                <div style={{fontSize: '13px', color: '#6b7280'}}>
+                                  {new Date(doc.date_upload).toLocaleDateString('fr-FR')} à {new Date(doc.date_upload).toLocaleTimeString('fr-FR', {hour: '2-digit', minute: '2-digit'})}
+                                  {doc.donnees_parsees?.produits_detectes && (
+                                    <span style={{marginLeft: '8px', color: '#059669'}}>
+                                      • {doc.donnees_parsees.produits_detectes.length} produits détectés
+                                    </span>
+                                  )}
+                                </div>
+                              </div>
+                              
+                              <div style={{display: 'flex', gap: '8px'}}>
+                                <button 
+                                  className="button small"
+                                  onClick={() => handlePreviewDocument(doc)}
+                                  style={{fontSize: '12px', padding: '4px 8px'}}
+                                >
+                                  👁️ Aperçu
+                                </button>
+                                <button 
+                                  className="button small success"
+                                  onClick={() => alert('Fonctionnalité de création produits depuis mercuriales en cours de développement')}
+                                  style={{fontSize: '12px', padding: '4px 8px'}}
+                                >
+                                  ➕ Créer Produits
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                        ))
+                      ) : (
+                        <div style={{textAlign: 'center', padding: '40px', color: '#6b7280'}}>
+                          <div style={{fontSize: '48px', marginBottom: '16px'}}>📋</div>
+                          <div style={{fontSize: '16px', fontWeight: '600', marginBottom: '8px'}}>Aucune mercuriale importée</div>
+                          <div style={{fontSize: '14px'}}>Importez votre première liste de prix fournisseur pour commencer</div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
 
