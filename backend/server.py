@@ -300,6 +300,13 @@ class LoginResponse(BaseModel):
     session_id: Optional[str] = None
     message: str
 
+class UserUpdate(BaseModel):
+    username: Optional[str] = None
+    email: Optional[str] = None
+    password: Optional[str] = None
+    role: Optional[str] = None
+    full_name: Optional[str] = None
+
 class UserCreate(BaseModel):
     username: str
     email: str
