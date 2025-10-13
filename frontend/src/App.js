@@ -3720,25 +3720,35 @@ function App() {
                     <div className="kpi-card">
                       <div className="icon">📈</div>
                       <div className="title">Stock Total</div>
-                      <div className="value">385 produits</div>
+                      <div className="value">{stocks.length} produits</div>
                     </div>
                     
                     <div className="kpi-card">
                       <div className="icon">⚠️</div>
                       <div className="title">Stocks Critiques</div>
-                      <div className="value warning">42 alertes</div>
+                      <div className="value warning">
+                        {stocks.filter(s => s.quantite_actuelle <= s.quantite_min).length} alertes
+                      </div>
                     </div>
                     
                     <div className="kpi-card">
                       <div className="icon">💰</div>
                       <div className="title">Valeur Totale</div>
-                      <div className="value">16 326,05 €</div>
+                      <div className="value">
+                        {stocks.reduce((total, stock) => {
+                          const produit = produits.find(p => p.id === stock.produit_id);
+                          const prix = produit?.prix_achat || produit?.reference_price || 0;
+                          return total + (stock.quantite_actuelle * prix);
+                        }, 0).toLocaleString('fr-FR', {style: 'currency', currency: 'EUR'})}
+                      </div>
                     </div>
                     
                     <div className="kpi-card">
                       <div className="icon">⏰</div>
                       <div className="title">DLC &lt; 3 jours</div>
-                      <div className="value" style={{color: 'var(--color-warning-orange)'}}>8 produits</div>
+                      <div className="value" style={{color: 'var(--color-warning-orange)'}}>
+                        {preparations.filter(p => p.dlc && new Date(p.dlc) < new Date(Date.now() + 3 * 24 * 60 * 60 * 1000)).length} produits
+                      </div>
                     </div>
                   </div>
                 )}
