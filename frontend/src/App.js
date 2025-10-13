@@ -4591,6 +4591,18 @@ function App() {
                   >
                     🧾 Factures
                   </button>
+                  
+                  <button 
+                    className="button" 
+                    onClick={() => setActiveOcrTab('mercuriales')}
+                    style={{
+                      background: activeOcrTab === 'mercuriales' ? 'var(--color-primary-blue)' : 'var(--color-background-card-light)',
+                      color: activeOcrTab === 'mercuriales' ? 'white' : 'var(--color-text-secondary)',
+                      marginLeft: '10px'
+                    }}
+                  >
+                    📋 Mercuriales
+                  </button>
                 </div>
                 
                 {/* Actions communes */}
