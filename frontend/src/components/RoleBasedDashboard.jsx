@@ -128,6 +128,10 @@ const RoleBasedDashboard = ({ user, sessionId, onNavigateToPage, onCreateMission
     
     return missionsList.filter(mission => {
       const missionDate = new Date(mission.assigned_date);
+      
+      // Debug pour voir les dates
+      console.log('🔍 Mission:', mission.title, 'Date:', missionDate, 'Range:', dateRange.startDate, '-', dateRange.endDate);
+      
       return missionDate >= dateRange.startDate && missionDate <= dateRange.endDate;
     });
   };
