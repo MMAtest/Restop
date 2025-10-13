@@ -4608,7 +4608,11 @@ function App() {
                 {/* Actions communes */}
                 <div style={{display: 'flex', gap: '10px', marginBottom: '20px', flexWrap: 'wrap'}}>
                   <button className="button" onClick={() => setShowOcrModal(true)}>
-                    📁 Importer {activeOcrTab === 'tickets-z' ? 'Ticket Z' : 'Facture(s)'}
+                    📁 Importer {
+                      activeOcrTab === 'tickets-z' ? 'Ticket Z' : 
+                      activeOcrTab === 'factures' ? 'Facture(s)' :
+                      'Mercuriale'
+                    }
                   </button>
                   <button className="button" onClick={handleTraitementAuto} disabled={loading}>🔄 Traitement Auto</button>
                   <button 
