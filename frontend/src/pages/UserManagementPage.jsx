@@ -72,6 +72,8 @@ const UserManagementPage = () => {
 
   const handleSubmitUser = async (e) => {
     e.preventDefault();
+    setLoading(true);
+    
     try {
       const method = editingUser ? 'PUT' : 'POST';
       const url = editingUser 
@@ -89,18 +91,33 @@ const UserManagementPage = () => {
       });
 
       if (response.ok) {
+        // Fermer la modale et reset
         setShowUserModal(false);
         setEditingUser(null);
         resetUserForm();
-        fetchUsers();
-        alert(editingUser ? 'Utilisateur modifié avec succès!' : 'Utilisateur créé avec succès!');
+        
+        // Rafraîchir la liste
+        await fetchUsers();
+        
+        // Message de confirmation
+        const message = editingUser 
+          ? `✅ Utilisateur "${userForm.full_name || userForm.username}" modifié avec succès !` 
+          : `✅ Utilisateur "${userForm.full_name || userForm.username}" créé avec succès !`;
+        
+        alert(message);
+        
+        console.log('✅ Utilisateur sauvegardé avec succès');
       } else {
-        const error = await response.json();
-        alert(`Erreur: ${error.detail}`);
+        const errorData = await response.json();
+        const errorMessage = errorData.detail || errorData.message || `Erreur HTTP ${response.status}`;
+        alert(`❌ Erreur lors de la sauvegarde: ${errorMessage}`);
+        console.error('Erreur sauvegarde:', errorData);
       }
     } catch (error) {
       console.error('Erreur lors de la sauvegarde:', error);
-      alert('Erreur lors de la sauvegarde');
+      alert(`❌ Erreur de connexion: ${error.message}`);
+    } finally {
+      setLoading(false);
     }
   };
 
