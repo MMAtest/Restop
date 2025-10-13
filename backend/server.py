@@ -4665,6 +4665,10 @@ async def upload_and_process_document(
                     "file_type": file_type,
                     "has_quality_issues": len(rejected_invoices) > 0
                 }
+        elif document_type == "mercuriale":
+            # Parser la mercuriale pour détecter les produits
+            mercuriale_data = parse_mercuriale_fournisseur(texte_extrait)
+            donnees_parsees = mercuriale_data
         
         # Pour les tickets Z (traitement normal inchangé)
         if document_type == "z_report":
