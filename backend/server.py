@@ -1664,7 +1664,7 @@ async def delete_user(user_id: str):
     return {"message": "User deleted successfully"}
 
 @api_router.put("/admin/users/{user_id}", response_model=UserResponse)
-async def update_user(user_id: str, user_update: UserCreate):
+async def update_user(user_id: str, user_update: UserUpdate):
     """Update a user (Super Admin only)"""
     try:
         # Vérifier que l'utilisateur existe
