@@ -164,16 +164,13 @@ const RoleBasedDashboard = ({ user, sessionId, onNavigateToPage, onCreateMission
     console.log('🔍 Filtre missions - Range:', dateRange.startDate, 'à', dateRange.endDate);
     console.log('🔍 Missions totales créées par moi:', missions.created_by_me?.length);
 
-    // Missions créées par moi dans la période
-    const missionsCreatedInPeriod = filterMissionsByDateRange(missions.created_by_me || [], dateRange);
+    // TEMPORAIRE : Afficher TOUTES les missions sans filtre pour debug
+    const missionsCreatedInPeriod = missions.created_by_me || [];
     
-    // Missions terminées à valider dans la période
-    const missionsToValidateInPeriod = filterMissionsByDateRange(
-      (missions.created_by_me || []).filter(m => m.status === 'terminee_attente'),
-      dateRange
-    );
+    // Missions terminées à valider (toutes aussi)
+    const missionsToValidateInPeriod = (missions.created_by_me || []).filter(m => m.status === 'terminee_attente');
 
-    console.log('🔍 Missions filtrées:', missionsCreatedInPeriod.length, 'à valider:', missionsToValidateInPeriod.length);
+    console.log('🔍 Missions sans filtre:', missionsCreatedInPeriod.length, 'à valider:', missionsToValidateInPeriod.length);
 
     return {
       createdToday: missionsCreatedInPeriod,
