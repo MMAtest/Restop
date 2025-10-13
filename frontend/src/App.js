@@ -671,10 +671,8 @@ function App() {
       
       alert('✅ Mission créée et assignée avec succès !');
       
-      // Rafraîchir les données
-      if (window.RoleBasedDashboard_fetchMissionsAndNotifications) {
-        window.RoleBasedDashboard_fetchMissionsAndNotifications();
-      }
+      // Rafraîchir les données du RoleBasedDashboard
+      refreshMissions();
       
       setShowMissionModal(false);
       resetMissionForm();
