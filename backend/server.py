@@ -3295,6 +3295,126 @@ def parse_facture_fournisseur(texte_ocr: str) -> FactureFournisseurData:
     
     return data
 
+def parse_mercuriale_fournisseur(texte_ocr: str, fournisseur_id: str = None) -> dict:
+    """Parser une mercuriale (liste de prix fournisseur) pour créer des produits"""
+    try:
+        lines = texte_ocr.split('\n')
+        produits_detectes = []
+        fournisseur_detecte = None
+        
+        # Patterns pour détecter les lignes de produits dans les mercuriales
+        patterns_produits = [
+            # Format: "Nom produit    prix  unité" 
+            r'^(.+?)\s+([0-9]+[,.]?[0-9]*)\s*[€]?\s*(kg|g|L|mL|cl|pièce|pc|pcs|botte|paquet)\s*$',
+            # Format: "Nom produit - prix €/unité"
+            r'^(.+?)\s*[-–]\s*([0-9]+[,.]?[0-9]*)\s*[€]?\s*[/]\s*(kg|g|L|mL|cl|pièce|pc|pcs|botte|paquet)',
+            # Format: "Code | Nom produit | Prix | Unité" 
+            r'^[A-Z0-9]*\s*[|]\s*(.+?)\s*[|]\s*([0-9]+[,.]?[0-9]*)\s*[€]?\s*[|]\s*(kg|g|L|mL|cl|pièce|pc|pcs|botte|paquet)',
+            # Format: "Produit    €X.XX  unité"
+            r'^(.+?)\s+[€]\s*([0-9]+[,.]?[0-9]*)\s+(kg|g|L|mL|cl|pièce|pc|pcs|botte|paquet)'
+        ]
+        
+        # Détecter le fournisseur dans l'en-tête
+        for i, line in enumerate(lines[:10]):  
+            line_clean = line.strip().upper()
+            if any(keyword in line_clean for keyword in ['MERCURIALE', 'LISTE', 'PRIX', 'TARIFS', 'CATALOGUE']):
+                # Chercher le nom du fournisseur dans les lignes précédentes/suivantes
+                for j in range(max(0, i-3), min(len(lines), i+4)):
+                    potential_name = lines[j].strip()
+                    if len(potential_name) > 3 and not any(skip in potential_name.upper() for skip in ['MERCURIALE', 'LISTE', 'PRIX', 'DATE', 'CATALOGUE', 'TARIF']):
+                        fournisseur_detecte = potential_name
+                        break
+                break
+        
+        # Catégoriser les produits automatiquement
+        def detect_category(nom_produit: str) -> str:
+            nom_lower = nom_produit.lower()
+            if any(word in nom_lower for word in ['tomate', 'salade', 'carotte', 'courgette', 'épinard', 'poireau', 'oignon', 'ail']):
+                return 'Légumes'
+            elif any(word in nom_lower for word in ['bœuf', 'porc', 'agneau', 'veau', 'volaille', 'poulet', 'canard']):
+                return 'Viandes'  
+            elif any(word in nom_lower for word in ['saumon', 'dorade', 'bar', 'sole', 'morue', 'crevette', 'homard', 'moule']):
+                return 'Poissons'
+            elif any(word in nom_lower for word in ['fromage', 'beurre', 'crème', 'yaourt', 'lait', 'mozzarella', 'parmesan']):
+                return 'Crêmerie'
+            elif any(word in nom_lower for word in ['farine', 'riz', 'pâte', 'semoule', 'quinoa', 'avoine']):
+                return 'Céréales'
+            elif any(word in nom_lower for word in ['pomme', 'poire', 'orange', 'citron', 'fraise', 'banane']):
+                return 'Fruits'
+            elif any(word in nom_lower for word in ['thym', 'basilic', 'persil', 'poivre', 'sel', 'paprika', 'cumin']):
+                return 'Épices'
+            else:
+                return 'Autres'
+        
+        # Parser les lignes de produits
+        for line in lines:
+            line_clean = line.strip()
+            if len(line_clean) < 5:  # Ignorer les lignes trop courtes
+                continue
+                
+            # Ignorer les en-têtes et lignes non-produits
+            if any(skip in line_clean.upper() for skip in [
+                'FOURNISSEUR', 'MERCURIALE', 'LISTE', 'PRIX', 'TARIFS', 'DATE', 
+                'CATALOGUE', 'PAGE', 'TOTAL', 'SUBTOTAL', 'TVA', 'HT', 'TTC',
+                'CODE', 'RÉFÉRENCE', 'DESIGNATION', 'QUANTITÉ', 'UNITÉ'
+            ]):
+                continue
+            
+            # Tester chaque pattern
+            for pattern in patterns_produits:
+                match = re.match(pattern, line_clean, re.IGNORECASE)
+                if match:
+                    try:
+                        nom = match.group(1).strip()
+                        prix = float(match.group(2).replace(',', '.'))
+                        unite = match.group(3).lower()
+                        
+                        # Nettoyer le nom du produit
+                        nom = re.sub(r'^[A-Z0-9\-\s]*\|', '', nom).strip()
+                        nom = re.sub(r'[|]+', '', nom).strip()
+                        
+                        if len(nom) > 2 and prix > 0:
+                            # Standardiser l'unité
+                            unite_standard = {
+                                'kg': 'kg', 'g': 'g', 'l': 'L', 'ml': 'mL', 'cl': 'cL',
+                                'piece': 'pièce', 'pc': 'pièce', 'pcs': 'pièce',
+                                'botte': 'botte', 'paquet': 'paquet'
+                            }.get(unite.lower(), unite)
+                            
+                            produit = {
+                                "nom": nom.title(),
+                                "prix_achat": prix,
+                                "unite": unite_standard,
+                                "categorie": detect_category(nom),
+                                "fournisseur_id": fournisseur_id,
+                                "ligne_originale": line_clean
+                            }
+                            
+                            # Éviter les doublons
+                            if not any(p["nom"].lower() == nom.lower() for p in produits_detectes):
+                                produits_detectes.append(produit)
+                        break
+                    except (ValueError, IndexError):
+                        continue
+        
+        return {
+            "type": "mercuriale",
+            "fournisseur_detecte": fournisseur_detecte,
+            "produits_detectes": produits_detectes,
+            "total_produits": len(produits_detectes),
+            "fournisseur_id": fournisseur_id
+        }
+        
+    except Exception as e:
+        print(f"Erreur parsing mercuriale: {str(e)}")
+        return {
+            "type": "mercuriale", 
+            "fournisseur_detecte": None,
+            "produits_detectes": [],
+            "total_produits": 0,
+            "error": str(e)
+        }
+
 # Routes pour les fournisseurs
 @api_router.post("/fournisseurs", response_model=Fournisseur)
 async def create_fournisseur(fournisseur: FournisseurCreate):
