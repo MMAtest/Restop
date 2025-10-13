@@ -6974,7 +6974,7 @@ function App() {
                 </select>
               </div>
               <div className="form-group">
-                <label className="form-label">Unité</label>
+                <label className="form-label">Unité (utilisée lors de l'achat)</label>
                 <select
                   className="form-select"
                   value={produitForm.unite}
