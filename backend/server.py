@@ -5373,6 +5373,83 @@ async def init_demo_missions_and_users():
                 validated_date=datetime.utcnow() - timedelta(hours=1),
                 employee_notes="Livraison conforme. Poissons de qualité excellent.",
                 validation_notes="Parfait, merci Jean !"
+            ),
+            
+            # Nouvelles missions créées AUJOURD'HUI par le chef pour les listes
+            Mission(
+                title="Vérifier température frigos légumes",
+                description="Contrôler que les frigos légumes maintiennent entre 2-4°C. Noter les températures.",
+                type="equipment_check",
+                category="hygiene",
+                assigned_to_user_id="cuisine-001",
+                assigned_by_user_id="chef-001",
+                assigned_to_name="Lucas Petit (Employé Cuisine)",
+                assigned_by_name="Marie Dubois (Chef de Cuisine)",
+                priority="normale",
+                due_date=datetime.utcnow() + timedelta(hours=3),
+                assigned_date=datetime.utcnow()  # Mission créée aujourd'hui
+            ),
+            
+            Mission(
+                title="Compter stock épices",
+                description="Faire l'inventaire complet des épices en réserve. Vérifier les DLC.",
+                type="stock_check", 
+                category="stock",
+                assigned_to_user_id="barman-001",
+                assigned_by_user_id="souschef-001",  # Mission créée par le sous-chef
+                assigned_to_name="Sophie Leroy (Barman)",
+                assigned_by_name="Nabil El Mansouri (Sous-Chef)",
+                priority="basse",
+                assigned_date=datetime.utcnow() - timedelta(hours=2)  # Créée plus tôt aujourd'hui
+            ),
+            
+            Mission(
+                title="Nettoyer planches à découper",
+                description="Nettoyer et désinfecter toutes les planches à découper. Vérifier l'état.",
+                type="cleaning",
+                category="hygiene",
+                assigned_to_user_id="cuisine-001",
+                assigned_by_user_id="chef-001",
+                assigned_to_name="Lucas Petit (Employé Cuisine)",
+                assigned_by_name="Marie Dubois (Chef de Cuisine)",
+                status="terminee_attente",  # Terminée, en attente validation
+                priority="normale",
+                assigned_date=datetime.utcnow() - timedelta(hours=1),
+                completed_by_employee_date=datetime.utcnow() - timedelta(minutes=30),
+                employee_notes="Toutes les planches nettoyées et désinfectées avec Javel. État excellent."
+            ),
+            
+            Mission(
+                title="Préparer 25 portions Moules marinières",
+                description="Nettoyer et préparer les moules pour le service de ce soir. Éliminer celles qui ne s'ouvrent pas.",
+                type="preparation",
+                category="cuisine",
+                assigned_to_user_id="cuisine-001",
+                assigned_by_user_id="souschef-001",  # Par le sous-chef
+                assigned_to_name="Lucas Petit (Employé Cuisine)",
+                assigned_by_name="Nabil El Mansouri (Sous-Chef)",
+                status="terminee_attente",  # Terminée, en attente validation
+                priority="haute",
+                assigned_date=datetime.utcnow() - timedelta(hours=3),
+                completed_by_employee_date=datetime.utcnow() - timedelta(minutes=45),
+                target_quantity=25,
+                target_unit="portions",
+                employee_notes="25 portions préparées. Moules très fraîches, aucune écartée."
+            ),
+            
+            # Mission créée par le patron aujourd'hui
+            Mission(
+                title="Former nouveau serveur sur protocoles",
+                description="Former le nouveau serveur sur les protocoles de service et présentation des plats.",
+                type="formation",
+                category="service",
+                assigned_to_user_id="chef-001",
+                assigned_by_user_id="patron-001",
+                assigned_to_name="Marie Dubois (Chef de Cuisine)",
+                assigned_by_name="Antonin Portal (Patron)",
+                priority="normale",
+                assigned_date=datetime.utcnow() - timedelta(minutes=30),  # Très récente
+                due_date=datetime.utcnow() + timedelta(hours=6)
             )
         ]
         
