@@ -690,7 +690,7 @@ function App() {
       description: '',
       type: 'preparation',
       category: 'cuisine',
-      assigned_to_user_id: '',
+      assigned_to_user_ids: [], // Reset en tableau vide
       priority: 'normale',
       due_date: '',
       target_quantity: '',
