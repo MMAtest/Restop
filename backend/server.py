@@ -1656,6 +1656,66 @@ async def delete_user(user_id: str):
         raise HTTPException(status_code=404, detail="User not found")
     return {"message": "User deleted successfully"}
 
+@api_router.put("/admin/users/{user_id}", response_model=UserResponse)
+async def update_user(user_id: str, user_update: UserCreate):
+    """Update a user (Super Admin only)"""
+    try:
+        # Vérifier que l'utilisateur existe
+        existing_user = await db.users.find_one({"id": user_id})
+        if not existing_user:
+            raise HTTPException(status_code=404, detail="Utilisateur non trouvé")
+        
+        # Préparer les données de mise à jour
+        update_data = user_update.dict()
+        
+        # Si le mot de passe est vide, ne pas le mettre à jour
+        if not update_data.get("password"):
+            update_data.pop("password", None)
+            update_data.pop("password_hash", None)
+        else:
+            # Hash du nouveau mot de passe (pour l'instant simple, en production utiliser bcrypt)
+            update_data["password_hash"] = f"hashed_{update_data['password']}"
+            update_data.pop("password", None)
+        
+        # Vérifier l'unicité username/email (sauf pour l'utilisateur actuel)
+        if update_data.get("username"):
+            existing_username = await db.users.find_one({
+                "username": update_data["username"],
+                "id": {"$ne": user_id}
+            })
+            if existing_username:
+                raise HTTPException(status_code=400, detail="Ce nom d'utilisateur est déjà utilisé")
+        
+        if update_data.get("email"):
+            existing_email = await db.users.find_one({
+                "email": update_data["email"],
+                "id": {"$ne": user_id}
+            })
+            if existing_email:
+                raise HTTPException(status_code=400, detail="Cet email est déjà utilisé")
+        
+        # Valider le rôle
+        if update_data.get("role") and update_data["role"] not in ROLES:
+            raise HTTPException(status_code=400, detail=f"Rôle invalide. Rôles disponibles: {', '.join(ROLES.keys())}")
+        
+        # Effectuer la mise à jour
+        result = await db.users.update_one(
+            {"id": user_id},
+            {"$set": update_data}
+        )
+        
+        if result.matched_count == 0:
+            raise HTTPException(status_code=404, detail="Utilisateur non trouvé")
+        
+        # Récupérer l'utilisateur mis à jour
+        updated_user = await db.users.find_one({"id": user_id})
+        return UserResponse(**updated_user)
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Erreur lors de la mise à jour: {str(e)}")
+
 # Supplier-Product Relations
 @api_router.post("/supplier-product-info", response_model=SupplierProductInfo)
 async def create_supplier_product_info(info: SupplierProductInfoCreate):
