@@ -6557,28 +6557,42 @@ function App() {
             {activeProductionTab === 'historique' && (
               <div>
                 <div className="section-title">📊 Historique des Opérations</div>
+                
+                {/* Bouton actualiser et indicateur auto-refresh */}
+                <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px'}}>
+                  <button 
+                    className="button secondary"
+                    onClick={fetchHistoriqueProduction}
+                    style={{fontSize: '14px', padding: '8px 16px'}}
+                  >
+                    🔄 Actualiser
+                  </button>
+                  
+                  <div style={{fontSize: '12px', color: '#6b7280', textAlign: 'right'}}>
+                    📅 Dernière mise à jour : {new Date().toLocaleTimeString('fr-FR')}
+                    <br />
+                    🔄 Auto-refresh toutes les 30s
+                  </div>
+                </div>
+                
                 <div className="item-list">
-                  <div className="item-row">
-                    <div className="item-info">
-                      <div className="item-name">📊 Rapport Z - Service Déjeuner</div>
-                      <div className="item-details">Aujourd'hui 12:30 • CA: 2 418,00€ • 78 couverts</div>
+                  {historiqueProduction.length > 0 ? (
+                    historiqueProduction.map((operation, index) => (
+                      <div key={operation.id || index} className="item-row">
+                        <div className="item-info">
+                          <div className="item-name">{operation.nom}</div>
+                          <div className="item-details">{operation.details}</div>
+                        </div>
+                        <div className={`item-value ${operation.couleur}`}>{operation.statut}</div>
+                      </div>
+                    ))
+                  ) : (
+                    <div style={{textAlign: 'center', padding: '40px', color: '#6b7280'}}>
+                      <div style={{fontSize: '48px', marginBottom: '16px'}}>📊</div>
+                      <div style={{fontSize: '16px', marginBottom: '8px'}}>Aucune opération récente</div>
+                      <div style={{fontSize: '14px'}}>L'historique se remplira automatiquement avec l'activité</div>
                     </div>
-                    <div className="item-value positive">✅ Traité</div>
-                  </div>
-                  <div className="item-row">
-                    <div className="item-info">
-                      <div className="item-name">🛒 Commande Rungis</div>
-                      <div className="item-details">Hier 14:20 • 247,30€ • 15 produits</div>
-                    </div>
-                    <div className="item-value">🚚 En cours</div>
-                  </div>
-                  <div className="item-row">
-                    <div className="item-info">
-                      <div className="item-name">📝 Nouvelle recette</div>
-                      <div className="item-details">2 jours • Risotto aux champignons</div>
-                    </div>
-                    <div className="item-value positive">✅ Validée</div>
-                  </div>
+                  )}
                 </div>
               </div>
             )}
