@@ -5246,7 +5246,7 @@ async def init_demo_missions_and_users():
                 assigned_to_user_id="chef-001",
                 assigned_by_user_id="patron-001",
                 assigned_to_name="Marie Dubois (Chef de Cuisine)",
-                assigned_by_name="Pierre Dupont (Patron)",
+                assigned_by_name="Antonin Portal (Patron)",
                 priority="urgente",
                 due_date=datetime.utcnow() + timedelta(hours=1)
             ),
