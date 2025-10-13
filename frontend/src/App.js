@@ -2181,6 +2181,7 @@ function App() {
             <RoleBasedDashboard 
               user={currentUser} 
               sessionId={sessionId}
+              activeDashboardTab={activeDashboardTab}
               onNavigateToPage={(page) => setActiveTab(page)}
               onCreateMission={() => {
                 setShowMissionModal(true);
