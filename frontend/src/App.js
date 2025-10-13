@@ -336,6 +336,7 @@ function App() {
     related_preparation_id: ''
   });
   const [availableUsers, setAvailableUsers] = useState([]);
+  const [missionRefreshKey, setMissionRefreshKey] = useState(0); // Pour forcer le refresh du RoleBasedDashboard
   const [fournisseurForm, setFournisseurForm] = useState({
     nom: "", contact: "", email: "", telephone: "", adresse: "", couleur: "#3B82F6", logo: "", categorie: "frais", deliveryCost: 0, extraCost: 0,
     delivery_rules: {
