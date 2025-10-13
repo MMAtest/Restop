@@ -134,14 +134,20 @@ const RoleBasedDashboard = ({ user, sessionId, onNavigateToPage, onCreateMission
 
   const getFilteredMissions = () => {
     const today = new Date();
-    const startOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate());
-    const endOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 23, 59, 59);
     
-    // Utiliser la période sélectionnée ou par défaut aujourd'hui
-    const dateRange = selectedDateRange || {
-      startDate: startOfDay,
-      endDate: endOfDay,
-      label: "Aujourd'hui"
+    // Si pas de période sélectionnée, montrer les 7 derniers jours pour plus de données
+    const defaultStartDate = selectedDateRange ? 
+      selectedDateRange.startDate : 
+      new Date(today.getFullYear(), today.getMonth(), today.getDate() - 7);
+    
+    const defaultEndDate = selectedDateRange ? 
+      selectedDateRange.endDate : 
+      new Date(today.getFullYear(), today.getMonth(), today.getDate(), 23, 59, 59);
+    
+    const dateRange = {
+      startDate: defaultStartDate,
+      endDate: defaultEndDate,
+      label: selectedDateRange?.label || "7 derniers jours"
     };
 
     // Missions créées par moi dans la période
@@ -156,7 +162,7 @@ const RoleBasedDashboard = ({ user, sessionId, onNavigateToPage, onCreateMission
     return {
       createdToday: missionsCreatedInPeriod,
       toValidateToday: missionsToValidateInPeriod,
-      dateLabel: dateRange.label || 'Période sélectionnée'
+      dateLabel: dateRange.label
     };
   };
 
