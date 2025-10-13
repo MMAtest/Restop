@@ -5416,6 +5416,7 @@ async def init_demo_missions_and_users():
             "test_accounts": [
                 {"username": "patron_test", "password": "password123", "role": "Patron"},
                 {"username": "chef_test", "password": "password123", "role": "Chef de Cuisine"}, 
+                {"username": "souschef_test", "password": "password123", "role": "Sous-Chef"},
                 {"username": "caisse_test", "password": "password123", "role": "Responsable Caisse"},
                 {"username": "barman_test", "password": "password123", "role": "Barman"},
                 {"username": "cuisine_test", "password": "password123", "role": "Employé Cuisine"}
