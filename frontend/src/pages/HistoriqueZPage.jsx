@@ -134,12 +134,31 @@ export default function HistoriqueZPage() {
           )}
           
           <div style={{textAlign: 'center', marginTop: '20px'}}>
-            <button className="button" onClick={fetchRapports}>
-              🔄 Actualiser
+            <button 
+              className="button" 
+              onClick={fetchRapports}
+              disabled={loading}
+              style={{
+                background: loading ? '#9ca3af' : '',
+                cursor: loading ? 'not-allowed' : 'pointer'
+              }}
+            >
+              {loading ? '🔄 Actualisation...' : '🔄 Actualiser'}
             </button>
             <button className="button">
               📊 Exporter Excel
             </button>
+            
+            {/* Indicateur dernière mise à jour */}
+            <div style={{
+              fontSize: '12px', 
+              color: '#6b7280', 
+              marginTop: '8px'
+            }}>
+              📅 Dernière mise à jour : {new Date().toLocaleTimeString('fr-FR')}
+              <br />
+              🔄 Auto-refresh toutes les 30s
+            </div>
           </div>
         </div>
         
