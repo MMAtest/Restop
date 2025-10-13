@@ -1956,7 +1956,9 @@ function App() {
     
     try {
       // Déterminer le type automatiquement selon l'onglet actuel
-      const documentType = activeOcrTab === 'tickets-z' ? 'z_report' : 'facture_fournisseur';
+      const documentType = activeOcrTab === 'tickets-z' ? 'z_report' : 
+                           activeOcrTab === 'factures' ? 'facture_fournisseur' : 
+                           'mercuriale';
       
       const formData = new FormData();
       formData.append('file', ocrFile);
