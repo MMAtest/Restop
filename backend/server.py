@@ -5174,7 +5174,7 @@ async def init_demo_missions_and_users():
                 email="patron@table-augustine.fr",
                 password_hash="hashed_password123",  # En production: bcrypt
                 role="super_admin",
-                full_name="Pierre Dupont (Patron)",
+                full_name="Antonin Portal (Patron)",
                 is_active=True
             ),
             User(
