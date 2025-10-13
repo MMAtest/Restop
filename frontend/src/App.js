@@ -652,10 +652,13 @@ function App() {
   };
 
   // ✅ Fonction de rafraîchissement des missions pour le RoleBasedDashboard
-  const refreshMissions = () => {
-    // Déclencher un rechargement des données dans le composant RoleBasedDashboard
-    // En forçant un re-render avec une clé unique
+  const refreshMissions = async () => {
+    // Déclencher un rechargement réel des données 
+    // On va forcer un re-render ET recharger les données
     setMissionRefreshKey(Date.now());
+    
+    // Forcer le rechargement des données en créant un événement custom
+    window.dispatchEvent(new CustomEvent('refreshMissions'));
   };
 
   // ✅ Fonction pour récupérer l'historique des opérations production
