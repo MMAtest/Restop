@@ -11,6 +11,24 @@ export default function HistoriqueZPage() {
 
   useEffect(() => {
     fetchRapports();
+    
+    // Auto-refresh toutes les 30 secondes
+    const interval = setInterval(fetchRapports, 30000);
+    
+    // Cleanup interval au démontage du composant
+    return () => clearInterval(interval);
+  }, []);
+  
+  // Refresh quand la page devient visible
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (!document.hidden) {
+        fetchRapports();
+      }
+    };
+    
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
   }, []);
 
   const fetchRapports = async () => {
