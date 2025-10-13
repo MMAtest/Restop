@@ -6068,7 +6068,7 @@ function App() {
                   <button className="button">📊 Évaluation</button>
                 </div>
 
-                {fournisseurs.slice(0, 4).map((fournisseur, index) => (
+                {fournisseurs.map((fournisseur, index) => (
                   <div key={index} className="item-row">
                     <div className="item-info">
                       <div className="item-name" style={{display: 'flex', alignItems: 'center', gap: '8px'}}>
