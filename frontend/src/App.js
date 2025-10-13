@@ -377,6 +377,7 @@ function App() {
     fetchFormesDecoupe(); // Récupérer les formes de découpe
     fetchStocksPreparations(); // Récupérer les stocks de préparations
     fetchAvailableUsers(); // Récupérer les utilisateurs pour missions
+    fetchHistoriqueProduction(); // Récupérer l'historique des opérations
   }, []);
 
   // Fonction pour récupérer les catégories de production
