@@ -661,15 +661,40 @@ function App() {
     setLoading(true);
 
     try {
-      const missionData = {
-        ...missionForm,
-        target_quantity: missionForm.target_quantity ? parseFloat(missionForm.target_quantity) : null,
-        due_date: missionForm.due_date ? new Date(missionForm.due_date).toISOString() : null
-      };
+      if (missionForm.assigned_to_user_ids.length === 0) {
+        alert('❌ Veuillez sélectionner au moins un employé');
+        setLoading(false);
+        return;
+      }
 
-      await axios.post(`${API}/missions?assigned_by_user_id=${currentUser.id}`, missionData);
+      // Créer une mission pour chaque personne assignée
+      const missions = missionForm.assigned_to_user_ids.map(userId => {
+        const missionData = {
+          title: missionForm.title,
+          description: missionForm.description,
+          type: missionForm.type,
+          category: missionForm.category,
+          assigned_to_user_id: userId,
+          priority: missionForm.priority,
+          due_date: missionForm.due_date ? new Date(missionForm.due_date).toISOString() : null,
+          target_quantity: missionForm.target_quantity ? parseFloat(missionForm.target_quantity) : null,
+          target_unit: missionForm.target_unit || null
+        };
+        return missionData;
+      });
+
+      // Créer toutes les missions
+      const promises = missions.map(missionData => 
+        axios.post(`${API}/missions?assigned_by_user_id=${currentUser.id}`, missionData)
+      );
+
+      await Promise.all(promises);
       
-      alert('✅ Mission créée et assignée avec succès !');
+      const message = missionForm.assigned_to_user_ids.length === 1 
+        ? '✅ Mission créée et assignée avec succès !'
+        : `✅ Mission créée et assignée à ${missionForm.assigned_to_user_ids.length} personnes avec succès !`;
+      
+      alert(message);
       
       // Rafraîchir les données du RoleBasedDashboard
       refreshMissions();
