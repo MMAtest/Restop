@@ -3688,7 +3688,7 @@ async def auto_generate_preparations():
                 {"forme": "puree", "nom_suffix": "en purée", "rendement": 0.75, "portions_base": 10},
                 {"forme": "concasse", "nom_suffix": "concassés", "rendement": 0.90, "portions_base": 8}
             ],
-            "Produits laitiers": [
+            "Crêmerie": [
                 {"forme": "emince", "nom_suffix": "tranchés", "rendement": 0.95, "portions_base": 10},
                 {"forme": "rape", "nom_suffix": "râpés", "rendement": 0.90, "portions_base": 15},
                 {"forme": "carre", "nom_suffix": "en cubes", "rendement": 0.85, "portions_base": 12}
@@ -3846,7 +3846,7 @@ def get_category_icon(category: str) -> str:
         "Fruits": "🍎", 
         "Viandes": "🥩",
         "Poissons": "🐟",
-        "Produits laitiers": "🧀",
+        "Crêmerie": "🧀",
         "Céréales": "🌾",
         "Épices": "🌶️",
         "Autres": "📦",
