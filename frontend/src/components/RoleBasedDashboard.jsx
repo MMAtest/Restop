@@ -14,6 +14,19 @@ const RoleBasedDashboard = ({ user, sessionId, onNavigateToPage, onCreateMission
     }
   }, [user]);
 
+  // ✅ Écouter l'événement de rafraîchissement depuis le parent
+  useEffect(() => {
+    const handleRefreshMissions = () => {
+      fetchMissionsAndNotifications();
+    };
+
+    window.addEventListener('refreshMissions', handleRefreshMissions);
+    
+    return () => {
+      window.removeEventListener('refreshMissions', handleRefreshMissions);
+    };
+  }, []);
+
   const fetchMissionsAndNotifications = async () => {
     try {
       setLoading(true);
