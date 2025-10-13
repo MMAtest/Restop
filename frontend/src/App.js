@@ -2185,6 +2185,7 @@ function App() {
           {/* Section Missions intégrée (visible selon le rôle) */}
           {currentUser && (
             <RoleBasedDashboard 
+              key={missionRefreshKey} // Forcer re-render quand missions changent
               user={currentUser} 
               sessionId={sessionId}
               activeDashboardTab={activeDashboardTab}
