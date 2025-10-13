@@ -5254,6 +5254,15 @@ async def init_demo_missions_and_users():
                 is_active=True
             ),
             User(
+                id="souschef-001", 
+                username="souschef_test",
+                email="nabil@table-augustine.fr",
+                password_hash="hashed_password123",
+                role="chef_cuisine",
+                full_name="Nabil El Mansouri (Sous-Chef)",
+                is_active=True
+            ),
+            User(
                 id="caisse-001",
                 username="caisse_test", 
                 email="caisse@table-augustine.fr",
