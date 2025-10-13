@@ -4373,14 +4373,14 @@ async def get_dashboard_stats():
 @api_router.post("/ocr/upload-document")  # No response_model to allow flexible multi-invoice responses
 async def upload_and_process_document(
     file: UploadFile = File(...),
-    document_type: str = Form("z_report")  # "z_report" ou "facture_fournisseur" - MUST use Form() for multipart data
+    document_type: str = Form("z_report")  # "z_report" ou "facture_fournisseur" ou "mercuriale"
 ):
-    """Upload et traitement OCR d'un document (image ou PDF) - Rapport Z ou facture"""
+    """Upload et traitement OCR d'un document (image ou PDF) - Rapport Z, facture ou mercuriale"""
     
     print(f"📝 Document type received: {document_type}")
     
-    if document_type not in ["z_report", "facture_fournisseur"]:
-        raise HTTPException(status_code=400, detail="Type de document invalide. Utilisez 'z_report' ou 'facture_fournisseur'")
+    if document_type not in ["z_report", "facture_fournisseur", "mercuriale"]:
+        raise HTTPException(status_code=400, detail="Type de document invalide. Utilisez 'z_report', 'facture_fournisseur' ou 'mercuriale'")
     
     # Détecter le type de fichier
     file_type = detect_file_type(file.filename, file.content_type)
