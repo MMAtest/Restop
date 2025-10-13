@@ -1782,6 +1782,18 @@ function App() {
       }
     }
   }, [currentUser]);
+
+  // ✅ Auto-refresh historique production
+  useEffect(() => {
+    if (activeProductionTab === 'historique') {
+      fetchHistoriqueProduction();
+      
+      // Auto-refresh toutes les 30 secondes quand l'onglet historique est actif
+      const interval = setInterval(fetchHistoriqueProduction, 30000);
+      
+      return () => clearInterval(interval);
+    }
+  }, [activeProductionTab, currentUser]);
   
   const handleVoirAlertes = () => {
     const stocksCritiques = stocks.filter(stock => {
