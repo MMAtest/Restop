@@ -474,6 +474,30 @@ const RoleBasedDashboard = ({ user, sessionId, onNavigateToPage, onCreateMission
             
             return (
               <>
+                {/* DEBUG TEMPORAIRE - Afficher les données brutes */}
+                <div style={{
+                  background: '#fee2e2',
+                  border: '1px solid #fecaca',
+                  borderRadius: '6px',
+                  padding: '12px',
+                  marginBottom: '16px',
+                  fontSize: '12px'
+                }}>
+                  <strong>🔍 DEBUG - Données missions :</strong>
+                  <br />• User ID: {user.id}
+                  <br />• Total missions assignées à moi: {missions.assigned_to_me?.length || 0}
+                  <br />• Total missions créées par moi: {missions.created_by_me?.length || 0}
+                  <br />• Date range: {filteredData.dateLabel}
+                  <br />• Missions créées filtrées: {filteredData.createdToday.length}
+                  <br />• Missions à valider filtrées: {filteredData.toValidateToday.length}
+                  {missions.created_by_me?.length > 0 && (
+                    <>
+                      <br />• Exemple mission: {missions.created_by_me[0]?.title}
+                      <br />• Date exemple: {missions.created_by_me[0]?.assigned_date}
+                    </>
+                  )}
+                </div>
+
                 {/* Titre avec période */}
                 <div style={{
                   fontSize: '14px',
