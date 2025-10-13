@@ -403,7 +403,7 @@ const RoleBasedDashboard = ({ user, sessionId, onNavigateToPage, onCreateMission
         </div>
       )}
 
-      {/* Bouton Créer Mission - Onglet ALERTES pour patron, toujours pour chef/caissier */}
+      {/* Bouton Créer Mission + Listes - Onglet ALERTES pour patron, toujours pour chef/caissier */}
       {((user.role === 'super_admin' && activeDashboardTab === 'alertes') ||
         (user.role === 'chef_cuisine' || user.role === 'caissier')) && (
         <div style={{
@@ -413,6 +413,7 @@ const RoleBasedDashboard = ({ user, sessionId, onNavigateToPage, onCreateMission
           marginBottom: '16px',
           border: '1px solid #e5e7eb'
         }}>
+          {/* Bouton de création */}
           <button
             onClick={() => {
               if (onCreateMission) {
@@ -432,11 +433,132 @@ const RoleBasedDashboard = ({ user, sessionId, onNavigateToPage, onCreateMission
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              gap: '8px'
+              gap: '8px',
+              marginBottom: '20px'
             }}
           >
             ➕ Créer une Nouvelle Mission
           </button>
+
+          {/* Listes des missions avec filtre chronologique */}
+          {(() => {
+            const filteredData = getFilteredMissions();
+            
+            return (
+              <>
+                {/* Titre avec période */}
+                <div style={{
+                  fontSize: '14px',
+                  fontWeight: '600',
+                  color: '#374151',
+                  marginBottom: '16px',
+                  textAlign: 'center',
+                  padding: '8px',
+                  background: '#f3f4f6',
+                  borderRadius: '6px'
+                }}>
+                  📅 Missions - {filteredData.dateLabel}
+                </div>
+
+                {/* Liste 1 : Missions créées du jour/période */}
+                {filteredData.createdToday.length > 0 && (
+                  <div style={{marginBottom: '20px'}}>
+                    <div style={{fontSize: '14px', fontWeight: '600', color: '#1f2937', marginBottom: '10px'}}>
+                      📋 Missions Créées ({filteredData.createdToday.length})
+                    </div>
+                    <div style={{display: 'grid', gap: '8px'}}>
+                      {filteredData.createdToday.map(mission => (
+                        <div key={mission.id} style={{
+                          padding: '10px',
+                          background: '#f0f9ff',
+                          borderRadius: '6px',
+                          border: '1px solid #bae6fd',
+                          fontSize: '13px'
+                        }}>
+                          <div style={{fontWeight: '600', marginBottom: '3px'}}>
+                            {mission.title}
+                          </div>
+                          <div style={{color: '#0369a1', fontSize: '12px'}}>
+                            👤 Assignée à : {mission.assigned_to_name} • {getStatusBadge(mission.status)}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Liste 2 : Missions à valider */}
+                {filteredData.toValidateToday.length > 0 && (
+                  <div style={{marginBottom: '10px'}}>
+                    <div style={{fontSize: '14px', fontWeight: '600', color: '#1f2937', marginBottom: '10px'}}>
+                      ⏳ Missions à Valider ({filteredData.toValidateToday.length})
+                    </div>
+                    <div style={{display: 'grid', gap: '8px'}}>
+                      {filteredData.toValidateToday.map(mission => (
+                        <div key={mission.id} style={{
+                          padding: '12px',
+                          background: '#fefce8',
+                          borderRadius: '6px',
+                          border: '1px solid #facc15',
+                          fontSize: '13px',
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          alignItems: 'center'
+                        }}>
+                          <div>
+                            <div style={{fontWeight: '600', marginBottom: '3px'}}>
+                              {mission.title}
+                            </div>
+                            <div style={{color: '#a16207', fontSize: '12px', marginBottom: '3px'}}>
+                              👤 {mission.assigned_to_name}
+                            </div>
+                            {mission.completed_by_employee_date && (
+                              <div style={{color: '#78716c', fontSize: '11px'}}>
+                                ✅ Terminé le {new Date(mission.completed_by_employee_date).toLocaleDateString('fr-FR')} à {new Date(mission.completed_by_employee_date).toLocaleTimeString('fr-FR', {hour: '2-digit', minute: '2-digit'})}
+                              </div>
+                            )}
+                            {mission.employee_notes && (
+                              <div style={{color: '#737373', fontSize: '11px', fontStyle: 'italic'}}>
+                                💬 "{mission.employee_notes}"
+                              </div>
+                            )}
+                          </div>
+                          <button 
+                            onClick={() => validateMission(mission.id, `Validé par ${user.full_name?.split('(')[0].trim()}`)}
+                            style={{
+                              fontSize: '12px',
+                              padding: '6px 12px',
+                              borderRadius: '6px',
+                              background: '#10b981',
+                              color: 'white',
+                              border: 'none',
+                              cursor: 'pointer'
+                            }}
+                          >
+                            ✅ Valider
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Message si aucune mission */}
+                {filteredData.createdToday.length === 0 && filteredData.toValidateToday.length === 0 && (
+                  <div style={{
+                    textAlign: 'center',
+                    padding: '20px',
+                    color: '#6b7280',
+                    background: '#f9fafb',
+                    borderRadius: '6px'
+                  }}>
+                    <div style={{fontSize: '32px', marginBottom: '8px'}}>📅</div>
+                    <div style={{fontSize: '14px'}}>Aucune mission pour {filteredData.dateLabel.toLowerCase()}</div>
+                  </div>
+                )}
+              </>
+            );
+          })()}
         </div>
       )}
     </div>
