@@ -124,54 +124,57 @@ const RoleBasedDashboard = ({ user, sessionId, onNavigateToPage, onCreateMission
 
   return (
     <div style={{marginBottom: '20px'}}>
-      {/* Message de bienvenue personnalisé selon le rôle */}
-      <div style={{
-        background: 'linear-gradient(135deg, #059669 0%, #10b981 100%)',
-        borderRadius: '12px',
-        padding: '20px',
-        marginBottom: '20px',
-        color: 'white',
-        textAlign: 'center'
-      }}>
-        <div style={{fontSize: '24px', marginBottom: '8px'}}>
-          {user.role === 'super_admin' && '👑'}
-          {user.role === 'chef_cuisine' && '👨‍🍳'}  
-          {user.role === 'caissier' && '💰'}
-          {user.role === 'barman' && '🍹'}
-          {user.role === 'employe_cuisine' && '🥘'}
+      {/* Message de bienvenue - Onglet VENTES pour patron, toujours pour autres rôles */}
+      {(user.role === 'super_admin' && activeDashboardTab === 'ventes') || 
+       (user.role !== 'super_admin') ? (
+        <div style={{
+          background: 'linear-gradient(135deg, #059669 0%, #10b981 100%)',
+          borderRadius: '12px',
+          padding: '20px',
+          marginBottom: '20px',
+          color: 'white',
+          textAlign: 'center'
+        }}>
+          <div style={{fontSize: '24px', marginBottom: '8px'}}>
+            {user.role === 'super_admin' && '👑'}
+            {user.role === 'chef_cuisine' && '👨‍🍳'}  
+            {user.role === 'caissier' && '💰'}
+            {user.role === 'barman' && '🍹'}
+            {user.role === 'employe_cuisine' && '🥘'}
+          </div>
+          
+          <div style={{fontSize: '18px', fontWeight: 'bold', marginBottom: '8px'}}>
+            Bonjour {user.full_name?.split('(')[0].trim() || user.username} !
+          </div>
+          
+          <div style={{fontSize: '14px', opacity: 0.9}}>
+            {user.role === 'super_admin' && 
+              `🌟 Excellente journée ! Gérez votre équipe et supervisez les opérations de La Table d'Augustine.`
+            }
+            {user.role === 'chef_cuisine' && 
+              `🔥 Prêt pour un nouveau service ! Coordonnez votre équipe et assurez-vous que tout est parfait.`
+            }
+            {user.role === 'caissier' && 
+              `💪 À vous de jouer ! Gérez les stocks et supervisez les livraisons pour un service impeccable.`
+            }
+            {user.role === 'barman' && 
+              `🎯 C'est parti ! Préparez le bar et assurez-vous que tout soit prêt pour accueillir nos clients.`
+            }
+            {user.role === 'employe_cuisine' && 
+              `⭐ Nouvelle journée, nouvelles missions ! Accomplissez vos tâches avec soin pour une cuisine parfaite.`
+            }
+          </div>
+          
+          <div style={{fontSize: '12px', opacity: 0.8, marginTop: '8px'}}>
+            📅 {new Date().toLocaleDateString('fr-FR', {
+              weekday: 'long', 
+              day: 'numeric', 
+              month: 'long',
+              year: 'numeric'
+            })}
+          </div>
         </div>
-        
-        <div style={{fontSize: '18px', fontWeight: 'bold', marginBottom: '8px'}}>
-          Bonjour {user.full_name?.split('(')[0].trim() || user.username} !
-        </div>
-        
-        <div style={{fontSize: '14px', opacity: 0.9}}>
-          {user.role === 'super_admin' && 
-            `🌟 Excellente journée ! Gérez votre équipe et supervisez les opérations de La Table d'Augustine.`
-          }
-          {user.role === 'chef_cuisine' && 
-            `🔥 Prêt pour un nouveau service ! Coordonnez votre équipe et assurez-vous que tout est parfait.`
-          }
-          {user.role === 'caissier' && 
-            `💪 À vous de jouer ! Gérez les stocks et supervisez les livraisons pour un service impeccable.`
-          }
-          {user.role === 'barman' && 
-            `🎯 C'est parti ! Préparez le bar et assurez-vous que tout soit prêt pour accueillir nos clients.`
-          }
-          {user.role === 'employe_cuisine' && 
-            `⭐ Nouvelle journée, nouvelles missions ! Accomplissez vos tâches avec soin pour une cuisine parfaite.`
-          }
-        </div>
-        
-        <div style={{fontSize: '12px', opacity: 0.8, marginTop: '8px'}}>
-          📅 {new Date().toLocaleDateString('fr-FR', {
-            weekday: 'long', 
-            day: 'numeric', 
-            month: 'long',
-            year: 'numeric'
-          })}
-        </div>
-      </div>
+      ) : null}
 
       {/* Module 1 : Tâches urgentes à effectuer aujourd'hui */}
       {missionsEnCours.length > 0 && (
