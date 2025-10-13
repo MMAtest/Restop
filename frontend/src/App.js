@@ -3232,7 +3232,7 @@ function App() {
 
                 <div className="item-row">
                   <div className="item-info">
-                    <div className="item-name">🧀 Produits laitiers</div>
+                    <div className="item-name">🧀 Crêmerie</div>
                     <div className="item-details">12.3% des achats • Stock moyen: 89 kg</div>
                   </div>
                   <div className="item-value">104 187 €</div>
@@ -3775,7 +3775,7 @@ function App() {
                               <option value="légumes">🥕 Légumes</option>
                               <option value="viandes">🥩 Viandes</option>
                               <option value="poissons">🐟 Poissons</option>
-                              <option value="produits laitiers">🧀 Produits laitiers</option>
+                              <option value="produits laitiers">🧀 Crêmerie</option>
                               <option value="épices">🌶️ Épices</option>
                               <option value="fruits">🍎 Fruits</option>
                               <option value="céréales">🌾 Céréales</option>
@@ -3787,7 +3787,7 @@ function App() {
                               <option value="légumes">🥕 Légumes</option>
                               <option value="viandes">🥩 Viandes</option>
                               <option value="poissons">🐟 Poissons</option>
-                              <option value="produits laitiers">🧀 Produits laitiers</option>
+                              <option value="produits laitiers">🧀 Crêmerie</option>
                               <option value="épices">🌶️ Épices</option>
                               <option value="fruits">🍎 Fruits</option>
                               <option value="céréales">🌾 Céréales</option>
@@ -3999,7 +3999,7 @@ function App() {
                               const getCategoryIcon = (categorie) => {
                                 const icons = {
                                   "Légumes": "🥬", "Viandes": "🥩", "Poissons": "🐟", 
-                                  "Produits laitiers": "🧀", "Épices": "🌶️", "Fruits": "🍎", 
+                                  "Crêmerie": "🧀", "Épices": "🌶️", "Fruits": "🍎", 
                                   "Céréales": "🌾", "Autres": "📦"
                                 };
                                 return icons[categorie] || "📦";
@@ -5763,7 +5763,7 @@ function App() {
                           <option value="Légumes">🥕 Légumes</option>
                           <option value="Viandes">🥩 Viandes</option>
                           <option value="Poissons">🐟 Poissons</option>
-                          <option value="Produits laitiers">🧀 Produits laitiers</option>
+                          <option value="Crêmerie">🧀 Crêmerie</option>
                           <option value="Épices">🌶️ Épices & Condiments</option>
                           <option value="Fruits">🍎 Fruits</option>
                           <option value="Céréales">🌾 Céréales & Féculents</option>
@@ -5981,7 +5981,7 @@ function App() {
                       case 'Légumes': return '🥕';
                       case 'Viandes': return '🥩';
                       case 'Poissons': return '🐟';
-                      case 'Produits laitiers': return '🧀';
+                      case 'Crêmerie': return '🧀';
                       case 'Épices': return '🌶️';
                       case 'Fruits': return '🍎';
                       case 'Céréales': return '🌾';
@@ -6965,7 +6965,7 @@ function App() {
                   <option value="Légumes">🥕 Légumes</option>
                   <option value="Viandes">🥩 Viandes</option>
                   <option value="Poissons">🐟 Poissons</option>
-                  <option value="Produits laitiers">🧀 Produits laitiers</option>
+                  <option value="Crêmerie">🧀 Crêmerie</option>
                   <option value="Épices">🌶️ Épices & Condiments</option>
                   <option value="Fruits">🍎 Fruits</option>
                   <option value="Céréales">🌾 Céréales & Féculents</option>
