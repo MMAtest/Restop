@@ -1672,16 +1672,16 @@ async def update_user(user_id: str, user_update: UserUpdate):
         if not existing_user:
             raise HTTPException(status_code=404, detail="Utilisateur non trouvé")
         
-        # Préparer les données de mise à jour
-        update_data = user_update.dict()
+        # Préparer les données de mise à jour (seulement les champs fournis)
+        update_data = user_update.dict(exclude_unset=True)
         
         # Si le mot de passe est vide, ne pas le mettre à jour
-        if not update_data.get("password"):
-            update_data.pop("password", None)
-            update_data.pop("password_hash", None)
-        else:
+        if update_data.get("password"):
             # Hash du nouveau mot de passe (pour l'instant simple, en production utiliser bcrypt)
             update_data["password_hash"] = f"hashed_{update_data['password']}"
+            update_data.pop("password", None)
+        elif "password" in update_data:
+            # Supprimer le champ password s'il est vide
             update_data.pop("password", None)
         
         # Vérifier l'unicité username/email (sauf pour l'utilisateur actuel)
