@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 
-const RoleBasedDashboard = ({ user, sessionId, onNavigateToPage, onCreateMission }) => {
+const RoleBasedDashboard = ({ user, sessionId, onNavigateToPage, onCreateMission, activeDashboardTab }) => {
   const [missions, setMissions] = useState([]);
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(false);
