@@ -7693,20 +7693,56 @@ function App() {
 
               <div className="form-row">
                 <div className="form-group">
-                  <label className="form-label">Assigner à *</label>
-                  <select
-                    className="form-select"
-                    value={missionForm.assigned_to_user_id}
-                    onChange={(e) => setMissionForm({...missionForm, assigned_to_user_id: e.target.value})}
-                    required
-                  >
-                    <option value="">-- Sélectionner un employé --</option>
+                  <label className="form-label">Assigner à * (sélection multiple)</label>
+                  <div style={{
+                    border: '1px solid #d1d5db',
+                    borderRadius: '6px',
+                    padding: '8px',
+                    maxHeight: '200px',
+                    overflowY: 'auto',
+                    background: 'white'
+                  }}>
                     {getFilteredUsersForAssignment().map(availableUser => (
-                      <option key={availableUser.id} value={availableUser.id}>
-                        {availableUser.full_name || availableUser.username} ({availableUser.role})
-                      </option>
+                      <label key={availableUser.id} style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        padding: '6px 8px',
+                        cursor: 'pointer',
+                        borderRadius: '4px',
+                        marginBottom: '4px',
+                        background: missionForm.assigned_to_user_ids.includes(availableUser.id) ? '#eff6ff' : 'transparent'
+                      }}
+                      onMouseEnter={(e) => e.target.style.background = '#f3f4f6'}
+                      onMouseLeave={(e) => e.target.style.background = missionForm.assigned_to_user_ids.includes(availableUser.id) ? '#eff6ff' : 'transparent'}
+                      >
+                        <input
+                          type="checkbox"
+                          checked={missionForm.assigned_to_user_ids.includes(availableUser.id)}
+                          onChange={(e) => {
+                            const userId = availableUser.id;
+                            if (e.target.checked) {
+                              setMissionForm({
+                                ...missionForm,
+                                assigned_to_user_ids: [...missionForm.assigned_to_user_ids, userId]
+                              });
+                            } else {
+                              setMissionForm({
+                                ...missionForm,
+                                assigned_to_user_ids: missionForm.assigned_to_user_ids.filter(id => id !== userId)
+                              });
+                            }
+                          }}
+                          style={{marginRight: '8px'}}
+                        />
+                        <span style={{fontSize: '14px'}}>
+                          {availableUser.full_name || availableUser.username} 
+                          <span style={{color: '#6b7280', fontSize: '12px', marginLeft: '4px'}}>
+                            ({availableUser.role})
+                          </span>
+                        </span>
+                      </label>
                     ))}
-                  </select>
+                  </div>
                   <div style={{fontSize: '11px', color: '#6b7280', marginTop: '4px'}}>
                     {currentUser?.role === 'super_admin' ? 
                       '👑 En tant que patron, vous pouvez assigner à tout le monde' : 
