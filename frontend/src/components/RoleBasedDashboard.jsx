@@ -137,22 +137,25 @@ const RoleBasedDashboard = ({ user, sessionId, onNavigateToPage, onCreateMission
   };
 
   const getFilteredMissions = () => {
-    const today = new Date();
+    const now = new Date();
     
-    // Si pas de période sélectionnée, montrer les 7 derniers jours pour plus de données
+    // Si pas de période sélectionnée, utiliser aujourd'hui (mais toute la journée)
     const defaultStartDate = selectedDateRange ? 
       selectedDateRange.startDate : 
-      new Date(today.getFullYear(), today.getMonth(), today.getDate() - 7);
+      new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0);
     
     const defaultEndDate = selectedDateRange ? 
       selectedDateRange.endDate : 
-      new Date(today.getFullYear(), today.getMonth(), today.getDate(), 23, 59, 59);
+      new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59);
     
     const dateRange = {
       startDate: defaultStartDate,
       endDate: defaultEndDate,
-      label: selectedDateRange?.label || "7 derniers jours"
+      label: selectedDateRange?.label || "Aujourd'hui"
     };
+
+    console.log('🔍 Filtre missions - Range:', dateRange.startDate, 'à', dateRange.endDate);
+    console.log('🔍 Missions totales créées par moi:', missions.created_by_me?.length);
 
     // Missions créées par moi dans la période
     const missionsCreatedInPeriod = filterMissionsByDateRange(missions.created_by_me || [], dateRange);
@@ -162,6 +165,8 @@ const RoleBasedDashboard = ({ user, sessionId, onNavigateToPage, onCreateMission
       (missions.created_by_me || []).filter(m => m.status === 'terminee_attente'),
       dateRange
     );
+
+    console.log('🔍 Missions filtrées:', missionsCreatedInPeriod.length, 'à valider:', missionsToValidateInPeriod.length);
 
     return {
       createdToday: missionsCreatedInPeriod,
