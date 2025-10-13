@@ -46,6 +46,12 @@ const UserManagementPage = () => {
       description: 'Accès principal au module OCR pour rapports Z quotidiens',
       icon: '💳',
       color: 'bg-yellow-100 text-yellow-800'
+    },
+    'employe_cuisine': {
+      name: 'Employé de Cuisine',
+      description: 'Accès limité : missions et ajustements stock uniquement',
+      icon: '🥘',
+      color: 'bg-red-100 text-red-800'
     }
   };
 
