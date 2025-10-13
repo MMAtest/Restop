@@ -127,12 +127,19 @@ const RoleBasedDashboard = ({ user, sessionId, onNavigateToPage, onCreateMission
     if (!dateRange || !missionsList) return missionsList;
     
     return missionsList.filter(mission => {
-      const missionDate = new Date(mission.assigned_date);
+      // Forcer les dates en UTC pour éviter problèmes timezone
+      const missionDate = new Date(mission.assigned_date + 'Z'); // Force UTC
+      const startDate = new Date(dateRange.startDate);
+      const endDate = new Date(dateRange.endDate);
       
       // Debug pour voir les dates
-      console.log('🔍 Mission:', mission.title, 'Date:', missionDate, 'Range:', dateRange.startDate, '-', dateRange.endDate);
+      console.log('🔍 Mission:', mission.title);
+      console.log('   Date mission:', missionDate.toISOString());
+      console.log('   Start range:', startDate.toISOString()); 
+      console.log('   End range:', endDate.toISOString());
+      console.log('   Dans range?:', missionDate >= startDate && missionDate <= endDate);
       
-      return missionDate >= dateRange.startDate && missionDate <= dateRange.endDate;
+      return missionDate >= startDate && missionDate <= endDate;
     });
   };
 
