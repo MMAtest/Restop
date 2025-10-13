@@ -327,7 +327,7 @@ function App() {
     description: '',
     type: 'preparation',
     category: 'cuisine',
-    assigned_to_user_id: '',
+    assigned_to_user_ids: [], // Changé en tableau pour multi-sélection
     priority: 'normale',
     due_date: '',
     target_quantity: '',
