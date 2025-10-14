@@ -2161,6 +2161,111 @@ function App() {
     setProcessingOcr(false);
   };
 
+  // ✅ Fonctions pour la gestion des mercuriales
+  const handleValidateMercuriale = (document) => {
+    if (!document.donnees_parsees?.produits_detectes) {
+      alert('❌ Aucun produit détecté dans cette mercuriale');
+      return;
+    }
+
+    setMercurialeToValidate(document);
+    setSelectedMercurialeProducts(document.donnees_parsees.produits_detectes.map(p => ({...p, selected: true})));
+    setShowMercurialeValidation(true);
+  };
+
+  const handleCreateProductsFromMercuriale = async () => {
+    if (!mercurialeToValidate || selectedMercurialeProducts.length === 0) {
+      alert('❌ Aucun produit sélectionné');
+      return;
+    }
+
+    try {
+      setLoading(true);
+      
+      const produitsToCreate = selectedMercurialeProducts.filter(p => p.selected);
+      
+      if (produitsToCreate.length === 0) {
+        alert('❌ Veuillez sélectionner au moins un produit à créer');
+        return;
+      }
+
+      let createdCount = 0;
+      let errorCount = 0;
+      const errors = [];
+
+      // Créer chaque produit
+      for (const produit of produitsToCreate) {
+        try {
+          const produitData = {
+            nom: produit.nom,
+            description: `Produit importé depuis mercuriale - ${mercurialeToValidate.nom_fichier}`,
+            categorie: produit.categorie,
+            unite: produit.unite,
+            prix_achat: produit.prix_achat,
+            fournisseur_id: mercurialeSelectedSupplier || produit.fournisseur_id
+          };
+
+          await axios.post(`${API}/produits`, produitData);
+          createdCount++;
+        } catch (error) {
+          errorCount++;
+          errors.push(`${produit.nom}: ${error.response?.data?.detail || error.message}`);
+        }
+      }
+
+      // Message de résultat
+      let message = `✅ Import terminé !\n\n`;
+      message += `📦 ${createdCount} produits créés avec succès\n`;
+      if (errorCount > 0) {
+        message += `❌ ${errorCount} erreurs\n\n`;
+        message += `Détails erreurs:\n${errors.slice(0, 3).join('\n')}`;
+        if (errors.length > 3) {
+          message += `\n... et ${errors.length - 3} autres erreurs`;
+        }
+      }
+
+      alert(message);
+
+      // Rafraîchir les données
+      fetchProduits();
+      fetchStocks();
+      
+      // Fermer le modal
+      setShowMercurialeValidation(false);
+      setMercurialeToValidate(null);
+      setSelectedMercurialeProducts([]);
+
+    } catch (error) {
+      console.error('Erreur lors de la création des produits:', error);
+      alert(`❌ Erreur lors de la création: ${error.message}`);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleCancelMercurialeImport = async (documentId) => {
+    if (!window.confirm('❌ Êtes-vous sûr de vouloir annuler cet import ?\n\nCela supprimera définitivement cette mercuriale de l\'historique.')) {
+      return;
+    }
+
+    try {
+      setLoading(true);
+      
+      await axios.delete(`${API}/ocr/document/${documentId}`);
+      
+      alert('✅ Import mercuriale annulé et supprimé avec succès');
+      
+      // Rafraîchir l'historique OCR
+      fetchDocumentsOcr();
+      
+    } catch (error) {
+      console.error('Erreur lors de l\'annulation:', error);
+      alert(`❌ Erreur lors de l'annulation: ${error.response?.data?.detail || error.message}`);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // Fonction utilitaire pour formater les quantités
   const formatQuantity = (quantity, unit) => {
     if (quantity === undefined || quantity === null) return "0";
