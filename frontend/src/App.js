@@ -338,6 +338,12 @@ function App() {
   const [availableUsers, setAvailableUsers] = useState([]);
   const [missionRefreshKey, setMissionRefreshKey] = useState(0); // Pour forcer le refresh du RoleBasedDashboard
   const [historiqueProduction, setHistoriqueProduction] = useState([]); // Historique des opérations production
+  
+  // ✅ États pour la validation des mercuriales
+  const [showMercurialeValidation, setShowMercurialeValidation] = useState(false);
+  const [mercurialeToValidate, setMercurialeToValidate] = useState(null);
+  const [selectedMercurialeProducts, setSelectedMercurialeProducts] = useState([]);
+  const [mercurialeSelectedSupplier, setMercurialeSelectedSupplier] = useState('');
   const [fournisseurForm, setFournisseurForm] = useState({
     nom: "", contact: "", email: "", telephone: "", adresse: "", couleur: "#3B82F6", logo: "", categorie: "frais", deliveryCost: 0, extraCost: 0,
     delivery_rules: {
