@@ -8269,6 +8269,139 @@ function App() {
         </div>
       )}
 
+      {/* Modal Validation Mercuriale */}
+      {showMercurialeValidation && (
+        <div className="modal-overlay">
+          <div className="modal-content" style={{maxWidth: '900px', maxHeight: '90vh', overflow: 'auto'}}>
+            <h3 className="modal-header">
+              ✅ Validation Mercuriale - {mercurialeToValidate?.nom_fichier}
+            </h3>
+            
+            <div style={{marginBottom: '20px', padding: '16px', background: '#f0f9ff', borderRadius: '8px', border: '1px solid #3b82f6'}}>
+              <div style={{fontSize: '16px', fontWeight: 'bold', color: '#1e40af', marginBottom: '8px'}}>
+                📋 Résumé de l'import
+              </div>
+              <div style={{fontSize: '14px', color: '#1e40af'}}>
+                🏪 <strong>Fournisseur détecté:</strong> {mercurialeToValidate?.donnees_parsees?.fournisseur_detecte || 'Non détecté'}
+                <br />
+                📦 <strong>Produits trouvés:</strong> {mercurialeToValidate?.donnees_parsees?.total_produits || 0}
+                <br />
+                📅 <strong>Importé le:</strong> {mercurialeToValidate?.date_upload ? new Date(mercurialeToValidate.date_upload).toLocaleDateString('fr-FR') : 'N/A'}
+              </div>
+            </div>
+
+            {/* Sélection fournisseur pour liaison */}
+            <div className="form-group" style={{marginBottom: '20px'}}>
+              <label className="form-label">🏪 Associer à ce fournisseur :</label>
+              <select
+                className="form-select"
+                value={mercurialeSelectedSupplier}
+                onChange={(e) => setMercurialeSelectedSupplier(e.target.value)}
+              >
+                <option value="">-- Sélectionner le fournisseur --</option>
+                {fournisseurs.map(fournisseur => (
+                  <option key={fournisseur.id} value={fournisseur.id}>
+                    {fournisseur.logo || '🏪'} {fournisseur.nom} ({fournisseur.categorie})
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Liste des produits à valider */}
+            <div style={{marginBottom: '20px'}}>
+              <div style={{fontSize: '16px', fontWeight: 'bold', marginBottom: '12px', color: '#374151'}}>
+                📦 Produits détectés - Sélectionnez ceux à créer :
+              </div>
+              
+              <div style={{
+                maxHeight: '400px',
+                overflow: 'auto',
+                border: '1px solid #e5e7eb',
+                borderRadius: '8px'
+              }}>
+                {selectedMercurialeProducts.map((produit, index) => (
+                  <div key={index} style={{
+                    padding: '12px',
+                    borderBottom: index < selectedMercurialeProducts.length - 1 ? '1px solid #e5e7eb' : 'none',
+                    background: produit.selected ? '#f0fdf4' : '#f9fafb',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between'
+                  }}>
+                    <label style={{display: 'flex', alignItems: 'center', cursor: 'pointer', flex: 1}}>
+                      <input
+                        type="checkbox"
+                        checked={produit.selected}
+                        onChange={(e) => {
+                          const newProducts = [...selectedMercurialeProducts];
+                          newProducts[index].selected = e.target.checked;
+                          setSelectedMercurialeProducts(newProducts);
+                        }}
+                        style={{marginRight: '12px'}}
+                      />
+                      
+                      <div style={{flex: 1}}>
+                        <div style={{fontSize: '14px', fontWeight: '600', marginBottom: '4px'}}>
+                          {produit.nom}
+                        </div>
+                        <div style={{fontSize: '12px', color: '#6b7280'}}>
+                          💰 {produit.prix_achat}€/{produit.unite} • 
+                          📂 {produit.categorie} • 
+                          📄 {produit.ligne_originale?.substring(0, 40)}...
+                        </div>
+                      </div>
+                    </label>
+                  </div>
+                ))}
+              </div>
+              
+              <div style={{marginTop: '12px', display: 'flex', gap: '8px', fontSize: '12px'}}>
+                <button
+                  className="button small"
+                  onClick={() => {
+                    const newProducts = selectedMercurialeProducts.map(p => ({...p, selected: true}));
+                    setSelectedMercurialeProducts(newProducts);
+                  }}
+                >
+                  ☑️ Tout sélectionner
+                </button>
+                <button
+                  className="button small"
+                  onClick={() => {
+                    const newProducts = selectedMercurialeProducts.map(p => ({...p, selected: false}));
+                    setSelectedMercurialeProducts(newProducts);
+                  }}
+                >
+                  ☐ Tout désélectionner
+                </button>
+              </div>
+            </div>
+
+            <div className="button-group">
+              <button
+                type="button"
+                className="button btn-cancel"
+                onClick={() => {
+                  setShowMercurialeValidation(false);
+                  setMercurialeToValidate(null);
+                  setSelectedMercurialeProducts([]);
+                }}
+              >
+                Annuler
+              </button>
+              <button
+                type="button"
+                className="button btn-primary"
+                onClick={handleCreateProductsFromMercuriale}
+                disabled={loading || selectedMercurialeProducts.filter(p => p.selected).length === 0}
+              >
+                {loading ? 'Création...' : `➕ Créer ${selectedMercurialeProducts.filter(p => p.selected).length} Produit(s)`}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Modal Préparation */}
       {showPreparationModal && (
         <div className="modal-overlay">
