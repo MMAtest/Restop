@@ -5502,10 +5502,17 @@ function App() {
                                 </button>
                                 <button 
                                   className="button small success"
-                                  onClick={() => alert('Fonctionnalité de création produits depuis mercuriales en cours de développement')}
+                                  onClick={() => handleValidateMercuriale(doc)}
                                   style={{fontSize: '12px', padding: '4px 8px'}}
                                 >
-                                  ➕ Créer Produits
+                                  ✅ Valider & Créer
+                                </button>
+                                <button 
+                                  className="button small danger"
+                                  onClick={() => handleCancelMercurialeImport(doc.id)}
+                                  style={{fontSize: '12px', padding: '4px 8px'}}
+                                >
+                                  ❌ Annuler Import
                                 </button>
                               </div>
                             </div>
