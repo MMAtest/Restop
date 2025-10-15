@@ -811,7 +811,7 @@ function App() {
   const getFilteredUsersForAssignment = () => {
     if (!currentUser || !availableUsers) return [];
     
-    if (currentUser.role === 'super_admin') {
+    if (currentUser.role === 'super_admin' || currentUser.role === 'patron') {
       // Patron peut assigner à tout le monde
       return availableUsers;
     } else if (currentUser.role === 'chef_cuisine') {
