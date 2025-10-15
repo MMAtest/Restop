@@ -644,7 +644,8 @@ function App() {
   };
 
   const canValidateOrders = () => {
-    return currentUser?.role === 'super_admin' || currentUser?.role === 'patron' || currentUser?.role === 'chef_cuisine';
+    return currentUser?.role === 'super_admin' || currentUser?.role === 'patron' || 
+           currentUser?.role === 'chef_cuisine';
   };
 
   // ✅ Fonctions pour la création de missions
