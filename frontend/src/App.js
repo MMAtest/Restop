@@ -632,7 +632,7 @@ function App() {
   };
 
   const canAccessOcrTicketsZ = () => {
-    return currentUser?.role === 'super_admin' || currentUser?.role === 'caissier';
+    return currentUser?.role === 'super_admin' || currentUser?.role === 'patron' || currentUser?.role === 'caissier';
   };
 
   const canAccessRepartition = () => {
