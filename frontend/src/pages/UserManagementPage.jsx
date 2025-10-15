@@ -275,6 +275,7 @@ const UserManagementPage = () => {
                   <tr className="border-b border-gray-200">
                     <th className="text-left py-3 px-4 font-semibold text-gray-700">Utilisateur</th>
                     <th className="text-left py-3 px-4 font-semibold text-gray-700">Email</th>
+                    <th className="text-left py-3 px-4 font-semibold text-gray-700">Mot de passe</th>
                     <th className="text-left py-3 px-4 font-semibold text-gray-700">Rôle</th>
                     <th className="text-left py-3 px-4 font-semibold text-gray-700">Statut</th>
                     <th className="text-left py-3 px-4 font-semibold text-gray-700">Créé le</th>
