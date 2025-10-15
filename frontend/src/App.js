@@ -837,8 +837,7 @@ function App() {
 
   // ✅ Permissions spécifiques BAR pour le barman
   const canEditBarItems = () => {
-    return currentUser?.role === 'super_admin' || 
-           currentUser?.role === 'chef_cuisine' || 
+    return currentUser?.role === 'super_admin' || currentUser?.role === 'patron' || 
            (currentUser?.role === 'barman');
   };
 
