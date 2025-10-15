@@ -5361,11 +5361,20 @@ async def init_demo_missions_and_users():
         # Créer les utilisateurs test
         test_users = [
             User(
+                id="superadmin-001",
+                username="skander_admin",
+                email="skander@table-augustine.fr",
+                password_hash="hashed_password123",  # En production: bcrypt
+                role="super_admin",
+                full_name="Skander Ben Ali (Super Admin)",
+                is_active=True
+            ),
+            User(
                 id="patron-001",
                 username="patron_test",
                 email="patron@table-augustine.fr",
                 password_hash="hashed_password123",  # En production: bcrypt
-                role="super_admin",
+                role="patron",
                 full_name="Antonin Portal (Patron)",
                 is_active=True
             ),
