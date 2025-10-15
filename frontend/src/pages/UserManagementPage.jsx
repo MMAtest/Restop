@@ -298,6 +298,37 @@ const UserManagementPage = () => {
                         </td>
                         <td className="py-3 px-4 text-sm text-gray-600">{user.email}</td>
                         <td className="py-3 px-4">
+                          <div style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '8px',
+                            padding: '4px 8px',
+                            background: '#f3f4f6',
+                            borderRadius: '4px',
+                            fontSize: '12px',
+                            fontFamily: 'monospace'
+                          }}>
+                            <span style={{color: '#374151'}}>password123</span>
+                            <button
+                              onClick={() => {
+                                navigator.clipboard.writeText('password123');
+                                alert('🔑 Mot de passe copié dans le presse-papiers !');
+                              }}
+                              style={{
+                                background: '#10b981',
+                                color: 'white',
+                                border: 'none',
+                                padding: '2px 6px',
+                                borderRadius: '3px',
+                                cursor: 'pointer',
+                                fontSize: '10px'
+                              }}
+                            >
+                              📋
+                            </button>
+                          </div>
+                        </td>
+                        <td className="py-3 px-4">
                           <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${roleInfo.color}`}>
                             <span className="mr-1">{roleInfo.icon}</span>
                             {roleInfo.name}
