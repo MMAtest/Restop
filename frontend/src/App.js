@@ -830,7 +830,7 @@ function App() {
   };
 
   const canCreateMissions = () => {
-    return currentUser?.role === 'super_admin' || 
+    return currentUser?.role === 'super_admin' || currentUser?.role === 'patron' ||
            currentUser?.role === 'chef_cuisine' || 
            currentUser?.role === 'caissier';
   };
