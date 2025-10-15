@@ -2327,8 +2327,8 @@ function App() {
           {/* Menu déroulant */}
           {showBurgerMenu && (
             <div className="burger-dropdown">
-              {/* Bouton Utilisateurs - Accès PATRON uniquement */}
-              {currentUser?.role === 'super_admin' && (
+              {/* Bouton Utilisateurs - Accès SUPER ADMIN et PATRON */}
+              {(currentUser?.role === 'super_admin' || currentUser?.role === 'patron') && (
                 <button 
                   className="button" 
                   onClick={() => {
