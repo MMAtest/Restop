@@ -23,6 +23,12 @@ const UserManagementPage = () => {
       icon: '👑',
       color: 'bg-purple-100 text-purple-800'
     },
+    'patron': {
+      name: 'Patron (Owner)',
+      description: 'Accès complet restaurant, analytics et gestion équipe',
+      icon: '👑',
+      color: 'bg-red-100 text-red-800'
+    },
     'gerant': {
       name: 'Gérant (Manager)',
       description: 'Accès complet sauf gestion utilisateurs - Page Analytics par défaut',
