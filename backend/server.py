@@ -5625,6 +5625,7 @@ async def init_demo_missions_and_users():
             "missions_created": len(demo_missions),
             "notifications_created": len(demo_notifications),
             "test_accounts": [
+                {"username": "skander_admin", "password": "password123", "role": "Super Admin"},
                 {"username": "patron_test", "password": "password123", "role": "Patron"},
                 {"username": "chef_test", "password": "password123", "role": "Chef de Cuisine"}, 
                 {"username": "souschef_test", "password": "password123", "role": "Sous-Chef"},
