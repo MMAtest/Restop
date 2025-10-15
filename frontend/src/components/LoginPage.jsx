@@ -204,6 +204,7 @@ const LoginPage = ({ onLoginSuccess }) => {
           
           <div style={{display: 'grid', gap: '8px'}}>
             {[
+              { username: 'skander_admin', role: '👤 Super Admin', color: '#7c3aed' },
               { username: 'patron_test', role: '👑 Patron', color: '#dc2626' },
               { username: 'chef_test', role: '👨‍🍳 Chef de Cuisine', color: '#059669' },
               { username: 'souschef_test', role: '👨‍🍳 Sous-Chef', color: '#16a34a' },
