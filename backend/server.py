@@ -36,6 +36,7 @@ load_dotenv(ROOT_DIR / '.env')
 # ✅ Version 3 - Enhanced RBAC System
 ROLES = {
     "super_admin": "Super Admin",
+    "patron": "Patron (Owner)",
     "gerant": "Gérant (Manager)", 
     "chef_cuisine": "Chef de cuisine (Head Chef)",
     "barman": "Barman (Bartender)",
