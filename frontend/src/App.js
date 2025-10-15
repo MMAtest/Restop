@@ -812,12 +812,17 @@ function App() {
   const getFilteredUsersForAssignment = () => {
     if (!currentUser || !availableUsers) return [];
     
-    if (currentUser.role === 'super_admin' || currentUser.role === 'patron') {
-      // Patron peut assigner à tout le monde
+    if (currentUser.role === 'super_admin') {
+      // Super Admin peut assigner à tout le monde
       return availableUsers;
+    } else if (currentUser.role === 'patron') {
+      // Patron peut assigner à tout le monde (sauf super admin)
+      return availableUsers.filter(user => user.role !== 'super_admin');
     } else if (currentUser.role === 'chef_cuisine') {
-      // Chef peut assigner à tout le monde
-      return availableUsers;
+      // Chef peut assigner à tout le monde (sauf super admin et patron)
+      return availableUsers.filter(user => 
+        user.role !== 'super_admin' && user.role !== 'patron'
+      );
     } else if (currentUser.role === 'caissier') {
       // Caissier peut assigner au barman et à d'autres caissiers
       return availableUsers.filter(user => 
