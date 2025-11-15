@@ -1862,9 +1862,9 @@ function App() {
   };
 
   // Gérer le changement de période
-  const handleDateRangeChange = (dateRange) => {
+  const handleDateRangeChange = async (dateRange) => {
     setSelectedDateRange(dateRange);
-    calculateAnalyticsForPeriod(dateRange);
+    await calculateAnalyticsForPeriod(dateRange);
   };
 
   // Initialiser le thème au chargement
