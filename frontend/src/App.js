@@ -1787,105 +1787,78 @@ function App() {
 
 
   // Fonction pour calculer les données selon la période sélectionnée
-  const calculateAnalyticsForPeriod = (dateRange) => {
+  const calculateAnalyticsForPeriod = async (dateRange) => {
     if (!dateRange) return;
 
     console.log("Calcul pour période:", dateRange.label, "de", dateRange.startDate, "à", dateRange.endDate);
 
-    // Données de base (pour aujourd'hui)
-    const baseDayData = {
-      caTotal: 8975.50,
-      caMidi: 5385.30,
-      caSoir: 3590.20,
-      couvertsMidi: 87,
-      couvertsSoir: 64,
-      topProductions: [
-        { nom: "Rigatoni à la truffe", ventes: 2418, portions: 78, categorie: "Plat", coefficientPrevu: 2.85, coefficientReel: 2.87, coutMatiere: 774.00, prixVente: 28.50 },
-        { nom: "Fleurs de courgettes", ventes: 1911, portions: 91, categorie: "Entrée", coefficientPrevu: 3.25, coefficientReel: 3.25, coutMatiere: 482.75, prixVente: 17.25 },
-        { nom: "Souris d'agneau", ventes: 1872, portions: 52, categorie: "Plat", coefficientPrevu: 1.50, coefficientReel: 1.37, coutMatiere: 1368.00, prixVente: 36.00 },
-        { nom: "Tiramisù maison", ventes: 1654, portions: 67, categorie: "Dessert", coefficientPrevu: 3.00, coefficientReel: 3.04, coutMatiere: 264.64, prixVente: 12.00 },
-        { nom: "Cocktail Spritz", ventes: 1543, portions: 124, categorie: "Bar", coefficientPrevu: 6.90, coefficientReel: 6.90, coutMatiere: 201.59, prixVente: 11.20 },
-        { nom: "Salade de saison", ventes: 1387, portions: 89, categorie: "Entrée", coefficientPrevu: 3.60, coefficientReel: 3.58, coutMatiere: 360.22, prixVente: 14.50 },
-        { nom: "Plateau de fromages", ventes: 987, portions: 34, categorie: "Autres", coefficientPrevu: 2.10, coefficientReel: 2.08, coutMatiere: 473.76, prixVente: 29.00 }
-      ],
-      flopProductions: [
-        { nom: "Soupe froide", ventes: 187, portions: 12, categorie: "Entrée", coefficientPrevu: 3.50, coefficientReel: 3.43, coutMatiere: 54.60, prixVente: 15.60 },
-        { nom: "Tartare de légumes", ventes: 156, portions: 8, categorie: "Autres", coefficientPrevu: 1.90, coefficientReel: 1.90, coutMatiere: 70.20, prixVente: 16.70 },
-        { nom: "Mocktail exotique", ventes: 134, portions: 9, categorie: "Bar", coefficientPrevu: 3.20, coefficientReel: 3.21, coutMatiere: 37.52, prixVente: 13.40 },
-        { nom: "Panna cotta", ventes: 98, portions: 6, categorie: "Dessert", coefficientPrevu: 1.95, coefficientReel: 1.94, coutMatiere: 30.38, prixVente: 9.80 },
-        { nom: "Salade tiède", ventes: 87, portions: 5, categorie: "Entrée", coefficientPrevu: 2.80, coefficientReel: 2.65, coutMatiere: 35.20, prixVente: 8.70 },
-        { nom: "Velouté automnal", ventes: 76, portions: 4, categorie: "Plat", coefficientPrevu: 3.00, coefficientReel: 2.85, coutMatiere: 28.15, prixVente: 7.60 },
-        { nom: "Smoothie détox", ventes: 65, portions: 3, categorie: "Bar", coefficientPrevu: 2.50, coefficientReel: 2.40, coutMatiere: 25.30, prixVente: 6.50 }
-      ],
-      ventesParCategorie: {
-        entrees: 3247,
-        plats: 6201,
-        desserts: 2156,
-        boissons: 4987,
-        autres: 892
+    try {
+      // Utiliser les vraies analytics au lieu des données mockées
+      const realAnalytics = await calculateRealAnalytics(dateRange);
+      
+      // Calculer le multiplicateur selon la période pour ajuster les données
+      let periodMultiplier = 1;
+      const daysDiff = Math.ceil((dateRange.endDate - dateRange.startDate) / (1000 * 60 * 60 * 24)) + 1;
+      
+      switch (true) {
+        case dateRange.label.includes('Aujourd\'hui'):
+          periodMultiplier = 1;
+          break;
+        case dateRange.label.includes('Hier'):
+          periodMultiplier = 0.92;
+          break;
+        case dateRange.label.includes('Cette semaine'):
+          periodMultiplier = daysDiff * 0.88;
+          break;
+        case dateRange.label.includes('Semaine dernière'):
+          periodMultiplier = 7 * 0.85;
+          break;
+        case dateRange.label.includes('Ce mois'):
+          periodMultiplier = daysDiff * 0.82;
+          break;
+        case dateRange.label.includes('Mois dernier'):
+          periodMultiplier = 30 * 0.80;
+          break;
+        default:
+          periodMultiplier = daysDiff * 0.87;
+          break;
       }
-    };
+      
+      console.log("Période:", dateRange.label, "Multiplicateur:", periodMultiplier, "Jours:", daysDiff);
+      
+      const analytics = {
+        caTotal: Math.round(realAnalytics.caTotal * periodMultiplier * 100) / 100,
+        caMidi: Math.round(realAnalytics.caMidi * periodMultiplier * 100) / 100,
+        caSoir: Math.round(realAnalytics.caSoir * periodMultiplier * 100) / 100,
+        couvertsMidi: Math.round(realAnalytics.couvertsMidi * periodMultiplier),
+        couvertsSoir: Math.round(realAnalytics.couvertsSoir * periodMultiplier),
+        topProductions: realAnalytics.topProductions.map(production => ({
+          ...production,
+          ventes: Math.round(production.ventes * periodMultiplier),
+          portions: Math.round(production.portions * periodMultiplier),
+          coutMatiere: Math.round(production.coutMatiere * periodMultiplier * 100) / 100
+        })),
+        flopProductions: realAnalytics.flopProductions.map(production => ({
+          ...production,
+          ventes: Math.round(production.ventes * periodMultiplier),
+          portions: Math.round(production.portions * periodMultiplier),
+          coutMatiere: Math.round(production.coutMatiere * periodMultiplier * 100) / 100
+        })),
+        ventesParCategorie: {
+          entrees: Math.round(realAnalytics.ventesParCategorie.entrees * periodMultiplier),
+          plats: Math.round(realAnalytics.ventesParCategorie.plats * periodMultiplier),
+          desserts: Math.round(realAnalytics.ventesParCategorie.desserts * periodMultiplier),
+          boissons: Math.round(realAnalytics.ventesParCategorie.boissons * periodMultiplier),
+          autres: Math.round(realAnalytics.ventesParCategorie.autres * periodMultiplier)
+        }
+      };
 
-    // Calculer le multiplicateur selon la période avec des valeurs distinctes
-    let periodMultiplier = 1;
-    const daysDiff = Math.ceil((dateRange.endDate - dateRange.startDate) / (1000 * 60 * 60 * 24)) + 1;
-    
-    switch (true) {
-      case dateRange.label.includes('Aujourd\'hui'):
-        periodMultiplier = 1;
-        break;
-      case dateRange.label.includes('Hier'):
-        periodMultiplier = 0.92; // Légèrement moins qu'aujourd'hui
-        break;
-      case dateRange.label.includes('Cette semaine'):
-        periodMultiplier = daysDiff * 0.88; // Environ 5-6 jours de données
-        break;
-      case dateRange.label.includes('Semaine dernière'):
-        periodMultiplier = 7 * 0.85; // 7 jours complets, légèrement moins
-        break;
-      case dateRange.label.includes('Ce mois'):
-        periodMultiplier = daysDiff * 0.82; // Données du mois jusqu'à aujourd'hui
-        break;
-      case dateRange.label.includes('Mois dernier'):
-        periodMultiplier = 30 * 0.80; // Mois complet, données historiques
-        break;
-      default:
-        // Période personnalisée - utiliser le nombre de jours
-        periodMultiplier = daysDiff * 0.87;
-        break;
+      console.log("Nouvelles données calculées:", analytics);
+      setFilteredAnalytics(analytics);
+      
+    } catch (error) {
+      console.error('Erreur calcul analytics pour période:', error);
     }
-    
-    console.log("Période:", dateRange.label, "Multiplicateur:", periodMultiplier, "Jours:", daysDiff);
-    
-    const analytics = {
-      caTotal: Math.round(baseDayData.caTotal * periodMultiplier * 100) / 100,
-      caMidi: Math.round(baseDayData.caMidi * periodMultiplier * 100) / 100,
-      caSoir: Math.round(baseDayData.caSoir * periodMultiplier * 100) / 100,
-      couvertsMidi: Math.round(baseDayData.couvertsMidi * periodMultiplier),
-      couvertsSoir: Math.round(baseDayData.couvertsSoir * periodMultiplier),
-      topProductions: baseDayData.topProductions.map(production => ({
-        ...production,
-        ventes: Math.round(production.ventes * periodMultiplier),
-        portions: Math.round(production.portions * periodMultiplier),
-        coutMatiere: Math.round(production.coutMatiere * periodMultiplier * 100) / 100
-      })),
-      flopProductions: baseDayData.flopProductions.map(production => ({
-        ...production,
-        ventes: Math.round(production.ventes * periodMultiplier),
-        portions: Math.round(production.portions * periodMultiplier),
-        coutMatiere: Math.round(production.coutMatiere * periodMultiplier * 100) / 100
-      })),
-      ventesParCategorie: {
-        entrees: Math.round(baseDayData.ventesParCategorie.entrees * periodMultiplier),
-        plats: Math.round(baseDayData.ventesParCategorie.plats * periodMultiplier),
-        desserts: Math.round(baseDayData.ventesParCategorie.desserts * periodMultiplier),
-        boissons: Math.round(baseDayData.ventesParCategorie.boissons * periodMultiplier),
-        autres: Math.round(baseDayData.ventesParCategorie.autres * periodMultiplier)
-      }
-    };
-
-    console.log("Nouvelles données calculées:", analytics);
-    setFilteredAnalytics(analytics);
   };
 
   // Gérer le changement de période
