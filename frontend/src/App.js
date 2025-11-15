@@ -248,6 +248,62 @@ function App() {
     });
   };
 
+  // ✅ Générer stocks prévisionnels à partir des vraies données
+  const generateStocksPrevisionnels = () => {
+    try {
+      // Utiliser les vrais stocks et recettes pour créer des stocks prévisionnels
+      const stocksRéels = stocks.slice(0, 10); // Prendre 10 produits avec stock
+      
+      const stocksPrevisionnelsGeneres = stocksRéels.map((stock, index) => {
+        const produit = produits.find(p => p.id === stock.produit_id);
+        if (!produit) return null;
+        
+        // Trouver des recettes qui utilisent ce produit
+        const recettesUtilisant = recettes.filter(recette => 
+          recette.ingredients.some(ing => ing.produit_id === produit.id)
+        );
+        
+        const productionsPossibles = recettesUtilisant.slice(0, 3).map(recette => {
+          const ingredient = recette.ingredients.find(ing => ing.produit_id === produit.id);
+          const quantiteParPortion = ingredient ? ingredient.quantite / recette.portions : 0.2;
+          const portionsPossibles = quantiteParPortion > 0 ? Math.floor(stock.quantite_actuelle / quantiteParPortion) : 0;
+          
+          return {
+            nom: recette.nom,
+            quantite_needed: quantiteParPortion,
+            portions_possibles: portionsPossibles,
+            portions_selectionnees: 0,
+            categorie: recette.categorie || "Autres"
+          };
+        });
+        
+        // Si pas de recettes trouvées, créer des productions génériques
+        if (productionsPossibles.length === 0) {
+          productionsPossibles.push({
+            nom: `Plat avec ${produit.nom}`,
+            quantite_needed: 0.15,
+            portions_possibles: Math.floor(stock.quantite_actuelle / 0.15),
+            portions_selectionnees: 0,
+            categorie: "Plat"
+          });
+        }
+        
+        return {
+          id: index + 1,
+          produit: produit.nom,
+          stock_actuel: stock.quantite_actuelle,
+          unite: produit.unite,
+          productions_possibles: productionsPossibles
+        };
+      }).filter(Boolean);
+      
+      setStocksPrevisionnels(stocksPrevisionnelsGeneres);
+    } catch (error) {
+      console.error('Erreur génération stocks prévisionnels:', error);
+    }
+  };
+
+
   // États pour les modals
   const [showProduitModal, setShowProduitModal] = useState(false);
   const [showFournisseurModal, setShowFournisseurModal] = useState(false);
