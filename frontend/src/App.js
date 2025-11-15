@@ -440,6 +440,11 @@ function App() {
     fetchStocksPreparations(); // Récupérer les stocks de préparations
     fetchAvailableUsers(); // Récupérer les utilisateurs pour missions
     fetchHistoriqueProduction(); // Récupérer l'historique des opérations
+    
+    // Générer stocks prévisionnels après chargement des données
+    setTimeout(() => {
+      generateStocksPrevisionnels();
+    }, 2000); // Attendre que stocks et recettes soient chargés
   }, []);
 
   // Fonction pour récupérer les catégories de production
