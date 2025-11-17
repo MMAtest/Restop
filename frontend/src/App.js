@@ -9044,7 +9044,7 @@ function App() {
               <label className="form-label">Fichier (Image ou PDF)</label>
               <input
                 type="file"
-                accept="image/*,.pdf"
+                accept=".pdf,.jpg,.jpeg,.png,.gif,.bmp,.tiff,.webp,application/pdf,image/*"
                 className="form-input"
                 onChange={handleOcrFileSelect}
               />
