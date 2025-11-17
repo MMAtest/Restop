@@ -5863,6 +5863,8 @@ async def import_nouvelle_carte():
             "message": "🎉 Nouvelle carte importée avec succès !",
             "productions_created": created_count,
             "preparations_created": preparation_count,
+            "archived_recettes": archived_recettes_count,
+            "archived_preparations": archived_preparations_count,
             "details": {
                 "entrees": 10,
                 "plats": 15,  # 11 plats principaux (9 + 2 poissons) + 4 accompagnements
