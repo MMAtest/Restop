@@ -5708,6 +5708,12 @@ async def import_nouvelle_carte():
             {"nom": "Côte de boeuf Aubrac", "prix_vente": 110, "categorie": "Plat", "portions": 4, "ingredients": ["Côte de bœuf Aubrac"]},
             {"nom": "Jarret de veau du Sud Ouest", "prix_vente": 80, "categorie": "Plat", "portions": 4, "ingredients": ["Jarret de veau"]},
             
+            # ACCOMPAGNEMENTS (comptent comme des PLATS)
+            {"nom": "Écrasé de pomme de terre", "prix_vente": 6, "categorie": "Plat", "portions": 4, "ingredients": ["Pommes de terre", "Beurre"]},
+            {"nom": "Poêlée de légumes", "prix_vente": 6, "categorie": "Plat", "portions": 4, "ingredients": ["Légumes de saison", "Huile d'olive"]},
+            {"nom": "Purée à la truffe (Uncinatum)", "prix_vente": 11, "categorie": "Plat", "portions": 4, "ingredients": ["Pommes de terre", "Truffe", "Beurre", "Crème"]},
+            {"nom": "Gnocchi artisanaux au beurre", "prix_vente": 11, "categorie": "Plat", "portions": 4, "ingredients": ["Gnocchi artisanaux", "Beurre", "Parmesan"]},
+            
             # DESSERTS  
             {"nom": "La glace yaourt dessert signature", "prix_vente": 13, "categorie": "Dessert", "portions": 4, "ingredients": ["Yaourt", "Sucre", "Crème"]},
             {"nom": "Tiramisu de Mamet", "prix_vente": 12, "categorie": "Dessert", "portions": 4, "ingredients": ["Mascarpone", "Café", "Biscuits", "Cacao"]},
