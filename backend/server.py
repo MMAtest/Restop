@@ -5784,7 +5784,11 @@ async def import_nouvelle_carte():
             
             # Pour les aromates
             {"produit": "Persil", "forme": "haché", "description": "Pour persillade"},
-            {"produit": "Ail", "forme": "émincé", "description": "Pour sauces"}
+            {"produit": "Ail", "forme": "émincé", "description": "Pour sauces"},
+            
+            # Pour les poissons (ajoutés)
+            {"produit": "Sole", "forme": "filets", "description": "Préparée pour meunière"},
+            {"produit": "Poisson", "forme": "entier", "description": "Pêche du jour au four"}
         ]
         
         for prep_config in preparations_config:
