@@ -1383,6 +1383,39 @@ def extract_text_from_pdf_google_vision(pdf_content: bytes) -> str:
         print(f"❌ {error_msg}")
         return error_msg
 
+def extract_text_from_image_google_vision(image_content: bytes) -> str:
+    """
+    Extract text from image using Google Cloud Vision API
+    Superior accuracy compared to Tesseract for images
+    """
+    try:
+        print("🚀 Google Vision API - Starting image text extraction")
+        
+        # Initialize Google Vision client
+        client = vision.ImageAnnotatorClient()
+        
+        # Create image object
+        image = vision.Image(content=image_content)
+        
+        # Perform text detection
+        response = client.text_detection(image=image)
+        texts = response.text_annotations
+        
+        if texts:
+            # First annotation contains full text
+            extracted_text = texts[0].description
+            print(f"✅ Google Vision image extraction SUCCESS: {len(extracted_text)} chars")
+            return extracted_text
+        else:
+            error_msg = "Aucun texte détecté par Google Vision API dans l'image"
+            print(f"⚠️ {error_msg}")
+            return ""
+            
+    except Exception as e:
+        error_msg = f"Erreur Google Vision API image: {str(e)}"
+        print(f"❌ {error_msg}")
+        return error_msg
+
 
 def detect_file_type(filename: str, content_type: str = None) -> str:
     """Detect if file is image or PDF"""
