@@ -2528,27 +2528,6 @@ function App() {
         <h1>ResTop : La Table d'Augustine</h1>
         {/* Boutons header mobile */}
         <div style={{display: 'flex', gap: '8px', alignItems: 'center'}}>
-          {/* Bouton actualiser visible mobile */}
-          <button
-            onClick={refreshAllData}
-            disabled={loading}
-            style={{
-              background: loading ? '#9ca3af' : '#10b981',
-              color: 'white',
-              border: 'none',
-              borderRadius: '8px',
-              padding: '8px 12px',
-              fontSize: '14px',
-              fontWeight: '600',
-              cursor: loading ? 'not-allowed' : 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '4px'
-            }}
-          >
-            {loading ? '🔄' : '🔄'}
-          </button>
-          
           {/* Menu Burger */}
           <div className="burger-menu">
           <button onClick={() => setShowBurgerMenu(!showBurgerMenu)}>
