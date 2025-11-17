@@ -5674,6 +5674,158 @@ async def init_demo_missions_and_users():
             "message": f"Erreur initialisation: {str(e)}"
         }
 
+# ✅ Import nouvelle carte et création automatique
+@api_router.post("/demo/import-nouvelle-carte")
+async def import_nouvelle_carte():
+    """Importer la nouvelle carte de La Table d'Augustine et créer productions/préparations"""
+    try:
+        # Supprimer anciennes recettes/préparations
+        await db.recettes.delete_many({})
+        await db.preparations.delete_many({})
+        
+        # Nouvelles productions basées sur la carte analysée
+        nouvelles_productions = [
+            # ENTRÉES
+            {"nom": "Supions en persillade de Mamie", "prix_vente": 26, "categorie": "Entrée", "portions": 4, "ingredients": ["Supions (petits calamars)", "Persil", "Ail"]},
+            {"nom": "Moules gratinées en persillade", "prix_vente": 18, "categorie": "Entrée", "portions": 4, "ingredients": ["Moules de Méditerranée", "Persil", "Ail", "Beurre"]},
+            {"nom": "Saint-Jacques façon Mr Paul Bocuse", "prix_vente": 27, "categorie": "Entrée", "portions": 4, "ingredients": ["Noix de Saint-Jacques", "Crème fraîche", "Beurre"]},
+            {"nom": "Le crabe sublimé d'Augustine", "prix_vente": 29, "categorie": "Entrée", "portions": 4, "ingredients": ["Crabe", "Homard", "Cardamome"]},
+            {"nom": "Les panisses de l'Estaque", "prix_vente": 15, "categorie": "Entrée", "portions": 6, "ingredients": ["Farine de pois-chiche", "Huile d'olive"]},
+            {"nom": "Le pâté en croûte de Mamet Augustine", "prix_vente": 18, "categorie": "Entrée", "portions": 4, "ingredients": ["Porc", "Veau", "Pâte brisée", "Œufs"]},
+            {"nom": "La soupe à l'oignon, foie gras & Comté", "prix_vente": 19, "categorie": "Entrée", "portions": 4, "ingredients": ["Oignon", "Foie gras", "Fromage Comté", "Pâte feuilletée"]},
+            {"nom": "Cuisses de grenouilles à la française", "prix_vente": 24, "categorie": "Entrée", "portions": 4, "ingredients": ["Cuisses de grenouilles", "Ail", "Persil", "Beurre"]},
+            {"nom": "La fameuse poêlée de sanguins des chasseurs", "prix_vente": 23, "categorie": "Entrée", "portions": 4, "ingredients": ["Champignons sanguins", "Ail", "Persil"]},
+            {"nom": "Foie gras de canard IGP", "prix_vente": 28, "categorie": "Entrée", "portions": 4, "ingredients": ["Foie gras de canard", "Chutney"]},
+            
+            # PLATS
+            {"nom": "Linguine aux palourdes & sauce à l'ail", "prix_vente": 29, "categorie": "Plat", "portions": 4, "ingredients": ["Linguine", "Palourdes", "Ail", "Huile d'olive"]},
+            {"nom": "Rigatoni à la truffe fraîche de Bourgogne", "prix_vente": 35, "categorie": "Plat", "portions": 4, "ingredients": ["Rigatoni", "Truffe fraîche", "Crème", "Parmesan"]},
+            {"nom": "Gnocchi d'Augustine sauce napolitaine", "prix_vente": 25, "categorie": "Plat", "portions": 4, "ingredients": ["Gnocchi artisanaux", "Tomates", "Burrata", "Basilic"]},
+            {"nom": "Nos farcis provençaux", "prix_vente": 31, "categorie": "Plat", "portions": 4, "ingredients": ["Tomates", "Courgettes", "Bœuf limousin", "Veau", "Riz"]},
+            {"nom": "La merveilleuse souris d'agneau", "prix_vente": 36, "categorie": "Plat", "portions": 4, "ingredients": ["Souris d'agneau", "Gnocchi", "Herbes de Provence"]},
+            {"nom": "Le fameux boeuf Wellington à la truffe", "prix_vente": 56, "categorie": "Plat", "portions": 4, "ingredients": ["Filet de bœuf limousin", "Truffe", "Pâte feuilletée", "Champignons"]},
+            {"nom": "Magret de canard de la ferme du Puntoun", "prix_vente": 42, "categorie": "Plat", "portions": 4, "ingredients": ["Magret de canard", "Girolles"]},
+            {"nom": "Côte de boeuf Aubrac", "prix_vente": 110, "categorie": "Plat", "portions": 4, "ingredients": ["Côte de bœuf Aubrac"]},
+            {"nom": "Jarret de veau du Sud Ouest", "prix_vente": 80, "categorie": "Plat", "portions": 4, "ingredients": ["Jarret de veau"]},
+            
+            # DESSERTS  
+            {"nom": "La glace yaourt dessert signature", "prix_vente": 13, "categorie": "Dessert", "portions": 4, "ingredients": ["Yaourt", "Sucre", "Crème"]},
+            {"nom": "Tiramisu de Mamet", "prix_vente": 12, "categorie": "Dessert", "portions": 4, "ingredients": ["Mascarpone", "Café", "Biscuits", "Cacao"]},
+            {"nom": "Crêpe Suzette recette de 1961", "prix_vente": 12, "categorie": "Dessert", "portions": 4, "ingredients": ["Farine", "Œufs", "Lait", "Orange", "Grand Marnier"]},
+            {"nom": "Mont Blanc classique", "prix_vente": 12, "categorie": "Dessert", "portions": 4, "ingredients": ["Crème de marron", "Chantilly", "Meringue"]}
+        ]
+        
+        created_count = 0
+        
+        # Créer chaque production
+        for prod_data in nouvelles_productions:
+            # Créer les ingrédients (simplifiés)
+            ingredients = []
+            for ing_name in prod_data["ingredients"]:
+                # Chercher un produit correspondant
+                produit = await db.produits.find_one({"nom": {"$regex": ing_name.split()[0], "$options": "i"}})
+                if produit:
+                    ingredients.append({
+                        "produit_id": produit["id"],
+                        "produit_nom": produit["nom"],
+                        "quantite": 0.2,  # Quantité par défaut
+                        "unite": produit.get("unite", "kg")
+                    })
+            
+            # Créer la recette
+            recette = Recipe(
+                nom=prod_data["nom"],
+                description=f"Production de la nouvelle carte La Table d'Augustine",
+                categorie=prod_data["categorie"],
+                portions=prod_data["portions"],
+                prix_vente=prod_data["prix_vente"],
+                ingredients=ingredients
+            )
+            
+            await db.recettes.insert_one(recette.dict())
+            created_count += 1
+        
+        # Créer les préparations appropriées
+        produits = await db.produits.find().to_list(1000)
+        preparation_count = 0
+        
+        # Préparations spécifiques selon la nouvelle carte
+        preparations_config = [
+            # Pour les supions
+            {"produit": "Supions", "forme": "émincé", "description": "Pour persillade"},
+            {"produit": "Supions", "forme": "entier", "description": "Pour cuisson complète"},
+            
+            # Pour les moules
+            {"produit": "Moules", "forme": "nettoyé", "description": "Prêtes à gratiner"},
+            
+            # Pour les Saint-Jacques
+            {"produit": "Saint-Jacques", "forme": "filet", "description": "Noix nettoyées"},
+            
+            # Pour le crabe
+            {"produit": "Crabe", "forme": "émietté", "description": "Chair extraite"},
+            
+            # Pour les légumes
+            {"produit": "Tomates", "forme": "concassé", "description": "Pour farcis provençaux"},
+            {"produit": "Tomates", "forme": "sauce", "description": "Pour sauce napolitaine"},
+            {"produit": "Courgettes", "forme": "évidé", "description": "Pour farcis provençaux"},
+            
+            # Pour les viandes
+            {"produit": "Agneau", "forme": "désossé", "description": "Souris préparée"},
+            {"produit": "Bœuf", "forme": "filet", "description": "Pour Wellington"},
+            {"produit": "Veau", "forme": "haché", "description": "Pour farce"},
+            {"produit": "Canard", "forme": "magret", "description": "Magret paré"},
+            
+            # Pour les aromates
+            {"produit": "Persil", "forme": "haché", "description": "Pour persillade"},
+            {"produit": "Ail", "forme": "émincé", "description": "Pour sauces"}
+        ]
+        
+        for prep_config in preparations_config:
+            # Chercher le produit correspondant
+            produit = await db.produits.find_one({"nom": {"$regex": prep_config["produit"], "$options": "i"}})
+            if produit:
+                preparation = Preparation(
+                    nom=f"{produit['nom']} {prep_config['forme']} - {prep_config['description']}",
+                    produit_id=produit["id"],
+                    produit_nom=produit["nom"],
+                    forme_decoupe=prep_config["forme"],
+                    quantite_produit_brut=2.0,
+                    unite_produit_brut=produit.get("unite", "kg"),
+                    quantite_preparee=1.8,
+                    unite_preparee=produit.get("unite", "kg"),
+                    perte=0.2,
+                    perte_pourcentage=10.0,
+                    nombre_portions=8,
+                    taille_portion=0.225,
+                    unite_portion=produit.get("unite", "kg"),
+                    notes=f"Préparation pour nouvelle carte - {prep_config['description']}"
+                )
+                
+                await db.preparations.insert_one(preparation.dict())
+                preparation_count += 1
+        
+        return {
+            "success": True,
+            "message": "🎉 Nouvelle carte importée avec succès !",
+            "productions_created": created_count,
+            "preparations_created": preparation_count,
+            "details": {
+                "entrees": 10,
+                "plats": 9, 
+                "desserts": 4,
+                "accompagnements": 4
+            }
+        }
+        
+    except Exception as e:
+        return {
+            "success": False,
+            "message": f"❌ Erreur import nouvelle carte: {str(e)}",
+            "productions_created": 0,
+            "preparations_created": 0
+        }
+
+
 # Include the router in the main app
 app.include_router(api_router)
 
