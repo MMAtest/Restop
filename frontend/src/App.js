@@ -2278,9 +2278,18 @@ function App() {
         
         alert(`✅ Historique vidé avec succès !\n\n${response.data.deleted_count} document(s) supprimé(s)`);
         
-        // Rafraîchir la liste des documents
-        fetchDocumentsOcr();
+        // Rafraîchir la liste des documents ET réinitialiser les affichages
+        await fetchDocumentsOcr();
         setSelectedDocument(null);
+        
+        // Forcer le rafraîchissement de tous les onglets OCR
+        if (window.location.hash) {
+          window.location.hash = '';
+        }
+        
+        // Réinitialiser les filtres et pages
+        setOcrCurrentPage(1);
+        setOcrSearchTerm('');
       }
     } catch (error) {
       console.error("Erreur suppression documents OCR:", error);
