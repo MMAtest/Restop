@@ -9503,40 +9503,9 @@ function App() {
           </div>
         </div>
       )}
-      
-      {/* Bouton flottant pour actualiser les données - Mobile optimisé */}
-      {isAuthenticated && (
-        <button
-          onClick={refreshAllData}
-          disabled={loading}
-          className="floating-refresh-button"
-          style={{
-            position: 'fixed',
-            bottom: '80px',
-            right: '16px',
-            background: loading ? '#9ca3af' : '#10b981',
-            color: 'white',
-            border: 'none',
-            borderRadius: '50px',
-            padding: window.innerWidth <= 768 ? '16px 20px' : '14px 18px',
-            fontSize: window.innerWidth <= 768 ? '18px' : '16px',
-            fontWeight: '600',
-            cursor: loading ? 'not-allowed' : 'pointer',
-            zIndex: 9999,
-            boxShadow: '0 6px 20px rgba(16, 185, 129, 0.4)',
-            transition: 'all 0.3s ease',
-            minWidth: window.innerWidth <= 768 ? '140px' : '120px',
-            textAlign: 'center',
-            touchAction: 'manipulation', // Améliore le touch sur mobile
-            WebkitTapHighlightColor: 'transparent' // Supprime highlight sur iOS
-          }}
-        >
-          {loading ? '🔄 Sync...' : '🔄 Actualiser'}
-        </button>
-      )}
             </div>
       )}
-    </>
+    </>;
   );
 }
 
