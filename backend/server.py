@@ -5816,9 +5816,9 @@ async def import_nouvelle_carte():
             "preparations_created": preparation_count,
             "details": {
                 "entrees": 10,
-                "plats": 9, 
+                "plats": 13,  # 9 plats principaux + 4 accompagnements
                 "desserts": 4,
-                "accompagnements": 4
+                "total": 27
             }
         }
         
