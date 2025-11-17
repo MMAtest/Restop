@@ -814,6 +814,30 @@ function App() {
     }
   };
 
+  // ✅ Fonction pour actualiser toutes les données de l'application
+  const refreshAllData = async () => {
+    try {
+      setLoading(true);
+      
+      await Promise.all([
+        fetchProduits(),
+        fetchRecettes(), 
+        fetchPreparations(),
+        fetchStocks(),
+        fetchFournisseurs(),
+        fetchDocumentsOcr()
+      ]);
+      
+      alert('✅ Données actualisées avec succès !');
+    } catch (error) {
+      console.error('Erreur refresh:', error);
+      alert('❌ Erreur lors de l\'actualisation');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+
   const handleCreateMission = async (e) => {
     e.preventDefault();
     setLoading(true);
