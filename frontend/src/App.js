@@ -2606,6 +2606,7 @@ function App() {
             </div>
           )}
         </div>
+        </div>  <!-- Fermeture div header buttons -->
       </div>
 
       {/* Top Navigation Tabs (Analytics) - SUPER ADMIN et PATRON */}
