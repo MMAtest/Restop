@@ -897,6 +897,37 @@ body {
   background: var(--color-border-light);
 }
 
+/* ===== BOUTON FLOTTANT MOBILE ===== */
+.floating-refresh-button {
+  position: fixed !important;
+  bottom: 80px !important;
+  right: 16px !important;
+  z-index: 9999 !important;
+  touch-action: manipulation !important;
+  -webkit-tap-highlight-color: transparent !important;
+}
+
+@media (max-width: 768px) {
+  .floating-refresh-button {
+    bottom: 90px !important;
+    right: 20px !important;
+    padding: 16px 20px !important;
+    font-size: 18px !important;
+    min-width: 140px !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .floating-refresh-button {
+    bottom: 100px !important;
+    right: 16px !important;
+    padding: 18px 22px !important;
+    font-size: 20px !important;
+    min-width: 160px !important;
+  }
+}
+
+
 /* ===== MASQUER PASTILLE EMERGENT ===== */
 /* Masquer tous les éléments qui pourraient contenir "Made with Emergent" */
 div[style*="position: fixed"][style*="bottom"],
