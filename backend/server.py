@@ -5698,6 +5698,8 @@ async def import_nouvelle_carte():
             {"nom": "Foie gras de canard IGP", "prix_vente": 28, "categorie": "Entrée", "portions": 4, "ingredients": ["Foie gras de canard", "Chutney"]},
             
             # PLATS
+            {"nom": "Pêche du jour au four façon grand-mère", "prix_vente": 33, "categorie": "Plat", "portions": 4, "ingredients": ["Poisson frais", "Pommes de terre grenaille", "Herbes de Provence"]},
+            {"nom": "La sole meunière, l'excellence", "prix_vente": 48, "categorie": "Plat", "portions": 4, "ingredients": ["Sole", "Beurre", "Pommes de terre", "Citron"]},
             {"nom": "Linguine aux palourdes & sauce à l'ail", "prix_vente": 29, "categorie": "Plat", "portions": 4, "ingredients": ["Linguine", "Palourdes", "Ail", "Huile d'olive"]},
             {"nom": "Rigatoni à la truffe fraîche de Bourgogne", "prix_vente": 35, "categorie": "Plat", "portions": 4, "ingredients": ["Rigatoni", "Truffe fraîche", "Crème", "Parmesan"]},
             {"nom": "Gnocchi d'Augustine sauce napolitaine", "prix_vente": 25, "categorie": "Plat", "portions": 4, "ingredients": ["Gnocchi artisanaux", "Tomates", "Burrata", "Basilic"]},
