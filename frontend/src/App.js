@@ -9479,6 +9479,38 @@ function App() {
           </div>
         </div>
       )}
+      
+      {/* Bouton flottant pour actualiser les données */}
+      {isAuthenticated && (
+        <button
+          onClick={refreshAllData}
+          disabled={loading}
+          style={{
+            position: 'fixed',
+            top: '20px',
+            right: '20px',
+            background: loading ? '#9ca3af' : '#10b981',
+            color: 'white',
+            border: 'none',
+            borderRadius: '50px',
+            padding: '12px 16px',
+            fontSize: '14px',
+            fontWeight: '600',
+            cursor: loading ? 'not-allowed' : 'pointer',
+            zIndex: 1000,
+            boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+            transition: 'all 0.3s ease'
+          }}
+          onMouseEnter={(e) => {
+            if (!loading) e.target.style.transform = 'scale(1.05)';
+          }}
+          onMouseLeave={(e) => {
+            if (!loading) e.target.style.transform = 'scale(1)';
+          }}
+        >
+          {loading ? '🔄' : '🔄 Actualiser'}
+        </button>
+      )}
             </div>
       )}
     </>
