@@ -5770,26 +5770,95 @@ async def import_nouvelle_carte():
         
         # Créer chaque production
         for prod_data in nouvelles_productions:
-            # Créer les ingrédients (simplifiés)
+            # Créer les ingrédients avec logique améliorée
             ingredients = []
             for ing_name in prod_data["ingredients"]:
-                # Chercher un produit correspondant
-                produit = await db.produits.find_one({"nom": {"$regex": ing_name.split()[0], "$options": "i"}})
+                # Logique de recherche améliorée
+                produit = None
+                
+                # Recherches spécifiques selon l'ingrédient
+                if "supions" in ing_name.lower() or "calamar" in ing_name.lower():
+                    produit = await db.produits.find_one({"nom": {"$regex": "supions|calamar", "$options": "i"}})
+                elif "moules" in ing_name.lower():
+                    produit = await db.produits.find_one({"nom": {"$regex": "moules", "$options": "i"}})
+                elif "saint-jacques" in ing_name.lower() or "noix" in ing_name.lower():
+                    produit = await db.produits.find_one({"nom": {"$regex": "saint-jacques|coquille", "$options": "i"}})
+                elif "crabe" in ing_name.lower():
+                    produit = await db.produits.find_one({"nom": {"$regex": "crabe", "$options": "i"}})
+                elif "persil" in ing_name.lower():
+                    produit = await db.produits.find_one({"nom": {"$regex": "persil", "$options": "i"}})
+                elif "ail" in ing_name.lower():
+                    produit = await db.produits.find_one({"nom": {"$regex": "ail", "$options": "i"}})
+                elif "tomates" in ing_name.lower():
+                    produit = await db.produits.find_one({"nom": {"$regex": "tomate", "$options": "i"}})
+                elif "agneau" in ing_name.lower():
+                    produit = await db.produits.find_one({"nom": {"$regex": "agneau", "$options": "i"}})
+                elif "bœuf" in ing_name.lower() or "boeuf" in ing_name.lower():
+                    produit = await db.produits.find_one({"nom": {"$regex": "bœuf|boeuf", "$options": "i"}})
+                elif "veau" in ing_name.lower():
+                    produit = await db.produits.find_one({"nom": {"$regex": "veau", "$options": "i"}})
+                elif "canard" in ing_name.lower():
+                    produit = await db.produits.find_one({"nom": {"$regex": "canard", "$options": "i"}})
+                elif "truffe" in ing_name.lower():
+                    produit = await db.produits.find_one({"nom": {"$regex": "truffe", "$options": "i"}})
+                elif "palourdes" in ing_name.lower():
+                    produit = await db.produits.find_one({"nom": {"$regex": "palourde", "$options": "i"}})
+                elif "linguine" in ing_name.lower():
+                    produit = await db.produits.find_one({"nom": {"$regex": "linguine|pâte", "$options": "i"}})
+                elif "rigatoni" in ing_name.lower():
+                    produit = await db.produits.find_one({"nom": {"$regex": "rigatoni|pâte", "$options": "i"}})
+                elif "gnocchi" in ing_name.lower():
+                    produit = await db.produits.find_one({"nom": {"$regex": "gnocchi|pomme.*terre", "$options": "i"}})
+                elif "foie gras" in ing_name.lower():
+                    produit = await db.produits.find_one({"nom": {"$regex": "foie.*gras", "$options": "i"}})
+                elif "champignon" in ing_name.lower():
+                    produit = await db.produits.find_one({"nom": {"$regex": "champignon", "$options": "i"}})
+                elif "crème" in ing_name.lower():
+                    produit = await db.produits.find_one({"nom": {"$regex": "crème|cream", "$options": "i"}})
+                else:
+                    # Recherche générique sur le premier mot
+                    first_word = ing_name.split()[0].lower()
+                    produit = await db.produits.find_one({"nom": {"$regex": first_word, "$options": "i"}})
+                
                 if produit:
+                    # Quantités réalistes selon l'ingrédient
+                    quantite = 0.1  # Par défaut
+                    if "viande" in ing_name.lower() or "agneau" in ing_name.lower() or "bœuf" in ing_name.lower() or "veau" in ing_name.lower():
+                        quantite = 0.15  # 150g par portion
+                    elif "poisson" in ing_name.lower() or "sole" in ing_name.lower() or "supions" in ing_name.lower():
+                        quantite = 0.12  # 120g par portion
+                    elif "truffe" in ing_name.lower():
+                        quantite = 0.01  # 10g par portion (truffe précieuse)
+                    elif "légume" in ing_name.lower() or "tomate" in ing_name.lower():
+                        quantite = 0.08  # 80g par portion
+                    elif "pâte" in ing_name.lower() or "linguine" in ing_name.lower() or "gnocchi" in ing_name.lower():
+                        quantite = 0.1   # 100g par portion
+                    elif "persil" in ing_name.lower() or "ail" in ing_name.lower():
+                        quantite = 0.005 # 5g par portion (aromates)
+                    
                     ingredients.append({
                         "produit_id": produit["id"],
                         "produit_nom": produit["nom"],
-                        "quantite": 0.2,  # Quantité par défaut
+                        "quantite": quantite,
                         "unite": produit.get("unite", "kg")
                     })
             
-            # Créer la recette
+            # Créer la recette avec description améliorée
+            description = f"Production de la nouvelle carte novembre 2024 - {prod_data['nom']}"
+            if prod_data["categorie"] == "Entrée":
+                description += " (Entrée signature La Table d'Augustine)"
+            elif prod_data["categorie"] == "Plat":
+                description += " (Plat principal traditionnel)"
+            elif prod_data["categorie"] == "Dessert":
+                description += " (Dessert maison)"
+            
             recette = Recipe(
                 nom=prod_data["nom"],
-                description="Production de la nouvelle carte La Table d'Augustine",
+                description=description,
                 categorie=prod_data["categorie"],
                 portions=prod_data["portions"],
                 prix_vente=prod_data["prix_vente"],
+                coefficient_prevu=2.5,  # Coefficient par défaut
                 ingredients=ingredients
             )
             
