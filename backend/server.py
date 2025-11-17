@@ -5679,8 +5679,51 @@ async def init_demo_missions_and_users():
 async def import_nouvelle_carte():
     """Importer la nouvelle carte de La Table d'Augustine et créer productions/préparations"""
     try:
-        # Supprimer anciennes recettes/préparations
+        # ✅ ARCHIVER anciennes recettes/préparations au lieu de les supprimer
+        
+        # Récupérer toutes les anciennes recettes pour archivage
+        anciennes_recettes = await db.recettes.find().to_list(1000)
+        anciennes_preparations = await db.preparations.find().to_list(1000)
+        
+        archived_recettes_count = 0
+        archived_preparations_count = 0
+        
+        # Archiver chaque ancienne recette
+        for ancienne_recette in anciennes_recettes:
+            # Supprimer l'_id MongoDB pour éviter les conflits
+            if "_id" in ancienne_recette:
+                del ancienne_recette["_id"]
+            
+            # Créer l'archive
+            archived_item = ArchivedItem(
+                original_id=ancienne_recette["id"],
+                item_type="production",
+                original_data=ancienne_recette,
+                reason="Ancienne carte - Mise à jour menu novembre 2024"
+            )
+            
+            await db.archived_items.insert_one(archived_item.dict())
+            archived_recettes_count += 1
+        
+        # Supprimer les anciennes recettes après archivage
         await db.recettes.delete_many({})
+        
+        # Archiver chaque ancienne préparation
+        for ancienne_preparation in anciennes_preparations:
+            if "_id" in ancienne_preparation:
+                del ancienne_preparation["_id"]
+            
+            archived_item = ArchivedItem(
+                original_id=ancienne_preparation["id"],
+                item_type="preparation",
+                original_data=ancienne_preparation,
+                reason="Ancienne carte - Mise à jour menu novembre 2024"
+            )
+            
+            await db.archived_items.insert_one(archived_item.dict())
+            archived_preparations_count += 1
+        
+        # Supprimer les anciennes préparations après archivage
         await db.preparations.delete_many({})
         
         # Nouvelles productions basées sur la carte analysée
