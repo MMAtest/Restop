@@ -5950,6 +5950,129 @@ async def import_nouvelle_carte():
             "preparations_created": 0
         }
 
+@api_router.post("/demo/update-ingredients-from-carte")
+async def update_ingredients_from_carte():
+    """Archiver anciens ingrédients et créer nouveaux selon nouvelle carte"""
+    try:
+        # Récupérer toutes les nouvelles recettes pour analyser les ingrédients requis
+        nouvelles_recettes = await db.recettes.find().to_list(1000)
+        
+        # Extraire tous les ingrédients requis des nouvelles recettes
+        ingredients_requis = set()
+        for recette in nouvelles_recettes:
+            for ingredient in recette.get("ingredients", []):
+                ingredients_requis.add(ingredient["produit_nom"].lower())
+        
+        # Récupérer tous les produits actuels
+        tous_produits = await db.produits.find().to_list(1000)
+        
+        # Identifier produits à archiver (non utilisés dans nouvelle carte)
+        produits_a_archiver = []
+        produits_utilises = []
+        
+        for produit in tous_produits:
+            produit_utilise = False
+            for ing_requis in ingredients_requis:
+                if (ing_requis in produit["nom"].lower() or 
+                    produit["nom"].lower() in ing_requis or
+                    any(word in produit["nom"].lower() for word in ing_requis.split())):
+                    produit_utilise = True
+                    break
+            
+            if produit_utilise:
+                produits_utilises.append(produit)
+            else:
+                produits_a_archiver.append(produit)
+        
+        # Archiver les produits non utilisés
+        archived_count = 0
+        for produit in produits_a_archiver:
+            # Créer l'archive
+            archived_item = ArchivedItem(
+                original_id=produit["id"],
+                item_type="produit",
+                original_data={k: v for k, v in produit.items() if k != "_id"},
+                reason="Produit non utilisé dans nouvelle carte novembre 2024"
+            )
+            
+            await db.archived_items.insert_one(archived_item.dict())
+            
+            # Supprimer le produit après archivage
+            await db.produits.delete_one({"id": produit["id"]})
+            
+            # Supprimer aussi le stock associé
+            await db.stocks.delete_one({"produit_id": produit["id"]})
+            
+            archived_count += 1
+        
+        # Créer nouveaux produits nécessaires selon nouvelle carte
+        nouveaux_produits = [
+            # Ingrédients de base pour nouvelle carte
+            {"nom": "Pommes de terre grenaille", "categorie": "Légumes", "unite": "kg", "prix_achat": 2.80, "description": "Pour pêche du jour façon grand-mère"},
+            {"nom": "Beurre montée", "categorie": "Crêmerie", "unite": "kg", "prix_achat": 8.50, "description": "Pour sauces et cuissons"},
+            {"nom": "Crème de cardamome", "categorie": "Épices", "unite": "L", "prix_achat": 15.00, "description": "Pour émulsion homard"},
+            {"nom": "Chutney maison", "categorie": "Épices", "unite": "kg", "prix_achat": 12.00, "description": "Accompagnement foie gras"},
+            {"nom": "Pâte feuilletée", "categorie": "Céréales", "unite": "kg", "prix_achat": 4.50, "description": "Pour Wellington et pâtés"},
+            {"nom": "Stracciatella", "categorie": "Crêmerie", "unite": "kg", "prix_achat": 18.00, "description": "Pour gnocchi napolitaine"},
+            {"nom": "Girolles fraîches", "categorie": "Légumes", "unite": "kg", "prix_achat": 25.00, "description": "Pour magret de canard"},
+            {"nom": "Herbes de Provence", "categorie": "Épices", "unite": "paquet", "prix_achat": 3.50, "description": "Pour agneau et plats provençaux"},
+            {"nom": "Grand Marnier", "categorie": "Autres", "unite": "L", "prix_achat": 45.00, "description": "Pour crêpe Suzette"},
+            {"nom": "Mascarpone", "categorie": "Crêmerie", "unite": "kg", "prix_achat": 12.00, "description": "Pour tiramisu"},
+            {"nom": "Café expresso", "categorie": "Autres", "unite": "kg", "prix_achat": 18.00, "description": "Pour tiramisu"},
+            {"nom": "Biscuits à la cuillère", "categorie": "Autres", "unite": "paquet", "prix_achat": 6.00, "description": "Pour tiramisu"}
+        ]
+        
+        created_products = 0
+        
+        # Créer chaque nouveau produit
+        for prod_data in nouveaux_produits:
+            # Vérifier qu'il n'existe pas déjà
+            existing = await db.produits.find_one({"nom": {"$regex": f"^{prod_data['nom']}$", "$options": "i"}})
+            
+            if not existing:
+                produit = Produit(
+                    nom=prod_data["nom"],
+                    description=prod_data["description"],
+                    categorie=prod_data["categorie"],
+                    unite=prod_data["unite"],
+                    prix_achat=prod_data["prix_achat"],
+                    reference_price=prod_data["prix_achat"]
+                )
+                
+                await db.produits.insert_one(produit.dict())
+                
+                # Créer un stock initial
+                stock = Stock(
+                    produit_id=produit.id,
+                    produit_nom=produit.nom,
+                    quantite_actuelle=10.0,  # Stock initial
+                    quantite_min=2.0,
+                    quantite_max=50.0
+                )
+                
+                await db.stocks.insert_one(stock.dict())
+                created_products += 1
+        
+        return {
+            "success": True,
+            "message": "🎉 Ingrédients mis à jour selon nouvelle carte !",
+            "produits_archives": archived_count,
+            "nouveaux_produits": created_products,
+            "produits_conserves": len(produits_utilises),
+            "details": {
+                "ingredients_requis": len(ingredients_requis),
+                "produits_analyses": len(tous_produits)
+            }
+        }
+        
+    except Exception as e:
+        return {
+            "success": False,
+            "message": f"❌ Erreur mise à jour ingrédients: {str(e)}",
+            "produits_archives": 0,
+            "nouveaux_produits": 0
+        }
+
 
 # Include the router in the main app
 app.include_router(api_router)
