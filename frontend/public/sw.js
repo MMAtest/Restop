@@ -1,4 +1,4 @@
-const CACHE_NAME = 'restop-v1.0.0';
+const CACHE_NAME = 'restop-v1.1.0';
 const urlsToCache = [
   '/',
   '/static/css/main.css',
