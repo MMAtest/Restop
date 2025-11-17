@@ -5735,7 +5735,7 @@ async def import_nouvelle_carte():
             # Créer la recette
             recette = Recipe(
                 nom=prod_data["nom"],
-                description=f"Production de la nouvelle carte La Table d'Augustine",
+                description="Production de la nouvelle carte La Table d'Augustine",
                 categorie=prod_data["categorie"],
                 portions=prod_data["portions"],
                 prix_vente=prod_data["prix_vente"],
@@ -5746,7 +5746,6 @@ async def import_nouvelle_carte():
             created_count += 1
         
         # Créer les préparations appropriées
-        produits = await db.produits.find().to_list(1000)
         preparation_count = 0
         
         # Préparations spécifiques selon la nouvelle carte
