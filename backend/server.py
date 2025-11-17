@@ -4564,7 +4564,7 @@ async def upload_and_process_document(
         else:
             print(f"🖼️ Processing image file: {file.filename}")
             image_base64 = base64.b64encode(file_content).decode('utf-8')
-            texte_extrait = extract_text_from_image(image_base64)
+            texte_extrait = extract_text_from_image_google_vision(file_content)
             data_uri = f"data:{file.content_type or 'image/jpeg'};base64,{image_base64}"
         
         if not texte_extrait or len(texte_extrait.strip()) < 10:
