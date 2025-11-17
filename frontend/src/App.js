@@ -9480,35 +9480,50 @@ function App() {
         </div>
       )}
       
-      {/* Bouton flottant pour actualiser les données */}
+      {/* Bouton flottant pour actualiser les données - Optimisé mobile */}
       {isAuthenticated && (
         <button
           onClick={refreshAllData}
           disabled={loading}
           style={{
             position: 'fixed',
-            top: '20px',
-            right: '20px',
+            bottom: '80px',  // Au-dessus de la navigation bottom
+            right: '16px',
             background: loading ? '#9ca3af' : '#10b981',
             color: 'white',
             border: 'none',
             borderRadius: '50px',
-            padding: '12px 16px',
-            fontSize: '14px',
+            padding: '14px 18px',
+            fontSize: '16px',
             fontWeight: '600',
             cursor: loading ? 'not-allowed' : 'pointer',
-            zIndex: 1000,
-            boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
-            transition: 'all 0.3s ease'
+            zIndex: 9999,
+            boxShadow: '0 6px 20px rgba(16, 185, 129, 0.4)',
+            transition: 'all 0.3s ease',
+            minWidth: '120px',
+            textAlign: 'center',
+            // Responsive mobile
+            '@media (max-width: 768px)': {
+              padding: '16px 20px',
+              fontSize: '18px',
+              right: '20px',
+              bottom: '90px'
+            }
           }}
           onMouseEnter={(e) => {
-            if (!loading) e.target.style.transform = 'scale(1.05)';
+            if (!loading) {
+              e.target.style.transform = 'scale(1.05)';
+              e.target.style.boxShadow = '0 8px 25px rgba(16, 185, 129, 0.6)';
+            }
           }}
           onMouseLeave={(e) => {
-            if (!loading) e.target.style.transform = 'scale(1)';
+            if (!loading) {
+              e.target.style.transform = 'scale(1)';
+              e.target.style.boxShadow = '0 6px 20px rgba(16, 185, 129, 0.4)';
+            }
           }}
         >
-          {loading ? '🔄' : '🔄 Actualiser'}
+          {loading ? '🔄 Sync...' : '🔄 Actualiser'}
         </button>
       )}
             </div>
