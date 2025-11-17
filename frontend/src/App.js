@@ -2549,6 +2549,16 @@ function App() {
                 </button>
               )}
               
+              {/* Bouton actualiser données */}
+              <button 
+                className="button secondary" 
+                onClick={refreshAllData}
+                disabled={loading}
+                style={{width: '100%', marginBottom: '8px'}}
+              >
+                {loading ? '🔄 Actualisation...' : '🔄 Actualiser Données'}
+              </button>
+              
               <button 
                 className="button secondary" 
                 onClick={() => {
