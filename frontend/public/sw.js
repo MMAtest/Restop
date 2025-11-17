@@ -36,81 +36,107 @@ self.addEventListener('activate', (event) => {
   );
 });
 
-// Interception des requêtes (Cache First pour les assets)
+// Interception des requêtes (Network First pour API, Cache First pour assets)
 self.addEventListener('fetch', (event) => {
-  event.respondWith(
-    caches.match(event.request)
-      .then((response) => {
-        // Retourner du cache si disponible
-        if (response) {
-          return response;
-        }
-        
-        // Sinon, faire la requête réseau
-        return fetch(event.request).then((response) => {
-          // Vérifier si c'est une réponse valide
-          if (!response || response.status !== 200 || response.type !== 'basic') {
-            return response;
-          }
-
+  // Détecter si c'est une requête API
+  const isAPIRequest = event.request.url.includes('/api/');
+  
+  if (isAPIRequest) {
+    // Network First pour les API (données dynamiques)
+    event.respondWith(
+      fetch(event.request)
+        .then((response) => {
           // Cloner la réponse pour le cache
           const responseToCache = response.clone();
-
+          
           caches.open(CACHE_NAME)
             .then((cache) => {
               cache.put(event.request, responseToCache);
             });
-
+          
           return response;
-        }).catch(() => {
-          // Mode offline - retourner page d'erreur basique
-          if (event.request.destination === 'document') {
-            return new Response(`
-              <!DOCTYPE html>
-              <html>
-                <head>
-                  <meta charset="utf-8">
-                  <title>ResTop - Offline</title>
-                  <meta name="viewport" content="width=device-width, initial-scale=1">
-                  <style>
-                    body { 
-                      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
-                      display: flex; align-items: center; justify-content: center;
-                      min-height: 100vh; margin: 0; background: #f9fafb;
-                      text-align: center; padding: 20px;
-                    }
-                    .offline-container { 
-                      background: white; padding: 40px; border-radius: 12px; 
-                      box-shadow: 0 4px 16px rgba(0,0,0,0.1); max-width: 400px;
-                    }
-                    .icon { font-size: 64px; margin-bottom: 20px; }
-                    h1 { color: #059669; margin: 0 0 16px 0; }
-                    p { color: #6b7280; margin: 0 0 24px 0; line-height: 1.5; }
-                    button { 
-                      background: #10b981; color: white; border: none; 
-                      padding: 12px 24px; border-radius: 8px; cursor: pointer;
-                      font-weight: 600;
-                    }
-                  </style>
-                </head>
-                <body>
-                  <div class="offline-container">
-                    <div class="icon">📱</div>
-                    <h1>Mode Hors Ligne</h1>
-                    <p>Vous êtes actuellement hors ligne. Certaines fonctionnalités peuvent être limitées.</p>
-                    <button onclick="window.location.reload()">🔄 Réessayer</button>
-                  </div>
-                </body>
-              </html>
-            `, {
-              headers: {
-                'Content-Type': 'text/html'
-              }
-            });
+        })
+        .catch(() => {
+          // Si réseau échoue, utiliser le cache
+          return caches.match(event.request);
+        })
+    );
+  } else {
+    // Cache First pour les assets statiques (CSS, JS, images)
+    event.respondWith(
+      caches.match(event.request)
+        .then((response) => {
+          // Retourner du cache si disponible
+          if (response) {
+            return response;
           }
-        });
-      })
-  );
+          
+          // Sinon, faire la requête réseau
+          return fetch(event.request).then((response) => {
+            // Vérifier si c'est une réponse valide
+            if (!response || response.status !== 200 || response.type !== 'basic') {
+              return response;
+            }
+
+            // Cloner la réponse pour le cache
+            const responseToCache = response.clone();
+
+            caches.open(CACHE_NAME)
+              .then((cache) => {
+                cache.put(event.request, responseToCache);
+              });
+
+            return response;
+          }).catch(() => {
+            // Mode offline - retourner page d'erreur basique
+            if (event.request.destination === 'document') {
+              return new Response(`
+                <!DOCTYPE html>
+                <html>
+                  <head>
+                    <meta charset="utf-8">
+                    <title>ResTop - Offline</title>
+                    <meta name="viewport" content="width=device-width, initial-scale=1">
+                    <style>
+                      body { 
+                        font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+                        display: flex; align-items: center; justify-content: center;
+                        min-height: 100vh; margin: 0; background: #f9fafb;
+                        text-align: center; padding: 20px;
+                      }
+                      .offline-container { 
+                        background: white; padding: 40px; border-radius: 12px; 
+                        box-shadow: 0 4px 16px rgba(0,0,0,0.1); max-width: 400px;
+                      }
+                      .icon { font-size: 64px; margin-bottom: 20px; }
+                      h1 { color: #059669; margin: 0 0 16px 0; }
+                      p { color: #6b7280; margin: 0 0 24px 0; line-height: 1.5; }
+                      button { 
+                        background: #10b981; color: white; border: none; 
+                        padding: 12px 24px; border-radius: 8px; cursor: pointer;
+                        font-weight: 600;
+                      }
+                    </style>
+                  </head>
+                  <body>
+                    <div class="offline-container">
+                      <div class="icon">📱</div>
+                      <h1>Mode Hors Ligne</h1>
+                      <p>Vous êtes actuellement hors ligne. Certaines fonctionnalités peuvent être limitées.</p>
+                      <button onclick="window.location.reload()">🔄 Réessayer</button>
+                    </div>
+                  </body>
+                </html>
+              `, {
+                headers: {
+                  'Content-Type': 'text/html'
+                }
+              });
+            }
+          });
+        })
+    );
+  }
 });
 
 // Notifications push (pour les missions)
