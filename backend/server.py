@@ -5637,6 +5637,106 @@ async def mark_notification_read(notification_id: str):
     return {"message": "Notification marquée comme lue"}
 
 # ✅ Demo Data Creation for Missions System
+@api_router.post("/demo/init-real-restaurant-data")
+async def init_real_restaurant_data():
+    """Initialiser uniquement les vraies données du restaurant (fournisseurs, produits, préparations, recettes)"""
+    try:
+        from real_restaurant_data import REAL_FOURNISSEURS, REAL_PRODUITS, REAL_PREPARATIONS, REAL_RECETTES
+        import uuid
+        
+        # Compteurs
+        fournisseurs_created = 0
+        produits_created = 0
+        preparations_created = 0
+        recettes_created = 0
+        stocks_created = 0
+        
+        # 1. Créer les fournisseurs
+        fournisseur_ids = {}
+        for fournisseur_data in REAL_FOURNISSEURS:
+            fournisseur = Fournisseur(**fournisseur_data)
+            await db.fournisseurs.insert_one(fournisseur.dict())
+            fournisseur_ids[fournisseur_data["nom"]] = fournisseur.id
+            fournisseurs_created += 1
+        
+        # 2. Créer les produits
+        produit_ids = {}
+        for produit_data in REAL_PRODUITS:
+            produit = Produit(**produit_data)
+            await db.produits.insert_one(produit.dict())
+            produit_ids[produit_data["nom"]] = produit.id
+            
+            # Créer un stock initial vide
+            stock = Stock(
+                produit_id=produit.id,
+                produit_nom=produit.nom,
+                quantite_actuelle=0,
+                quantite_min=5.0
+            )
+            await db.stocks.insert_one(stock.dict())
+            
+            produits_created += 1
+            stocks_created += 1
+        
+        # 3. Créer les préparations
+        preparation_ids = {}
+        for prep_data in REAL_PREPARATIONS:
+            produit_brut = prep_data["produit_brut"]
+            if produit_brut in produit_ids:
+                preparation = Preparation(
+                    nom=prep_data["nom"],
+                    produit_id=produit_ids[produit_brut],
+                    quantite_produit_brut=prep_data["quantite_produit_brut"],
+                    quantite_preparee=prep_data["quantite_preparee"],
+                    perte_pourcentage=prep_data["perte_pourcentage"],
+                    unite_preparee=prep_data["unite_preparee"],
+                    dlc=prep_data["dlc"]
+                )
+                await db.preparations.insert_one(preparation.dict())
+                preparation_ids[prep_data["nom"]] = preparation.id
+                preparations_created += 1
+        
+        # 4. Créer les recettes
+        for recette_data in REAL_RECETTES:
+            ingredients = []
+            for ing in recette_data["ingredients"]:
+                if ing["nom"] in produit_ids:
+                    ingredients.append({
+                        "ingredient_id": produit_ids[ing["nom"]],
+                        "ingredient_type": "produit",
+                        "ingredient_nom": ing["nom"],
+                        "quantite": ing["quantite"],
+                        "unite": ing["unite"],
+                        # Legacy
+                        "produit_id": produit_ids[ing["nom"]],
+                        "produit_nom": ing["nom"]
+                    })
+            
+            recette = Recette(
+                nom=recette_data["nom"],
+                categorie=recette_data["categorie"],
+                portions=recette_data["portions"],
+                ingredients=ingredients
+            )
+            await db.recettes.insert_one(recette.dict())
+            recettes_created += 1
+        
+        return {
+            "success": True,
+            "message": "✅ Données réelles du restaurant restaurées !",
+            "fournisseurs_created": fournisseurs_created,
+            "produits_created": produits_created,
+            "preparations_created": preparations_created,
+            "recettes_created": recettes_created,
+            "stocks_created": stocks_created
+        }
+        
+    except Exception as e:
+        print(f"❌ Erreur lors de l'initialisation des données réelles: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=f"Erreur: {str(e)}")
+
 @api_router.post("/demo/init-missions-users")
 async def init_demo_missions_and_users():
     """Créer les utilisateurs test et missions de démonstration"""
