@@ -2173,13 +2173,13 @@ async def create_advanced_stock_adjustment(adjustment: StockAdjustmentRequest):
             for ingredient in recipe.get("ingredients", []):
                 # Calculate deduction per portion
                 qty_per_portion = ingredient["quantite"] / recipe_portions
-                total_deduction = qty_per_portion * portions_adjusted
+                total_deduction = round_stock_quantity(qty_per_portion * portions_adjusted)
                 
                 # Update stock
                 stock = await db.stocks.find_one({"produit_id": ingredient["produit_id"]})
                 if stock:
-                    current_stock = stock["quantite_actuelle"]
-                    new_stock = max(0, current_stock - total_deduction)
+                    current_stock = round_stock_quantity(stock["quantite_actuelle"])
+                    new_stock = round_stock_quantity(max(0, current_stock - total_deduction))
                     
                     await db.stocks.update_one(
                         {"produit_id": ingredient["produit_id"]},
