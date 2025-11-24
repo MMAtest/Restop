@@ -6246,7 +6246,7 @@ async def process_z_report_to_real_data(document_id: str):
                             reference=f"Z-Report {date_rapport} - {recipe_name}",
                             commentaire=f"Vente: {quantity_sold} x {recipe_name}"
                         )
-                        await db.mouvements.insert_one(mouvement.dict())
+                        await db.mouvements_stock.insert_one(mouvement.dict())
                     else:
                         warnings.append(f"⚠️ Produit {product_id} non trouvé dans les stocks")
             else:
