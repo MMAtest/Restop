@@ -64,20 +64,32 @@ REAL_PREPARATIONS = [
     {
         "nom": "Tomates cerises lavées et coupées",
         "produit_brut": "Tomates cerises",
+        "forme_decoupe": "carré",
         "quantite_produit_brut": 1.0,
+        "unite_produit_brut": "kg",
         "quantite_preparee": 0.85,
-        "perte_pourcentage": 15.0,
         "unite_preparee": "kg",
-        "dlc": 2  # jours
+        "perte": 0.15,
+        "perte_pourcentage": 15.0,
+        "nombre_portions": 8,
+        "taille_portion": 0.106,  # 106g par portion
+        "unite_portion": "kg",
+        "dlc_jours": 2
     },
     {
         "nom": "Légumes grillés (courgettes, aubergines)",
-        "produit_brut": "Courgettes",  # Simplifié
+        "produit_brut": "Courgettes",
+        "forme_decoupe": "émincé",
         "quantite_produit_brut": 2.0,
+        "unite_produit_brut": "kg",
         "quantite_preparee": 1.6,
-        "perte_pourcentage": 20.0,
         "unite_preparee": "kg",
-        "dlc": 3
+        "perte": 0.4,
+        "perte_pourcentage": 20.0,
+        "nombre_portions": 16,
+        "taille_portion": 0.1,  # 100g par portion
+        "unite_portion": "kg",
+        "dlc_jours": 3
     }
 ]
 
