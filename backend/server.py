@@ -5637,6 +5637,83 @@ async def mark_notification_read(notification_id: str):
     return {"message": "Notification marquée comme lue"}
 
 # ✅ Demo Data Creation for Missions System
+@api_router.post("/demo/clean-duplicates")
+async def clean_duplicates():
+    """Supprimer les doublons dans toutes les collections"""
+    try:
+        collections_cleaned = {}
+        
+        # Nettoyer les produits
+        produits = await db.produits.find().to_list(10000)
+        seen_names = set()
+        duplicates_removed = 0
+        
+        for produit in produits:
+            if produit["nom"] in seen_names:
+                await db.produits.delete_one({"id": produit["id"]})
+                # Supprimer aussi le stock associé
+                await db.stocks.delete_one({"produit_id": produit["id"]})
+                duplicates_removed += 1
+            else:
+                seen_names.add(produit["nom"])
+        
+        collections_cleaned["produits"] = duplicates_removed
+        
+        # Nettoyer les fournisseurs
+        fournisseurs = await db.fournisseurs.find().to_list(1000)
+        seen_names_f = set()
+        duplicates_removed_f = 0
+        
+        for fournisseur in fournisseurs:
+            if fournisseur["nom"] in seen_names_f:
+                await db.fournisseurs.delete_one({"id": fournisseur["id"]})
+                duplicates_removed_f += 1
+            else:
+                seen_names_f.add(fournisseur["nom"])
+        
+        collections_cleaned["fournisseurs"] = duplicates_removed_f
+        
+        # Nettoyer les préparations
+        preparations = await db.preparations.find().to_list(1000)
+        seen_names_p = set()
+        duplicates_removed_p = 0
+        
+        for prep in preparations:
+            if prep["nom"] in seen_names_p:
+                await db.preparations.delete_one({"id": prep["id"]})
+                duplicates_removed_p += 1
+            else:
+                seen_names_p.add(prep["nom"])
+        
+        collections_cleaned["preparations"] = duplicates_removed_p
+        
+        # Nettoyer les recettes
+        recettes = await db.recettes.find().to_list(1000)
+        seen_names_r = set()
+        duplicates_removed_r = 0
+        
+        for recette in recettes:
+            if recette["nom"] in seen_names_r:
+                await db.recettes.delete_one({"id": recette["id"]})
+                duplicates_removed_r += 1
+            else:
+                seen_names_r.add(recette["nom"])
+        
+        collections_cleaned["recettes"] = duplicates_removed_r
+        
+        return {
+            "success": True,
+            "message": "✅ Doublons supprimés !",
+            "collections_cleaned": collections_cleaned,
+            "total_removed": sum(collections_cleaned.values())
+        }
+        
+    except Exception as e:
+        print(f"❌ Erreur lors du nettoyage: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=f"Erreur: {str(e)}")
+
 @api_router.post("/demo/init-real-restaurant-data")
 async def init_real_restaurant_data():
     """Initialiser uniquement les vraies données du restaurant (fournisseurs, produits, préparations, recettes)"""
