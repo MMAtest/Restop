@@ -638,6 +638,16 @@ function App() {
     }
   };
 
+  const fetchDashboardAnalytics = async () => {
+    try {
+      const response = await axios.get(`${API}/dashboard/analytics`);
+      setFilteredAnalytics(response.data);
+      console.log("📊 Analytics réelles chargées:", response.data);
+    } catch (error) {
+      console.error("Erreur lors de la récupération des analytics:", error);
+    }
+  };
+
   // ✅ Fonctions d'authentification
   const handleLoginSuccess = (user, session_id) => {
     setCurrentUser(user);
