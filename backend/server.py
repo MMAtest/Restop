@@ -618,6 +618,58 @@ class FactureFournisseurData(BaseModel):
     total_ht: Optional[float] = None
     total_ttc: Optional[float] = None
 
+# ✅ New Models for OCR Processing Results
+class ProductMatch(BaseModel):
+    """Résultat du matching d'un produit OCR avec la base de données"""
+    ocr_name: str
+    matched_product_id: Optional[str] = None
+    matched_product_name: Optional[str] = None
+    confidence_score: float = 0.0  # 0.0 to 1.0
+    quantity: float
+    unit: str
+    unit_price: Optional[float] = None
+    total_price: Optional[float] = None
+    needs_creation: bool = False
+    suggested_category: Optional[str] = None
+
+class ZReportProcessingResult(BaseModel):
+    """Résultat du processing d'un Ticket Z"""
+    success: bool
+    document_id: str
+    date: str
+    ca_total: float
+    nb_couverts: Optional[int] = None
+    productions_matched: List[dict] = []
+    stock_deductions: List[dict] = []
+    warnings: List[str] = []
+    errors: List[str] = []
+    rapport_z_id: Optional[str] = None
+
+class FactureProcessingResult(BaseModel):
+    """Résultat du processing d'une facture fournisseur"""
+    success: bool
+    document_id: str
+    supplier_name: str
+    supplier_id: Optional[str] = None
+    products_matched: List[ProductMatch] = []
+    products_created: int = 0
+    stock_entries_created: int = 0
+    price_alerts: List[dict] = []
+    warnings: List[str] = []
+    errors: List[str] = []
+    order_id: Optional[str] = None
+
+class MercurialeProcessingResult(BaseModel):
+    """Résultat du processing d'une mercuriale"""
+    success: bool
+    document_id: str
+    supplier_name: str
+    supplier_id: Optional[str] = None
+    prices_updated: int = 0
+    price_changes: List[dict] = []
+    warnings: List[str] = []
+    errors: List[str] = []
+
 # ===== Helpers for FR numeric parsing and Z analysis =====
 number_separators = re.compile(r"[\s\u00A0\u202F]")  # spaces incl. NBSP, NNBSP
 
