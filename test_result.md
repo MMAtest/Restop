@@ -188,15 +188,18 @@ backend:
 
   - task: "API Recettes - Support Produits ET Préparations"
     implemented: true
-    working: "NA"
+    working: false
     file: "/app/backend/server.py"
-    stuck_count: 0
+    stuck_count: 1
     priority: "high"
     needs_retesting: true
     status_history:
       - working: "NA"
         agent: "main"
         comment: "Modifié RecetteIngredient pour supporter ingredient_type ('produit' ou 'preparation'). Une recette peut maintenant utiliser des produits bruts, des préparations, ou les deux. Champs legacy (produit_id, produit_nom) maintenus pour compatibilité. Endpoint process-z-report adapté pour gérer les 2 types d'ingrédients: déduction stocks produits OU stock_preparations selon le type."
+      - working: false
+        agent: "testing"
+        comment: "❌ API RECETTES SUPPORT PRÉPARATIONS - COMPATIBILITÉ BACKWARD CASSÉE ! Tests révèlent que la modification du modèle RecetteIngredient a cassé la compatibilité backward : ❌ PROBLÈME CRITIQUE 1 : ingredient_id et ingredient_type sont maintenant REQUIS (lignes 522-523) → impossible de créer recettes avec ancien format (produit_id seulement) ❌ PROBLÈME CRITIQUE 2 : GET /recettes échoue avec erreur 500 sur recettes existantes utilisant ancien format → application inutilisable ✅ NOUVEAU FORMAT FONCTIONNE : Recettes avec ingredient_id + ingredient_type='produit'/'preparation' se créent correctement ❌ COMPATIBILITÉ CASSÉE : Recettes avec produit_id seulement (format legacy) échouent avec erreur 422 'Field required: ingredient_id/ingredient_type' ❌ IMPACT : Toutes les recettes existantes deviennent inaccessibles, impossible de créer recettes avec ancien format. NÉCESSITE CORRECTION URGENTE pour rendre ingredient_id/ingredient_type optionnels avec fallback vers produit_id."
 
 backend:
   - task: "API CRUD Fournisseurs"
