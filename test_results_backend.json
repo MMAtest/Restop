@@ -1,1744 +1,1961 @@
 {
-  "total": 248,
-  "passed": 216,
-  "failed": 32,
-  "success_rate": 87.09677419354838,
+  "total": 279,
+  "passed": 227,
+  "failed": 52,
+  "success_rate": 81.36200716845879,
   "results": [
     {
       "test": "POST /fournisseurs",
       "success": true,
       "message": "Fournisseur créé avec succès",
       "details": null,
-      "timestamp": "2025-10-06T15:24:57.589178"
+      "timestamp": "2025-11-24T12:30:32.702786"
     },
     {
       "test": "GET /fournisseurs",
       "success": true,
-      "message": "29 fournisseur(s) récupéré(s)",
+      "message": "2 fournisseur(s) récupéré(s)",
       "details": null,
-      "timestamp": "2025-10-06T15:24:57.606831"
+      "timestamp": "2025-11-24T12:30:32.723164"
     },
     {
       "test": "GET /fournisseurs/{id}",
       "success": true,
       "message": "Fournisseur récupéré correctement",
       "details": null,
-      "timestamp": "2025-10-06T15:24:57.629719"
+      "timestamp": "2025-11-24T12:30:32.748717"
     },
     {
       "test": "PUT /fournisseurs/{id}",
       "success": true,
       "message": "Fournisseur modifié avec succès",
       "details": null,
-      "timestamp": "2025-10-06T15:24:57.654240"
+      "timestamp": "2025-11-24T12:30:32.771178"
     },
     {
       "test": "POST /produits",
       "success": true,
       "message": "Produit créé avec liaison fournisseur",
       "details": null,
-      "timestamp": "2025-10-06T15:24:57.681992"
+      "timestamp": "2025-11-24T12:30:32.793077"
     },
     {
       "test": "Auto-création stock",
       "success": true,
       "message": "Stock créé automatiquement à 0",
       "details": null,
-      "timestamp": "2025-10-06T15:24:57.701859"
+      "timestamp": "2025-11-24T12:30:32.813125"
     },
     {
       "test": "GET /produits",
       "success": true,
-      "message": "47 produit(s) récupéré(s)",
+      "message": "7 produit(s) récupéré(s)",
       "details": null,
-      "timestamp": "2025-10-06T15:24:57.919132"
+      "timestamp": "2025-11-24T12:30:32.831254"
     },
     {
       "test": "PUT /produits/{id}",
       "success": true,
       "message": "Produit modifié avec succès",
       "details": null,
-      "timestamp": "2025-10-06T15:24:57.943922"
+      "timestamp": "2025-11-24T12:30:32.853015"
     },
     {
       "test": "Mise à jour nom dans stock",
       "success": true,
       "message": "Nom mis à jour dans stock",
       "details": null,
-      "timestamp": "2025-10-06T15:24:57.963334"
+      "timestamp": "2025-11-24T12:30:32.869094"
     },
     {
       "test": "GET /stocks",
       "success": true,
-      "message": "68 stock(s) récupéré(s)",
+      "message": "7 stock(s) récupéré(s)",
       "details": null,
-      "timestamp": "2025-10-06T15:24:57.983941"
+      "timestamp": "2025-11-24T12:30:32.886031"
     },
     {
       "test": "Structure données stocks",
       "success": true,
       "message": "Tous les champs requis présents",
       "details": null,
-      "timestamp": "2025-10-06T15:24:57.983979"
+      "timestamp": "2025-11-24T12:30:32.886069"
     },
     {
       "test": "PUT /stocks/{id}",
       "success": true,
       "message": "Stock mis à jour avec succès",
       "details": null,
-      "timestamp": "2025-10-06T15:24:58.047938"
+      "timestamp": "2025-11-24T12:30:32.905699"
     },
     {
       "test": "Mise à jour derniere_maj",
       "success": true,
       "message": "Date de dernière MAJ mise à jour",
       "details": null,
-      "timestamp": "2025-10-06T15:24:58.047979"
+      "timestamp": "2025-11-24T12:30:32.905728"
     },
     {
       "test": "POST /mouvements (entrée)",
       "success": true,
       "message": "Mouvement d'entrée créé",
       "details": null,
-      "timestamp": "2025-10-06T15:24:58.082076"
+      "timestamp": "2025-11-24T12:30:32.978441"
     },
     {
       "test": "Mise à jour stock (entrée)",
       "success": true,
       "message": "Stock mis à jour: 75.5",
       "details": null,
-      "timestamp": "2025-10-06T15:24:58.602778"
+      "timestamp": "2025-11-24T12:30:33.497407"
     },
     {
       "test": "POST /mouvements (sortie)",
       "success": true,
       "message": "Mouvement de sortie créé",
       "details": null,
-      "timestamp": "2025-10-06T15:24:58.665532"
+      "timestamp": "2025-11-24T12:30:33.519254"
     },
     {
       "test": "Mise à jour stock (sortie)",
       "success": true,
       "message": "Stock mis à jour: 60.5",
       "details": null,
-      "timestamp": "2025-10-06T15:24:59.190402"
+      "timestamp": "2025-11-24T12:30:34.039970"
     },
     {
       "test": "POST /mouvements (ajustement)",
       "success": true,
       "message": "Ajustement créé",
       "details": null,
-      "timestamp": "2025-10-06T15:24:59.216443"
+      "timestamp": "2025-11-24T12:30:34.069285"
     },
     {
       "test": "Mise à jour stock (ajustement)",
       "success": true,
       "message": "Stock ajusté: 55.0",
       "details": null,
-      "timestamp": "2025-10-06T15:24:59.731574"
+      "timestamp": "2025-11-24T12:30:34.590667"
     },
     {
       "test": "GET /mouvements",
       "success": true,
-      "message": "68 mouvement(s) dans l'historique",
+      "message": "3 mouvement(s) dans l'historique",
       "details": null,
-      "timestamp": "2025-10-06T15:24:59.756084"
+      "timestamp": "2025-11-24T12:30:34.606052"
     },
     {
       "test": "Ordre chronologique mouvements",
       "success": true,
       "message": "Mouvements triés par date décroissante",
       "details": null,
-      "timestamp": "2025-10-06T15:24:59.756129"
+      "timestamp": "2025-11-24T12:30:34.606087"
     },
     {
       "test": "GET /export/stocks",
       "success": true,
       "message": "Fichier Excel généré avec succès",
       "details": null,
-      "timestamp": "2025-10-06T15:25:00.174041"
+      "timestamp": "2025-11-24T12:30:34.993693"
     },
     {
       "test": "Taille fichier Excel",
       "success": true,
-      "message": "Fichier de 11888 bytes",
+      "message": "Fichier de 5813 bytes",
       "details": null,
-      "timestamp": "2025-10-06T15:25:00.174080"
+      "timestamp": "2025-11-24T12:30:34.993729"
     },
     {
       "test": "Structure Excel",
       "success": true,
-      "message": "Excel valide avec 68 lignes",
+      "message": "Excel valide avec 7 lignes",
       "details": null,
-      "timestamp": "2025-10-06T15:25:00.299553"
+      "timestamp": "2025-11-24T12:30:35.105350"
     },
     {
       "test": "POST /import/stocks",
       "success": true,
       "message": "Import Excel réussi",
       "details": null,
-      "timestamp": "2025-10-06T15:25:00.342466"
+      "timestamp": "2025-11-24T12:30:35.144267"
     },
     {
       "test": "Validation import Excel",
       "success": true,
       "message": "Données importées correctement",
       "details": null,
-      "timestamp": "2025-10-06T15:25:00.869067"
+      "timestamp": "2025-11-24T12:30:35.661536"
     },
     {
       "test": "GET /dashboard/stats",
       "success": true,
       "message": "Toutes les statistiques présentes",
       "details": null,
-      "timestamp": "2025-10-06T15:25:00.892950"
+      "timestamp": "2025-11-24T12:30:35.679440"
     },
     {
       "test": "Validation stats",
       "success": true,
-      "message": "Produits: 47, Fournisseurs: 29",
+      "message": "Produits: 7, Fournisseurs: 2",
       "details": null,
-      "timestamp": "2025-10-06T15:25:00.892996"
+      "timestamp": "2025-11-24T12:30:35.679473"
     },
     {
       "test": "POST /recettes",
       "success": true,
       "message": "Recette créée avec enrichissement noms produits",
       "details": null,
-      "timestamp": "2025-10-06T15:25:00.919594"
+      "timestamp": "2025-11-24T12:30:35.696261"
     },
     {
       "test": "GET /recettes",
       "success": true,
-      "message": "11 recette(s) récupérée(s)",
+      "message": "2 recette(s) récupérée(s)",
       "details": null,
-      "timestamp": "2025-10-06T15:25:00.940431"
+      "timestamp": "2025-11-24T12:30:35.714291"
     },
     {
       "test": "Structure données recettes",
       "success": true,
       "message": "Tous les champs requis présents",
       "details": null,
-      "timestamp": "2025-10-06T15:25:00.940472"
+      "timestamp": "2025-11-24T12:30:35.714333"
     },
     {
       "test": "GET /recettes/{id}",
       "success": true,
       "message": "Recette récupérée correctement",
       "details": null,
-      "timestamp": "2025-10-06T15:25:00.960557"
+      "timestamp": "2025-11-24T12:30:35.772530"
     },
     {
       "test": "PUT /recettes/{id}",
       "success": true,
       "message": "Recette modifiée avec succès",
       "details": null,
-      "timestamp": "2025-10-06T15:25:00.981705"
+      "timestamp": "2025-11-24T12:30:35.798742"
     },
     {
       "test": "GET /recettes/{id}/production-capacity",
       "success": true,
       "message": "Capacité calculée: 1 portions max",
       "details": null,
-      "timestamp": "2025-10-06T15:25:01.042371"
+      "timestamp": "2025-11-24T12:30:35.815581"
     },
     {
       "test": "Structure ingredients_status",
       "success": true,
       "message": "Détails ingrédients complets",
       "details": null,
-      "timestamp": "2025-10-06T15:25:01.042422"
+      "timestamp": "2025-11-24T12:30:35.815617"
     },
     {
       "test": "GET /export/recettes",
       "success": true,
       "message": "Fichier Excel recettes généré",
       "details": null,
-      "timestamp": "2025-10-06T15:25:01.085374"
+      "timestamp": "2025-11-24T12:30:35.850896"
     },
     {
       "test": "Taille fichier Excel recettes",
       "success": true,
-      "message": "Fichier de 8482 bytes",
+      "message": "Fichier de 5305 bytes",
       "details": null,
-      "timestamp": "2025-10-06T15:25:01.085415"
+      "timestamp": "2025-11-24T12:30:35.850930"
     },
     {
       "test": "Structure Excel recettes",
       "success": true,
-      "message": "Excel valide avec 37 lignes",
+      "message": "Excel valide avec 2 lignes",
       "details": null,
-      "timestamp": "2025-10-06T15:25:01.097079"
+      "timestamp": "2025-11-24T12:30:35.857223"
     },
     {
       "test": "POST /import/recettes",
       "success": true,
       "message": "Import Excel recettes réussi",
       "details": null,
-      "timestamp": "2025-10-06T15:25:01.134201"
+      "timestamp": "2025-11-24T12:30:35.891315"
     },
     {
       "test": "Validation import recettes",
       "success": true,
       "message": "Recette importée correctement",
       "details": null,
-      "timestamp": "2025-10-06T15:25:01.652278"
+      "timestamp": "2025-11-24T12:30:36.412029"
     },
     {
       "test": "DELETE /recettes/{id}",
       "success": true,
       "message": "Recette supprimée",
       "details": null,
-      "timestamp": "2025-10-06T15:25:01.670334"
+      "timestamp": "2025-11-24T12:30:36.432147"
     },
     {
       "test": "Validation suppression recette",
       "success": true,
       "message": "Recette bien supprimée",
       "details": null,
-      "timestamp": "2025-10-06T15:25:01.729418"
+      "timestamp": "2025-11-24T12:30:36.446951"
     },
     {
       "test": "extract_text_from_pdf (pdfplumber/PyPDF2)",
       "success": true,
-      "message": "Texte extrait du PDF: 121 caractères",
+      "message": "PDF traité mais contenu différent (normal pour PDF simulé)",
       "details": null,
-      "timestamp": "2025-10-06T15:25:01.873117"
+      "timestamp": "2025-11-24T12:30:36.771164"
     },
     {
       "test": "PDF file_type detection",
       "success": true,
       "message": "Type PDF correctement détecté",
       "details": null,
-      "timestamp": "2025-10-06T15:25:01.873157"
-    },
-    {
-      "test": "detect_file_type (facture.jpg)",
-      "success": false,
-      "message": "Erreur upload: 400",
-      "details": null,
-      "timestamp": "2025-10-06T15:25:02.300021"
-    },
-    {
-      "test": "detect_file_type (document.png)",
-      "success": false,
-      "message": "Erreur upload: 400",
-      "details": null,
-      "timestamp": "2025-10-06T15:25:02.326875"
-    },
-    {
-      "test": "detect_file_type (image.JPEG)",
-      "success": false,
-      "message": "Erreur upload: 400",
-      "details": null,
-      "timestamp": "2025-10-06T15:25:02.497428"
-    },
-    {
-      "test": "detect_file_type (unknown.txt)",
-      "success": false,
-      "message": "Erreur upload: 400",
-      "details": null,
-      "timestamp": "2025-10-06T15:25:02.545606"
+      "timestamp": "2025-11-24T12:30:36.771203"
     },
     {
       "test": "detect_file_type (rapport.pdf)",
       "success": false,
       "message": "Erreur upload: 400",
       "details": null,
-      "timestamp": "2025-10-06T15:25:02.635914"
+      "timestamp": "2025-11-24T12:30:38.843777"
     },
     {
       "test": "detect_file_type (tous cas)",
       "success": false,
-      "message": "Seulement 2/7 cas réussis",
+      "message": "Seulement 6/7 cas réussis",
       "details": null,
-      "timestamp": "2025-10-06T15:25:02.635955"
+      "timestamp": "2025-11-24T12:30:38.843816"
     },
     {
       "test": "POST /ocr/upload-document (PDF Z-report)",
       "success": true,
-      "message": "PDF Z-report traité, ID: 2a27740e...",
+      "message": "PDF Z-report traité, ID: 62bf8a4e...",
       "details": null,
-      "timestamp": "2025-10-06T15:25:02.674143"
+      "timestamp": "2025-11-24T12:30:39.046543"
     },
     {
       "test": "DocumentOCR file_type field (PDF)",
       "success": true,
       "message": "Champ file_type=pdf correctement défini",
       "details": null,
-      "timestamp": "2025-10-06T15:25:02.674187"
+      "timestamp": "2025-11-24T12:30:39.046589"
     },
     {
       "test": "PDF text extraction",
       "success": true,
-      "message": "Texte extrait: 196 caractères",
+      "message": "Texte extrait: 85 caractères",
       "details": null,
-      "timestamp": "2025-10-06T15:25:02.674195"
+      "timestamp": "2025-11-24T12:30:39.046598"
     },
     {
       "test": "POST /ocr/upload-document (PDF Facture)",
       "success": true,
-      "message": "PDF Facture traitée, ID: cdb8ac0b...",
+      "message": "PDF Facture traitée, ID: de6b87ee...",
       "details": null,
-      "timestamp": "2025-10-06T15:25:02.714732"
+      "timestamp": "2025-11-24T12:30:39.251426"
     },
     {
       "test": "PDF facture parsing",
       "success": true,
       "message": "Données facture parsées depuis PDF",
       "details": null,
-      "timestamp": "2025-10-06T15:25:02.714774"
+      "timestamp": "2025-11-24T12:30:39.251461"
     },
     {
       "test": "POST /ocr/parse-z-report-enhanced (PDF)",
       "success": false,
       "message": "Erreur 422",
       "details": "{\"detail\":[{\"type\":\"missing\",\"loc\":[\"query\",\"document_id\"],\"msg\":\"Field required\",\"input\":null,\"url\":\"https://errors.pydantic.dev/2.11/v/missing\"}]}",
-      "timestamp": "2025-10-06T15:25:02.778226"
+      "timestamp": "2025-11-24T12:30:39.269936"
     },
     {
       "test": "POST /ocr/calculate-stock-deductions",
       "success": true,
-      "message": "Déductions calculées: 8 propositions",
+      "message": "Déductions calculées: 1 propositions",
       "details": null,
-      "timestamp": "2025-10-06T15:25:02.805340"
+      "timestamp": "2025-11-24T12:30:39.286515"
     },
     {
       "test": "Stock deduction structure",
       "success": true,
       "message": "Structure StockDeductionProposal correcte",
       "details": null,
-      "timestamp": "2025-10-06T15:25:02.805405"
+      "timestamp": "2025-11-24T12:30:39.286552"
     },
     {
       "test": "Backward compatibility - Image OCR",
-      "success": false,
-      "message": "Erreur 400",
-      "details": "{\"detail\":\"Erreur lors de l'extraction OCR: /usr/bin/tesseract is not installed or it's not in your PATH. See README file for more information.\"}",
-      "timestamp": "2025-10-06T15:25:02.838808"
+      "success": true,
+      "message": "Images OCR fonctionnent toujours",
+      "details": null,
+      "timestamp": "2025-11-24T12:30:39.658407"
+    },
+    {
+      "test": "Image file_type detection",
+      "success": true,
+      "message": "Type image correctement détecté",
+      "details": null,
+      "timestamp": "2025-11-24T12:30:39.658439"
+    },
+    {
+      "test": "Image OCR parsing compatibility",
+      "success": true,
+      "message": "Parsing image OCR préservé",
+      "details": null,
+      "timestamp": "2025-11-24T12:30:39.658445"
     },
     {
       "test": "PDF error handling - Corrupted",
       "success": true,
       "message": "Erreur PDF corrompu gérée correctement",
       "details": null,
-      "timestamp": "2025-10-06T15:25:02.858778"
+      "timestamp": "2025-11-24T12:30:39.855710"
     },
     {
       "test": "PDF error handling - Image-based",
       "success": true,
       "message": "PDF traité avec contenu minimal",
       "details": null,
-      "timestamp": "2025-10-06T15:25:02.993819"
+      "timestamp": "2025-11-24T12:30:40.062797"
     },
     {
       "test": "POST /ocr/upload-document (z_report)",
+      "success": true,
+      "message": "Document Z-report traité, ID: ee70f1e5...",
+      "details": null,
+      "timestamp": "2025-11-24T12:30:40.433815"
+    },
+    {
+      "test": "Parsing Z-report",
       "success": false,
-      "message": "Erreur 400",
-      "details": "{\"detail\":\"Erreur lors de l'extraction OCR: /usr/bin/tesseract is not installed or it's not in your PATH. See README file for more information.\"}",
-      "timestamp": "2025-10-06T15:25:03.024610"
+      "message": "Structure de données parsées incorrecte",
+      "details": null,
+      "timestamp": "2025-11-24T12:30:40.433846"
     },
     {
       "test": "POST /ocr/upload-document (facture)",
-      "success": false,
-      "message": "Erreur 400",
-      "details": "{\"detail\":\"Erreur lors de l'extraction OCR: /usr/bin/tesseract is not installed or it's not in your PATH. See README file for more information.\"}",
-      "timestamp": "2025-10-06T15:25:03.065528"
+      "success": true,
+      "message": "Facture traitée, ID: 3ff17e60...",
+      "details": null,
+      "timestamp": "2025-11-24T12:30:40.789448"
+    },
+    {
+      "test": "Parsing facture",
+      "success": true,
+      "message": "Facture parsée: Maison Artigiana avec 0 produits",
+      "details": null,
+      "timestamp": "2025-11-24T12:30:40.789487"
     },
     {
       "test": "GET /ocr/documents",
       "success": true,
-      "message": "38 document(s) récupéré(s)",
+      "message": "16 document(s) récupéré(s)",
       "details": null,
-      "timestamp": "2025-10-06T15:25:03.143428"
+      "timestamp": "2025-11-24T12:30:40.816136"
     },
     {
       "test": "Structure documents OCR",
       "success": true,
       "message": "Tous les champs requis présents",
       "details": null,
-      "timestamp": "2025-10-06T15:25:03.143475"
+      "timestamp": "2025-11-24T12:30:40.816178"
     },
     {
       "test": "GET /ocr/document/{id}",
       "success": true,
       "message": "Document récupéré correctement",
       "details": null,
-      "timestamp": "2025-10-06T15:25:03.164421"
+      "timestamp": "2025-11-24T12:30:40.837229"
     },
     {
       "test": "Données complètes document",
       "success": true,
       "message": "Texte et données parsées présents",
       "details": null,
-      "timestamp": "2025-10-06T15:25:03.164460"
+      "timestamp": "2025-11-24T12:30:40.837259"
     },
     {
       "test": "POST /ocr/process-z-report",
       "success": false,
-      "message": "Erreur 400",
-      "details": "{\"detail\":\"Aucun plat trouvé dans le rapport Z\"}",
-      "timestamp": "2025-10-06T15:25:03.190695"
+      "message": "Structure de réponse incorrecte",
+      "details": null,
+      "timestamp": "2025-11-24T12:30:40.878267"
     },
     {
       "test": "DELETE /ocr/document/{id}",
       "success": true,
       "message": "Document OCR supprimé",
       "details": null,
-      "timestamp": "2025-10-06T15:25:03.212531"
+      "timestamp": "2025-11-24T12:30:40.894879"
     },
     {
       "test": "Validation suppression document OCR",
       "success": true,
       "message": "Document bien supprimé",
       "details": null,
-      "timestamp": "2025-10-06T15:25:03.271698"
+      "timestamp": "2025-11-24T12:30:40.913979"
     },
     {
       "test": "Création document test 1",
-      "success": false,
-      "message": "Erreur 400",
+      "success": true,
+      "message": "Document créé: 9615e81d-b84e-422f-918f-feb91ccb7668",
       "details": null,
-      "timestamp": "2025-10-06T15:25:03.300199"
+      "timestamp": "2025-11-24T12:30:41.253090"
     },
     {
       "test": "Création document test 2",
-      "success": false,
-      "message": "Erreur 400",
+      "success": true,
+      "message": "Document créé: ed3b7d73-b254-45a0-952a-61292b6e63f3",
       "details": null,
-      "timestamp": "2025-10-06T15:25:03.371840"
+      "timestamp": "2025-11-24T12:30:41.616416"
     },
     {
       "test": "Création document test 3",
-      "success": false,
-      "message": "Erreur 400",
+      "success": true,
+      "message": "Document créé: 83a1f9ac-93e3-4e1c-8d90-6c1c6d9573a0",
       "details": null,
-      "timestamp": "2025-10-06T15:25:03.440731"
+      "timestamp": "2025-11-24T12:30:41.954870"
     },
     {
       "test": "GET /ocr/documents (avant suppression)",
       "success": true,
-      "message": "37 document(s) trouvé(s)",
+      "message": "18 document(s) trouvé(s)",
       "details": null,
-      "timestamp": "2025-10-06T15:25:03.522727"
+      "timestamp": "2025-11-24T12:30:41.979056"
     },
     {
       "test": "Vérification documents créés",
       "success": true,
-      "message": "0 documents de test confirmés",
+      "message": "3 documents de test confirmés",
       "details": null,
-      "timestamp": "2025-10-06T15:25:03.522779"
+      "timestamp": "2025-11-24T12:30:41.979096"
     },
     {
       "test": "DELETE /ocr/documents/all",
       "success": true,
-      "message": "Réponse correcte: 37 documents supprimés",
+      "message": "Réponse correcte: 18 documents supprimés",
       "details": null,
-      "timestamp": "2025-10-06T15:25:03.546877"
+      "timestamp": "2025-11-24T12:30:41.997131"
     },
     {
       "test": "Cohérence deleted_count",
       "success": true,
-      "message": "Nombre supprimé cohérent: 37",
+      "message": "Nombre supprimé cohérent: 18",
       "details": null,
-      "timestamp": "2025-10-06T15:25:03.546916"
+      "timestamp": "2025-11-24T12:30:41.997162"
     },
     {
       "test": "Format message réponse",
       "success": true,
       "message": "Message approprié",
       "details": null,
-      "timestamp": "2025-10-06T15:25:03.546924"
+      "timestamp": "2025-11-24T12:30:41.997169"
     },
     {
       "test": "Vérification suppression complète",
       "success": true,
       "message": "Tous les documents ont été supprimés",
       "details": null,
-      "timestamp": "2025-10-06T15:25:03.565278"
+      "timestamp": "2025-11-24T12:30:42.013724"
     },
     {
       "test": "DELETE sur collection vide",
       "success": true,
       "message": "Suppression sur collection vide gérée correctement",
       "details": null,
-      "timestamp": "2025-10-06T15:25:03.584486"
+      "timestamp": "2025-11-24T12:30:42.026690"
     },
     {
       "test": "Création document final",
-      "success": false,
-      "message": "Erreur 400",
+      "success": true,
+      "message": "Document créé après suppression totale",
       "details": null,
-      "timestamp": "2025-10-06T15:25:03.614395"
+      "timestamp": "2025-11-24T12:30:42.436708"
+    },
+    {
+      "test": "Vérification document final",
+      "success": true,
+      "message": "Document final correctement listé",
+      "details": null,
+      "timestamp": "2025-11-24T12:30:42.452255"
     },
     {
       "test": "OCR type document invalide",
       "success": true,
       "message": "Erreur 400 pour type invalide",
       "details": null,
-      "timestamp": "2025-10-06T15:25:03.630470"
+      "timestamp": "2025-11-24T12:30:42.466742"
     },
     {
       "test": "OCR document inexistant",
       "success": true,
       "message": "Erreur 404 pour document inexistant",
       "details": null,
-      "timestamp": "2025-10-06T15:25:03.647201"
+      "timestamp": "2025-11-24T12:30:42.482020"
     },
     {
       "test": "OCR traitement document inexistant",
-      "success": true,
-      "message": "Erreur 404 pour traitement document inexistant",
+      "success": false,
+      "message": "Code erreur inattendu: 500",
       "details": null,
-      "timestamp": "2025-10-06T15:25:03.665934"
+      "timestamp": "2025-11-24T12:30:42.498281"
     },
     {
       "test": "Setup Enhanced OCR Document",
-      "success": false,
-      "message": "Erreur 400",
+      "success": true,
+      "message": "Document créé pour tests Enhanced: c2cfba2d...",
       "details": null,
-      "timestamp": "2025-10-06T15:25:03.708769"
+      "timestamp": "2025-11-24T12:30:42.856970"
+    },
+    {
+      "test": "POST /ocr/parse-z-report-enhanced - Structure",
+      "success": true,
+      "message": "Tous les champs StructuredZReportData présents",
+      "details": null,
+      "timestamp": "2025-11-24T12:30:42.894841"
+    },
+    {
+      "test": "Catégorisation automatique",
+      "success": true,
+      "message": "4 catégories détectées: ['Bar', 'Entrées', 'Plats', 'Desserts']",
+      "details": null,
+      "timestamp": "2025-11-24T12:30:42.894885"
+    },
+    {
+      "test": "Items catégorisés",
+      "success": true,
+      "message": "11 items répartis dans les catégories",
+      "details": null,
+      "timestamp": "2025-11-24T12:30:42.894896"
+    },
+    {
+      "test": "Structure items Bar",
+      "success": true,
+      "message": "Structure StructuredZReportItem correcte",
+      "details": null,
+      "timestamp": "2025-11-24T12:30:42.894904"
+    },
+    {
+      "test": "Extraction service",
+      "success": true,
+      "message": "Service détecté: Soir",
+      "details": null,
+      "timestamp": "2025-11-24T12:30:42.894910"
+    },
+    {
+      "test": "Extraction total CA",
+      "success": false,
+      "message": "Total CA non détecté",
+      "details": null,
+      "timestamp": "2025-11-24T12:30:42.894915"
+    },
+    {
+      "test": "POST /ocr/calculate-stock-deductions - Structure",
+      "success": true,
+      "message": "Structure ZReportValidationResult correcte",
+      "details": null,
+      "timestamp": "2025-11-24T12:30:42.909400"
+    },
+    {
+      "test": "Calcul déductions stock",
+      "success": true,
+      "message": "1 propositions de déduction calculées",
+      "details": null,
+      "timestamp": "2025-11-24T12:30:42.909436"
+    },
+    {
+      "test": "Structure StockDeductionProposal",
+      "success": true,
+      "message": "Structure déduction correcte",
+      "details": null,
+      "timestamp": "2025-11-24T12:30:42.909445"
+    },
+    {
+      "test": "Calcul déductions ingrédients",
+      "success": true,
+      "message": "Calculs par ingrédient corrects",
+      "details": null,
+      "timestamp": "2025-11-24T12:30:42.909452"
+    },
+    {
+      "test": "Gestion avertissements",
+      "success": true,
+      "message": "5 avertissement(s) générés",
+      "details": null,
+      "timestamp": "2025-11-24T12:30:42.909458"
+    },
+    {
+      "test": "GET /ocr/z-report-preview - Structure",
+      "success": true,
+      "message": "Structure prévisualisation correcte",
+      "details": null,
+      "timestamp": "2025-11-24T12:30:42.929314"
+    },
+    {
+      "test": "Mode preview",
+      "success": true,
+      "message": "Mode preview_only activé",
+      "details": null,
+      "timestamp": "2025-11-24T12:30:42.929359"
+    },
+    {
+      "test": "Données preview complètes",
+      "success": true,
+      "message": "Données structurées et validation présentes",
+      "details": null,
+      "timestamp": "2025-11-24T12:30:42.929366"
+    },
+    {
+      "test": "POST /ocr/validate-z-report (preview)",
+      "success": true,
+      "message": "Structure validation correcte",
+      "details": null,
+      "timestamp": "2025-11-24T12:30:42.948782"
+    },
+    {
+      "test": "Mode validation preview",
+      "success": true,
+      "message": "Déductions non appliquées en mode preview",
+      "details": null,
+      "timestamp": "2025-11-24T12:30:42.948815"
+    },
+    {
+      "test": "Pattern Recognition: (x2) Linguine aux pa...",
+      "success": true,
+      "message": "2 item(s) détecté(s)",
+      "details": null,
+      "timestamp": "2025-11-24T12:30:43.327631"
+    },
+    {
+      "test": "Pattern Recognition: 3x Supions persillad...",
+      "success": true,
+      "message": "2 item(s) détecté(s)",
+      "details": null,
+      "timestamp": "2025-11-24T12:30:43.697979"
+    },
+    {
+      "test": "Pattern Recognition: Rigatoni truffe: 1...",
+      "success": true,
+      "message": "2 item(s) détecté(s)",
+      "details": null,
+      "timestamp": "2025-11-24T12:30:44.066952"
+    },
+    {
+      "test": "Pattern Recognition: Bœuf Wellington €56....",
+      "success": false,
+      "message": "Aucun item détecté",
+      "details": null,
+      "timestamp": "2025-11-24T12:30:44.472844"
+    },
+    {
+      "test": "Fuzzy Matching avec recettes",
+      "success": true,
+      "message": "Recette 'Supions en persillade de Mamie' matchée avec déductions calculées",
+      "details": null,
+      "timestamp": "2025-11-24T12:30:44.884126"
+    },
+    {
+      "test": "Calcul ingrédients recette réelle",
+      "success": true,
+      "message": "1 ingrédient(s) traités",
+      "details": null,
+      "timestamp": "2025-11-24T12:30:44.884168"
     },
     {
       "test": "Prérequis intégration OCR-Stocks",
       "success": true,
-      "message": "11 recettes, 68 stocks disponibles",
+      "message": "2 recettes, 7 stocks disponibles",
       "details": null,
-      "timestamp": "2025-10-06T15:25:03.748646"
+      "timestamp": "2025-11-24T12:30:44.916075"
     },
     {
       "test": "Sélection recette test",
       "success": true,
-      "message": "Recette sélectionnée: Fleurs de courgettes de Mamet",
+      "message": "Recette sélectionnée: Supions en persillade de Mamie",
       "details": null,
-      "timestamp": "2025-10-06T15:25:03.748681"
+      "timestamp": "2025-11-24T12:30:44.916104"
     },
     {
       "test": "Upload document intégration",
-      "success": false,
-      "message": "Erreur upload 400",
+      "success": true,
+      "message": "Document créé: 30598349...",
       "details": null,
-      "timestamp": "2025-10-06T15:25:03.782116"
+      "timestamp": "2025-11-24T12:30:45.276668"
+    },
+    {
+      "test": "Application déductions stocks",
+      "success": false,
+      "message": "Déductions non appliquées",
+      "details": null,
+      "timestamp": "2025-11-24T12:30:45.314052"
+    },
+    {
+      "test": "Analyse échec déductions",
+      "success": true,
+      "message": "1 warning(s), 0 erreur(s) détectées",
+      "details": null,
+      "timestamp": "2025-11-24T12:30:45.314087"
+    },
+    {
+      "test": "GET /api/ocr/documents",
+      "success": true,
+      "message": "8 documents trouvés",
+      "details": null,
+      "timestamp": "2025-11-24T12:30:45.332584"
+    },
+    {
+      "test": "POST /api/ocr/process-z-report/{document_id} - Success",
+      "success": true,
+      "message": "Traitement réussi",
+      "details": null,
+      "timestamp": "2025-11-24T12:30:45.375289"
+    },
+    {
+      "test": "Productions Matched",
+      "success": true,
+      "message": "2 recettes matchées",
+      "details": null,
+      "timestamp": "2025-11-24T12:30:45.375339"
+    },
+    {
+      "test": "Stock Deductions",
+      "success": true,
+      "message": "2 déductions appliquées",
+      "details": null,
+      "timestamp": "2025-11-24T12:30:45.375357"
+    },
+    {
+      "test": "Rapport Z Created",
+      "success": true,
+      "message": "Rapport Z créé: a4393ab2-d00f-49c8-955a-135f0e836f0f",
+      "details": null,
+      "timestamp": "2025-11-24T12:30:45.375367"
+    },
+    {
+      "test": "Stocks Updated",
+      "success": false,
+      "message": "Aucun stock modifié détecté",
+      "details": null,
+      "timestamp": "2025-11-24T12:30:45.393687"
+    },
+    {
+      "test": "Mouvements Sortie Created",
+      "success": false,
+      "message": "Aucun mouvement de sortie créé",
+      "details": null,
+      "timestamp": "2025-11-24T12:30:45.407471"
+    },
+    {
+      "test": "Rapport Z Validation",
+      "success": false,
+      "message": "Données rapport Z incomplètes",
+      "details": null,
+      "timestamp": "2025-11-24T12:30:45.462827"
+    },
+    {
+      "test": "Test Facture Processing",
+      "success": false,
+      "message": "Aucun document facture disponible",
+      "details": null,
+      "timestamp": "2025-11-24T12:30:45.462867"
+    },
+    {
+      "test": "Test Mercuriale Processing",
+      "success": true,
+      "message": "Aucun document mercuriale (normal)",
+      "details": null,
+      "timestamp": "2025-11-24T12:30:45.462875"
+    },
+    {
+      "test": "Error Test - Invalid ID (404)",
+      "success": false,
+      "message": "Code incorrect: 500",
+      "details": null,
+      "timestamp": "2025-11-24T12:30:45.478973"
+    },
+    {
+      "test": "Stock Integrity - No Negative",
+      "success": true,
+      "message": "Aucun stock négatif détecté",
+      "details": null,
+      "timestamp": "2025-11-24T12:30:45.494177"
+    },
+    {
+      "test": "Document Status - Integre",
+      "success": true,
+      "message": "1 documents intégrés",
+      "details": null,
+      "timestamp": "2025-11-24T12:30:45.512930"
+    },
+    {
+      "test": "Collection Mouvements - Accessible",
+      "success": true,
+      "message": "Collection mouvements accessible",
+      "details": null,
+      "timestamp": "2025-11-24T12:30:45.527089"
+    },
+    {
+      "test": "Collection Consistency",
+      "success": true,
+      "message": "Cohérence des collections validée",
+      "details": null,
+      "timestamp": "2025-11-24T12:30:45.527118"
     },
     {
       "test": "POST /rapports_z",
       "success": true,
-      "message": "Rapport Z créé avec ID: e53c13f8...",
+      "message": "Rapport Z créé avec ID: c7e17aad...",
       "details": null,
-      "timestamp": "2025-10-06T15:25:03.815278"
+      "timestamp": "2025-11-24T12:30:45.546761"
     },
     {
       "test": "UUID génération automatique",
       "success": true,
       "message": "ID UUID généré automatiquement",
       "details": null,
-      "timestamp": "2025-10-06T15:25:03.815346"
+      "timestamp": "2025-11-24T12:30:45.546792"
     },
     {
       "test": "GET /rapports_z",
       "success": true,
-      "message": "23 rapport(s) Z récupéré(s)",
+      "message": "3 rapport(s) Z récupéré(s)",
       "details": null,
-      "timestamp": "2025-10-06T15:25:03.838439"
+      "timestamp": "2025-11-24T12:30:45.565279"
     },
     {
       "test": "Tri par date décroissante",
       "success": true,
       "message": "Rapports triés correctement",
       "details": null,
-      "timestamp": "2025-10-06T15:25:03.838471"
+      "timestamp": "2025-11-24T12:30:45.565307"
     },
     {
       "test": "Structure données rapports Z",
       "success": true,
       "message": "Tous les champs requis présents",
       "details": null,
-      "timestamp": "2025-10-06T15:25:03.838482"
+      "timestamp": "2025-11-24T12:30:45.565317"
     },
     {
       "test": "created_at automatique",
       "success": true,
       "message": "Timestamp created_at ajouté",
       "details": null,
-      "timestamp": "2025-10-06T15:25:03.838490"
+      "timestamp": "2025-11-24T12:30:45.565341"
     },
     {
       "test": "GET /rapports_z/{id}",
       "success": true,
       "message": "Rapport spécifique récupéré correctement",
       "details": null,
-      "timestamp": "2025-10-06T15:25:03.856884"
+      "timestamp": "2025-11-24T12:30:45.580542"
     },
     {
       "test": "Structure produits rapport Z",
       "success": true,
       "message": "Structure produits correcte",
       "details": null,
-      "timestamp": "2025-10-06T15:25:03.856921"
+      "timestamp": "2025-11-24T12:30:45.580597"
     },
     {
       "test": "GET /rapports_z/{id} inexistant",
       "success": true,
       "message": "Erreur 404 pour ID inexistant",
       "details": null,
-      "timestamp": "2025-10-06T15:25:03.918285"
+      "timestamp": "2025-11-24T12:30:45.597150"
     },
     {
       "test": "DELETE /rapports_z/{id}",
       "success": true,
       "message": "Rapport Z supprimé avec succès",
       "details": null,
-      "timestamp": "2025-10-06T15:25:03.934406"
+      "timestamp": "2025-11-24T12:30:45.616982"
     },
     {
       "test": "Validation suppression rapport Z",
       "success": true,
       "message": "Rapport bien supprimé",
       "details": null,
-      "timestamp": "2025-10-06T15:25:03.955515"
+      "timestamp": "2025-11-24T12:30:45.633591"
     },
     {
       "test": "DELETE /rapports_z/{id} inexistant",
       "success": true,
       "message": "Erreur 404 pour suppression ID inexistant",
       "details": null,
-      "timestamp": "2025-10-06T15:25:04.014451"
+      "timestamp": "2025-11-24T12:30:45.648868"
     },
     {
       "test": "POST /rapports_z (données réalistes)",
       "success": true,
       "message": "Deuxième rapport Z créé avec données La Table d'Augustine",
       "details": null,
-      "timestamp": "2025-10-06T15:25:04.035647"
+      "timestamp": "2025-11-24T12:30:45.662178"
     },
     {
       "test": "Liste rapports Z mise à jour",
       "success": true,
-      "message": "Liste contient 23 rapport(s)",
+      "message": "Liste contient 3 rapport(s)",
       "details": null,
-      "timestamp": "2025-10-06T15:25:04.057768"
+      "timestamp": "2025-11-24T12:30:45.679056"
     },
     {
       "test": "GET /analytics/profitability",
       "success": false,
       "message": "Erreur 500",
       "details": "Internal Server Error",
-      "timestamp": "2025-10-06T15:25:04.154166"
+      "timestamp": "2025-11-24T12:30:45.701318"
     },
     {
       "test": "GET /analytics/sales-performance",
       "success": true,
-      "message": "Analyse ventes: 32261.25€ total, 23 commandes",
+      "message": "Analyse ventes: 2150.75€ total, 3 commandes",
       "details": null,
-      "timestamp": "2025-10-06T15:25:04.186830"
+      "timestamp": "2025-11-24T12:30:45.717960"
     },
     {
       "test": "Calcul average order value",
       "success": true,
-      "message": "Panier moyen: 1402.66€",
+      "message": "Panier moyen: 716.92€",
       "details": null,
-      "timestamp": "2025-10-06T15:25:04.186886"
+      "timestamp": "2025-11-24T12:30:45.717999"
     },
     {
       "test": "Structure top recipes",
       "success": true,
-      "message": "Top recette: Rigatoni à la truffe de Forcalquier (2790.00€)",
+      "message": "Top recette: Rigatoni à la truffe de Forcalquier (186.00€)",
       "details": null,
-      "timestamp": "2025-10-06T15:25:04.186899"
+      "timestamp": "2025-11-24T12:30:45.718008"
     },
     {
       "test": "Sales by category",
       "success": true,
       "message": "Toutes les catégories présentes",
       "details": null,
-      "timestamp": "2025-10-06T15:25:04.186908"
+      "timestamp": "2025-11-24T12:30:45.718016"
     },
     {
       "test": "GET /analytics/alerts",
       "success": true,
-      "message": "Centre d'alertes: 46 alertes totales",
+      "message": "Centre d'alertes: 0 alertes totales",
       "details": null,
-      "timestamp": "2025-10-06T15:25:04.244322"
+      "timestamp": "2025-11-24T12:30:45.735659"
     },
     {
       "test": "Calcul total alerts",
       "success": true,
-      "message": "Total cohérent: 46",
+      "message": "Total cohérent: 0",
       "details": null,
-      "timestamp": "2025-10-06T15:25:04.244359"
+      "timestamp": "2025-11-24T12:30:45.735690"
     },
     {
-      "test": "Structure expiring products",
+      "test": "Expiring products",
       "success": true,
-      "message": "Produit expirant: Supions (petits calamars) (-21 jours)",
+      "message": "Aucun produit expirant (bon signe)",
       "details": null,
-      "timestamp": "2025-10-06T15:25:04.244372"
+      "timestamp": "2025-11-24T12:30:45.735698"
     },
     {
-      "test": "Structure low stock",
+      "test": "Low stock items",
       "success": true,
-      "message": "Stock faible: Supions (petits calamars) (0/1.1670553873784635)",
+      "message": "Aucun stock critique (bon signe)",
       "details": null,
-      "timestamp": "2025-10-06T15:25:04.244385"
+      "timestamp": "2025-11-24T12:30:45.735704"
     },
     {
       "test": "Price anomalies",
       "success": true,
       "message": "Aucune anomalie de prix",
       "details": null,
-      "timestamp": "2025-10-06T15:25:04.244390"
+      "timestamp": "2025-11-24T12:30:45.735709"
     },
     {
       "test": "GET /analytics/cost-analysis",
       "success": false,
       "message": "Erreur 500",
       "details": "Internal Server Error",
-      "timestamp": "2025-10-06T15:25:04.334225"
+      "timestamp": "2025-11-24T12:30:45.762455"
     },
     {
       "test": "Données La Table d'Augustine présentes",
-      "success": true,
-      "message": "6 produits authentiques détectés",
+      "success": false,
+      "message": "Seulement 2 produits authentiques trouvés",
       "details": null,
-      "timestamp": "2025-10-06T15:25:04.355382"
-    },
-    {
-      "test": "Alerts avec données La Table d'Augustine",
-      "success": true,
-      "message": "Système d'alertes opérationnel: 46 alertes",
-      "details": null,
-      "timestamp": "2025-10-06T15:25:04.524799"
-    },
-    {
-      "test": "Alertes produits La Table d'Augustine",
-      "success": true,
-      "message": "7 alertes sur produits authentiques",
-      "details": null,
-      "timestamp": "2025-10-06T15:25:04.524934"
+      "timestamp": "2025-11-24T12:30:45.777651"
     },
     {
       "test": "Prérequis Advanced Stock Management",
       "success": true,
-      "message": "47 produits, 11 recettes disponibles",
+      "message": "7 produits, 2 recettes disponibles",
       "details": null,
-      "timestamp": "2025-10-06T15:25:04.562169"
+      "timestamp": "2025-11-24T12:30:45.808842"
     },
     {
       "test": "Sélection données test",
       "success": true,
-      "message": "Produit: Supions (petits calamars), Recette: Fleurs de courgettes de Mamet",
+      "message": "Produit: Frais de livraison - Maison Artigiana, Recette: Supions en persillade de Mamie",
       "details": null,
-      "timestamp": "2025-10-06T15:25:04.562213"
+      "timestamp": "2025-11-24T12:30:45.808878"
     },
     {
       "test": "POST /stock/advanced-adjustment (ingredient) - Structure",
       "success": true,
-      "message": "Ajustement créé: Supions (petits calamars) +10.5",
+      "message": "Ajustement créé: Frais de livraison - Maison Artigiana +10.5",
       "details": null,
-      "timestamp": "2025-10-06T15:25:04.616804"
+      "timestamp": "2025-11-24T12:30:45.892763"
     },
     {
       "test": "Mise à jour stock ingredient",
       "success": true,
       "message": "Stock mis à jour: 0.0 → 10.5",
       "details": null,
-      "timestamp": "2025-10-06T15:25:05.136823"
+      "timestamp": "2025-11-24T12:30:46.407379"
     },
     {
       "test": "Création mouvement stock automatique",
       "success": true,
       "message": "Mouvement créé: entree 10.5",
       "details": null,
-      "timestamp": "2025-10-06T15:25:05.156318"
+      "timestamp": "2025-11-24T12:30:46.427697"
     },
     {
       "test": "POST /stock/advanced-adjustment (prepared_dish) - Structure",
       "success": true,
-      "message": "Plat préparé: Fleurs de courgettes de Mamet x2.0",
+      "message": "Plat préparé: Supions en persillade de Mamie x2.0",
       "details": null,
-      "timestamp": "2025-10-06T15:25:05.301312"
+      "timestamp": "2025-11-24T12:30:46.461802"
     },
     {
       "test": "Calcul déductions ingrédients",
       "success": true,
-      "message": "4 ingrédient(s) déduits automatiquement",
+      "message": "1 ingrédient(s) déduits automatiquement",
       "details": null,
-      "timestamp": "2025-10-06T15:25:05.301356"
+      "timestamp": "2025-11-24T12:30:46.461839"
     },
     {
       "test": "Mise à jour stocks ingrédients",
       "success": true,
-      "message": "Tous les 4 stocks d'ingrédients mis à jour correctement",
+      "message": "Tous les 1 stocks d'ingrédients mis à jour correctement",
       "details": null,
-      "timestamp": "2025-10-06T15:25:05.884666"
+      "timestamp": "2025-11-24T12:30:46.977389"
     },
     {
       "test": "GET /stock/adjustments-history",
       "success": true,
-      "message": "30 ajustement(s) dans l'historique",
+      "message": "2 ajustement(s) dans l'historique",
       "details": null,
-      "timestamp": "2025-10-06T15:25:05.902116"
+      "timestamp": "2025-11-24T12:30:46.993835"
     },
     {
       "test": "Tri historique ajustements",
       "success": true,
       "message": "Ajustements triés par date décroissante",
       "details": null,
-      "timestamp": "2025-10-06T15:25:05.902150"
+      "timestamp": "2025-11-24T12:30:46.993871"
     },
     {
       "test": "Structure historique ajustements",
       "success": true,
       "message": "Structure AdvancedStockAdjustment complète",
       "details": null,
-      "timestamp": "2025-10-06T15:25:05.902162"
+      "timestamp": "2025-11-24T12:30:46.993883"
     },
     {
       "test": "Types ajustements dans historique",
       "success": true,
-      "message": "15 ingredient, 15 prepared_dish",
+      "message": "1 ingredient, 1 prepared_dish",
       "details": null,
-      "timestamp": "2025-10-06T15:25:05.902176"
+      "timestamp": "2025-11-24T12:30:46.993892"
     },
     {
       "test": "GET /stock/batch-info - Structure",
       "success": true,
-      "message": "Info lot pour Supions (petits calamars): 10.5 total",
+      "message": "Info lot pour Frais de livraison - Maison Artigiana: 10.5 total",
       "details": null,
-      "timestamp": "2025-10-06T15:25:05.923477"
+      "timestamp": "2025-11-24T12:30:47.052654"
     },
     {
       "test": "Cohérence product_id",
       "success": true,
       "message": "Product ID correct",
       "details": null,
-      "timestamp": "2025-10-06T15:25:05.923514"
+      "timestamp": "2025-11-24T12:30:47.052688"
     },
     {
       "test": "Structure batches",
       "success": true,
-      "message": "2 lot(s) trouvé(s)",
+      "message": "0 lot(s) trouvé(s)",
       "details": null,
-      "timestamp": "2025-10-06T15:25:05.923525"
-    },
-    {
-      "test": "Structure batch individuel",
-      "success": true,
-      "message": "Lot 0f1541e1... : 5.835276936892317 (good)",
-      "details": null,
-      "timestamp": "2025-10-06T15:25:05.923536"
-    },
-    {
-      "test": "Calcul statuts expiration",
-      "success": true,
-      "message": "Statuts valides: {'good', 'expired'}",
-      "details": null,
-      "timestamp": "2025-10-06T15:25:05.923551"
+      "timestamp": "2025-11-24T12:30:47.052696"
     },
     {
       "test": "Cohérence compteurs batches",
       "success": true,
-      "message": "0 critiques, 1 expirés",
+      "message": "0 critiques, 0 expirés",
       "details": null,
-      "timestamp": "2025-10-06T15:25:05.923561"
+      "timestamp": "2025-11-24T12:30:47.052704"
     },
     {
       "test": "GET /stock/batch-summary",
       "success": true,
-      "message": "43 produit(s) avec gestion de lots",
+      "message": "0 produit(s) avec gestion de lots",
       "details": null,
-      "timestamp": "2025-10-06T15:25:06.087289"
+      "timestamp": "2025-11-24T12:30:47.073456"
     },
     {
-      "test": "Structure batch summary",
+      "test": "Contenu batch summary",
       "success": true,
-      "message": "Structure BatchStockInfo correcte pour tous les produits",
+      "message": "Aucun produit avec gestion de lots (normal si pas de batches)",
       "details": null,
-      "timestamp": "2025-10-06T15:25:06.087358"
-    },
-    {
-      "test": "Filtrage produits avec batches",
-      "success": true,
-      "message": "Seuls les produits avec batches inclus",
-      "details": null,
-      "timestamp": "2025-10-06T15:25:06.087374"
-    },
-    {
-      "test": "Statistiques globales batches",
-      "success": true,
-      "message": "49 lots total, 0 critiques, 5 expirés",
-      "details": null,
-      "timestamp": "2025-10-06T15:25:06.087397"
+      "timestamp": "2025-11-24T12:30:47.073488"
     },
     {
       "test": "Création batch test",
       "success": true,
-      "message": "Batch créé: d1af9980... (50.0 unités)",
+      "message": "Batch créé: babcd73c... (50.0 unités)",
       "details": null,
-      "timestamp": "2025-10-06T15:25:06.112066"
+      "timestamp": "2025-11-24T12:30:47.100289"
     },
     {
       "test": "PUT /stock/consume-batch - Calcul",
       "success": true,
       "message": "Quantité restante correcte: 30.0",
       "details": null,
-      "timestamp": "2025-10-06T15:25:06.155908"
+      "timestamp": "2025-11-24T12:30:47.138348"
     },
     {
       "test": "Mise à jour stock total après consommation",
       "success": true,
       "message": "Stock total mis à jour: 60.5 → 40.5",
       "details": null,
-      "timestamp": "2025-10-06T15:25:06.677495"
+      "timestamp": "2025-11-24T12:30:47.655739"
     },
     {
       "test": "Création mouvement consommation",
       "success": true,
       "message": "Mouvement créé: sortie 20.0",
       "details": null,
-      "timestamp": "2025-10-06T15:25:06.700196"
+      "timestamp": "2025-11-24T12:30:47.670520"
     },
     {
       "test": "Consommation complète batch",
       "success": true,
       "message": "Batch entièrement consommé",
       "details": null,
-      "timestamp": "2025-10-06T15:25:06.722529"
+      "timestamp": "2025-11-24T12:30:47.687926"
     },
     {
       "test": "Marquage batch consommé",
       "success": true,
       "message": "Batch retiré de la liste active",
       "details": null,
-      "timestamp": "2025-10-06T15:25:06.747183"
+      "timestamp": "2025-11-24T12:30:47.704396"
     },
     {
       "test": "Ajustement produit La Table d'Augustine",
       "success": true,
-      "message": "Ajustement réussi pour Supions (petits calamars)",
+      "message": "Ajustement réussi pour Supions en persillade",
       "details": null,
-      "timestamp": "2025-10-06T15:25:06.773384"
+      "timestamp": "2025-11-24T12:30:47.725598"
     },
     {
       "test": "Déduction ingrédients recette La Table d'Augustine",
       "success": true,
-      "message": "Recette Linguine aux palourdes & sauce à l'ail: 4 ingrédients déduits",
+      "message": "Recette Supions en persillade de Mamie: 1 ingrédients déduits",
       "details": null,
-      "timestamp": "2025-10-06T15:25:06.802746"
+      "timestamp": "2025-11-24T12:30:47.745585"
     },
     {
       "test": "Calcul portions recette authentique",
       "success": true,
       "message": "Calcul basé sur 4 portion(s) de recette",
       "details": null,
-      "timestamp": "2025-10-06T15:25:06.802793"
+      "timestamp": "2025-11-24T12:30:47.745641"
     },
     {
       "test": "POST /admin/users (role: super_admin)",
       "success": true,
       "message": "Utilisateur super_admin créé avec sécurité",
       "details": null,
-      "timestamp": "2025-10-06T15:25:07.138367"
+      "timestamp": "2025-11-24T12:30:48.129073"
     },
     {
       "test": "POST /admin/users (role: gerant)",
       "success": true,
       "message": "Utilisateur gerant créé avec sécurité",
       "details": null,
-      "timestamp": "2025-10-06T15:25:07.389642"
+      "timestamp": "2025-11-24T12:30:48.403897"
     },
     {
       "test": "POST /admin/users (role: chef_cuisine)",
       "success": true,
       "message": "Utilisateur chef_cuisine créé avec sécurité",
       "details": null,
-      "timestamp": "2025-10-06T15:25:07.643520"
+      "timestamp": "2025-11-24T12:30:48.656666"
     },
     {
       "test": "POST /admin/users (role: barman)",
       "success": true,
       "message": "Utilisateur barman créé avec sécurité",
       "details": null,
-      "timestamp": "2025-10-06T15:25:07.920784"
+      "timestamp": "2025-11-24T12:30:48.906218"
     },
     {
       "test": "POST /admin/users (role: caissier)",
       "success": true,
       "message": "Utilisateur caissier créé avec sécurité",
       "details": null,
-      "timestamp": "2025-10-06T15:25:08.173979"
+      "timestamp": "2025-11-24T12:30:49.155536"
     },
     {
       "test": "Création utilisateurs tous rôles",
       "success": true,
       "message": "5 utilisateurs créés avec tous les rôles RBAC",
       "details": null,
-      "timestamp": "2025-10-06T15:25:08.174025"
+      "timestamp": "2025-11-24T12:30:49.155579"
     },
     {
       "test": "GET /admin/users",
-      "success": true,
-      "message": "10 utilisateurs récupérés",
+      "success": false,
+      "message": "Nombre d'utilisateurs insuffisant: 5 < 6",
       "details": null,
-      "timestamp": "2025-10-06T15:25:08.192153"
-    },
-    {
-      "test": "Structure données utilisateurs",
-      "success": true,
-      "message": "Tous champs requis présents, mots de passe sécurisés",
-      "details": null,
-      "timestamp": "2025-10-06T15:25:08.192201"
-    },
-    {
-      "test": "Validation rôles utilisateurs",
-      "success": true,
-      "message": "Tous les rôles RBAC présents: ['barman', 'caissier', 'chef_cuisine', 'gerant', 'super_admin']",
-      "details": null,
-      "timestamp": "2025-10-06T15:25:08.192226"
+      "timestamp": "2025-11-24T12:30:49.179218"
     },
     {
       "test": "DELETE /admin/users/{user_id}",
       "success": true,
       "message": "Utilisateur user_super_admin_test supprimé",
       "details": null,
-      "timestamp": "2025-10-06T15:25:08.210690"
+      "timestamp": "2025-11-24T12:30:49.193318"
     },
     {
       "test": "Validation suppression utilisateur",
       "success": true,
       "message": "Utilisateur bien supprimé de la base",
       "details": null,
-      "timestamp": "2025-10-06T15:25:08.728967"
+      "timestamp": "2025-11-24T12:30:49.711198"
     },
     {
       "test": "DELETE utilisateur inexistant",
       "success": true,
       "message": "Erreur 404 correcte pour utilisateur inexistant",
       "details": null,
-      "timestamp": "2025-10-06T15:25:08.747003"
+      "timestamp": "2025-11-24T12:30:49.868098"
     },
     {
       "test": "Sécurité mot de passe",
       "success": true,
       "message": "Mot de passe non exposé dans la réponse",
       "details": null,
-      "timestamp": "2025-10-06T15:25:08.999400"
+      "timestamp": "2025-11-24T12:30:50.120139"
     },
     {
       "test": "Validation hachage bcrypt",
       "success": true,
       "message": "Utilisateur créé avec succès (hachage bcrypt fonctionnel)",
       "details": null,
-      "timestamp": "2025-10-06T15:25:08.999444"
+      "timestamp": "2025-11-24T12:30:50.120176"
     },
     {
       "test": "Création utilisateur de base",
       "success": true,
       "message": "Utilisateur de référence créé",
       "details": null,
-      "timestamp": "2025-10-06T15:25:09.311324"
+      "timestamp": "2025-11-24T12:30:50.384612"
     },
     {
       "test": "Validation unicité username",
       "success": true,
       "message": "Username dupliqué correctement rejeté",
       "details": null,
-      "timestamp": "2025-10-06T15:25:09.332038"
+      "timestamp": "2025-11-24T12:30:50.401160"
     },
     {
       "test": "Validation unicité email",
       "success": true,
       "message": "Email dupliqué correctement rejeté",
       "details": null,
-      "timestamp": "2025-10-06T15:25:09.392835"
+      "timestamp": "2025-11-24T12:30:50.420091"
     },
     {
       "test": "Validation rôle super_admin",
       "success": true,
       "message": "Rôle super_admin accepté et assigné",
       "details": null,
-      "timestamp": "2025-10-06T15:25:09.668182"
+      "timestamp": "2025-11-24T12:30:50.688847"
     },
     {
       "test": "Validation rôle gerant",
       "success": true,
       "message": "Rôle gerant accepté et assigné",
       "details": null,
-      "timestamp": "2025-10-06T15:25:09.943904"
+      "timestamp": "2025-11-24T12:30:50.999483"
     },
     {
       "test": "Validation rôle chef_cuisine",
       "success": true,
       "message": "Rôle chef_cuisine accepté et assigné",
       "details": null,
-      "timestamp": "2025-10-06T15:25:10.248237"
+      "timestamp": "2025-11-24T12:30:51.271203"
     },
     {
       "test": "Validation rôle barman",
       "success": true,
       "message": "Rôle barman accepté et assigné",
       "details": null,
-      "timestamp": "2025-10-06T15:25:10.570523"
+      "timestamp": "2025-11-24T12:30:51.582483"
     },
     {
       "test": "Validation rôle caissier",
       "success": true,
       "message": "Rôle caissier accepté et assigné",
       "details": null,
-      "timestamp": "2025-10-06T15:25:10.878133"
+      "timestamp": "2025-11-24T12:30:51.843483"
     },
     {
       "test": "Rejet rôle invalide 'admin'",
       "success": true,
       "message": "Rôle invalide correctement rejeté",
       "details": null,
-      "timestamp": "2025-10-06T15:25:10.911126"
+      "timestamp": "2025-11-24T12:30:51.921252"
     },
     {
       "test": "Rejet rôle invalide 'user'",
       "success": true,
       "message": "Rôle invalide correctement rejeté",
       "details": null,
-      "timestamp": "2025-10-06T15:25:10.928324"
+      "timestamp": "2025-11-24T12:30:51.937357"
     },
     {
       "test": "Rejet rôle invalide 'manager'",
       "success": true,
       "message": "Rôle invalide correctement rejeté",
       "details": null,
-      "timestamp": "2025-10-06T15:25:10.988231"
+      "timestamp": "2025-11-24T12:30:51.997102"
     },
     {
       "test": "Rejet rôle invalide 'invalid_role'",
       "success": true,
       "message": "Rôle invalide correctement rejeté",
       "details": null,
-      "timestamp": "2025-10-06T15:25:11.006277"
+      "timestamp": "2025-11-24T12:30:52.014067"
     },
     {
       "test": "Rejet rôle invalide 'super_user'",
       "success": true,
       "message": "Rôle invalide correctement rejeté",
       "details": null,
-      "timestamp": "2025-10-06T15:25:11.021914"
+      "timestamp": "2025-11-24T12:30:52.031994"
     },
     {
       "test": "Rejet rôle invalide ''",
       "success": true,
       "message": "Rôle invalide correctement rejeté",
       "details": null,
-      "timestamp": "2025-10-06T15:25:11.038762"
+      "timestamp": "2025-11-24T12:30:52.047249"
     },
     {
       "test": "Structure modèle User",
       "success": true,
       "message": "Tous les champs requis présents avec types corrects",
       "details": null,
-      "timestamp": "2025-10-06T15:25:11.289829"
+      "timestamp": "2025-11-24T12:30:52.338945"
     },
     {
       "test": "Valeur par défaut is_active",
       "success": true,
       "message": "is_active défini à True par défaut",
       "details": null,
-      "timestamp": "2025-10-06T15:25:11.289883"
+      "timestamp": "2025-11-24T12:30:52.339071"
     },
     {
       "test": "Valeur par défaut last_login",
       "success": true,
       "message": "last_login défini à null par défaut",
       "details": null,
-      "timestamp": "2025-10-06T15:25:11.289890"
+      "timestamp": "2025-11-24T12:30:52.339079"
     },
     {
       "test": "Sécurité UserResponse (POST)",
       "success": true,
       "message": "Aucune donnée sensible exposée lors de la création",
       "details": null,
-      "timestamp": "2025-10-06T15:25:11.561033"
+      "timestamp": "2025-11-24T12:30:52.602470"
     },
     {
       "test": "Sécurité UserResponse (GET)",
       "success": true,
       "message": "Aucune donnée sensible exposée dans la liste",
       "details": null,
-      "timestamp": "2025-10-06T15:25:11.580406"
+      "timestamp": "2025-11-24T12:30:52.623937"
     },
     {
       "test": "Utilisateur admin par défaut",
       "success": false,
       "message": "Utilisateur admin par défaut non trouvé",
       "details": null,
-      "timestamp": "2025-10-06T15:25:11.616718"
+      "timestamp": "2025-11-24T12:30:52.695570"
     },
     {
       "test": "Mise à jour compteur utilisateurs",
       "success": true,
-      "message": "Nombre d'utilisateurs passé de 9 à 10",
+      "message": "Nombre d'utilisateurs passé de 4 à 5",
       "details": null,
-      "timestamp": "2025-10-06T15:25:12.448709"
+      "timestamp": "2025-11-24T12:30:53.499469"
     },
     {
       "test": "Persistance données utilisateur",
       "success": true,
       "message": "Toutes les données utilisateur correctement persistées",
       "details": null,
-      "timestamp": "2025-10-06T15:25:12.448785"
+      "timestamp": "2025-11-24T12:30:53.499524"
     },
     {
       "test": "Utilisateur existe avant suppression",
       "success": true,
       "message": "Utilisateur trouvé avant suppression",
       "details": null,
-      "timestamp": "2025-10-06T15:25:12.758278"
+      "timestamp": "2025-11-24T12:30:53.866693"
     },
     {
       "test": "Suppression complète utilisateur",
       "success": true,
       "message": "Utilisateur complètement supprimé de la base",
       "details": null,
-      "timestamp": "2025-10-06T15:25:13.335959"
+      "timestamp": "2025-11-24T12:30:54.396853"
     },
     {
       "test": "Mise à jour compteur après suppression",
       "success": true,
-      "message": "Nombre d'utilisateurs réduit de 10 à 9",
+      "message": "Nombre d'utilisateurs réduit de 5 à 4",
       "details": null,
-      "timestamp": "2025-10-06T15:25:13.335997"
+      "timestamp": "2025-11-24T12:30:54.396893"
     },
     {
       "test": "Timestamp created_at",
       "success": true,
-      "message": "Timestamp correct: 2025-10-06T15:25:13.584094",
+      "message": "Timestamp correct: 2025-11-24T12:30:54.647346",
       "details": null,
-      "timestamp": "2025-10-06T15:25:13.589645"
+      "timestamp": "2025-11-24T12:30:54.651822"
     },
     {
       "test": "Timestamp last_login initial",
       "success": true,
       "message": "last_login correctement null pour nouvel utilisateur",
       "details": null,
-      "timestamp": "2025-10-06T15:25:13.589689"
+      "timestamp": "2025-11-24T12:30:54.651860"
     },
     {
       "test": "Format ID utilisateur",
       "success": true,
       "message": "ID au format UUID",
       "details": null,
-      "timestamp": "2025-10-06T15:25:13.589698"
+      "timestamp": "2025-11-24T12:30:54.651869"
     },
     {
       "test": "Intégration - APIs existantes",
       "success": true,
       "message": "APIs existantes fonctionnent avec User Management",
       "details": null,
-      "timestamp": "2025-10-06T15:25:13.627756"
+      "timestamp": "2025-11-24T12:30:54.683015"
     },
     {
       "test": "Intégration - isolation collections",
       "success": true,
       "message": "Création utilisateur n'affecte pas les autres collections",
       "details": null,
-      "timestamp": "2025-10-06T15:25:13.916142"
+      "timestamp": "2025-11-24T12:30:54.968639"
     },
     {
       "test": "Stockage MongoDB correct",
       "success": true,
       "message": "Utilisateur correctement stocké et récupérable",
       "details": null,
-      "timestamp": "2025-10-06T15:25:14.242786"
+      "timestamp": "2025-11-24T12:30:55.257680"
     },
     {
       "test": "Persistance MongoDB",
       "success": true,
       "message": "Utilisateur persiste correctement dans MongoDB",
       "details": null,
-      "timestamp": "2025-10-06T15:25:15.262645"
+      "timestamp": "2025-11-24T12:30:56.273940"
     },
     {
       "test": "Isolation opérations utilisateur",
       "success": true,
       "message": "Opérations utilisateur n'affectent pas les autres collections",
       "details": null,
-      "timestamp": "2025-10-06T15:25:16.196886"
+      "timestamp": "2025-11-24T12:30:57.281478"
     },
     {
       "test": "Validation données valides",
       "success": true,
       "message": "Données valides acceptées",
       "details": null,
-      "timestamp": "2025-10-06T15:25:16.526027"
+      "timestamp": "2025-11-24T12:30:57.563732"
     },
     {
       "test": "Validation - Email invalide",
       "success": false,
       "message": "Données invalides acceptées: 200",
       "details": null,
-      "timestamp": "2025-10-06T15:25:16.779473"
+      "timestamp": "2025-11-24T12:30:57.822051"
     },
     {
       "test": "Validation - Username vide",
       "success": false,
       "message": "Données invalides acceptées: 200",
       "details": null,
-      "timestamp": "2025-10-06T15:25:17.032323"
+      "timestamp": "2025-11-24T12:30:58.078248"
     },
     {
       "test": "Validation - Mot de passe trop court",
       "success": false,
       "message": "Données invalides acceptées: 200",
       "details": null,
-      "timestamp": "2025-10-06T15:25:17.286623"
+      "timestamp": "2025-11-24T12:30:58.327432"
     },
     {
       "test": "Validation - Rôle manquant",
       "success": true,
       "message": "Données invalides correctement rejetées (422)",
       "details": null,
-      "timestamp": "2025-10-06T15:25:17.304208"
+      "timestamp": "2025-11-24T12:30:58.342392"
     },
     {
       "test": "POST /demo/init-missions-users",
       "success": false,
       "message": "Message inattendu: ✅ Système missions et utilisateurs initialisé !",
       "details": null,
-      "timestamp": "2025-10-06T15:25:17.350756"
+      "timestamp": "2025-11-24T12:30:58.410011"
     },
     {
       "test": "Login chef_test",
       "success": true,
       "message": "Rôle: chef_cuisine",
       "details": null,
-      "timestamp": "2025-10-06T15:25:17.371469"
+      "timestamp": "2025-11-24T12:30:58.482119"
     },
     {
       "test": "Login caisse_test",
       "success": true,
       "message": "Rôle: caissier",
       "details": null,
-      "timestamp": "2025-10-06T15:25:17.430180"
+      "timestamp": "2025-11-24T12:30:58.515147"
     },
     {
       "test": "Login barman_test",
       "success": true,
       "message": "Rôle: barman",
       "details": null,
-      "timestamp": "2025-10-06T15:25:17.452061"
+      "timestamp": "2025-11-24T12:30:58.532713"
     },
     {
       "test": "Login cuisine_test",
       "success": true,
-      "message": "Rôle: gerant",
+      "message": "Rôle: employe_cuisine",
       "details": null,
-      "timestamp": "2025-10-06T15:25:17.512199"
+      "timestamp": "2025-11-24T12:30:58.551788"
     },
     {
       "test": "Login identifiants incorrects",
       "success": false,
       "message": "Code retour inattendu: 200",
       "details": null,
-      "timestamp": "2025-10-06T15:25:17.528895"
+      "timestamp": "2025-11-24T12:30:58.568026"
     },
     {
       "test": "Mission Management",
       "success": false,
       "message": "Session patron non disponible",
       "details": null,
-      "timestamp": "2025-10-06T15:25:17.529118"
+      "timestamp": "2025-11-24T12:30:58.568215"
     },
     {
       "test": "Notification System",
       "success": false,
       "message": "Pas d'utilisateurs test disponibles",
       "details": null,
-      "timestamp": "2025-10-06T15:25:17.529134"
+      "timestamp": "2025-11-24T12:30:58.568228"
     },
     {
       "test": "Role-based Permissions",
       "success": false,
       "message": "Pas d'utilisateurs test disponibles",
       "details": null,
-      "timestamp": "2025-10-06T15:25:17.529147"
+      "timestamp": "2025-11-24T12:30:58.568236"
     },
     {
       "test": "Mission Workflow",
       "success": false,
       "message": "Pas d'utilisateurs test disponibles",
       "details": null,
-      "timestamp": "2025-10-06T15:25:17.529155"
+      "timestamp": "2025-11-24T12:30:58.568244"
     },
     {
       "test": "OCR Text Extraction - ALL Items",
-      "success": true,
-      "message": "Extraction réussie: 13/13 items détectés dans le texte",
+      "success": false,
+      "message": "Extraction insuffisante: seulement 0/13 items détectés",
       "details": null,
-      "timestamp": "2025-10-06T15:25:17.589578"
+      "timestamp": "2025-11-24T12:30:58.813971"
     },
     {
       "test": "OCR Categorization - ALL Items",
-      "success": true,
-      "message": "Catégorisation réussie: 26 items catégorisés",
+      "success": false,
+      "message": "Catégorisation insuffisante: seulement 0 items",
       "details": null,
-      "timestamp": "2025-10-06T15:25:17.612486"
+      "timestamp": "2025-11-24T12:30:58.837651"
     },
     {
       "test": "New Items Categorization",
-      "success": true,
-      "message": "Nouveaux items correctement catégorisés: 4/4 catégories",
+      "success": false,
+      "message": "Catégorisation des nouveaux items insuffisante: 0/4",
       "details": null,
-      "timestamp": "2025-10-06T15:25:17.612537"
+      "timestamp": "2025-11-24T12:30:58.837702"
     },
     {
       "test": "Stock Deductions - Existing Items",
-      "success": true,
-      "message": "Déductions calculées pour 4 items existants",
+      "success": false,
+      "message": "Aucune déduction calculée pour les items existants",
       "details": null,
-      "timestamp": "2025-10-06T15:25:17.651151"
+      "timestamp": "2025-11-24T12:30:58.856982"
     },
     {
       "test": "Warnings - New Items",
-      "success": true,
-      "message": "Warnings générés pour 8 nouveaux items",
+      "success": false,
+      "message": "Warnings insuffisants pour nouveaux items: 0",
       "details": null,
-      "timestamp": "2025-10-06T15:25:17.651208"
+      "timestamp": "2025-11-24T12:30:58.857025"
     },
     {
       "test": "Unmatched Items Warnings",
-      "success": true,
-      "message": "Messages d'alerte pour items non trouvés: 18",
+      "success": false,
+      "message": "Messages d'alerte insuffisants pour items non trouvés",
       "details": null,
-      "timestamp": "2025-10-06T15:25:17.651218"
+      "timestamp": "2025-11-24T12:30:58.857032"
     },
     {
       "test": "Data Storage - All Items",
-      "success": true,
-      "message": "Tous les items stockés dans donnees_parsees: 26 items",
+      "success": false,
+      "message": "Stockage incomplet: 0 items seulement",
       "details": null,
-      "timestamp": "2025-10-06T15:25:17.690993"
+      "timestamp": "2025-11-24T12:30:58.873314"
     },
     {
       "test": "Grand Total Storage",
-      "success": true,
-      "message": "Grand total correctement stocké: 687.5€",
+      "success": false,
+      "message": "Grand total incorrect: None€",
       "details": null,
-      "timestamp": "2025-10-06T15:25:17.691031"
+      "timestamp": "2025-11-24T12:30:58.873366"
     },
     {
       "test": "Interface Visibility - All Items",
-      "success": true,
-      "message": "Tous les items visibles dans l'interface: 26 items",
+      "success": false,
+      "message": "Visibilité insuffisante: 0 items",
       "details": null,
-      "timestamp": "2025-10-06T15:25:17.731537"
+      "timestamp": "2025-11-24T12:30:58.889384"
     },
     {
       "test": "Stock Impact - Existing Only",
-      "success": true,
-      "message": "Impact stock limité aux items existants: 8 déductions sur 26 items",
+      "success": false,
+      "message": "Impact stock incorrect: 0 déductions",
       "details": null,
-      "timestamp": "2025-10-06T15:25:17.731572"
+      "timestamp": "2025-11-24T12:30:58.889412"
     },
     {
       "test": "PDF Document Upload - file_type",
       "success": true,
       "message": "Document sauvé avec file_type='pdf'",
       "details": null,
-      "timestamp": "2025-10-06T15:25:17.810669"
+      "timestamp": "2025-11-24T12:30:59.134158"
     },
     {
       "test": "PDF Text Extraction",
       "success": true,
-      "message": "Texte extrait: 459 caractères",
+      "message": "Texte extrait: 85 caractères",
       "details": null,
-      "timestamp": "2025-10-06T15:25:17.810704"
+      "timestamp": "2025-11-24T12:30:59.134195"
     },
     {
       "test": "StructuredZReportData Structure",
       "success": true,
       "message": "Tous les champs requis présents",
       "details": null,
-      "timestamp": "2025-10-06T15:25:17.831019"
+      "timestamp": "2025-11-24T12:30:59.150631"
     },
     {
       "test": "4 Categories Organization",
       "success": true,
       "message": "Toutes les catégories présentes",
       "details": null,
-      "timestamp": "2025-10-06T15:25:17.831060"
+      "timestamp": "2025-11-24T12:30:59.150698"
     },
     {
       "test": "Category Bar Items",
-      "success": true,
-      "message": "8 items dans Bar",
+      "success": false,
+      "message": "Aucun item dans Bar",
       "details": null,
-      "timestamp": "2025-10-06T15:25:17.831069"
+      "timestamp": "2025-11-24T12:30:59.150706"
     },
     {
       "test": "Category Entrées Items",
-      "success": true,
-      "message": "6 items dans Entrées",
+      "success": false,
+      "message": "Aucun item dans Entrées",
       "details": null,
-      "timestamp": "2025-10-06T15:25:17.831082"
+      "timestamp": "2025-11-24T12:30:59.150711"
     },
     {
       "test": "Category Plats Items",
-      "success": true,
-      "message": "5 items dans Plats",
+      "success": false,
+      "message": "Aucun item dans Plats",
       "details": null,
-      "timestamp": "2025-10-06T15:25:17.831091"
+      "timestamp": "2025-11-24T12:30:59.150715"
     },
     {
       "test": "Category Desserts Items",
-      "success": true,
-      "message": "4 items dans Desserts",
+      "success": false,
+      "message": "Aucun item dans Desserts",
       "details": null,
-      "timestamp": "2025-10-06T15:25:17.831109"
+      "timestamp": "2025-11-24T12:30:59.150720"
     },
     {
       "test": "Grand Total Calculation",
-      "success": true,
-      "message": "CA total calculé: 456.5€",
+      "success": false,
+      "message": "CA total non calculé ou incorrect: None",
       "details": null,
-      "timestamp": "2025-10-06T15:25:17.831122"
+      "timestamp": "2025-11-24T12:30:59.150726"
     },
     {
       "test": "Report Date Extraction",
-      "success": true,
-      "message": "Date: 15/12/2024",
+      "success": false,
+      "message": "Date non extraite",
       "details": null,
-      "timestamp": "2025-10-06T15:25:17.831130"
+      "timestamp": "2025-11-24T12:30:59.150731"
     },
     {
       "test": "Service Extraction",
       "success": false,
       "message": "Service non extrait",
       "details": null,
-      "timestamp": "2025-10-06T15:25:17.831135"
+      "timestamp": "2025-11-24T12:30:59.150735"
     },
     {
       "test": "categorize_menu_item Function",
       "success": true,
       "message": "Catégorisation correcte des items",
       "details": null,
-      "timestamp": "2025-10-06T15:25:17.831143"
+      "timestamp": "2025-11-24T12:30:59.150752"
     },
     {
       "test": "OCR Document Storage - donnees_parsees",
       "success": true,
       "message": "Données structurées stockées dans donnees_parsees",
       "details": null,
-      "timestamp": "2025-10-06T15:25:17.869445"
+      "timestamp": "2025-11-24T12:30:59.168587"
     },
     {
       "test": "Structured Data in Storage",
       "success": true,
       "message": "items_by_category présent dans le stockage",
       "details": null,
-      "timestamp": "2025-10-06T15:25:17.869482"
+      "timestamp": "2025-11-24T12:30:59.168619"
     },
     {
       "test": "Stock Deductions Calculation",
       "success": true,
-      "message": "10 propositions de déduction calculées",
+      "message": "0 propositions de déduction calculées",
       "details": null,
-      "timestamp": "2025-10-06T15:25:17.941378"
-    },
-    {
-      "test": "Stock Deduction Structure",
-      "success": true,
-      "message": "Structure StockDeductionProposal correcte",
-      "details": null,
-      "timestamp": "2025-10-06T15:25:17.941418"
+      "timestamp": "2025-11-24T12:30:59.241377"
     },
     {
       "test": "FIXED: File Type Assignment",
       "success": true,
       "message": "file_type correctement défini à 'pdf'",
       "details": null,
-      "timestamp": "2025-10-06T15:25:17.990204"
+      "timestamp": "2025-11-24T12:30:59.442609"
     },
     {
       "test": "PDF Text Extraction",
-      "success": true,
-      "message": "Texte extrait: 304 caractères",
+      "success": false,
+      "message": "Texte insuffisant extrait",
       "details": null,
-      "timestamp": "2025-10-06T15:25:17.990247"
+      "timestamp": "2025-11-24T12:30:59.442655"
     },
     {
       "test": "FIXED: CA Total Calculation",
-      "success": true,
-      "message": "grand_total_sales correctement extrait: 456.5€",
+      "success": false,
+      "message": "grand_total_sales incorrect: None au lieu de 456.50€",
       "details": null,
-      "timestamp": "2025-10-06T15:25:18.010196"
+      "timestamp": "2025-11-24T12:30:59.459898"
     },
     {
       "test": "FIXED: Supions Categorization",
-      "success": true,
-      "message": "Supions en persillade correctement catégorisé dans Entrées",
+      "success": false,
+      "message": "Supions en persillade mal catégorisé",
       "details": null,
-      "timestamp": "2025-10-06T15:25:18.010237"
+      "timestamp": "2025-11-24T12:30:59.459941"
     },
     {
       "test": "FIXED: Fleurs de courgettes Categorization",
-      "success": true,
-      "message": "Fleurs de courgettes correctement catégorisées dans Entrées",
+      "success": false,
+      "message": "Fleurs de courgettes mal catégorisées",
       "details": null,
-      "timestamp": "2025-10-06T15:25:18.010246"
+      "timestamp": "2025-11-24T12:30:59.459949"
     },
     {
       "test": "Categories Structure",
       "success": true,
       "message": "Toutes les 4 catégories présentes",
       "details": null,
-      "timestamp": "2025-10-06T15:25:18.010254"
+      "timestamp": "2025-11-24T12:30:59.459957"
     },
     {
       "test": "Date Extraction",
-      "success": true,
-      "message": "Date correctement extraite: 15/12/2024",
+      "success": false,
+      "message": "Date incorrecte: None",
       "details": null,
-      "timestamp": "2025-10-06T15:25:18.010260"
+      "timestamp": "2025-11-24T12:30:59.459964"
     },
     {
       "test": "Service Extraction",
       "success": false,
       "message": "Service incorrect: None",
       "details": null,
-      "timestamp": "2025-10-06T15:25:18.010266"
+      "timestamp": "2025-11-24T12:30:59.459968"
     },
     {
-      "test": "Stock Deduction Validation",
+      "test": "Stock Deduction Calculation",
       "success": false,
-      "message": "Validation des déductions échouée",
+      "message": "Aucune proposition de déduction",
       "details": null,
-      "timestamp": "2025-10-06T15:25:18.049962"
+      "timestamp": "2025-11-24T12:30:59.475114"
     },
     {
       "test": "DELETE /produits/{id}",
       "success": true,
       "message": "Produit supprimé",
       "details": null,
-      "timestamp": "2025-10-06T15:25:18.090466"
+      "timestamp": "2025-11-24T12:30:59.504277"
     },
     {
       "test": "Suppression stock cascade",
       "success": true,
       "message": "Stock supprimé automatiquement",
       "details": null,
-      "timestamp": "2025-10-06T15:25:18.106891"
+      "timestamp": "2025-11-24T12:30:59.559861"
     },
     {
       "test": "Suppression mouvements cascade",
       "success": true,
       "message": "Mouvements supprimés automatiquement",
       "details": null,
-      "timestamp": "2025-10-06T15:25:18.627693"
+      "timestamp": "2025-11-24T12:31:00.078208"
     },
     {
       "test": "Nettoyage fournisseur",
       "success": true,
       "message": "Fournisseur de test supprimé",
       "details": null,
-      "timestamp": "2025-10-06T15:25:18.644452"
+      "timestamp": "2025-11-24T12:31:00.092558"
     }
   ]
 }
