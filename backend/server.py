@@ -731,6 +731,11 @@ class MercurialeProcessingResult(BaseModel):
     warnings: List[str] = []
     errors: List[str] = []
 
+# ===== Stock Quantity Rounding Helper =====
+def round_stock_quantity(quantity: float) -> float:
+    """Arrondir une quantité de stock à 0.01 près (2 décimales)"""
+    return round(quantity, 2)
+
 # ===== Product Matching Helper Functions =====
 def calculate_similarity(str1: str, str2: str) -> float:
     """Calculate similarity between two strings (simple Levenshtein-like)"""
