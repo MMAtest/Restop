@@ -2131,7 +2131,9 @@ async def create_advanced_stock_adjustment(adjustment: StockAdjustmentRequest):
             # Update stock directly
             stock = await db.stocks.find_one({"produit_id": adjustment.target_id})
             if stock:
-                new_quantity = max(0, stock["quantite_actuelle"] + adjustment.quantity_adjusted)
+                current = round_stock_quantity(stock["quantite_actuelle"])
+                adjusted = round_stock_quantity(adjustment.quantity_adjusted)
+                new_quantity = round_stock_quantity(max(0, current + adjusted))
                 await db.stocks.update_one(
                     {"produit_id": adjustment.target_id},
                     {
