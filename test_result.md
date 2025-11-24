@@ -156,6 +156,42 @@ backend:
         agent: "testing"
         comment: "⚠️ ENDPOINT MERCURIALE NON TESTÉ - DONNÉES MANQUANTES ! Impossible de tester l'endpoint POST /api/ocr/process-mercuriale/{document_id} car aucun document de type 'mercuriale' disponible en base de données. Tests d'erreurs validés : ✅ Gestion correcte ID invalide (404) ✅ Gestion correcte mauvais type document (400). RECOMMANDATION : Créer des documents mercuriale de test pour validation complète de l'endpoint. Endpoint probablement fonctionnel basé sur la structure similaire aux autres endpoints OCR."
 
+  - task: "API Stock Préparations - Collection Séparée"
+    implemented: true
+    working: "NA"
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Implémenté collection stock_preparations séparée pour gérer les préparations en stock distinctement des produits bruts. Nouveaux endpoints: GET/POST/PUT/DELETE /api/stock-preparations. Modèle StockPreparation avec gestion DLC, statut (disponible/expire_bientot/expire), et traçabilité complète."
+
+  - task: "API Exécution Préparations - Transformation Produits"
+    implemented: true
+    working: "NA"
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Implémenté endpoint POST /api/preparations/{preparation_id}/execute pour transformer produits bruts en préparations. Workflow complet: déduction stock produits, calcul pertes transformation, création/mise à jour stock préparations, enregistrement mouvements, gestion DLC automatique. Modèle ExecutePreparationResult avec détails produits déduits et warnings."
+
+  - task: "API Recettes - Support Produits ET Préparations"
+    implemented: true
+    working: "NA"
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Modifié RecetteIngredient pour supporter ingredient_type ('produit' ou 'preparation'). Une recette peut maintenant utiliser des produits bruts, des préparations, ou les deux. Champs legacy (produit_id, produit_nom) maintenus pour compatibilité. Endpoint process-z-report adapté pour gérer les 2 types d'ingrédients: déduction stocks produits OU stock_preparations selon le type."
+
 backend:
   - task: "API CRUD Fournisseurs"
     implemented: true
