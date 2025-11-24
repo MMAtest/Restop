@@ -12,7 +12,7 @@ import time
 import io
 
 # Configuration
-BASE_URL = "https://cuisine-tracker-5.preview.emergentagent.com/api"
+BASE_URL = "https://restop.preview.emergentagent.com/api"
 HEADERS = {"Content-Type": "application/json"}
 
 class FinalOCRPriceTest:
