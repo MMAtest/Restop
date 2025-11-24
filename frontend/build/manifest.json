@@ -1,0 +1,105 @@
+{
+  "name": "ResTop - La Table d'Augustine",
+  "short_name": "ResTop",
+  "description": "Application de gestion de stock restaurant La Table d'Augustine",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#059669",
+  "theme_color": "#10b981",
+  "orientation": "portrait-primary",
+  "scope": "/",
+  "lang": "fr-FR",
+  "categories": ["business", "productivity", "food"],
+  "icons": [
+    {
+      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='48' fill='%23059669'/%3E%3Ctext x='50' y='65' text-anchor='middle' font-size='45' fill='white'%3E🍽️%3C/text%3E%3C/svg%3E",
+      "sizes": "72x72",
+      "type": "image/svg+xml"
+    },
+    {
+      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='48' fill='%23059669'/%3E%3Ctext x='50' y='65' text-anchor='middle' font-size='45' fill='white'%3E🍽️%3C/text%3E%3C/svg%3E",
+      "sizes": "96x96",
+      "type": "image/svg+xml"
+    },
+    {
+      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='48' fill='%23059669'/%3E%3Ctext x='50' y='65' text-anchor='middle' font-size='45' fill='white'%3E🍽️%3C/text%3E%3C/svg%3E",
+      "sizes": "128x128",
+      "type": "image/svg+xml"
+    },
+    {
+      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='48' fill='%23059669'/%3E%3Ctext x='50' y='65' text-anchor='middle' font-size='45' fill='white'%3E🍽️%3C/text%3E%3C/svg%3E",
+      "sizes": "144x144",
+      "type": "image/svg+xml"
+    },
+    {
+      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='48' fill='%23059669'/%3E%3Ctext x='50' y='65' text-anchor='middle' font-size='45' fill='white'%3E🍽️%3C/text%3E%3C/svg%3E",
+      "sizes": "152x152",
+      "type": "image/svg+xml"
+    },
+    {
+      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='48' fill='%23059669'/%3E%3Ctext x='50' y='65' text-anchor='middle' font-size='45' fill='white'%3E🍽️%3C/text%3E%3C/svg%3E",
+      "sizes": "192x192",
+      "type": "image/svg+xml"
+    },
+    {
+      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='48' fill='%23059669'/%3E%3Ctext x='50' y='65' text-anchor='middle' font-size='45' fill='white'%3E🍽️%3C/text%3E%3C/svg%3E",
+      "sizes": "384x384",
+      "type": "image/svg+xml"
+    },
+    {
+      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='48' fill='%23059669'/%3E%3Ctext x='50' y='65' text-anchor='middle' font-size='45' fill='white'%3E🍽️%3C/text%3E%3C/svg%3E",
+      "sizes": "512x512",
+      "type": "image/svg+xml"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 600'%3E%3Crect width='300' height='600' fill='%23f9fafb'/%3E%3Crect x='20' y='20' width='260' height='80' fill='%23059669' rx='10'/%3E%3Ctext x='150' y='60' text-anchor='middle' font-size='20' fill='white'%3EResTop%3C/text%3E%3Ctext x='150' y='80' text-anchor='middle' font-size='12' fill='white'%3ELa Table d'Augustine%3C/text%3E%3C/svg%3E",
+      "sizes": "300x600",
+      "type": "image/svg+xml",
+      "form_factor": "narrow",
+      "label": "Interface mobile ResTop"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Missions du jour",
+      "short_name": "Missions",
+      "description": "Voir mes tâches urgentes",
+      "url": "/?tab=dashboard",
+      "icons": [
+        {
+          "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='48' fill='%23ea580c'/%3E%3Ctext x='50' y='65' text-anchor='middle' font-size='45' fill='white'%3E📋%3C/text%3E%3C/svg%3E",
+          "sizes": "96x96",
+          "type": "image/svg+xml"
+        }
+      ]
+    },
+    {
+      "name": "Stocks",
+      "short_name": "Stock",
+      "description": "Vérifier les stocks",
+      "url": "/?tab=stocks",
+      "icons": [
+        {
+          "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='48' fill='%232563eb'/%3E%3Ctext x='50' y='65' text-anchor='middle' font-size='45' fill='white'%3E📦%3C/text%3E%3C/svg%3E",
+          "sizes": "96x96",
+          "type": "image/svg+xml"
+        }
+      ]
+    },
+    {
+      "name": "OCR",
+      "short_name": "Scanner",
+      "description": "Scanner documents",
+      "url": "/?tab=ocr",
+      "icons": [
+        {
+          "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='48' fill='%237c3aed'/%3E%3Ctext x='50' y='65' text-anchor='middle' font-size='45' fill='white'%3E📱%3C/text%3E%3C/svg%3E",
+          "sizes": "96x96",
+          "type": "image/svg+xml"
+        }
+      ]
+    }
+  ]
+}
