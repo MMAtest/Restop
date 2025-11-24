@@ -2590,7 +2590,7 @@ function App() {
                   <button 
                     className="button" 
                     onClick={async () => {
-                      if (window.confirm('Voulez-vous restaurer les VRAIES données du restaurant ? (Fournisseurs, Produits, Préparations, Recettes)')) {
+                      if (window.confirm('Voulez-vous restaurer les VRAIES données du restaurant ? (Fournisseurs, Produits, Préparations, Recettes)\n\nCela supprimera toutes les données existantes et recréera les données du restaurant.')) {
                         try {
                           setLoading(true);
                           await axios.post(`${API}/api/demo/init-real-restaurant-data`);
@@ -2609,6 +2609,30 @@ function App() {
                     style={{width: '100%', marginBottom: '8px'}}
                   >
                     🍽️ Données Restaurant
+                  </button>
+                  
+                  <button 
+                    className="button warning" 
+                    onClick={async () => {
+                      if (window.confirm('Voulez-vous supprimer les doublons dans les données ?\n\nCela supprimera les produits, fournisseurs, préparations et recettes en double.')) {
+                        try {
+                          setLoading(true);
+                          const response = await axios.post(`${API}/api/demo/clean-duplicates`);
+                          alert(`✅ ${response.data.total_removed} doublons supprimés !\n\nProduits: ${response.data.collections_cleaned.produits}\nFournisseurs: ${response.data.collections_cleaned.fournisseurs}\nPréparations: ${response.data.collections_cleaned.preparations}\nRecettes: ${response.data.collections_cleaned.recettes}`);
+                          // Rafraîchir toutes les données
+                          fetchAll();
+                          setShowBurgerMenu(false);
+                        } catch (error) {
+                          console.error('Erreur nettoyage doublons:', error);
+                          alert('❌ Erreur lors du nettoyage des doublons');
+                        } finally {
+                          setLoading(false);
+                        }
+                      }
+                    }}
+                    style={{width: '100%', marginBottom: '8px'}}
+                  >
+                    🧹 Supprimer Doublons
                   </button>
                   
                   <button 
