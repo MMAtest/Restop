@@ -945,7 +945,7 @@ function App() {
   };
 
   const canAccessOrders = () => {
-    return currentUser?.role === 'super_admin' || currentUser?.role === 'chef_cuisine' || currentUser?.role === 'employe_cuisine';
+    return currentUser?.role === 'super_admin' || currentUser?.role === 'patron' || currentUser?.role === 'chef_cuisine' || currentUser?.role === 'employe_cuisine';
   };
 
   const isBarItem = (item) => {
