@@ -57,6 +57,12 @@ REAL_PRODUITS = [
     {"nom": "Basilic frais", "categorie": "Épices", "unite": "botte", "reference_price": 2.50},
     {"nom": "Persil", "categorie": "Épices", "unite": "botte", "reference_price": 1.80},
     {"nom": "Ail", "categorie": "Épices", "unite": "kg", "reference_price": 6.00},
+    {"nom": "Thym", "categorie": "Épices", "unite": "botte", "reference_price": 2.00},
+    {"nom": "Romarin", "categorie": "Épices", "unite": "botte", "reference_price": 2.00},
+    
+    # Huiles et condiments
+    {"nom": "Huile d'olive", "categorie": "Épicerie", "unite": "L", "reference_price": 12.00},
+    {"nom": "Vinaigre balsamique", "categorie": "Épicerie", "unite": "L", "reference_price": 8.50},
 ]
 
 # Préparations réelles
