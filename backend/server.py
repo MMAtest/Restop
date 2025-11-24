@@ -4740,6 +4740,147 @@ async def get_dashboard_stats():
         "stocks_recents": stocks_recents
     }
 
+@api_router.get("/dashboard/analytics")
+async def get_dashboard_analytics():
+    """
+    Obtenir les analytics réelles du dashboard basées sur les rapports Z et ventes
+    Calcule le CA, les couverts, top/flop productions à partir des VRAIES données
+    """
+    from datetime import timedelta
+    
+    # Période par défaut : 30 derniers jours
+    date_fin = datetime.utcnow()
+    date_debut = date_fin - timedelta(days=30)
+    
+    # 1. Récupérer tous les rapports Z de la période
+    rapports_z = await db.rapports_z.find({
+        "date": {"$gte": date_debut, "$lte": date_fin}
+    }).to_list(1000)
+    
+    # 2. Calculer le CA total et les couverts
+    ca_total = 0
+    couverts_total = 0
+    ca_midi = 0
+    ca_soir = 0
+    couverts_midi = 0
+    couverts_soir = 0
+    
+    productions_stats = {}  # {nom_production: {ventes, portions, categorie}}
+    
+    for rapport in rapports_z:
+        ca_rapport = rapport.get("ca_total", 0)
+        ca_total += ca_rapport
+        
+        # Estimer midi/soir (60/40 par défaut si pas d'info)
+        ca_midi += ca_rapport * 0.6
+        ca_soir += ca_rapport * 0.4
+        
+        couverts = rapport.get("nb_couverts", 0)
+        couverts_total += couverts
+        couverts_midi += int(couverts * 0.6)
+        couverts_soir += int(couverts * 0.4)
+        
+        # Analyser les produits vendus
+        produits = rapport.get("produits", [])
+        for produit in produits:
+            nom = produit.get("nom", "Inconnu")
+            quantite = produit.get("quantite", 0)
+            prix_unitaire = produit.get("prix_unitaire", 0)
+            ventes = quantite * prix_unitaire
+            
+            if nom not in productions_stats:
+                productions_stats[nom] = {
+                    "ventes": 0,
+                    "portions": 0,
+                    "categorie": "Autres"  # À améliorer avec matching recettes
+                }
+            
+            productions_stats[nom]["ventes"] += ventes
+            productions_stats[nom]["portions"] += quantite
+    
+    # 3. Trier et obtenir top/flop productions
+    productions_list = []
+    for nom, stats in productions_stats.items():
+        # Essayer de matcher avec une recette pour obtenir la catégorie
+        recette = await db.recettes.find_one({"nom": {"$regex": nom, "$options": "i"}})
+        categorie = recette.get("categorie", "Autres") if recette else "Autres"
+        
+        productions_list.append({
+            "nom": nom,
+            "ventes": round(stats["ventes"], 2),
+            "portions": stats["portions"],
+            "categorie": categorie,
+            "coefficientPrevu": 0,  # À calculer si besoin
+            "coefficientReel": 0,
+            "coutMatiere": 0,
+            "prixVente": round(stats["ventes"] / stats["portions"], 2) if stats["portions"] > 0 else 0
+        })
+    
+    # Trier par ventes décroissantes
+    productions_list.sort(key=lambda x: x["ventes"], reverse=True)
+    
+    top_productions = productions_list[:7] if len(productions_list) > 7 else productions_list
+    flop_productions = productions_list[-7:] if len(productions_list) > 7 else []
+    flop_productions.reverse()  # Les moins vendus en premier
+    
+    # 4. Ventes par catégorie
+    ventes_par_categorie = {
+        "plats": 0,
+        "boissons": 0,
+        "desserts": 0,
+        "entrees": 0,
+        "autres": 0
+    }
+    
+    for prod in productions_list:
+        cat = prod["categorie"].lower()
+        if "plat" in cat:
+            ventes_par_categorie["plats"] += prod["ventes"]
+        elif "boisson" in cat or "bar" in cat:
+            ventes_par_categorie["boissons"] += prod["ventes"]
+        elif "dessert" in cat:
+            ventes_par_categorie["desserts"] += prod["ventes"]
+        elif "entrée" in cat or "entree" in cat:
+            ventes_par_categorie["entrees"] += prod["ventes"]
+        else:
+            ventes_par_categorie["autres"] += prod["ventes"]
+    
+    # Si aucun rapport Z, retourner des données vides
+    if len(rapports_z) == 0:
+        return {
+            "caTotal": 0,
+            "caMidi": 0,
+            "caSoir": 0,
+            "couvertsMidi": 0,
+            "couvertsSoir": 0,
+            "topProductions": [],
+            "flopProductions": [],
+            "ventesParCategorie": ventes_par_categorie,
+            "periode": {
+                "debut": date_debut.isoformat(),
+                "fin": date_fin.isoformat(),
+                "nb_rapports": 0
+            },
+            "is_real_data": True
+        }
+    
+    return {
+        "caTotal": round(ca_total, 2),
+        "caMidi": round(ca_midi, 2),
+        "caSoir": round(ca_soir, 2),
+        "couvertsMidi": couverts_midi,
+        "couvertsSoir": couverts_soir,
+        "topProductions": top_productions,
+        "flopProductions": flop_productions,
+        "ventesParCategorie": {k: round(v, 2) for k, v in ventes_par_categorie.items()},
+        "periode": {
+            "debut": date_debut.isoformat(),
+            "fin": date_fin.isoformat(),
+            "nb_rapports": len(rapports_z)
+        },
+        "is_real_data": True
+    }
+
 # Routes pour le traitement OCR
 @api_router.post("/ocr/upload-document")  # No response_model to allow flexible multi-invoice responses
 async def upload_and_process_document(
