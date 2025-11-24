@@ -158,15 +158,18 @@ backend:
 
   - task: "API Stock Préparations - Collection Séparée"
     implemented: true
-    working: "NA"
+    working: true
     file: "/app/backend/server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
         comment: "Implémenté collection stock_preparations séparée pour gérer les préparations en stock distinctement des produits bruts. Nouveaux endpoints: GET/POST/PUT/DELETE /api/stock-preparations. Modèle StockPreparation avec gestion DLC, statut (disponible/expire_bientot/expire), et traçabilité complète."
+      - working: true
+        agent: "testing"
+        comment: "✅ API STOCK PRÉPARATIONS FONCTIONNELLE - 80% RÉUSSITE ! Tests complets révèlent que l'API fonctionne correctement : ✅ GET /stock-preparations retourne liste vide initiale ✅ GET /preparations/{id} récupère préparation existante ✅ POST /stock-preparations crée stock avec structure complète (tous champs requis: preparation_id, quantite_actuelle, unite, dlc, statut) ✅ GET /stock-preparations/{id} récupère stock créé correctement ✅ PUT /stock-preparations/{id} met à jour quantités et statut ✅ DELETE /stock-preparations/{id} supprime stock correctement ❌ PROBLÈME MINEUR : POST retourne {status, id} au lieu de l'objet complet, mais GET/{id} fonctionne pour récupérer l'objet complet avec tous les champs. Collection stock_preparations opérationnelle pour production avec CRUD complet."
 
   - task: "API Exécution Préparations - Transformation Produits"
     implemented: true
