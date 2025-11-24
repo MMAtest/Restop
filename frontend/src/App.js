@@ -7044,7 +7044,55 @@ function App() {
                     )}
                   </div>
                 </div>
+                )}
 
+                {/* Vue par catégorie ou liste des recettes */}
+                {showRecettesCategoriesView ? (
+                  <div style={{display: 'grid', gap: '16px'}}>
+                    {(() => {
+                      // Grouper les recettes par catégorie
+                      const recettesByCategorie = (filteredRecettes.length > 0 ? filteredRecettes : recettes).reduce((acc, recette) => {
+                        const categorie = recette.categorie || 'Autres';
+                        if (!acc[categorie]) acc[categorie] = [];
+                        acc[categorie].push(recette);
+                        return acc;
+                      }, {});
+                      
+                      const getIcon = (cat) => {
+                        switch(cat) {
+                          case 'Entrée': return '🥗';
+                          case 'Plat': return '🍽️';
+                          case 'Dessert': return '🍰';
+                          case 'Bar': return '🍹';
+                          default: return '📝';
+                        }
+                      };
+                      
+                      return Object.entries(recettesByCategorie).map(([categorie, recs]) => (
+                        <div key={categorie} style={{border: '1px solid var(--color-border)', borderRadius: '8px', overflow: 'hidden'}}>
+                          <div style={{padding: '16px', background: '#4CAF50', color: 'white', fontWeight: 'bold'}}>
+                            <div style={{display: 'flex', alignItems: 'center', gap: '12px'}}>
+                              <span style={{fontSize: '20px'}}>{getIcon(categorie)}</span>
+                              <span>{categorie} ({recs.length})</span>
+                            </div>
+                          </div>
+                          <div style={{padding: '16px', display: 'grid', gap: '12px'}}>
+                            {recs.map((recette) => (
+                              <div key={recette.id} style={{padding: '12px', background: 'var(--color-background-secondary)', borderRadius: '8px', border: '1px solid var(--color-border)'}}>
+                                <div style={{fontSize: '16px', fontWeight: 'bold', marginBottom: '8px'}}>{recette.nom}</div>
+                                <div style={{fontSize: '13px', color: 'var(--color-text-secondary)'}}>
+                                  {recette.portions} portions • {recette.ingredients?.length || 0} ingrédient(s)
+                                  {recette.prix_vente && <span style={{marginLeft: '8px', color: '#10b981', fontWeight: 'bold'}}>{recette.prix_vente.toFixed(2)}€</span>}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      ));
+                    })()}
+                  </div>
+                ) : (
+                  <>
                 {/* Liste des recettes filtrées */}
                 {(filteredRecettes.length > 0 ? filteredRecettes : recettes).map((recette, index) => {
                   // Fonction pour obtenir l'icône selon la catégorie de production
