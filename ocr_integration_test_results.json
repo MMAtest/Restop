@@ -1,0 +1,51 @@
+{
+  "total_tests": 6,
+  "passed_tests": 0,
+  "failed_tests": 6,
+  "success_rate": 0.0,
+  "duration": 91.18677735328674,
+  "results": [
+    {
+      "test": "GET /api/ocr/documents",
+      "success": false,
+      "message": "Erreur 500: Internal Server Error",
+      "details": null,
+      "timestamp": "2025-11-24T12:19:13.985726"
+    },
+    {
+      "test": "Processing Ticket Z",
+      "success": false,
+      "message": "Aucun document z_report disponible pour les tests",
+      "details": null,
+      "timestamp": "2025-11-24T12:19:13.986027"
+    },
+    {
+      "test": "Processing Facture Fournisseur",
+      "success": false,
+      "message": "Aucun document facture_fournisseur disponible pour les tests",
+      "details": null,
+      "timestamp": "2025-11-24T12:19:13.986041"
+    },
+    {
+      "test": "Processing Mercuriale",
+      "success": false,
+      "message": "Aucun document mercuriale disponible pour les tests",
+      "details": null,
+      "timestamp": "2025-11-24T12:19:13.986049"
+    },
+    {
+      "test": "Error case - Invalid document ID",
+      "success": false,
+      "message": "Code d'erreur inattendu: 500",
+      "details": null,
+      "timestamp": "2025-11-24T12:19:44.526548"
+    },
+    {
+      "test": "Document status verification",
+      "success": false,
+      "message": "Erreur lors de la vérification: 500",
+      "details": null,
+      "timestamp": "2025-11-24T12:20:15.069578"
+    }
+  ]
+}
