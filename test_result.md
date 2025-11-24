@@ -107,15 +107,18 @@ user_problem_statement: "Application de gestion des stocks pour restauration ave
 backend:
   - task: "API OCR Processing - Tickets Z vers Stocks et Rapports"
     implemented: true
-    working: "NA"
+    working: false
     file: "/app/backend/server.py"
-    stuck_count: 0
+    stuck_count: 1
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
         comment: "Implémenté endpoint POST /api/ocr/process-z-report/{document_id} pour intégration automatique: matching productions avec recettes, déduction stocks automatique, création rapports Z réels, génération alertes stocks insuffisants. Fonctions de matching intelligent ajoutées."
+      - working: false
+        agent: "testing"
+        comment: "❌ PROBLÈME CRITIQUE IDENTIFIÉ - ROUTES DUPLIQUÉES ! Test complet révèle un problème majeur dans server.py : 2 endpoints identiques POST /api/ocr/process-z-report/{document_id} définis aux lignes 4942 et 6218. FastAPI utilise le premier (ligne 4942 - ancienne version) qui cherche 'plats_vendus' dans les données parsées, mais la structure actuelle utilise 'items_by_category'. Résultat : erreur 400 'Aucun plat trouvé dans le rapport Z' même avec des données valides. NÉCESSITE SUPPRESSION de l'ancien endpoint ligne 4942 pour utiliser la version moderne ligne 6218. Tests montrent que les données OCR sont correctement extraites et parsées (Plats détectés: Linguine aux palourdes, Bœuf Wellington, Rigatoni à la truffe) mais l'endpoint obsolète empêche le traitement."
 
   - task: "API OCR Processing - Factures Fournisseurs vers Produits et Stocks"
     implemented: true
