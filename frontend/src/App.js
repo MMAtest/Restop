@@ -6841,6 +6841,13 @@ function App() {
                   >
                     🤖 {loading ? 'Génération...' : 'Auto-générer'}
                   </button>
+                  <button 
+                    className={`button ${showPreparationsCategoriesView ? 'secondary' : ''}`}
+                    onClick={() => setShowPreparationsCategoriesView(!showPreparationsCategoriesView)}
+                    style={{backgroundColor: showPreparationsCategoriesView ? '#6366f1' : '', color: showPreparationsCategoriesView ? 'white' : ''}}
+                  >
+                    {showPreparationsCategoriesView ? '📋 Vue Liste' : '📁 Vue Catégories'}
+                  </button>
                   <div style={{fontSize: '14px', alignSelf: 'center', color: 'var(--color-text-secondary)'}}>
                     💡 L'auto-génération crée 2-3 préparations par produit
                   </div>
