@@ -4311,20 +4311,22 @@ async def create_mouvement(mouvement: MouvementCreate):
     mouvement_obj = MouvementStock(**mouvement_dict)
     await db.mouvements_stock.insert_one(mouvement_obj.dict())
     
-    # Mettre à jour le stock
+    # Mettre à jour le stock (arrondi à 0.01)
     stock = await db.stocks.find_one({"produit_id": mouvement.produit_id})
     if stock:
-        nouvelle_quantite = stock["quantite_actuelle"]
+        nouvelle_quantite = round_stock_quantity(stock["quantite_actuelle"])
+        quantite_mouvement = round_stock_quantity(mouvement.quantite)
+        
         if mouvement.type == "entree":
-            nouvelle_quantite += mouvement.quantite
+            nouvelle_quantite = round_stock_quantity(nouvelle_quantite + quantite_mouvement)
         elif mouvement.type == "sortie":
-            nouvelle_quantite -= mouvement.quantite
+            nouvelle_quantite = round_stock_quantity(nouvelle_quantite - quantite_mouvement)
         elif mouvement.type == "ajustement":
-            nouvelle_quantite = mouvement.quantite
+            nouvelle_quantite = quantite_mouvement
         
         await db.stocks.update_one(
             {"produit_id": mouvement.produit_id},
-            {"$set": {"quantite_actuelle": max(0, nouvelle_quantite), "derniere_maj": datetime.utcnow()}}
+            {"$set": {"quantite_actuelle": round_stock_quantity(max(0, nouvelle_quantite)), "derniere_maj": datetime.utcnow()}}
         )
     
     return mouvement_obj
