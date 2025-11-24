@@ -6469,7 +6469,7 @@ function App() {
                         <div 
                           style={{
                             padding: '16px',
-                            background: categoriesExpanded[categoryName] ? 'var(--color-accent-green)' : 'var(--color-background-secondary)',
+                            background: categoriesExpanded[categoryName] ? '#4CAF50' : 'var(--color-background-secondary)',
                             color: categoriesExpanded[categoryName] ? 'white' : 'var(--color-text-primary)',
                             cursor: 'pointer',
                             display: 'flex',
