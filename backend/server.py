@@ -6490,7 +6490,7 @@ async def process_facture_to_real_data(document_id: str):
                     fournisseur_id=supplier_id,
                     commentaire=f"Livraison {supplier_name} - {facture_date}"
                 )
-                await db.mouvements.insert_one(mouvement.dict())
+                await db.mouvements_stock.insert_one(mouvement.dict())
                 stock_entries_created += 1
             
             # Ajouter au résultat
