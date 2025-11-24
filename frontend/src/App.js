@@ -7198,7 +7198,7 @@ function App() {
           </button>
         )}
         
-        {/* Orders - Accès Chef, Patron et Employé Cuisine SEULEMENT (pas barman) */}
+        {/* Orders - Accès Patron, Chef et Employé Cuisine SEULEMENT (pas barman/caissier) */}
         {canAccessOrders() && (
           <button 
             className={`bottom-nav-item ${activeTab === "orders" ? "active" : ""}`}
