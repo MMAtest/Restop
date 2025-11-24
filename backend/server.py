@@ -6457,65 +6457,114 @@ async def process_z_report_to_real_data(document_id: str):
                 }
                 productions_matched.append(production_info)
                 
-                # Calculer les déductions pour chaque ingrédient
+                # Calculer les déductions pour chaque ingrédient (PRODUITS et PRÉPARATIONS)
                 for ingredient in ingredients:
-                    product_id = ingredient.get("produit_id")
+                    # Support ancien format (produit_id) et nouveau format (ingredient_id + ingredient_type)
+                    ingredient_id = ingredient.get("ingredient_id") or ingredient.get("produit_id")
+                    ingredient_type = ingredient.get("ingredient_type", "produit")  # Par défaut "produit" pour compatibilité
+                    ingredient_nom = ingredient.get("ingredient_nom") or ingredient.get("produit_nom", "Ingrédient inconnu")
                     quantity_per_portion = ingredient.get("quantite", 0)
                     unit = ingredient.get("unite", "")
                     
-                    if not product_id:
+                    if not ingredient_id:
                         continue
                     
                     # Quantité totale à déduire
                     total_deduction = quantity_per_portion * quantity_sold
                     
-                    # Vérifier le stock actuel
-                    stock = await db.stocks.find_one({"produit_id": product_id})
-                    if stock:
-                        current_stock = stock.get("quantite_actuelle", 0)
-                        new_stock = current_stock - total_deduction
-                        
-                        if new_stock < 0:
-                            warnings.append(f"⚠️ Stock insuffisant pour {ingredient.get('produit_nom', product_id)}: {current_stock} {unit} disponible, {total_deduction} {unit} requis")
-                            new_stock = 0  # Ne pas avoir de stock négatif
-                        
-                        # Créer la déduction
-                        deduction = {
-                            "product_id": product_id,
-                            "product_name": ingredient.get("produit_nom", "Produit inconnu"),
-                            "recipe_name": recipe_name,
-                            "quantity_per_portion": quantity_per_portion,
-                            "portions_sold": quantity_sold,
-                            "total_deduction": total_deduction,
-                            "unit": unit,
-                            "stock_before": current_stock,
-                            "stock_after": new_stock
-                        }
-                        stock_deductions.append(deduction)
-                        
-                        # 5. Appliquer la déduction de stock
-                        await db.stocks.update_one(
-                            {"produit_id": product_id},
-                            {
-                                "$set": {
-                                    "quantite_actuelle": new_stock,
-                                    "derniere_maj": datetime.utcnow()
-                                }
+                    # 🔀 GESTION SELON LE TYPE D'INGRÉDIENT
+                    
+                    if ingredient_type == "produit":
+                        # ✅ PRODUIT BRUT - Déduire du stock produits
+                        stock = await db.stocks.find_one({"produit_id": ingredient_id})
+                        if stock:
+                            current_stock = stock.get("quantite_actuelle", 0)
+                            new_stock = current_stock - total_deduction
+                            
+                            if new_stock < 0:
+                                warnings.append(f"⚠️ Stock produit insuffisant pour {ingredient_nom}: {current_stock} {unit} disponible, {total_deduction} {unit} requis")
+                                new_stock = 0
+                            
+                            # Créer la déduction
+                            deduction = {
+                                "ingredient_id": ingredient_id,
+                                "ingredient_type": "produit",
+                                "ingredient_name": ingredient_nom,
+                                "recipe_name": recipe_name,
+                                "quantity_per_portion": quantity_per_portion,
+                                "portions_sold": quantity_sold,
+                                "total_deduction": total_deduction,
+                                "unit": unit,
+                                "stock_before": current_stock,
+                                "stock_after": new_stock
                             }
-                        )
-                        
-                        # Créer un mouvement de stock
-                        mouvement = MouvementStock(
-                            produit_id=product_id,
-                            produit_nom=ingredient.get("produit_nom", "Produit inconnu"),
-                            type="sortie",
-                            quantite=total_deduction,
-                            reference=f"Z-Report {date_rapport} - {recipe_name}",
-                            commentaire=f"Vente: {quantity_sold} x {recipe_name}"
-                        )
-                        await db.mouvements_stock.insert_one(mouvement.dict())
-                    else:
-                        warnings.append(f"⚠️ Produit {product_id} non trouvé dans les stocks")
+                            stock_deductions.append(deduction)
+                            
+                            # Appliquer la déduction
+                            await db.stocks.update_one(
+                                {"produit_id": ingredient_id},
+                                {
+                                    "$set": {
+                                        "quantite_actuelle": new_stock,
+                                        "derniere_maj": datetime.utcnow()
+                                    }
+                                }
+                            )
+                            
+                            # Créer mouvement de stock
+                            mouvement = MouvementStock(
+                                produit_id=ingredient_id,
+                                produit_nom=ingredient_nom,
+                                type="sortie",
+                                quantite=total_deduction,
+                                reference=f"Z-Report {date_rapport} - {recipe_name}",
+                                commentaire=f"Vente: {quantity_sold} x {recipe_name}"
+                            )
+                            await db.mouvements_stock.insert_one(mouvement.dict())
+                        else:
+                            warnings.append(f"⚠️ Produit {ingredient_id} non trouvé dans les stocks")
+                    
+                    elif ingredient_type == "preparation":
+                        # ✅ PRÉPARATION - Déduire du stock préparations
+                        stock_prep = await db.stock_preparations.find_one({"preparation_id": ingredient_id})
+                        if stock_prep:
+                            current_stock = stock_prep.get("quantite_actuelle", 0)
+                            new_stock = current_stock - total_deduction
+                            
+                            if new_stock < 0:
+                                warnings.append(f"⚠️ Stock préparation insuffisant pour {ingredient_nom}: {current_stock} {unit} disponible, {total_deduction} {unit} requis")
+                                new_stock = 0
+                            
+                            # Créer la déduction
+                            deduction = {
+                                "ingredient_id": ingredient_id,
+                                "ingredient_type": "preparation",
+                                "ingredient_name": ingredient_nom,
+                                "recipe_name": recipe_name,
+                                "quantity_per_portion": quantity_per_portion,
+                                "portions_sold": quantity_sold,
+                                "total_deduction": total_deduction,
+                                "unit": unit,
+                                "stock_before": current_stock,
+                                "stock_after": new_stock
+                            }
+                            stock_deductions.append(deduction)
+                            
+                            # Appliquer la déduction
+                            await db.stock_preparations.update_one(
+                                {"preparation_id": ingredient_id},
+                                {
+                                    "$set": {
+                                        "quantite_actuelle": new_stock,
+                                        "derniere_maj": datetime.utcnow()
+                                    }
+                                }
+                            )
+                            
+                            # Note: Pas de mouvement_stock pour les préparations (collection différente)
+                            print(f"   ✅ Préparation déduite: {ingredient_nom} -{total_deduction} {unit}")
+                        else:
+                            warnings.append(f"⚠️ Préparation {ingredient_id} non trouvée dans les stocks de préparations")
             else:
                 warnings.append(f"⚠️ Production '{prod_name}' non matchée avec les recettes (confiance: {recipe_match['confidence'] if recipe_match else 0})")
         
