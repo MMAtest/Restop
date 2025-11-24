@@ -7004,11 +7004,12 @@ function App() {
                   </button>
                 </div>
 
-                {/* Filtre par catégorie */}
-                <div className="filter-section" style={{marginBottom: '20px'}}>
-                  <div className="filter-group">
-                    <label className="filter-label">🏷️ Filtrer par catégorie :</label>
-                    <select 
+                {/* Filtre par catégorie - uniquement en vue liste */}
+                {!showRecettesCategoriesView && (
+                  <div className="filter-section" style={{marginBottom: '20px'}}>
+                    <div className="filter-group">
+                      <label className="filter-label">🏷️ Filtrer par catégorie :</label>
+                      <select 
                       className="filter-select"
                       value={selectedCategoryFilter}
                       onChange={(e) => filterRecettesByCategory(e.target.value)}
