@@ -670,6 +670,95 @@ class MercurialeProcessingResult(BaseModel):
     warnings: List[str] = []
     errors: List[str] = []
 
+# ===== Product Matching Helper Functions =====
+def calculate_similarity(str1: str, str2: str) -> float:
+    """Calculate similarity between two strings (simple Levenshtein-like)"""
+    str1 = str1.lower().strip()
+    str2 = str2.lower().strip()
+    
+    if str1 == str2:
+        return 1.0
+    
+    # Check if one contains the other
+    if str1 in str2 or str2 in str1:
+        return 0.8
+    
+    # Simple character-based similarity
+    set1 = set(str1.split())
+    set2 = set(str2.split())
+    
+    if not set1 or not set2:
+        return 0.0
+    
+    intersection = len(set1.intersection(set2))
+    union = len(set1.union(set2))
+    
+    return intersection / union if union > 0 else 0.0
+
+async def match_product_by_name(product_name: str, min_confidence: float = 0.6) -> Optional[dict]:
+    """Match a product name from OCR with existing products in database"""
+    best_match = None
+    best_score = 0.0
+    
+    # Get all products
+    products = await db.produits.find().to_list(length=None)
+    
+    for product in products:
+        score = calculate_similarity(product_name, product["nom"])
+        if score > best_score and score >= min_confidence:
+            best_score = score
+            best_match = {
+                "product_id": product["id"],
+                "product_name": product["nom"],
+                "confidence": score,
+                "category": product.get("categorie"),
+                "unit": product.get("unite", "kg")
+            }
+    
+    return best_match
+
+async def match_recipe_by_name(recipe_name: str, min_confidence: float = 0.6) -> Optional[dict]:
+    """Match a recipe/production name from OCR with existing recipes"""
+    best_match = None
+    best_score = 0.0
+    
+    # Get all recipes
+    recipes = await db.recettes.find().to_list(length=None)
+    
+    for recipe in recipes:
+        score = calculate_similarity(recipe_name, recipe["nom"])
+        if score > best_score and score >= min_confidence:
+            best_score = score
+            best_match = {
+                "recipe_id": recipe["id"],
+                "recipe_name": recipe["nom"],
+                "confidence": score,
+                "ingredients": recipe.get("ingredients", []),
+                "category": recipe.get("categorie")
+            }
+    
+    return best_match
+
+async def match_supplier_by_name(supplier_name: str, min_confidence: float = 0.6) -> Optional[dict]:
+    """Match a supplier name from OCR with existing suppliers"""
+    best_match = None
+    best_score = 0.0
+    
+    # Get all suppliers
+    suppliers = await db.fournisseurs.find().to_list(length=None)
+    
+    for supplier in suppliers:
+        score = calculate_similarity(supplier_name, supplier["nom"])
+        if score > best_score and score >= min_confidence:
+            best_score = score
+            best_match = {
+                "supplier_id": supplier["id"],
+                "supplier_name": supplier["nom"],
+                "confidence": score
+            }
+    
+    return best_match
+
 # ===== Helpers for FR numeric parsing and Z analysis =====
 number_separators = re.compile(r"[\s\u00A0\u202F]")  # spaces incl. NBSP, NNBSP
 
