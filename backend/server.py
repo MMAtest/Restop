@@ -5644,6 +5644,15 @@ async def init_real_restaurant_data():
         from real_restaurant_data import REAL_FOURNISSEURS, REAL_PRODUITS, REAL_PREPARATIONS, REAL_RECETTES
         import uuid
         
+        # ✅ NETTOYER D'ABORD les collections pour éviter les doublons
+        print("🧹 Nettoyage des collections...")
+        await db.fournisseurs.delete_many({})
+        await db.produits.delete_many({})
+        await db.stocks.delete_many({})
+        await db.preparations.delete_many({})
+        await db.recettes.delete_many({})
+        print("✅ Collections nettoyées")
+        
         # Compteurs
         fournisseurs_created = 0
         produits_created = 0
