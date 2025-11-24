@@ -2351,14 +2351,16 @@ async def consume_batch(batch_id: str, quantity_consumed: float):
                 {"$set": {"quantity": remaining_quantity}}
             )
         
-        # Update total stock
-        await db.stocks.update_one(
-            {"produit_id": batch["product_id"]},
-            {
-                "$inc": {"quantite_actuelle": -quantity_consumed},
-                "$set": {"derniere_maj": datetime.utcnow()}
-            }
-        )
+        # Update total stock (rounded to 0.01)
+        stock = await db.stocks.find_one({"produit_id": batch["product_id"]})
+        if stock:
+            current = round_stock_quantity(stock.get("quantite_actuelle", 0))
+            consumed = round_stock_quantity(quantity_consumed)
+            new_quantity = round_stock_quantity(max(0, current - consumed))
+            await db.stocks.update_one(
+                {"produit_id": batch["product_id"]},
+                {"$set": {"quantite_actuelle": new_quantity, "derniere_maj": datetime.utcnow()}}
+            )
         
         # Create stock movement
         product = await db.produits.find_one({"id": batch["product_id"]})
