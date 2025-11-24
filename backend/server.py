@@ -6213,6 +6213,624 @@ async def update_ingredients_from_carte():
             "produits_archives": 0,
             "nouveaux_produits": 0
         }
+# ===== OCR PROCESSING ENDPOINTS - REAL DATA INTEGRATION =====
+
+@api_router.post("/ocr/process-z-report/{document_id}", response_model=ZReportProcessingResult)
+async def process_z_report_to_real_data(document_id: str):
+    """
+    Process a Z report document and integrate it into real system data:
+    - Match productions with existing recipes
+    - Deduct stock based on recipes sold
+    - Create real Z report in rapports_z collection
+    - Generate alerts for insufficient stock
+    """
+    try:
+        # 1. Récupérer le document OCR
+        document = await db.documents_ocr.find_one({"id": document_id})
+        if not document:
+            raise HTTPException(status_code=404, detail="Document OCR non trouvé")
+        
+        if document["type_document"] != "z_report":
+            raise HTTPException(status_code=400, detail="Ce document n'est pas un ticket Z")
+        
+        # 2. Extraire les données parsées
+        donnees_parsees = document.get("donnees_parsees", {})
+        if not donnees_parsees:
+            raise HTTPException(status_code=400, detail="Données parsées non disponibles")
+        
+        # Utiliser soit l'ancienne structure soit la nouvelle
+        z_analysis = donnees_parsees.get("z_analysis", donnees_parsees)
+        
+        date_rapport = z_analysis.get("date_cloture", datetime.utcnow().strftime("%d/%m/%Y"))
+        ca_total = z_analysis.get("total_ttc", 0.0) or z_analysis.get("analysis", {}).get("Bar", {}).get("ca", 0.0)
+        nb_couverts = z_analysis.get("nombre_couverts")
+        
+        productions_matched = []
+        stock_deductions = []
+        warnings = []
+        errors = []
+        
+        # 3. Récupérer les productions détectées
+        productions_detectees = z_analysis.get("productions_detectees", [])
+        
+        if not productions_detectees:
+            # Essayer l'ancienne structure
+            items_by_category = donnees_parsees.get("items_by_category", {})
+            for category, items in items_by_category.items():
+                for item in items:
+                    productions_detectees.append({
+                        "nom": item.get("name", ""),
+                        "quantite": item.get("quantity_sold", 0),
+                        "family": category
+                    })
+        
+        print(f"📊 Processing {len(productions_detectees)} productions from Z report")
+        
+        # 4. Matcher chaque production avec les recettes existantes
+        for prod in productions_detectees:
+            prod_name = prod.get("nom", "")
+            quantity_sold = prod.get("quantite", 0)
+            
+            if not prod_name or quantity_sold <= 0:
+                continue
+            
+            # Matcher avec les recettes
+            recipe_match = await match_recipe_by_name(prod_name)
+            
+            if recipe_match and recipe_match["confidence"] >= 0.5:
+                # Recette trouvée - calculer les déductions de stock
+                recipe_id = recipe_match["recipe_id"]
+                recipe_name = recipe_match["recipe_name"]
+                ingredients = recipe_match["ingredients"]
+                
+                production_info = {
+                    "ocr_name": prod_name,
+                    "matched_recipe_id": recipe_id,
+                    "matched_recipe_name": recipe_name,
+                    "confidence": recipe_match["confidence"],
+                    "quantity_sold": quantity_sold
+                }
+                productions_matched.append(production_info)
+                
+                # Calculer les déductions pour chaque ingrédient
+                for ingredient in ingredients:
+                    product_id = ingredient.get("produit_id")
+                    quantity_per_portion = ingredient.get("quantite", 0)
+                    unit = ingredient.get("unite", "")
+                    
+                    if not product_id:
+                        continue
+                    
+                    # Quantité totale à déduire
+                    total_deduction = quantity_per_portion * quantity_sold
+                    
+                    # Vérifier le stock actuel
+                    stock = await db.stocks.find_one({"produit_id": product_id})
+                    if stock:
+                        current_stock = stock.get("quantite_actuelle", 0)
+                        new_stock = current_stock - total_deduction
+                        
+                        if new_stock < 0:
+                            warnings.append(f"⚠️ Stock insuffisant pour {ingredient.get('produit_nom', product_id)}: {current_stock} {unit} disponible, {total_deduction} {unit} requis")
+                            new_stock = 0  # Ne pas avoir de stock négatif
+                        
+                        # Créer la déduction
+                        deduction = {
+                            "product_id": product_id,
+                            "product_name": ingredient.get("produit_nom", "Produit inconnu"),
+                            "recipe_name": recipe_name,
+                            "quantity_per_portion": quantity_per_portion,
+                            "portions_sold": quantity_sold,
+                            "total_deduction": total_deduction,
+                            "unit": unit,
+                            "stock_before": current_stock,
+                            "stock_after": new_stock
+                        }
+                        stock_deductions.append(deduction)
+                        
+                        # 5. Appliquer la déduction de stock
+                        await db.stocks.update_one(
+                            {"produit_id": product_id},
+                            {
+                                "$set": {
+                                    "quantite_actuelle": new_stock,
+                                    "derniere_maj": datetime.utcnow()
+                                }
+                            }
+                        )
+                        
+                        # Créer un mouvement de stock
+                        mouvement = MouvementStock(
+                            produit_id=product_id,
+                            produit_nom=ingredient.get("produit_nom", "Produit inconnu"),
+                            type="sortie",
+                            quantite=total_deduction,
+                            reference=f"Z-Report {date_rapport} - {recipe_name}",
+                            commentaire=f"Vente: {quantity_sold} x {recipe_name}"
+                        )
+                        await db.mouvements.insert_one(mouvement.dict())
+                    else:
+                        warnings.append(f"⚠️ Produit {product_id} non trouvé dans les stocks")
+            else:
+                warnings.append(f"⚠️ Production '{prod_name}' non matchée avec les recettes (confiance: {recipe_match['confidence'] if recipe_match else 0})")
+        
+        # 6. Créer le rapport Z réel dans la collection rapports_z
+        rapport_z_data = {
+            "date": datetime.strptime(date_rapport, "%d/%m/%Y") if "/" in date_rapport else datetime.utcnow(),
+            "ca_total": ca_total,
+            "produits": [
+                {
+                    "nom": p["matched_recipe_name"],
+                    "quantite": p["quantity_sold"],
+                    "prix_unitaire": 0.0  # À améliorer avec les prix de vente réels
+                }
+                for p in productions_matched
+            ]
+        }
+        
+        rapport_z = RapportZ(**rapport_z_data)
+        result = await db.rapports_z.insert_one(rapport_z.dict())
+        
+        # Marquer le document OCR comme traité
+        await db.documents_ocr.update_one(
+            {"id": document_id},
+            {
+                "$set": {
+                    "statut": "integre",
+                    "date_traitement": datetime.utcnow(),
+                    "integration_result": {
+                        "productions_matched": len(productions_matched),
+                        "stock_deductions": len(stock_deductions),
+                        "rapport_z_id": rapport_z.id
+                    }
+                }
+            }
+        )
+        
+        return ZReportProcessingResult(
+            success=True,
+            document_id=document_id,
+            date=date_rapport,
+            ca_total=ca_total,
+            nb_couverts=nb_couverts,
+            productions_matched=productions_matched,
+            stock_deductions=stock_deductions,
+            warnings=warnings,
+            errors=errors,
+            rapport_z_id=rapport_z.id
+        )
+        
+    except Exception as e:
+        print(f"❌ Erreur processing Z report: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=f"Erreur lors du traitement du ticket Z: {str(e)}")
+
+
+@api_router.post("/ocr/process-facture/{document_id}", response_model=FactureProcessingResult)
+async def process_facture_to_real_data(document_id: str):
+    """
+    Process a supplier invoice and integrate it into real system data:
+    - Match products with existing database or create new ones
+    - Create automatic stock entries
+    - Record real supplier prices
+    - Generate price variation alerts
+    - Create supplier order in history
+    """
+    try:
+        # 1. Récupérer le document OCR
+        document = await db.documents_ocr.find_one({"id": document_id})
+        if not document:
+            raise HTTPException(status_code=404, detail="Document OCR non trouvé")
+        
+        if document["type_document"] != "facture_fournisseur":
+            raise HTTPException(status_code=400, detail="Ce document n'est pas une facture fournisseur")
+        
+        # 2. Extraire les données parsées
+        donnees_parsees = document.get("donnees_parsees", {})
+        if not donnees_parsees:
+            raise HTTPException(status_code=400, detail="Données parsées non disponibles")
+        
+        supplier_name = donnees_parsees.get("fournisseur", "Fournisseur inconnu")
+        facture_date = donnees_parsees.get("date", datetime.utcnow().strftime("%d/%m/%Y"))
+        numero_facture = donnees_parsees.get("numero_facture", "N/A")
+        produits_facture = donnees_parsees.get("produits", [])
+        total_ttc = donnees_parsees.get("total_ttc", 0.0)
+        
+        print(f"📄 Processing facture {numero_facture} from {supplier_name} with {len(produits_facture)} products")
+        
+        # 3. Matcher ou créer le fournisseur
+        supplier_match = await match_supplier_by_name(supplier_name)
+        supplier_id = None
+        
+        if supplier_match and supplier_match["confidence"] >= 0.6:
+            supplier_id = supplier_match["supplier_id"]
+            supplier_name = supplier_match["supplier_name"]
+            print(f"✅ Fournisseur matché: {supplier_name}")
+        else:
+            # Créer un nouveau fournisseur
+            new_supplier = Fournisseur(
+                nom=supplier_name,
+                categorie="frais"
+            )
+            await db.fournisseurs.insert_one(new_supplier.dict())
+            supplier_id = new_supplier.id
+            print(f"✅ Nouveau fournisseur créé: {supplier_name}")
+        
+        products_matched = []
+        products_created = 0
+        stock_entries_created = 0
+        price_alerts = []
+        warnings = []
+        errors = []
+        
+        # 4. Traiter chaque produit de la facture
+        for prod_data in produits_facture:
+            prod_name = prod_data.get("nom", "")
+            quantity = prod_data.get("quantite", 0)
+            unit_price = prod_data.get("prix_unitaire", 0)
+            total_price = prod_data.get("prix_total", 0)
+            unit = prod_data.get("unite", "kg")
+            
+            if not prod_name or quantity <= 0:
+                continue
+            
+            # Matcher avec les produits existants
+            product_match = await match_product_by_name(prod_name)
+            
+            product_id = None
+            product_name_final = prod_name
+            needs_creation = False
+            
+            if product_match and product_match["confidence"] >= 0.6:
+                # Produit trouvé
+                product_id = product_match["product_id"]
+                product_name_final = product_match["product_name"]
+                confidence = product_match["confidence"]
+                
+                # Vérifier les variations de prix
+                produit = await db.produits.find_one({"id": product_id})
+                if produit:
+                    reference_price = produit.get("reference_price", 0)
+                    if reference_price and unit_price:
+                        price_diff_pct = ((unit_price - reference_price) / reference_price) * 100
+                        if abs(price_diff_pct) > 10:  # Variation > 10%
+                            price_alerts.append({
+                                "product_name": product_name_final,
+                                "reference_price": reference_price,
+                                "actual_price": unit_price,
+                                "difference_pct": round(price_diff_pct, 1),
+                                "alert_type": "increase" if price_diff_pct > 0 else "decrease"
+                            })
+                
+                # Mettre à jour les informations fournisseur-produit
+                supplier_product_info = await db.supplier_product_info.find_one({
+                    "supplier_id": supplier_id,
+                    "product_id": product_id
+                })
+                
+                if supplier_product_info:
+                    # Mettre à jour le prix
+                    await db.supplier_product_info.update_one(
+                        {"id": supplier_product_info["id"]},
+                        {
+                            "$set": {
+                                "price": unit_price,
+                                "last_updated": datetime.utcnow()
+                            }
+                        }
+                    )
+                else:
+                    # Créer la relation fournisseur-produit
+                    new_relation = SupplierProductInfo(
+                        supplier_id=supplier_id,
+                        product_id=product_id,
+                        price=unit_price,
+                        is_preferred=True
+                    )
+                    await db.supplier_product_info.insert_one(new_relation.dict())
+                
+            else:
+                # Produit non trouvé - créer un nouveau produit
+                new_product = Produit(
+                    nom=prod_name,
+                    categorie="Autres",
+                    unite=unit,
+                    reference_price=unit_price,
+                    main_supplier_id=supplier_id,
+                    fournisseur_id=supplier_id,  # Legacy
+                    fournisseur_nom=supplier_name  # Legacy
+                )
+                await db.produits.insert_one(new_product.dict())
+                product_id = new_product.id
+                products_created += 1
+                needs_creation = True
+                
+                # Créer le stock initial
+                new_stock = Stock(
+                    produit_id=product_id,
+                    produit_nom=prod_name,
+                    quantite_actuelle=0,
+                    quantite_min=0
+                )
+                await db.stocks.insert_one(new_stock.dict())
+                
+                # Créer la relation fournisseur-produit
+                new_relation = SupplierProductInfo(
+                    supplier_id=supplier_id,
+                    product_id=product_id,
+                    price=unit_price,
+                    is_preferred=True
+                )
+                await db.supplier_product_info.insert_one(new_relation.dict())
+                
+                warnings.append(f"✨ Nouveau produit créé: {prod_name}")
+            
+            # 5. Créer l'entrée de stock
+            stock = await db.stocks.find_one({"produit_id": product_id})
+            if stock:
+                current_stock = stock.get("quantite_actuelle", 0)
+                new_stock_level = current_stock + quantity
+                
+                await db.stocks.update_one(
+                    {"produit_id": product_id},
+                    {
+                        "$set": {
+                            "quantite_actuelle": new_stock_level,
+                            "derniere_maj": datetime.utcnow()
+                        }
+                    }
+                )
+                
+                # Créer un mouvement de stock
+                mouvement = MouvementStock(
+                    produit_id=product_id,
+                    produit_nom=product_name_final,
+                    type="entree",
+                    quantite=quantity,
+                    reference=f"Facture {numero_facture}",
+                    fournisseur_id=supplier_id,
+                    commentaire=f"Livraison {supplier_name} - {facture_date}"
+                )
+                await db.mouvements.insert_one(mouvement.dict())
+                stock_entries_created += 1
+            
+            # Ajouter au résultat
+            match_result = ProductMatch(
+                ocr_name=prod_name,
+                matched_product_id=product_id,
+                matched_product_name=product_name_final,
+                confidence_score=product_match["confidence"] if product_match else 0.0,
+                quantity=quantity,
+                unit=unit,
+                unit_price=unit_price,
+                total_price=total_price,
+                needs_creation=needs_creation
+            )
+            products_matched.append(match_result)
+        
+        # 6. Créer la commande fournisseur dans l'historique
+        order_items = [
+            OrderItem(
+                product_id=pm.matched_product_id,
+                product_name=pm.matched_product_name,
+                quantity=pm.quantity,
+                unit=pm.unit,
+                unit_price=pm.unit_price or 0.0,
+                total_price=pm.total_price or 0.0
+            )
+            for pm in products_matched
+        ]
+        
+        order_number = f"CMD-{numero_facture}"
+        order = Order(
+            order_number=order_number,
+            supplier_id=supplier_id,
+            supplier_name=supplier_name,
+            items=order_items,
+            total_amount=total_ttc or sum(item.total_price for item in order_items),
+            status="delivered",
+            actual_delivery_date=datetime.utcnow(),
+            notes=f"Importé depuis facture OCR {numero_facture}"
+        )
+        await db.orders.insert_one(order.dict())
+        
+        # Marquer le document OCR comme traité
+        await db.documents_ocr.update_one(
+            {"id": document_id},
+            {
+                "$set": {
+                    "statut": "integre",
+                    "date_traitement": datetime.utcnow(),
+                    "integration_result": {
+                        "products_matched": len(products_matched),
+                        "products_created": products_created,
+                        "stock_entries": stock_entries_created,
+                        "order_id": order.id
+                    }
+                }
+            }
+        )
+        
+        return FactureProcessingResult(
+            success=True,
+            document_id=document_id,
+            supplier_name=supplier_name,
+            supplier_id=supplier_id,
+            products_matched=products_matched,
+            products_created=products_created,
+            stock_entries_created=stock_entries_created,
+            price_alerts=price_alerts,
+            warnings=warnings,
+            errors=errors,
+            order_id=order.id
+        )
+        
+    except Exception as e:
+        print(f"❌ Erreur processing facture: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=f"Erreur lors du traitement de la facture: {str(e)}")
+
+
+@api_router.post("/ocr/process-mercuriale/{document_id}", response_model=MercurialeProcessingResult)
+async def process_mercuriale_to_real_data(document_id: str):
+    """
+    Process a supplier price list (mercuriale) and integrate it into real system data:
+    - Match products with existing database
+    - Update reference prices
+    - Compare with current prices
+    - Generate alerts for significant variations
+    - Create price change history
+    """
+    try:
+        # 1. Récupérer le document OCR
+        document = await db.documents_ocr.find_one({"id": document_id})
+        if not document:
+            raise HTTPException(status_code=404, detail="Document OCR non trouvé")
+        
+        # 2. Extraire les données parsées
+        donnees_parsees = document.get("donnees_parsees", {})
+        if not donnees_parsees:
+            raise HTTPException(status_code=400, detail="Données parsées non disponibles")
+        
+        supplier_name = donnees_parsees.get("fournisseur", "Fournisseur inconnu")
+        mercuriale_date = donnees_parsees.get("date", datetime.utcnow().strftime("%d/%m/%Y"))
+        produits_mercuriale = donnees_parsees.get("produits", [])
+        
+        print(f"📋 Processing mercuriale from {supplier_name} with {len(produits_mercuriale)} products")
+        
+        # 3. Matcher le fournisseur
+        supplier_match = await match_supplier_by_name(supplier_name)
+        supplier_id = None
+        
+        if supplier_match and supplier_match["confidence"] >= 0.6:
+            supplier_id = supplier_match["supplier_id"]
+            supplier_name = supplier_match["supplier_name"]
+            print(f"✅ Fournisseur matché: {supplier_name}")
+        else:
+            # Créer un nouveau fournisseur
+            new_supplier = Fournisseur(
+                nom=supplier_name,
+                categorie="frais"
+            )
+            await db.fournisseurs.insert_one(new_supplier.dict())
+            supplier_id = new_supplier.id
+            print(f"✅ Nouveau fournisseur créé: {supplier_name}")
+        
+        prices_updated = 0
+        price_changes = []
+        warnings = []
+        errors = []
+        
+        # 4. Traiter chaque produit de la mercuriale
+        for prod_data in produits_mercuriale:
+            prod_name = prod_data.get("nom", "")
+            new_price = prod_data.get("prix_unitaire", 0)
+            unit = prod_data.get("unite", "kg")
+            
+            if not prod_name or new_price <= 0:
+                continue
+            
+            # Matcher avec les produits existants
+            product_match = await match_product_by_name(prod_name, min_confidence=0.7)
+            
+            if product_match and product_match["confidence"] >= 0.7:
+                product_id = product_match["product_id"]
+                product_name_final = product_match["product_name"]
+                
+                # Récupérer le produit pour comparer les prix
+                produit = await db.produits.find_one({"id": product_id})
+                if produit:
+                    old_reference_price = produit.get("reference_price", 0)
+                    
+                    # Calculer la variation
+                    if old_reference_price:
+                        price_diff = new_price - old_reference_price
+                        price_diff_pct = (price_diff / old_reference_price) * 100
+                        
+                        if abs(price_diff_pct) > 5:  # Variation > 5%
+                            price_changes.append({
+                                "product_name": product_name_final,
+                                "old_price": old_reference_price,
+                                "new_price": new_price,
+                                "difference": round(price_diff, 2),
+                                "difference_pct": round(price_diff_pct, 1),
+                                "change_type": "increase" if price_diff > 0 else "decrease"
+                            })
+                    
+                    # Mettre à jour le prix de référence
+                    await db.produits.update_one(
+                        {"id": product_id},
+                        {
+                            "$set": {
+                                "reference_price": new_price
+                            }
+                        }
+                    )
+                    
+                    # Mettre à jour ou créer la relation fournisseur-produit
+                    supplier_product_info = await db.supplier_product_info.find_one({
+                        "supplier_id": supplier_id,
+                        "product_id": product_id
+                    })
+                    
+                    if supplier_product_info:
+                        await db.supplier_product_info.update_one(
+                            {"id": supplier_product_info["id"]},
+                            {
+                                "$set": {
+                                    "price": new_price,
+                                    "last_updated": datetime.utcnow()
+                                }
+                            }
+                        )
+                    else:
+                        new_relation = SupplierProductInfo(
+                            supplier_id=supplier_id,
+                            product_id=product_id,
+                            price=new_price,
+                            is_preferred=False
+                        )
+                        await db.supplier_product_info.insert_one(new_relation.dict())
+                    
+                    prices_updated += 1
+                else:
+                    warnings.append(f"⚠️ Produit {product_id} non trouvé en base")
+            else:
+                warnings.append(f"⚠️ Produit '{prod_name}' non matché (confiance: {product_match['confidence'] if product_match else 0})")
+        
+        # Marquer le document OCR comme traité
+        await db.documents_ocr.update_one(
+            {"id": document_id},
+            {
+                "$set": {
+                    "statut": "integre",
+                    "date_traitement": datetime.utcnow(),
+                    "integration_result": {
+                        "prices_updated": prices_updated,
+                        "price_changes": len(price_changes)
+                    }
+                }
+            }
+        )
+        
+        return MercurialeProcessingResult(
+            success=True,
+            document_id=document_id,
+            supplier_name=supplier_name,
+            supplier_id=supplier_id,
+            prices_updated=prices_updated,
+            price_changes=price_changes,
+            warnings=warnings,
+            errors=errors
+        )
+        
+    except Exception as e:
+        print(f"❌ Erreur processing mercuriale: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=f"Erreur lors du traitement de la mercuriale: {str(e)}")
 
 
 # Include the router in the main app
