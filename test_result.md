@@ -307,6 +307,18 @@ backend:
         agent: "testing"
         comment: "✅ DASHBOARD STATS VALIDÉ - Toutes statistiques présentes (total_produits, total_fournisseurs, stocks_faibles, stocks_recents). Valeurs cohérentes et types corrects. Calculs de stocks faibles et récents fonctionnels"
 
+  - task: "API Dashboard Analytics - Données Réelles"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "testing"
+        comment: "✅ NOUVEL ENDPOINT DASHBOARD ANALYTICS - 100% RÉUSSITE ! Test complet du nouvel endpoint GET /api/dashboard/analytics qui remplace les données mockées par des calculs basés sur les vrais rapports Z : ✅ STRUCTURE RÉPONSE PARFAITE : Tous les champs requis présents (caTotal, caMidi, caSoir, couvertsMidi, couvertsSoir, topProductions, flopProductions, ventesParCategorie, periode, is_real_data) avec types corrects ✅ DONNÉES RÉELLES CONFIRMÉES : is_real_data = true, calculs basés sur collection rapports_z ✅ CALCULS FONCTIONNELS : CA Total 3681.5€ (CA Midi: 2208.9€, CA Soir: 1472.6€), 6 top productions, période 30 derniers jours avec 3 rapports ✅ COEXISTENCE VALIDÉE : Ancien endpoint /dashboard/stats et nouveau /dashboard/analytics coexistent avec structures différentes ✅ VALIDATION LOGIQUE : Collection vide → CA = 0, données existantes → CA > 0, topProductions array, nb_rapports cohérent ✅ PÉRIODE FONCTIONNELLE : Calcul automatique 30 derniers jours, prise en compte rapports récents ✅ STRUCTURE PÉRIODE : Champs debut, fin, nb_rapports présents et cohérents. Nouvel endpoint analytics entièrement opérationnel avec données réelles des rapports Z pour production."
+
   - task: "API Gestion Recettes"
     implemented: true
     working: true
