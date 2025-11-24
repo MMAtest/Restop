@@ -6776,8 +6776,66 @@ function App() {
                 <div style={{display: 'flex', gap: '10px', marginBottom: '20px', flexWrap: 'wrap'}}>
                   <button className="button" onClick={() => setShowFournisseurModal(true)}>➕ Nouveau Fournisseur</button>
                   <button className="button">📊 Évaluation</button>
+                  <button 
+                    className={`button ${showFournisseursCategoriesView ? 'secondary' : ''}`}
+                    onClick={() => setShowFournisseursCategoriesView(!showFournisseursCategoriesView)}
+                    style={{backgroundColor: showFournisseursCategoriesView ? '#6366f1' : '', color: showFournisseursCategoriesView ? 'white' : ''}}
+                  >
+                    {showFournisseursCategoriesView ? '📋 Vue Liste' : '📁 Vue Catégories'}
+                  </button>
                 </div>
 
+                {/* Vue par catégorie ou liste des fournisseurs */}
+                {showFournisseursCategoriesView ? (
+                  <div style={{display: 'grid', gap: '16px'}}>
+                    {(() => {
+                      // Grouper les fournisseurs par catégorie
+                      const fournisseursByCategorie = fournisseurs.reduce((acc, f) => {
+                        const categorie = f.categorie || 'Autres';
+                        if (!acc[categorie]) acc[categorie] = [];
+                        acc[categorie].push(f);
+                        return acc;
+                      }, {});
+                      
+                      const getIcon = (cat) => {
+                        switch(cat.toLowerCase()) {
+                          case 'frais': return '🥩';
+                          case 'epicerie': return '🛒';
+                          case 'boissons': return '🍷';
+                          case 'légumes': return '🥬';
+                          default: return '🏪';
+                        }
+                      };
+                      
+                      return Object.entries(fournisseursByCategorie).map(([categorie, fourns]) => (
+                        <div key={categorie} style={{border: '1px solid var(--color-border)', borderRadius: '8px', overflow: 'hidden'}}>
+                          <div style={{padding: '16px', background: '#4CAF50', color: 'white', fontWeight: 'bold'}}>
+                            <div style={{display: 'flex', alignItems: 'center', gap: '12px'}}>
+                              <span style={{fontSize: '20px'}}>{getIcon(categorie)}</span>
+                              <span>{categorie} ({fourns.length})</span>
+                            </div>
+                          </div>
+                          <div style={{padding: '16px', display: 'grid', gap: '12px'}}>
+                            {fourns.map((fournisseur) => (
+                              <div key={fournisseur.id} style={{padding: '12px', background: 'var(--color-background-secondary)', borderRadius: '8px', border: '1px solid var(--color-border)'}}>
+                                <div style={{display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px'}}>
+                                  <span style={{fontSize: '18px'}}>{fournisseur.logo || '🏪'}</span>
+                                  <span style={{backgroundColor: fournisseur.couleur || '#3B82F6', color: 'white', padding: '4px 8px', borderRadius: '4px', fontWeight: '500', fontSize: '14px'}}>
+                                    {fournisseur.nom}
+                                  </span>
+                                </div>
+                                <div style={{fontSize: '13px', color: 'var(--color-text-secondary)'}}>
+                                  {fournisseur.email} • {fournisseur.telephone}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      ));
+                    })()}
+                  </div>
+                ) : (
+                  <>
                 {fournisseurs.map((fournisseur, index) => (
                   <div key={index} className="item-row">
                     <div className="item-info">
