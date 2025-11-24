@@ -6406,6 +6406,7 @@ Nombre de couverts: 32"""
         self.test_export_excel()
         self.test_import_excel()
         self.test_dashboard_stats()
+        self.test_dashboard_analytics_endpoint()
         
         # Tests des nouvelles APIs de recettes
         # Note: Demo endpoints not implemented, skipping demo tests
