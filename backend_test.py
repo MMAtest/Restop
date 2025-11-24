@@ -504,6 +504,210 @@ class StockTestSuite:
                 self.log_result("GET /dashboard/stats", False, f"Erreur {response.status_code}", response.text)
         except Exception as e:
             self.log_result("GET /dashboard/stats", False, "Exception", str(e))
+
+    def test_dashboard_analytics_endpoint(self):
+        """Test complet du nouvel endpoint /dashboard/analytics avec données réelles"""
+        print("\n=== TEST NOUVEL ENDPOINT DASHBOARD ANALYTICS ===")
+        
+        # 1. Test endpoint analytics
+        try:
+            response = requests.get(f"{BASE_URL}/dashboard/analytics")
+            if response.status_code == 200:
+                analytics = response.json()
+                
+                # Vérifier structure réponse
+                required_fields = [
+                    "caTotal", "caMidi", "caSoir", "couvertsMidi", "couvertsSoir",
+                    "topProductions", "flopProductions", "ventesParCategorie", 
+                    "periode", "is_real_data"
+                ]
+                
+                if all(field in analytics for field in required_fields):
+                    self.log_result("GET /dashboard/analytics - Structure", True, "Tous les champs requis présents")
+                    
+                    # Vérifier types de données
+                    type_checks = [
+                        (isinstance(analytics["caTotal"], (int, float)), "caTotal doit être un nombre"),
+                        (isinstance(analytics["caMidi"], (int, float)), "caMidi doit être un nombre"),
+                        (isinstance(analytics["caSoir"], (int, float)), "caSoir doit être un nombre"),
+                        (isinstance(analytics["couvertsMidi"], (int, float)), "couvertsMidi doit être un nombre"),
+                        (isinstance(analytics["couvertsSoir"], (int, float)), "couvertsSoir doit être un nombre"),
+                        (isinstance(analytics["topProductions"], list), "topProductions doit être un array"),
+                        (isinstance(analytics["flopProductions"], list), "flopProductions doit être un array"),
+                        (isinstance(analytics["ventesParCategorie"], dict), "ventesParCategorie doit être un object"),
+                        (isinstance(analytics["periode"], dict), "periode doit être un object"),
+                        (analytics["is_real_data"] == True, "is_real_data doit être true")
+                    ]
+                    
+                    all_types_valid = True
+                    for check, message in type_checks:
+                        if not check:
+                            self.log_result("Types de données analytics", False, message)
+                            all_types_valid = False
+                    
+                    if all_types_valid:
+                        self.log_result("Types de données analytics", True, "Tous les types corrects")
+                    
+                    # Vérifier structure période
+                    periode = analytics.get("periode", {})
+                    periode_fields = ["debut", "fin", "nb_rapports"]
+                    if all(field in periode for field in periode_fields):
+                        self.log_result("Structure période", True, f"Période: {periode['nb_rapports']} rapports")
+                    else:
+                        missing_periode = [f for f in periode_fields if f not in periode]
+                        self.log_result("Structure période", False, f"Champs manquants: {missing_periode}")
+                    
+                    # Vérifier is_real_data = true
+                    if analytics.get("is_real_data") == True:
+                        self.log_result("Données réelles confirmées", True, "is_real_data = true")
+                    else:
+                        self.log_result("Données réelles confirmées", False, f"is_real_data = {analytics.get('is_real_data')}")
+                    
+                    # Log des valeurs pour diagnostic
+                    print(f"   📊 CA Total: {analytics['caTotal']}€")
+                    print(f"   📊 CA Midi: {analytics['caMidi']}€, CA Soir: {analytics['caSoir']}€")
+                    print(f"   📊 Couverts Midi: {analytics['couvertsMidi']}, Couverts Soir: {analytics['couvertsSoir']}")
+                    print(f"   📊 Top Productions: {len(analytics['topProductions'])} items")
+                    print(f"   📊 Flop Productions: {len(analytics['flopProductions'])} items")
+                    print(f"   📊 Période: {periode.get('nb_rapports', 0)} rapports")
+                    
+                else:
+                    missing = [f for f in required_fields if f not in analytics]
+                    self.log_result("GET /dashboard/analytics - Structure", False, f"Champs manquants: {missing}")
+            else:
+                self.log_result("GET /dashboard/analytics", False, f"Erreur {response.status_code}", response.text)
+        except Exception as e:
+            self.log_result("GET /dashboard/analytics", False, "Exception", str(e))
+        
+        # 2. Vérifier données rapports_z
+        try:
+            response = requests.get(f"{BASE_URL}/rapports_z")
+            if response.status_code == 200:
+                rapports = response.json()
+                if isinstance(rapports, list):
+                    nb_rapports = len(rapports)
+                    self.log_result("GET /rapports_z", True, f"{nb_rapports} rapports Z disponibles")
+                    
+                    if nb_rapports > 0:
+                        # Vérifier structure d'un rapport
+                        rapport = rapports[0]
+                        rapport_fields = ["id", "date", "ca_total", "produits", "created_at"]
+                        if all(field in rapport for field in rapport_fields):
+                            self.log_result("Structure rapport Z", True, "Structure complète validée")
+                        else:
+                            missing_rapport = [f for f in rapport_fields if f not in rapport]
+                            self.log_result("Structure rapport Z", False, f"Champs manquants: {missing_rapport}")
+                    else:
+                        self.log_result("Données rapports Z", True, "Collection vide - analytics devrait retourner 0")
+                else:
+                    self.log_result("GET /rapports_z", False, "Format de réponse incorrect")
+            else:
+                self.log_result("GET /rapports_z", False, f"Erreur {response.status_code}", response.text)
+        except Exception as e:
+            self.log_result("GET /rapports_z", False, "Exception", str(e))
+        
+        # 3. Comparaison avec ancien endpoint
+        try:
+            old_response = requests.get(f"{BASE_URL}/dashboard/stats")
+            new_response = requests.get(f"{BASE_URL}/dashboard/analytics")
+            
+            if old_response.status_code == 200 and new_response.status_code == 200:
+                self.log_result("Coexistence endpoints", True, "Les deux endpoints /stats et /analytics coexistent")
+                
+                old_stats = old_response.json()
+                new_analytics = new_response.json()
+                
+                # Vérifier que les deux retournent des données différentes (stats vs analytics)
+                if "total_produits" in old_stats and "caTotal" in new_analytics:
+                    self.log_result("Différenciation endpoints", True, "Endpoints retournent des structures différentes")
+                else:
+                    self.log_result("Différenciation endpoints", False, "Structures trop similaires")
+            else:
+                self.log_result("Coexistence endpoints", False, "Un des endpoints ne fonctionne pas")
+        except Exception as e:
+            self.log_result("Coexistence endpoints", False, "Exception", str(e))
+        
+        # 4. Validation calculs
+        try:
+            response = requests.get(f"{BASE_URL}/dashboard/analytics")
+            if response.status_code == 200:
+                analytics = response.json()
+                
+                # Test logique: si rapports_z vides → analytics devrait retourner 0
+                rapports_response = requests.get(f"{BASE_URL}/rapports_z")
+                if rapports_response.status_code == 200:
+                    rapports = rapports_response.json()
+                    nb_rapports = len(rapports) if isinstance(rapports, list) else 0
+                    
+                    if nb_rapports == 0:
+                        # Pas de rapports → CA devrait être 0
+                        if analytics["caTotal"] == 0:
+                            self.log_result("Validation calculs - Collection vide", True, "CA = 0 quand pas de rapports")
+                        else:
+                            self.log_result("Validation calculs - Collection vide", False, f"CA = {analytics['caTotal']} au lieu de 0")
+                    else:
+                        # Des rapports existent → vérifier que CA > 0 si données réelles
+                        if analytics["caTotal"] > 0:
+                            self.log_result("Validation calculs - Données existantes", True, f"CA > 0 avec {nb_rapports} rapports")
+                        else:
+                            self.log_result("Validation calculs - Données existantes", False, "CA = 0 malgré des rapports existants")
+                    
+                    # Vérifier que topProductions est un array
+                    if isinstance(analytics["topProductions"], list):
+                        self.log_result("Validation topProductions", True, f"Array avec {len(analytics['topProductions'])} items")
+                    else:
+                        self.log_result("Validation topProductions", False, "topProductions n'est pas un array")
+                    
+                    # Vérifier cohérence nb_rapports
+                    periode_nb = analytics.get("periode", {}).get("nb_rapports", 0)
+                    if periode_nb == nb_rapports:
+                        self.log_result("Cohérence nb_rapports", True, f"nb_rapports cohérent: {periode_nb}")
+                    else:
+                        self.log_result("Cohérence nb_rapports", False, f"Incohérence: {periode_nb} vs {nb_rapports}")
+        except Exception as e:
+            self.log_result("Validation calculs", False, "Exception", str(e))
+        
+        # 5. Test avec données réelles (si rapports Z créés via process-z-report)
+        try:
+            # Vérifier si des rapports ont été créés via OCR
+            rapports_response = requests.get(f"{BASE_URL}/rapports_z")
+            if rapports_response.status_code == 200:
+                rapports = rapports_response.json()
+                if isinstance(rapports, list) and len(rapports) > 0:
+                    # Chercher des rapports récents (30 derniers jours)
+                    from datetime import datetime, timedelta
+                    cutoff_date = datetime.now() - timedelta(days=30)
+                    
+                    recent_rapports = []
+                    for rapport in rapports:
+                        try:
+                            rapport_date = datetime.fromisoformat(rapport["created_at"].replace('Z', '+00:00'))
+                            if rapport_date >= cutoff_date:
+                                recent_rapports.append(rapport)
+                        except:
+                            continue
+                    
+                    if len(recent_rapports) > 0:
+                        self.log_result("Rapports récents détectés", True, f"{len(recent_rapports)} rapports dans les 30 derniers jours")
+                        
+                        # Vérifier que l'analytics prend en compte ces rapports
+                        analytics_response = requests.get(f"{BASE_URL}/dashboard/analytics")
+                        if analytics_response.status_code == 200:
+                            analytics = analytics_response.json()
+                            periode_nb = analytics.get("periode", {}).get("nb_rapports", 0)
+                            
+                            if periode_nb >= len(recent_rapports):
+                                self.log_result("Prise en compte rapports récents", True, 
+                                              f"Analytics inclut {periode_nb} rapports (>= {len(recent_rapports)} récents)")
+                            else:
+                                self.log_result("Prise en compte rapports récents", False, 
+                                              f"Analytics n'inclut que {periode_nb} rapports sur {len(recent_rapports)} récents")
+                    else:
+                        self.log_result("Test période 30 jours", True, "Aucun rapport récent - comportement normal")
+                else:
+                    self.log_result("Test données réelles", True, "Pas de rapports Z - endpoint fonctionne avec données vides")
+        except Exception as e:
+            self.log_result("Test données réelles", False, "Exception", str(e))
     
     def test_demo_data_initialization(self):
         """Test initialisation des données de démonstration restaurant franco-italien"""
