@@ -474,10 +474,15 @@ class MouvementCreate(BaseModel):
 
 # Models pour la gestion des recettes (Productions)
 class RecetteIngredient(BaseModel):
-    produit_id: str
-    produit_nom: Optional[str] = None
+    ingredient_id: str  # ID universel (peut pointer vers produit OU preparation)
+    ingredient_type: str  # "produit" OU "preparation"
+    ingredient_nom: Optional[str] = None
     quantite: float
     unite: str
+    
+    # Legacy fields for backward compatibility
+    produit_id: Optional[str] = None  # Deprecated - use ingredient_id with ingredient_type="produit"
+    produit_nom: Optional[str] = None  # Deprecated - use ingredient_nom
 
 # Modèle pour les données de vente avec services
 class VenteService(BaseModel):
