@@ -518,15 +518,27 @@ class MouvementCreate(BaseModel):
 
 # Models pour la gestion des recettes (Productions)
 class RecetteIngredient(BaseModel):
-    ingredient_id: str  # ID universel (peut pointer vers produit OU preparation)
-    ingredient_type: str  # "produit" OU "preparation"
+    # ✅ Nouveau format (optionnel pour backward compatibility)
+    ingredient_id: Optional[str] = None  # ID universel (peut pointer vers produit OU preparation)
+    ingredient_type: Optional[str] = None  # "produit" OU "preparation"
     ingredient_nom: Optional[str] = None
+    
+    # ✅ Legacy fields (optionnel pour backward compatibility)
+    produit_id: Optional[str] = None  # Ancien format - converti automatiquement
+    produit_nom: Optional[str] = None  # Ancien format
+    
+    # ✅ Champs requis
     quantite: float
     unite: str
     
-    # Legacy fields for backward compatibility
-    produit_id: Optional[str] = None  # Deprecated - use ingredient_id with ingredient_type="produit"
-    produit_nom: Optional[str] = None  # Deprecated - use ingredient_nom
+    def __init__(self, **data):
+        # Auto-conversion: si produit_id fourni sans ingredient_id, convertir automatiquement
+        if "produit_id" in data and not data.get("ingredient_id"):
+            data["ingredient_id"] = data["produit_id"]
+            data["ingredient_type"] = "produit"
+            if "produit_nom" in data and not data.get("ingredient_nom"):
+                data["ingredient_nom"] = data["produit_nom"]
+        super().__init__(**data)
 
 # Modèle pour les données de vente avec services
 class VenteService(BaseModel):
