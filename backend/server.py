@@ -483,7 +483,6 @@ class StockPreparationUpdate(BaseModel):
 
 class ExecutePreparationRequest(BaseModel):
     """Request pour exécuter une préparation (transformer produits en préparation)"""
-    preparation_id: str
     quantite_a_produire: float  # Quantité de préparation à produire
     notes: Optional[str] = None
 
