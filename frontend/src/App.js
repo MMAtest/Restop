@@ -95,6 +95,7 @@ function App() {
   const [currentUser, setCurrentUser] = useState(null);
   const [sessionId, setSessionId] = useState(null);
   const [showRoleBasedDashboard, setShowRoleBasedDashboard] = useState(false);
+  const [hideDemoData, setHideDemoData] = useState(true); // Cacher les données de démo par défaut
   
   // États pour la sélection de dates et données filtrées
   const [selectedDateRange, setSelectedDateRange] = useState(null);
