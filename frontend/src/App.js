@@ -2583,6 +2583,33 @@ function App() {
                 {isDarkMode ? '☀️ Mode Clair' : '🌙 Mode Sombre'}
               </button>
               
+              {/* Bouton données de démo - Admin seulement */}
+              {currentUser && (currentUser.role === 'super_admin' || currentUser.role === 'patron') && (
+                <button 
+                  className="button" 
+                  onClick={async () => {
+                    if (window.confirm('Voulez-vous initialiser les données de démonstration ? Cela créera des utilisateurs, missions et exemples de données.')) {
+                      try {
+                        setLoading(true);
+                        await axios.post(`${API}/api/demo/init-missions-users`);
+                        alert('✅ Données de démo initialisées avec succès !');
+                        // Rafraîchir toutes les données
+                        fetchAll();
+                        setShowBurgerMenu(false);
+                      } catch (error) {
+                        console.error('Erreur initialisation démo:', error);
+                        alert('❌ Erreur lors de l\'initialisation des données de démo');
+                      } finally {
+                        setLoading(false);
+                      }
+                    }
+                  }}
+                  style={{width: '100%', marginBottom: '8px'}}
+                >
+                  🎭 Données de Démo
+                </button>
+              )}
+              
               {/* Bouton déconnexion */}
               {currentUser && (
                 <button 
