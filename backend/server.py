@@ -6161,6 +6161,223 @@ async def update_ingredients_from_carte():
             "produits_archives": 0,
             "nouveaux_produits": 0
         }
+# ===== STOCK PREPARATIONS ENDPOINTS =====
+
+@api_router.get("/stock-preparations")
+async def list_stock_preparations():
+    """Lister tous les stocks de préparations"""
+    stocks = await db.stock_preparations.find().to_list(1000)
+    # Nettoyer les _id MongoDB
+    for stock in stocks:
+        if "_id" in stock:
+            del stock["_id"]
+    return stocks
+
+@api_router.get("/stock-preparations/{stock_id}")
+async def get_stock_preparation(stock_id: str):
+    """Obtenir un stock de préparation spécifique"""
+    stock = await db.stock_preparations.find_one({"id": stock_id})
+    if not stock:
+        raise HTTPException(status_code=404, detail="Stock de préparation non trouvé")
+    if "_id" in stock:
+        del stock["_id"]
+    return stock
+
+@api_router.post("/stock-preparations")
+async def create_stock_preparation(stock_data: StockPreparationCreate):
+    """Créer un nouveau stock de préparation"""
+    # Vérifier que la préparation existe
+    preparation = await db.preparations.find_one({"id": stock_data.preparation_id})
+    if not preparation:
+        raise HTTPException(status_code=404, detail="Préparation non trouvée")
+    
+    stock = StockPreparation(
+        preparation_id=stock_data.preparation_id,
+        preparation_nom=preparation.get("nom", "Préparation inconnue"),
+        quantite_actuelle=stock_data.quantite_actuelle,
+        unite=preparation.get("unite_preparee", "kg"),
+        quantite_min=stock_data.quantite_min,
+        quantite_max=stock_data.quantite_max,
+        dlc=stock_data.dlc
+    )
+    
+    await db.stock_preparations.insert_one(stock.dict())
+    return {"status": "ok", "id": stock.id}
+
+@api_router.put("/stock-preparations/{stock_id}")
+async def update_stock_preparation(stock_id: str, update_data: StockPreparationUpdate):
+    """Mettre à jour un stock de préparation"""
+    update_dict = {k: v for k, v in update_data.dict().items() if v is not None}
+    update_dict["derniere_maj"] = datetime.utcnow()
+    
+    result = await db.stock_preparations.update_one(
+        {"id": stock_id},
+        {"$set": update_dict}
+    )
+    
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Stock de préparation non trouvé")
+    
+    return {"status": "updated"}
+
+@api_router.delete("/stock-preparations/{stock_id}")
+async def delete_stock_preparation(stock_id: str):
+    """Supprimer un stock de préparation"""
+    result = await db.stock_preparations.delete_one({"id": stock_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Stock de préparation non trouvé")
+    return {"message": "Stock de préparation supprimé"}
+
+@api_router.post("/preparations/{preparation_id}/execute", response_model=ExecutePreparationResult)
+async def execute_preparation(preparation_id: str, request: ExecutePreparationRequest):
+    """
+    Exécuter une préparation : transformer des produits bruts en préparation
+    - Déduit les produits bruts du stock
+    - Crée ou met à jour le stock de préparation
+    - Enregistre les mouvements de stock
+    - Gère les pertes de transformation
+    """
+    try:
+        # 1. Récupérer la préparation
+        preparation = await db.preparations.find_one({"id": preparation_id})
+        if not preparation:
+            raise HTTPException(status_code=404, detail="Préparation non trouvée")
+        
+        preparation_nom = preparation.get("nom", "Préparation inconnue")
+        produit_id = preparation.get("produit_id")
+        quantite_produit_brut = preparation.get("quantite_produit_brut", 1.0)
+        quantite_preparee = preparation.get("quantite_preparee", 1.0)
+        perte_pourcentage = preparation.get("perte_pourcentage", 0.0)
+        unite_preparee = preparation.get("unite_preparee", "kg")
+        dlc_jours = preparation.get("dlc", None)
+        
+        print(f"🔧 Exécution préparation: {preparation_nom}")
+        print(f"   Quantité à produire: {request.quantite_a_produire} {unite_preparee}")
+        
+        produits_deduits = []
+        warnings = []
+        errors = []
+        
+        # 2. Calculer la quantité de produit brut nécessaire
+        # Ratio: quantite_preparee est obtenue à partir de quantite_produit_brut
+        ratio = quantite_preparee / quantite_produit_brut if quantite_produit_brut > 0 else 1.0
+        quantite_brut_necessaire = request.quantite_a_produire / ratio
+        
+        print(f"   Produit brut nécessaire: {quantite_brut_necessaire} (ratio: {ratio})")
+        
+        # 3. Vérifier et déduire le stock du produit brut
+        stock_produit = await db.stocks.find_one({"produit_id": produit_id})
+        if not stock_produit:
+            raise HTTPException(status_code=404, detail=f"Stock du produit brut {produit_id} non trouvé")
+        
+        stock_actuel = stock_produit.get("quantite_actuelle", 0)
+        produit_nom = stock_produit.get("produit_nom", "Produit inconnu")
+        
+        if stock_actuel < quantite_brut_necessaire:
+            errors.append(f"Stock insuffisant: {stock_actuel} disponible, {quantite_brut_necessaire} requis")
+            raise HTTPException(status_code=400, detail=f"Stock insuffisant pour {produit_nom}")
+        
+        # Déduire le stock
+        nouveau_stock = stock_actuel - quantite_brut_necessaire
+        await db.stocks.update_one(
+            {"produit_id": produit_id},
+            {
+                "$set": {
+                    "quantite_actuelle": nouveau_stock,
+                    "derniere_maj": datetime.utcnow()
+                }
+            }
+        )
+        
+        # Créer mouvement de sortie pour le produit brut
+        mouvement_sortie = MouvementStock(
+            produit_id=produit_id,
+            produit_nom=produit_nom,
+            type="sortie",
+            quantite=quantite_brut_necessaire,
+            reference=f"Préparation-{preparation_id[:8]}",
+            commentaire=f"Transformation en {preparation_nom}"
+        )
+        await db.mouvements_stock.insert_one(mouvement_sortie.dict())
+        
+        produits_deduits.append({
+            "produit_id": produit_id,
+            "produit_nom": produit_nom,
+            "quantite_deduite": quantite_brut_necessaire,
+            "stock_avant": stock_actuel,
+            "stock_apres": nouveau_stock
+        })
+        
+        print(f"   ✅ Produit déduit: {produit_nom} -{quantite_brut_necessaire}")
+        
+        # 4. Calculer la DLC si définie
+        dlc_date = None
+        if dlc_jours:
+            if isinstance(dlc_jours, datetime):
+                dlc_date = dlc_jours
+            else:
+                # Supposer que dlc_jours est un nombre de jours
+                dlc_date = datetime.utcnow() + timedelta(days=int(dlc_jours))
+        
+        # 5. Créer ou mettre à jour le stock de préparation
+        stock_prep_existant = await db.stock_preparations.find_one({"preparation_id": preparation_id})
+        
+        stock_prep_id = None
+        if stock_prep_existant:
+            # Mettre à jour le stock existant
+            nouvelle_quantite = stock_prep_existant.get("quantite_actuelle", 0) + request.quantite_a_produire
+            await db.stock_preparations.update_one(
+                {"id": stock_prep_existant["id"]},
+                {
+                    "$set": {
+                        "quantite_actuelle": nouvelle_quantite,
+                        "date_preparation": datetime.utcnow(),
+                        "dlc": dlc_date,
+                        "derniere_maj": datetime.utcnow(),
+                        "statut": "disponible"
+                    }
+                }
+            )
+            stock_prep_id = stock_prep_existant["id"]
+            print(f"   ✅ Stock préparation mis à jour: {nouvelle_quantite} {unite_preparee}")
+        else:
+            # Créer un nouveau stock de préparation
+            stock_prep = StockPreparation(
+                preparation_id=preparation_id,
+                preparation_nom=preparation_nom,
+                quantite_actuelle=request.quantite_a_produire,
+                unite=unite_preparee,
+                quantite_min=0.0,
+                dlc=dlc_date
+            )
+            await db.stock_preparations.insert_one(stock_prep.dict())
+            stock_prep_id = stock_prep.id
+            print(f"   ✅ Nouveau stock préparation créé: {request.quantite_a_produire} {unite_preparee}")
+        
+        # 6. Ajouter un avertissement sur les pertes
+        if perte_pourcentage > 0:
+            warnings.append(f"⚠️ Perte de transformation: {perte_pourcentage}% ({quantite_brut_necessaire * perte_pourcentage / 100} {unite_preparee})")
+        
+        return ExecutePreparationResult(
+            success=True,
+            preparation_nom=preparation_nom,
+            quantite_produite=request.quantite_a_produire,
+            unite=unite_preparee,
+            produits_deduits=produits_deduits,
+            stock_preparation_id=stock_prep_id,
+            warnings=warnings,
+            errors=errors
+        )
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"❌ Erreur exécution préparation: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=f"Erreur lors de l'exécution de la préparation: {str(e)}")
+
+
 # ===== OCR PROCESSING ENDPOINTS - REAL DATA INTEGRATION =====
 
 @api_router.post("/ocr/process-z-report/{document_id}", response_model=ZReportProcessingResult)
