@@ -453,6 +453,51 @@ class StockUpdate(BaseModel):
     quantite_min: Optional[float] = None
     quantite_max: Optional[float] = None
 
+# ✅ Stock Preparations - Collection séparée pour les préparations en stock
+class StockPreparation(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    preparation_id: str  # Référence à la préparation dans la collection preparations
+    preparation_nom: str
+    quantite_actuelle: float
+    unite: str
+    quantite_min: float = 0.0
+    quantite_max: Optional[float] = None
+    date_preparation: datetime = Field(default_factory=datetime.utcnow)
+    dlc: Optional[datetime] = None  # Date limite de consommation
+    derniere_maj: datetime = Field(default_factory=datetime.utcnow)
+    statut: str = "disponible"  # disponible, expire_bientot, expire
+
+class StockPreparationCreate(BaseModel):
+    preparation_id: str
+    quantite_actuelle: float
+    quantite_min: float = 0.0
+    quantite_max: Optional[float] = None
+    dlc: Optional[datetime] = None
+
+class StockPreparationUpdate(BaseModel):
+    quantite_actuelle: Optional[float] = None
+    quantite_min: Optional[float] = None
+    quantite_max: Optional[float] = None
+    dlc: Optional[datetime] = None
+    statut: Optional[str] = None
+
+class ExecutePreparationRequest(BaseModel):
+    """Request pour exécuter une préparation (transformer produits en préparation)"""
+    preparation_id: str
+    quantite_a_produire: float  # Quantité de préparation à produire
+    notes: Optional[str] = None
+
+class ExecutePreparationResult(BaseModel):
+    """Résultat de l'exécution d'une préparation"""
+    success: bool
+    preparation_nom: str
+    quantite_produite: float
+    unite: str
+    produits_deduits: List[dict] = []  # Liste des produits déduits
+    stock_preparation_id: str  # ID du stock de préparation créé
+    warnings: List[str] = []
+    errors: List[str] = []
+
 class MouvementStock(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     produit_id: str
