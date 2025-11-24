@@ -6277,7 +6277,7 @@ async def execute_preparation(preparation_id: str, request: ExecutePreparationRe
         # 2. Calculer la quantité de produit brut nécessaire
         # Ratio: quantite_preparee est obtenue à partir de quantite_produit_brut
         ratio = quantite_preparee / quantite_produit_brut if quantite_produit_brut > 0 else 1.0
-        quantite_brut_necessaire = request.quantite_a_produire / ratio
+        quantite_brut_necessaire = round_stock_quantity(request.quantite_a_produire / ratio)
         
         print(f"   Produit brut nécessaire: {quantite_brut_necessaire} (ratio: {ratio})")
         
@@ -6286,7 +6286,7 @@ async def execute_preparation(preparation_id: str, request: ExecutePreparationRe
         if not stock_produit:
             raise HTTPException(status_code=404, detail=f"Stock du produit brut {produit_id} non trouvé")
         
-        stock_actuel = stock_produit.get("quantite_actuelle", 0)
+        stock_actuel = round_stock_quantity(stock_produit.get("quantite_actuelle", 0))
         produit_nom = stock_produit.get("produit_nom", "Produit inconnu")
         
         if stock_actuel < quantite_brut_necessaire:
