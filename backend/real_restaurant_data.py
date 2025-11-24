@@ -93,12 +93,14 @@ REAL_PREPARATIONS = [
     }
 ]
 
-# Productions (recettes) réelles
+# Productions (recettes) réelles - CARTE COMPLÈTE
 REAL_RECETTES = [
+    # ENTRÉES
     {
         "nom": "Supions en persillade",
         "categorie": "Entrée",
         "portions": 4,
+        "prix_vente": 14.50,
         "ingredients": [
             {"nom": "Supions", "quantite": 0.4, "unite": "kg"},
             {"nom": "Persil", "quantite": 1, "unite": "botte"},
@@ -106,9 +108,43 @@ REAL_RECETTES = [
         ]
     },
     {
+        "nom": "Rougets grillés",
+        "categorie": "Entrée",
+        "portions": 4,
+        "prix_vente": 16.50,
+        "ingredients": [
+            {"nom": "Rougets", "quantite": 0.8, "unite": "kg"},
+            {"nom": "Basilic frais", "quantite": 1, "unite": "botte"}
+        ]
+    },
+    {
+        "nom": "Salade de saison",
+        "categorie": "Entrée",
+        "portions": 4,
+        "prix_vente": 12.50,
+        "ingredients": [
+            {"nom": "Tomates cerises", "quantite": 0.3, "unite": "kg"},
+            {"nom": "Mozzarella", "quantite": 0.2, "unite": "kg"},
+            {"nom": "Basilic frais", "quantite": 1, "unite": "botte"}
+        ]
+    },
+    {
+        "nom": "Fleurs de courgettes farcies",
+        "categorie": "Entrée",
+        "portions": 4,
+        "prix_vente": 15.00,
+        "ingredients": [
+            {"nom": "Courgettes", "quantite": 0.4, "unite": "kg"},
+            {"nom": "Brocciu", "quantite": 0.15, "unite": "kg"}
+        ]
+    },
+    
+    # PLATS
+    {
         "nom": "Linguine aux palourdes",
         "categorie": "Plat",
         "portions": 4,
+        "prix_vente": 22.00,
         "ingredients": [
             {"nom": "Linguine", "quantite": 0.4, "unite": "kg"},
             {"nom": "Palourdes", "quantite": 0.8, "unite": "kg"},
@@ -117,20 +153,93 @@ REAL_RECETTES = [
         ]
     },
     {
+        "nom": "Rigatoni à la truffe",
+        "categorie": "Plat",
+        "portions": 4,
+        "prix_vente": 28.50,
+        "ingredients": [
+            {"nom": "Rigatoni", "quantite": 0.4, "unite": "kg"},
+            {"nom": "Parmesan", "quantite": 0.08, "unite": "kg"}
+        ]
+    },
+    {
         "nom": "Bœuf Wellington",
         "categorie": "Plat",
         "portions": 2,
+        "prix_vente": 36.00,
         "ingredients": [
             {"nom": "Bœuf (filet)", "quantite": 0.4, "unite": "kg"}
         ]
     },
     {
-        "nom": "Rigatoni à la truffe",
+        "nom": "Souris d'agneau confite",
         "categorie": "Plat",
         "portions": 4,
+        "prix_vente": 32.00,
         "ingredients": [
-            {"nom": "Rigatoni", "quantite": 0.4, "unite": "kg"},
-            {"nom": "Parmesan", "quantite": 0.08, "unite": "kg"}
+            {"nom": "Agneau (souris)", "quantite": 1.2, "unite": "kg"},
+            {"nom": "Ail", "quantite": 0.03, "unite": "kg"}
+        ]
+    },
+    {
+        "nom": "Veau à la milanaise",
+        "categorie": "Plat",
+        "portions": 4,
+        "prix_vente": 26.00,
+        "ingredients": [
+            {"nom": "Veau (escalope)", "quantite": 0.6, "unite": "kg"},
+            {"nom": "Parmesan", "quantite": 0.05, "unite": "kg"}
+        ]
+    },
+    {
+        "nom": "Daurade grillée",
+        "categorie": "Plat",
+        "portions": 4,
+        "prix_vente": 28.00,
+        "ingredients": [
+            {"nom": "Daurade", "quantite": 1.2, "unite": "kg"},
+            {"nom": "Basilic frais", "quantite": 1, "unite": "botte"}
+        ]
+    },
+    {
+        "nom": "Légumes grillés du moment",
+        "categorie": "Plat",
+        "portions": 4,
+        "prix_vente": 18.50,
+        "ingredients": [
+            {"nom": "Courgettes", "quantite": 0.5, "unite": "kg"},
+            {"nom": "Aubergines", "quantite": 0.5, "unite": "kg"},
+            {"nom": "Poivrons", "quantite": 0.4, "unite": "kg"}
+        ]
+    },
+    
+    # DESSERTS
+    {
+        "nom": "Tiramisù maison",
+        "categorie": "Dessert",
+        "portions": 6,
+        "prix_vente": 12.00,
+        "ingredients": [
+            {"nom": "Mozzarella", "quantite": 0.3, "unite": "kg"}  # Mascarpone simplifié
+        ]
+    },
+    {
+        "nom": "Panna cotta",
+        "categorie": "Dessert",
+        "portions": 6,
+        "prix_vente": 9.50,
+        "ingredients": [
+            {"nom": "Mozzarella", "quantite": 0.2, "unite": "kg"}
+        ]
+    },
+    {
+        "nom": "Plateau de fromages corses",
+        "categorie": "Dessert",
+        "portions": 4,
+        "prix_vente": 16.00,
+        "ingredients": [
+            {"nom": "Brocciu", "quantite": 0.2, "unite": "kg"},
+            {"nom": "Parmesan", "quantite": 0.15, "unite": "kg"}
         ]
     }
 ]
