@@ -2694,10 +2694,10 @@ function App() {
           {currentUser?.role !== 'employe_cuisine' && currentUser?.role !== 'barman' && currentUser?.role !== 'caissier' && (
             <>
               {/* ONGLET VENTES */}
-              {activeDashboardTab === "ventes" && (
+              {activeDashboardTab === "ventes" && !hideDemoData && (
             <div className="section-card">
               <div className="section-title">
-                💰 Analyse des Ventes
+                💰 Analyse des Ventes (Données de Démo)
                 {selectedDateRange && (
                   <span style={{ 
                     fontSize: '12px', 
