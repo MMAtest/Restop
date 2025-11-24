@@ -429,6 +429,7 @@ function App() {
     fetchDashboardStats();
     fetchProduits();
     fetchFournisseurs();
+    fetchDashboardAnalytics();
     fetchStocks();
     fetchMouvements();
     fetchRecettes();
