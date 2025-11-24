@@ -6494,8 +6494,9 @@ async def process_z_report_to_real_data(document_id: str):
                         # ✅ PRODUIT BRUT - Déduire du stock produits
                         stock = await db.stocks.find_one({"produit_id": ingredient_id})
                         if stock:
-                            current_stock = stock.get("quantite_actuelle", 0)
-                            new_stock = current_stock - total_deduction
+                            current_stock = round_stock_quantity(stock.get("quantite_actuelle", 0))
+                            total_deduction = round_stock_quantity(total_deduction)
+                            new_stock = round_stock_quantity(current_stock - total_deduction)
                             
                             if new_stock < 0:
                                 warnings.append(f"⚠️ Stock produit insuffisant pour {ingredient_nom}: {current_stock} {unit} disponible, {total_deduction} {unit} requis")
