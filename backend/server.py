@@ -5679,18 +5679,30 @@ async def init_real_restaurant_data():
             stocks_created += 1
         
         # 3. Créer les préparations
+        from datetime import timedelta
         preparation_ids = {}
         for prep_data in REAL_PREPARATIONS:
             produit_brut = prep_data["produit_brut"]
             if produit_brut in produit_ids:
+                dlc_date = None
+                if "dlc_jours" in prep_data:
+                    dlc_date = datetime.utcnow() + timedelta(days=prep_data["dlc_jours"])
+                
                 preparation = Preparation(
                     nom=prep_data["nom"],
                     produit_id=produit_ids[produit_brut],
+                    produit_nom=produit_brut,
+                    forme_decoupe=prep_data["forme_decoupe"],
                     quantite_produit_brut=prep_data["quantite_produit_brut"],
+                    unite_produit_brut=prep_data["unite_produit_brut"],
                     quantite_preparee=prep_data["quantite_preparee"],
-                    perte_pourcentage=prep_data["perte_pourcentage"],
                     unite_preparee=prep_data["unite_preparee"],
-                    dlc=prep_data["dlc"]
+                    perte=prep_data["perte"],
+                    perte_pourcentage=prep_data["perte_pourcentage"],
+                    nombre_portions=prep_data["nombre_portions"],
+                    taille_portion=prep_data["taille_portion"],
+                    unite_portion=prep_data["unite_portion"],
+                    dlc=dlc_date
                 )
                 await db.preparations.insert_one(preparation.dict())
                 preparation_ids[prep_data["nom"]] = preparation.id
