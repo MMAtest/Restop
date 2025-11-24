@@ -6800,8 +6800,9 @@ async def process_facture_to_real_data(document_id: str):
             # 5. Créer l'entrée de stock
             stock = await db.stocks.find_one({"produit_id": product_id})
             if stock:
-                current_stock = stock.get("quantite_actuelle", 0)
-                new_stock_level = current_stock + quantity
+                current_stock = round_stock_quantity(stock.get("quantite_actuelle", 0))
+                quantity = round_stock_quantity(quantity)
+                new_stock_level = round_stock_quantity(current_stock + quantity)
                 
                 await db.stocks.update_one(
                     {"produit_id": product_id},
