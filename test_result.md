@@ -102,7 +102,44 @@
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
 
-user_problem_statement: "Application de gestion des stocks pour restauration avec interface simple et visuelle, export/import Excel, édition en ligne"
+user_problem_statement: "Application de gestion des stocks pour restauration avec interface simple et visuelle, export/import Excel, édition en ligne. NOUVEAU: Intégration automatique des données OCR (Tickets Z, Factures, Mercuriales) dans les mécaniques réelles de l'application."
+
+backend:
+  - task: "API OCR Processing - Tickets Z vers Stocks et Rapports"
+    implemented: true
+    working: "NA"
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Implémenté endpoint POST /api/ocr/process-z-report/{document_id} pour intégration automatique: matching productions avec recettes, déduction stocks automatique, création rapports Z réels, génération alertes stocks insuffisants. Fonctions de matching intelligent ajoutées."
+
+  - task: "API OCR Processing - Factures Fournisseurs vers Produits et Stocks"
+    implemented: true
+    working: "NA"
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Implémenté endpoint POST /api/ocr/process-facture/{document_id} pour intégration automatique: matching produits intelligent, création automatique produits manquants, entrées stocks automatiques, enregistrement prix fournisseurs réels, alertes variations prix > 10%, création commandes fournisseur."
+
+  - task: "API OCR Processing - Mercuriales vers Prix de Référence"
+    implemented: true
+    working: "NA"
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Implémenté endpoint POST /api/ocr/process-mercuriale/{document_id} pour intégration automatique: matching produits, mise à jour automatique prix de référence, comparaison avec prix actuels, alertes variations > 5%, historique variations de prix."
 
 backend:
   - task: "API CRUD Fournisseurs"
