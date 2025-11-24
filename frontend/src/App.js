@@ -360,7 +360,10 @@ function App() {
   // ✅ États pour l'affichage accordéon des produits
   const [produitsParCategories, setProduitsParCategories] = useState({ categories: {}, total_categories: 0, total_products: 0 });
   const [categoriesExpanded, setCategoriesExpanded] = useState({}); // Quelles catégories sont ouvertes
-  const [showCategoriesView, setShowCategoriesView] = useState(false); // Vue liste normale vs accordéon
+  const [showCategoriesView, setShowCategoriesView] = useState(false); // Vue liste normale vs accordéon (Produits)
+  const [showPreparationsCategoriesView, setShowPreparationsCategoriesView] = useState(false); // Vue catégories Préparations
+  const [showRecettesCategoriesView, setShowRecettesCategoriesView] = useState(false); // Vue catégories Productions
+  const [showFournisseursCategoriesView, setShowFournisseursCategoriesView] = useState(false); // Vue catégories Fournisseurs
   
   // ✅ États pour la gestion des stocks de préparations
   const [stocksPreparations, setStocksPreparations] = useState([]); // Stocks des préparations avec quantités
