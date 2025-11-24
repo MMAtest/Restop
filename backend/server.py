@@ -2007,11 +2007,15 @@ async def create_product_batch(batch: ProductBatchCreate):
     batch_obj = ProductBatch(**batch.dict())
     await db.product_batches.insert_one(batch_obj.dict())
     
-    # Update stock with new batch quantity
-    await db.stocks.update_one(
-        {"produit_id": batch.product_id},
-        {"$inc": {"quantite_actuelle": batch.quantity}, "$set": {"derniere_maj": datetime.utcnow()}}
-    )
+    # Update stock with new batch quantity (rounded to 0.01)
+    stock = await db.stocks.find_one({"produit_id": batch.product_id})
+    if stock:
+        current = round_stock_quantity(stock.get("quantite_actuelle", 0))
+        new_quantity = round_stock_quantity(current + batch.quantity)
+        await db.stocks.update_one(
+            {"produit_id": batch.product_id},
+            {"$set": {"quantite_actuelle": new_quantity, "derniere_maj": datetime.utcnow()}}
+        )
     
     return batch_obj
 
