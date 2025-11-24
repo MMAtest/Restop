@@ -6867,15 +6867,58 @@ function App() {
                   </div>
                 )}
 
-                {/* Liste des préparations */}
-                <div style={{display: 'grid', gap: '12px'}}>
-                  {preparations.length === 0 ? (
-                    <div style={{textAlign: 'center', padding: '40px', color: 'var(--color-text-secondary)'}}>
-                      <div style={{fontSize: '48px', marginBottom: '16px'}}>🔪</div>
-                      <div style={{fontSize: '18px', fontWeight: 'bold', marginBottom: '8px'}}>Aucune préparation</div>
-                      <div>Créez votre première préparation pour commencer</div>
-                    </div>
-                  ) : (
+                {/* Liste ou Vue par catégories des préparations */}
+                {showPreparationsCategoriesView ? (
+                  <div style={{display: 'grid', gap: '16px'}}>
+                    {(() => {
+                      // Grouper les préparations par forme de découpe
+                      const prepsByForme = preparations.reduce((acc, prep) => {
+                        const forme = prep.forme_decoupe_custom || prep.forme_decoupe || 'Autre';
+                        if (!acc[forme]) acc[forme] = [];
+                        acc[forme].push(prep);
+                        return acc;
+                      }, {});
+                      
+                      return Object.entries(prepsByForme).map(([forme, preps]) => (
+                        <div key={forme} style={{border: '1px solid var(--color-border)', borderRadius: '8px', overflow: 'hidden'}}>
+                          <div style={{padding: '16px', background: '#4CAF50', color: 'white', fontWeight: 'bold', cursor: 'pointer'}}>
+                            <div style={{display: 'flex', alignItems: 'center', gap: '12px'}}>
+                              <span style={{fontSize: '20px'}}>🔪</span>
+                              <span>{forme} ({preps.length})</span>
+                            </div>
+                          </div>
+                          <div style={{padding: '16px', display: 'grid', gap: '12px'}}>
+                            {preps.map((prep) => {
+                              const dlcDate = prep.dlc ? new Date(prep.dlc) : null;
+                              const isDlcSoon = dlcDate && dlcDate < new Date(Date.now() + 3 * 24 * 60 * 60 * 1000);
+                              const isDlcExpired = dlcDate && dlcDate < new Date();
+                              
+                              return (
+                                <div key={prep.id} style={{padding: '12px', background: 'var(--color-background-secondary)', borderRadius: '8px', border: isDlcExpired ? '2px solid #dc2626' : isDlcSoon ? '2px solid #f59e0b' : '1px solid var(--color-border)'}}>
+                                  <div style={{fontSize: '16px', fontWeight: 'bold', marginBottom: '8px'}}>{prep.nom}</div>
+                                  <div style={{fontSize: '13px', color: 'var(--color-text-secondary)'}}>
+                                    Produit: {prep.produit_nom} • {prep.quantite_preparee} {prep.unite_preparee}
+                                    {dlcDate && <span style={{marginLeft: '8px', color: isDlcExpired ? '#dc2626' : isDlcSoon ? '#f59e0b' : '#10b981'}}>
+                                      DLC: {dlcDate.toLocaleDateString('fr-FR')}
+                                    </span>}
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      ));
+                    })()}
+                  </div>
+                ) : (
+                  <div style={{display: 'grid', gap: '12px'}}>
+                    {preparations.length === 0 ? (
+                      <div style={{textAlign: 'center', padding: '40px', color: 'var(--color-text-secondary)'}}>
+                        <div style={{fontSize: '48px', marginBottom: '16px'}}>🔪</div>
+                        <div style={{fontSize: '18px', fontWeight: 'bold', marginBottom: '8px'}}>Aucune préparation</div>
+                        <div>Créez votre première préparation pour commencer</div>
+                      </div>
+                    ) : (
                     preparations.map((prep) => {
                       const dlcDate = prep.dlc ? new Date(prep.dlc) : null;
                       const isDlcSoon = dlcDate && dlcDate < new Date(Date.now() + 3 * 24 * 60 * 60 * 1000);
