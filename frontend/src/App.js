@@ -6995,6 +6995,13 @@ function App() {
                 <div style={{display: 'flex', gap: '10px', marginBottom: '20px', flexWrap: 'wrap'}}>
                   <button className="button" onClick={() => setShowRecetteModal(true)}>➕ Nouvelle Production</button>
                   <button className="button" onClick={handleExportRecettes}>📖 Export Excel</button>
+                  <button 
+                    className={`button ${showRecettesCategoriesView ? 'secondary' : ''}`}
+                    onClick={() => setShowRecettesCategoriesView(!showRecettesCategoriesView)}
+                    style={{backgroundColor: showRecettesCategoriesView ? '#6366f1' : '', color: showRecettesCategoriesView ? 'white' : ''}}
+                  >
+                    {showRecettesCategoriesView ? '📋 Vue Liste' : '📁 Vue Catégories'}
+                  </button>
                 </div>
 
                 {/* Filtre par catégorie */}
