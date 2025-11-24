@@ -1,51 +1,149 @@
 {
-  "total_tests": 6,
-  "passed_tests": 0,
+  "total_tests": 20,
+  "passed_tests": 14,
   "failed_tests": 6,
-  "success_rate": 0.0,
-  "duration": 91.18677735328674,
+  "success_rate": 70.0,
+  "duration": 2.455568790435791,
   "results": [
     {
       "test": "GET /api/ocr/documents",
-      "success": false,
-      "message": "Erreur 500: Internal Server Error",
+      "success": true,
+      "message": "2 documents OCR disponibles",
       "details": null,
-      "timestamp": "2025-11-24T12:19:13.985726"
+      "timestamp": "2025-11-24T12:22:40.494301"
     },
     {
-      "test": "Processing Ticket Z",
-      "success": false,
-      "message": "Aucun document z_report disponible pour les tests",
+      "test": "Documents Z-Report disponibles",
+      "success": true,
+      "message": "1 documents z_report trouvés",
       "details": null,
-      "timestamp": "2025-11-24T12:19:13.986027"
+      "timestamp": "2025-11-24T12:22:40.494347"
     },
     {
-      "test": "Processing Facture Fournisseur",
-      "success": false,
-      "message": "Aucun document facture_fournisseur disponible pour les tests",
+      "test": "Documents Facture disponibles",
+      "success": true,
+      "message": "1 documents facture_fournisseur trouvés",
       "details": null,
-      "timestamp": "2025-11-24T12:19:13.986041"
+      "timestamp": "2025-11-24T12:22:40.494354"
+    },
+    {
+      "test": "Documents Mercuriale disponibles",
+      "success": false,
+      "message": "0 documents mercuriale trouvés",
+      "details": null,
+      "timestamp": "2025-11-24T12:22:40.494362"
+    },
+    {
+      "test": "POST /api/ocr/process-z-report",
+      "success": false,
+      "message": "Erreur 400: {\"detail\":\"Aucun plat trouvé dans le rapport Z\"}",
+      "details": null,
+      "timestamp": "2025-11-24T12:22:40.616855"
+    },
+    {
+      "test": "POST /api/ocr/process-facture structure",
+      "success": true,
+      "message": "Tous les champs requis présents dans la réponse",
+      "details": null,
+      "timestamp": "2025-11-24T12:22:40.709687"
+    },
+    {
+      "test": "Processing Facture success",
+      "success": true,
+      "message": "Processing réussi",
+      "details": null,
+      "timestamp": "2025-11-24T12:22:40.709721"
+    },
+    {
+      "test": "Supplier matched/created",
+      "success": true,
+      "message": "Supplier ID: 82033705-eec9-435d-a80e-62051e78ab26",
+      "details": null,
+      "timestamp": "2025-11-24T12:22:40.709728"
+    },
+    {
+      "test": "Products matched",
+      "success": false,
+      "message": "0 produits matchés",
+      "details": null,
+      "timestamp": "2025-11-24T12:22:40.709735"
+    },
+    {
+      "test": "Products created",
+      "success": true,
+      "message": "0 nouveaux produits créés",
+      "details": null,
+      "timestamp": "2025-11-24T12:22:40.709741"
+    },
+    {
+      "test": "Stock entries created",
+      "success": true,
+      "message": "0 entrées de stock créées",
+      "details": null,
+      "timestamp": "2025-11-24T12:22:40.709745"
+    },
+    {
+      "test": "Price alerts",
+      "success": true,
+      "message": "0 alertes de prix générées",
+      "details": null,
+      "timestamp": "2025-11-24T12:22:40.709750"
+    },
+    {
+      "test": "Order created",
+      "success": true,
+      "message": "Commande créée: bcb23192-da37-4ca3-8a6e-3b84cb188a0d",
+      "details": null,
+      "timestamp": "2025-11-24T12:22:40.709755"
+    },
+    {
+      "test": "Stock updates (entree)",
+      "success": false,
+      "message": "Aucun changement détecté dans les stocks",
+      "details": null,
+      "timestamp": "2025-11-24T12:22:42.724428"
+    },
+    {
+      "test": "Mouvement creation (entree)",
+      "success": false,
+      "message": "Aucun nouveau mouvement de type 'entree' détecté",
+      "details": null,
+      "timestamp": "2025-11-24T12:22:42.780285"
+    },
+    {
+      "test": "Order creation",
+      "success": true,
+      "message": "Nouvelle commande créée (1 vs 0)",
+      "details": null,
+      "timestamp": "2025-11-24T12:22:42.799144"
     },
     {
       "test": "Processing Mercuriale",
       "success": false,
       "message": "Aucun document mercuriale disponible pour les tests",
       "details": null,
-      "timestamp": "2025-11-24T12:19:13.986049"
+      "timestamp": "2025-11-24T12:22:42.799415"
     },
     {
       "test": "Error case - Invalid document ID",
-      "success": false,
-      "message": "Code d'erreur inattendu: 500",
+      "success": true,
+      "message": "Erreur 404 correctement retournée pour ID invalide",
       "details": null,
-      "timestamp": "2025-11-24T12:19:44.526548"
+      "timestamp": "2025-11-24T12:22:42.819276"
     },
     {
-      "test": "Document status verification",
-      "success": false,
-      "message": "Erreur lors de la vérification: 500",
+      "test": "Error case - Wrong document type",
+      "success": true,
+      "message": "Erreur 400 correctement retournée pour mauvais type",
       "details": null,
-      "timestamp": "2025-11-24T12:20:15.069578"
+      "timestamp": "2025-11-24T12:22:42.876520"
+    },
+    {
+      "test": "Document status update",
+      "success": true,
+      "message": "1 documents avec statut 'integre'",
+      "details": null,
+      "timestamp": "2025-11-24T12:22:42.900867"
     }
   ]
 }
