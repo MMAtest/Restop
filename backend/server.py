@@ -6294,7 +6294,7 @@ async def execute_preparation(preparation_id: str, request: ExecutePreparationRe
             raise HTTPException(status_code=400, detail=f"Stock insuffisant pour {produit_nom}")
         
         # Déduire le stock
-        nouveau_stock = stock_actuel - quantite_brut_necessaire
+        nouveau_stock = round_stock_quantity(stock_actuel - quantite_brut_necessaire)
         await db.stocks.update_one(
             {"produit_id": produit_id},
             {
