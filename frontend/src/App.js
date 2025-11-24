@@ -3017,10 +3017,10 @@ function App() {
           )}
 
           {/* ONGLET ALERTES */}
-          {activeDashboardTab === "alertes" && (
+          {activeDashboardTab === "alertes" && !hideDemoData && (
             <div className="section-card">
               <div className="section-title">
-                ⚠️ Alertes & Notifications
+                ⚠️ Alertes & Notifications (Données de Démo)
                 {selectedDateRange && (
                   <span style={{ 
                     fontSize: '12px', 
