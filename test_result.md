@@ -645,6 +645,21 @@ backend:
         comment: "❌ PERMISSIONS RÔLES - DÉPENDANCE UTILISATEURS ! Tests des permissions basées sur les rôles bloqués : ❌ PROBLÈME PRINCIPAL : Pas d'utilisateurs test disponibles pour tester les permissions par rôle ❌ CAUSE : Gestion des utilisateurs test défaillante entre les tests ✅ RÔLES DÉFINIS : 5 rôles RBAC implémentés (super_admin, gerant, chef_cuisine, barman, caissier) ✅ LOGIQUE PERMISSIONS : Patron → tous, Chef → cuisiniers implémentée. NÉCESSITE CORRECTION de la persistance des données utilisateur pour valider les permissions basées sur les rôles."
 
 frontend:
+  - task: "Accès Page Orders pour Rôle Barman"
+    implemented: true
+    working: true
+    file: "/app/frontend/src/App.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Rôle barman ajouté à la fonction canAccessOrders() pour donner accès à la page Orders. Fonction inclut maintenant : super_admin, patron, chef_cuisine, employe_cuisine, barman"
+      - working: true
+        agent: "testing"
+        comment: "✅ ACCÈS ORDERS BARMAN VALIDÉ - 100% RÉUSSITE ! Test complet confirme que le barman a maintenant accès à la page Orders : ✅ Login barman_test réussi avec MongoDB connecté ✅ Dashboard chargé correctement (Bonjour Sophie Leroy!) ✅ Bouton Orders (🛒) visible et accessible dans la navigation ✅ Page Orders fonctionnelle avec titre 'Gestion des Commandes' ✅ Interface complète : statistiques (24 commandes, 3247€, 7 en attente, 12 fournisseurs), onglets (Commande Manuelle, Automatique, Historique), sélection fournisseurs (Maison Artigiana, Pêcherie des Sanguinaires, etc.) ✅ Navigation bottom-nav opérationnelle (HOME, STOCK, PRODUCTION, ORDERS) ✅ Comparaison avec Patron : Le barman a le même accès que le patron à la page Orders comme attendu. Fonction canAccessOrders() fonctionne parfaitement avec tous les rôles : super_admin, patron, chef_cuisine, employe_cuisine, barman. Correction appliquée avec succès et frontend redémarré."
+
   - task: "Restrictions Employé de Cuisine - Interface Complète"
     implemented: true
     working: true
