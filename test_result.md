@@ -125,7 +125,7 @@ backend:
 
   - task: "API OCR Processing - Factures Fournisseurs vers Produits et Stocks"
     implemented: true
-    working: true
+    working: "NA"
     file: "/app/backend/server.py"
     stuck_count: 0
     priority: "high"
@@ -137,6 +137,9 @@ backend:
       - working: true
         agent: "testing"
         comment: "✅ ENDPOINT FACTURE FONCTIONNEL - 70% RÉUSSITE ! Test complet avec document facture réel montre que l'endpoint fonctionne correctement : ✅ Structure réponse complète (success, supplier_id, products_matched, products_created, stock_entries_created, price_alerts, order_id) ✅ Supplier matching réussi (Maison Artigiana trouvé et matché) ✅ Commande fournisseur créée automatiquement ✅ Gestion d'erreurs appropriée (404 pour ID invalide, 400 pour mauvais type) ✅ Statut document mis à jour à 'integre' ❌ LIMITATIONS IDENTIFIÉES : Products matching 0/4 produits (Burrata, Mozzarella, Parmesan, Huile d'olive non matchés malgré existence en base), aucune entrée de stock créée, aucun mouvement de stock généré. CAUSE PROBABLE : Algorithme de matching produits trop strict ou noms OCR légèrement différents des noms en base. Fonctionnalité principale opérationnelle mais optimisation matching requise."
+      - working: "NA"
+        agent: "testing"
+        comment: "⚠️ ENDPOINT FACTURE NON TESTÉ - DOCUMENTS MANQUANTS ! Impossible de tester l'endpoint POST /api/ocr/process-facture/{document_id} car aucun document de type 'facture_fournisseur' disponible en base de données lors du test post-correction. Tests d'erreurs validés : ✅ Gestion correcte ID invalide (404) ✅ Gestion correcte mauvais type document (400). RECOMMANDATION : Créer des documents facture de test pour validation complète de l'endpoint après les corrections appliquées. Endpoint probablement fonctionnel basé sur les tests précédents mais nécessite validation avec documents réels."
 
   - task: "API OCR Processing - Mercuriales vers Prix de Référence"
     implemented: true
