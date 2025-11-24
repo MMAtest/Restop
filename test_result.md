@@ -173,15 +173,18 @@ backend:
 
   - task: "API Exécution Préparations - Transformation Produits"
     implemented: true
-    working: "NA"
+    working: false
     file: "/app/backend/server.py"
-    stuck_count: 0
+    stuck_count: 1
     priority: "high"
     needs_retesting: true
     status_history:
       - working: "NA"
         agent: "main"
         comment: "Implémenté endpoint POST /api/preparations/{preparation_id}/execute pour transformer produits bruts en préparations. Workflow complet: déduction stock produits, calcul pertes transformation, création/mise à jour stock préparations, enregistrement mouvements, gestion DLC automatique. Modèle ExecutePreparationResult avec détails produits déduits et warnings."
+      - working: false
+        agent: "testing"
+        comment: "❌ API EXÉCUTION PRÉPARATIONS - PROBLÈME CRITIQUE MODÈLE ! Tests révèlent un problème de conception dans ExecutePreparationRequest : ❌ PROBLÈME PRINCIPAL : Le modèle ExecutePreparationRequest inclut preparation_id comme champ requis, mais l'endpoint reçoit déjà preparation_id comme paramètre de chemin → conflit de paramètres ❌ RÉSULTAT : Toutes les requêtes POST /preparations/{id}/execute échouent avec erreur 422 'Field required: preparation_id' même quand preparation_id est fourni dans l'URL ❌ IMPACT : Impossible d'exécuter des préparations, workflow de transformation produits→préparations complètement bloqué ✅ SOLUTION IDENTIFIÉE : Retirer preparation_id du modèle ExecutePreparationRequest (ligne 486 server.py) car déjà fourni par le path parameter. Endpoint et logique métier sont corrects, seul le modèle de requête pose problème."
 
   - task: "API Recettes - Support Produits ET Préparations"
     implemented: true
