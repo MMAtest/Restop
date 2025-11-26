@@ -294,7 +294,11 @@ REAL_RECETTES = [
         "categorie": "Plat",
         "portions": 4,
         "prix_vente": 25.00,
-        "ingredients": []
+        "ingredients": [
+            {"nom": "Gnocchi", "quantite": 0.6, "unite": "kg"},
+            {"nom": "Sauce tomate", "quantite": 0.3, "unite": "L"},
+            {"nom": "Basilic frais", "quantite": 1, "unite": "botte"}
+        ]
     },
     {
         "nom": "Nos farcis provençaux",
