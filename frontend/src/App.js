@@ -4657,7 +4657,7 @@ function App() {
                                   {/* Contenu de la catégorie */}
                                   {categoriesPreparationsExpanded[categoryName] && (
                                     <div style={{padding: '0'}}>
-                                      {preparationsCategory.map((stockPrep, index) => {
+                                      {filteredPreparationsCategory.map((stockPrep, index) => {
                                         const isStockCritique = stockPrep.quantite_disponible <= stockPrep.quantite_min;
                                         const isDlcProche = stockPrep.dlc && new Date(stockPrep.dlc) < new Date(Date.now() + 3 * 24 * 60 * 60 * 1000);
                                         
