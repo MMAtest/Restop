@@ -11,7 +11,7 @@ import time
 import os
 
 # Configuration
-BASE_URL = "https://restop.preview.emergentagent.com/api"
+BASE_URL = "https://resto-inventory-32.preview.emergentagent.com/api"
 HEADERS = {"Content-Type": "application/json"}
 
 class StockManagementTestSuite:

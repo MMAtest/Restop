@@ -8,7 +8,7 @@ import json
 from datetime import datetime
 
 # Configuration from frontend .env
-FRONTEND_BACKEND_URL = "https://restop.preview.emergentagent.com"
+FRONTEND_BACKEND_URL = "https://resto-inventory-32.preview.emergentagent.com"
 API_BASE = f"{FRONTEND_BACKEND_URL}/api"
 
 class FrontendAPITest:
@@ -38,8 +38,8 @@ class FrontendAPITest:
         headers = {
             'Content-Type': 'application/json',
             'Accept': 'application/json',
-            'Origin': 'https://restop.preview.emergentagent.com',  # Simulate frontend origin
-            'Referer': 'https://restop.preview.emergentagent.com/'
+            'Origin': 'https://resto-inventory-32.preview.emergentagent.com',  # Simulate frontend origin
+            'Referer': 'https://resto-inventory-32.preview.emergentagent.com/'
         }
         
         # Test 1: GET /api/produits (comme DataGridsPage le fait)
@@ -104,7 +104,7 @@ class FrontendAPITest:
         
         # Simuler une requête preflight
         headers = {
-            'Origin': 'https://restop.preview.emergentagent.com',
+            'Origin': 'https://resto-inventory-32.preview.emergentagent.com',
             'Access-Control-Request-Method': 'GET',
             'Access-Control-Request-Headers': 'content-type'
         }
@@ -168,7 +168,7 @@ class FrontendAPITest:
         # Simuler exactement ce que fait DataGridsPage.jsx
         try:
             # Simuler process.env.REACT_APP_BACKEND_URL
-            BACKEND_URL = "https://restop.preview.emergentagent.com"
+            BACKEND_URL = "https://resto-inventory-32.preview.emergentagent.com"
             API = f"{BACKEND_URL}/api"
             
             print(f"BACKEND_URL utilisé: {BACKEND_URL}")
