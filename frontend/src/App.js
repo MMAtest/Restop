@@ -3427,6 +3427,7 @@ function App() {
               </div>
 
               {/* Nouvelle section séparée : DLC Critiques */}
+              {!hideDemoData && (
               <div className="alert-section">
                 <div className="alert-header" style={{display: 'flex', alignItems: 'center'}}>
                   <div className="alert-title">DLC Critiques (&lt; 3 jours)</div>
