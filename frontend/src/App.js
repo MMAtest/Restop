@@ -3090,7 +3090,7 @@ function App() {
           {activeDashboardTab === "alertes" && (
             <div className="section-card">
               <div className="section-title">
-                ⚠️ Alertes & Notifications (Données de Démo)
+                ⚠️ Alertes & Notifications {!hideDemoData && '(Données de Démo)'}
                 {selectedDateRange && (
                   <span style={{ 
                     fontSize: '12px', 
@@ -3103,7 +3103,35 @@ function App() {
                 )}
               </div>
               
+              {/* Message si pas de données */}
+              {hideDemoData && (
+                <div style={{
+                  padding: '40px',
+                  textAlign: 'center',
+                  background: 'var(--color-background-card-light)',
+                  borderRadius: '8px',
+                  border: '2px dashed var(--color-border)'
+                }}>
+                  <div style={{fontSize: '48px', marginBottom: '16px'}}>⚠️</div>
+                  <h3 style={{color: 'var(--color-text-primary)', marginBottom: '8px'}}>Aucune alerte disponible</h3>
+                  <p style={{color: 'var(--color-text-secondary)', fontSize: '14px', marginBottom: '16px'}}>
+                    Les alertes apparaîtront automatiquement quand :
+                  </p>
+                  <ul style={{
+                    textAlign: 'left',
+                    display: 'inline-block',
+                    color: 'var(--color-text-secondary)',
+                    fontSize: '14px'
+                  }}>
+                    <li>📦 Stock d'un produit devient critique</li>
+                    <li>⏰ DLC d'une préparation approche (< 3 jours)</li>
+                    <li>🔄 Rupture de stock détectée</li>
+                  </ul>
+                </div>
+              )}
+              
               {/* Alertes de stock faible avec switch */}
+              {!hideDemoData && (
               <div className="alert-section">
                 <div className="alert-header" style={{display: 'flex', alignItems: 'center', justifyContent: 'space-between'}}>
                   <div style={{display: 'flex', alignItems: 'center'}}>
