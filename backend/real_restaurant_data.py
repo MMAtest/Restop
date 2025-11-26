@@ -369,7 +369,7 @@ REAL_RECETTES = [
         "prix_vente": 23.00,
         "ingredients": [
             {"nom": "Sanguins (gibier)", "quantite": 0.8, "unite": "kg"},
-            {"nom": "Oignons", "quantite": 0.2, "unite": "kg"}
+            {"nom": "Oignons émincés caramélisés", "quantite": 0.07, "unite": "kg", "ingredient_type": "preparation"}
         ]
     },
     {
