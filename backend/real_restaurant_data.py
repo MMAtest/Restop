@@ -383,14 +383,21 @@ REAL_RECETTES = [
         "categorie": "Plat",
         "portions": 4,
         "prix_vente": 11.00,
-        "ingredients": []
+        "ingredients": [
+            {"nom": "Pommes de terre", "quantite": 0.8, "unite": "kg"},
+            {"nom": "Truffe (Uncinatum)", "quantite": 0.015, "unite": "kg"},
+            {"nom": "Crème fraîche", "quantite": 0.2, "unite": "L"}
+        ]
     },
     {
         "nom": "Gnocchi artisanaux au beurre",
         "categorie": "Plat",
         "portions": 4,
         "prix_vente": 11.00,
-        "ingredients": []
+        "ingredients": [
+            {"nom": "Gnocchi", "quantite": 0.6, "unite": "kg"},
+            {"nom": "Beurre", "quantite": 0.08, "unite": "kg"}
+        ]
     },
     
     # DESSERTS - CARTE COMPLÈTE
