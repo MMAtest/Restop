@@ -19,7 +19,7 @@ const DateRangePicker = ({ onDateRangeChange, initialRange = null }) => {
   ];
 
   // Calculer les dates selon l'option sélectionnée
-  const calculateDateRange = (range) => {
+  const calculateDateRange = (range, offset = currentDateOffset) => {
     const now = new Date();
     const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
     
@@ -35,19 +35,14 @@ const DateRangePicker = ({ onDateRangeChange, initialRange = null }) => {
     
     switch (range) {
       case 'today':
-        return { 
-          startDate: today, 
-          endDate: today,
-          label: formatDate(today)
-        };
-      
       case 'yesterday':
-        const yesterday = new Date(today);
-        yesterday.setDate(yesterday.getDate() - 1);
+        // Pour aujourd'hui et hier, on applique l'offset
+        const targetDate = new Date(today);
+        targetDate.setDate(today.getDate() + offset);
         return { 
-          startDate: yesterday, 
-          endDate: yesterday,
-          label: formatDate(yesterday)
+          startDate: targetDate, 
+          endDate: targetDate,
+          label: formatDate(targetDate)
         };
       
       case 'thisWeek':
