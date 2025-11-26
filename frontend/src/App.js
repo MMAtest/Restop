@@ -3975,7 +3975,7 @@ function App() {
               )}
               
               {filteredAnalytics.caTotal > 0 && (
-              <>
+                <>
               <div className="kpi-grid">
                 <div className="kpi-card">
                   <div className="icon">💹</div>
