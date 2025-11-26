@@ -4791,13 +4791,23 @@ function App() {
                       );
                     } else {
                       // Affichage par produits (mode par défaut)
-                      // Filtrer les stocks selon la recherche et la catégorie
+                      // Filtrer les stocks selon la recherche, la catégorie et le filtre de card
                       const filteredStocks = stocks.filter(stock => {
                         const produit = produits.find(p => p.id === stock.produit_id);
                         const matchesSearch = stock.produit_nom.toLowerCase().includes(stockSearchTerm.toLowerCase());
                         const matchesCategory = stockFilterCategory === 'all' || 
                                               (produit && produit.categorie && produit.categorie.toLowerCase() === stockFilterCategory.toLowerCase());
-                        return matchesSearch && matchesCategory;
+                        
+                        // Filtre selon la card cliquée
+                        let matchesFilter = true;
+                        if (stockFilter === 'critical') {
+                          matchesFilter = stock.quantite_actuelle <= stock.quantite_min;
+                        } else if (stockFilter === 'dlc') {
+                          // Pour les produits, on vérifie dans les préparations associées
+                          matchesFilter = false; // Par défaut pas de DLC sur les produits bruts
+                        }
+                        
+                        return matchesSearch && matchesCategory && matchesFilter;
                       });
                     
                     // Calculer la pagination
