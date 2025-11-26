@@ -22,12 +22,22 @@ const DateRangePicker = ({ onDateRangeChange, initialRange = null }) => {
     const now = new Date();
     const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
     
+    // Fonction helper pour formater les dates en français
+    const formatDate = (date) => {
+      const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+      return date.toLocaleDateString('fr-FR', options);
+    };
+    
+    const formatDateShort = (date) => {
+      return date.toLocaleDateString('fr-FR');
+    };
+    
     switch (range) {
       case 'today':
         return { 
           startDate: today, 
           endDate: today,
-          label: 'Aujourd\'hui'
+          label: formatDate(today)
         };
       
       case 'yesterday':
@@ -36,7 +46,7 @@ const DateRangePicker = ({ onDateRangeChange, initialRange = null }) => {
         return { 
           startDate: yesterday, 
           endDate: yesterday,
-          label: 'Hier'
+          label: formatDate(yesterday)
         };
       
       case 'thisWeek':
@@ -45,7 +55,7 @@ const DateRangePicker = ({ onDateRangeChange, initialRange = null }) => {
         return { 
           startDate: startOfWeek, 
           endDate: today,
-          label: 'Cette semaine'
+          label: `Du ${formatDateShort(startOfWeek)} au ${formatDateShort(today)}`
         };
       
       case 'lastWeek':
@@ -56,7 +66,7 @@ const DateRangePicker = ({ onDateRangeChange, initialRange = null }) => {
         return { 
           startDate: lastWeekStart, 
           endDate: lastWeekEnd,
-          label: 'Semaine dernière'
+          label: `Du ${formatDateShort(lastWeekStart)} au ${formatDateShort(lastWeekEnd)}`
         };
       
       case 'thisMonth':
@@ -64,7 +74,7 @@ const DateRangePicker = ({ onDateRangeChange, initialRange = null }) => {
         return { 
           startDate: startOfMonth, 
           endDate: today,
-          label: 'Ce mois'
+          label: `Du ${formatDateShort(startOfMonth)} au ${formatDateShort(today)}`
         };
       
       case 'lastMonth':
@@ -73,7 +83,7 @@ const DateRangePicker = ({ onDateRangeChange, initialRange = null }) => {
         return { 
           startDate: lastMonthStart, 
           endDate: lastMonthEnd,
-          label: 'Mois dernier'
+          label: `Du ${formatDateShort(lastMonthStart)} au ${formatDateShort(lastMonthEnd)}`
         };
       
       case 'custom':
@@ -87,7 +97,7 @@ const DateRangePicker = ({ onDateRangeChange, initialRange = null }) => {
         return null;
       
       default:
-        return { startDate: today, endDate: today, label: 'Aujourd\'hui' };
+        return { startDate: today, endDate: today, label: formatDate(today) };
     }
   };
 
