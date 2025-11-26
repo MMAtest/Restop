@@ -97,6 +97,8 @@ REAL_PRODUITS = [
     {"nom": "Beurre", "categorie": "Crêmerie", "unite": "kg", "reference_price": 8.00},
     {"nom": "Crème fraîche", "categorie": "Crêmerie", "unite": "L", "reference_price": 6.00},
     {"nom": "Yaourt", "categorie": "Crêmerie", "unite": "kg", "reference_price": 5.00},
+    {"nom": "Lait", "categorie": "Crêmerie", "unite": "L", "reference_price": 1.50},
+    {"nom": "Œufs", "categorie": "Crêmerie", "unite": "kg", "reference_price": 3.50},
     
     # Épices et aromates
     {"nom": "Basilic frais", "categorie": "Épices", "unite": "botte", "reference_price": 2.50},
