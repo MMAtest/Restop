@@ -3126,7 +3126,7 @@ function App() {
                     fontSize: '14px'
                   }}>
                     <li>📦 Stock d'un produit devient critique</li>
-                    <li>⏰ DLC d'une préparation approche (< 3 jours)</li>
+                    <li>⏰ DLC d'une préparation approche (&lt; 3 jours)</li>
                     <li>🔄 Rupture de stock détectée</li>
                   </ul>
                 </div>
