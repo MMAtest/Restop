@@ -362,7 +362,10 @@ REAL_RECETTES = [
         "categorie": "Plat",
         "portions": 4,
         "prix_vente": 6.00,
-        "ingredients": []
+        "ingredients": [
+            {"nom": "Pommes de terre", "quantite": 0.8, "unite": "kg"},
+            {"nom": "Beurre", "quantite": 0.05, "unite": "kg"}
+        ]
     },
     {
         "nom": "Poêlée de légumes",
