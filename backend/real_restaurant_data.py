@@ -298,8 +298,8 @@ REAL_RECETTES = [
         "portions": 4,
         "prix_vente": 18.00,
         "ingredients": [
-            {"nom": "Persil", "quantite": 1, "unite": "botte"},
-            {"nom": "Ail", "quantite": 0.02, "unite": "kg"}
+            {"nom": "Moules", "quantite": 1.2, "unite": "kg"},
+            {"nom": "Persillade (ail et persil)", "quantite": 0.04, "unite": "kg", "ingredient_type": "preparation"}
         ]
     },
     {
