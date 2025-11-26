@@ -158,6 +158,7 @@ function App() {
   
   // État pour l'affichage des stocks
   const [stockViewMode, setStockViewMode] = useState('produits'); // 'produits', 'preparations' ou 'productions'
+  const [stockFilter, setStockFilter] = useState('all'); // 'all', 'critical', 'dlc'
   
   // États pour le système d'archivage
   const [archivedItems, setArchivedItems] = useState([]);
