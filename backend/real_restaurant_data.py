@@ -66,8 +66,13 @@ REAL_PRODUITS = [
     
     # Produits laitiers
     {"nom": "Parmesan", "categorie": "Crêmerie", "unite": "kg", "reference_price": 32.00},
+    {"nom": "Comté", "categorie": "Crêmerie", "unite": "kg", "reference_price": 28.00},
     {"nom": "Mozzarella", "categorie": "Crêmerie", "unite": "kg", "reference_price": 8.50},
+    {"nom": "Mascarpone", "categorie": "Crêmerie", "unite": "kg", "reference_price": 12.00},
     {"nom": "Brocciu", "categorie": "Crêmerie", "unite": "kg", "reference_price": 15.00},
+    {"nom": "Beurre", "categorie": "Crêmerie", "unite": "kg", "reference_price": 8.00},
+    {"nom": "Crème fraîche", "categorie": "Crêmerie", "unite": "L", "reference_price": 6.00},
+    {"nom": "Yaourt", "categorie": "Crêmerie", "unite": "kg", "reference_price": 5.00},
     
     # Épices et aromates
     {"nom": "Basilic frais", "categorie": "Épices", "unite": "botte", "reference_price": 2.50},
