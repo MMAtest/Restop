@@ -117,12 +117,12 @@ REAL_PREPARATIONS = [
 
 # Productions (recettes) réelles - CARTE COMPLÈTE
 REAL_RECETTES = [
-    # ENTRÉES
+    # ENTRÉES - CARTE COMPLÈTE
     {
-        "nom": "Supions en persillade",
+        "nom": "Supions en persillade de Mamie",
         "categorie": "Entrée",
         "portions": 4,
-        "prix_vente": 14.50,
+        "prix_vente": 26.00,
         "ingredients": [
             {"nom": "Supions", "quantite": 0.4, "unite": "kg"},
             {"nom": "Persil", "quantite": 1, "unite": "botte"},
@@ -130,35 +130,70 @@ REAL_RECETTES = [
         ]
     },
     {
-        "nom": "Rougets grillés",
+        "nom": "Moules gratinées en persillade",
         "categorie": "Entrée",
         "portions": 4,
-        "prix_vente": 16.50,
+        "prix_vente": 18.00,
         "ingredients": [
-            {"nom": "Rougets", "quantite": 0.8, "unite": "kg"},
-            {"nom": "Basilic frais", "quantite": 1, "unite": "botte"}
+            {"nom": "Persil", "quantite": 1, "unite": "botte"},
+            {"nom": "Ail", "quantite": 0.02, "unite": "kg"}
         ]
     },
     {
-        "nom": "Salade de saison",
+        "nom": "Saint-Jacques façon Mr Paul Bocuse",
         "categorie": "Entrée",
         "portions": 4,
-        "prix_vente": 12.50,
-        "ingredients": [
-            {"nom": "Tomates cerises", "quantite": 0.3, "unite": "kg"},
-            {"nom": "Mozzarella", "quantite": 0.2, "unite": "kg"},
-            {"nom": "Basilic frais", "quantite": 1, "unite": "botte"}
-        ]
+        "prix_vente": 27.00,
+        "ingredients": []
     },
     {
-        "nom": "Fleurs de courgettes farcies",
+        "nom": "Le crabe sublimé d'Augustine",
+        "categorie": "Entrée",
+        "portions": 4,
+        "prix_vente": 29.00,
+        "ingredients": []
+    },
+    {
+        "nom": "Les panisses de l'Estaque",
         "categorie": "Entrée",
         "portions": 4,
         "prix_vente": 15.00,
-        "ingredients": [
-            {"nom": "Courgettes", "quantite": 0.4, "unite": "kg"},
-            {"nom": "Brocciu", "quantite": 0.15, "unite": "kg"}
-        ]
+        "ingredients": []
+    },
+    {
+        "nom": "Le pâté en croûte de Mamet Augustine",
+        "categorie": "Entrée",
+        "portions": 4,
+        "prix_vente": 18.00,
+        "ingredients": []
+    },
+    {
+        "nom": "La soupe à l'oignon, foie gras & Comté",
+        "categorie": "Entrée",
+        "portions": 4,
+        "prix_vente": 19.00,
+        "ingredients": []
+    },
+    {
+        "nom": "Cuisses de grenouilles à la française",
+        "categorie": "Entrée",
+        "portions": 4,
+        "prix_vente": 24.00,
+        "ingredients": []
+    },
+    {
+        "nom": "La fameuse poêlée de sanguins des chasseurs",
+        "categorie": "Entrée",
+        "portions": 4,
+        "prix_vente": 23.00,
+        "ingredients": []
+    },
+    {
+        "nom": "Foie gras de canard IGP",
+        "categorie": "Entrée",
+        "portions": 4,
+        "prix_vente": 28.00,
+        "ingredients": []
     },
     
     # PLATS
