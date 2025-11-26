@@ -4073,6 +4073,8 @@ function App() {
                   <div className="value positive">{Math.round(filteredAnalytics.caTotal * 0.685).toLocaleString('fr-FR')} €</div>
                 </div>
               </div>
+              </>
+              )}
             </div>
           )}
 
