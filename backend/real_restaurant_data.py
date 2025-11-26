@@ -424,14 +424,21 @@ REAL_RECETTES = [
         "categorie": "Dessert",
         "portions": 4,
         "prix_vente": 12.00,
-        "ingredients": []
+        "ingredients": [
+            {"nom": "Crêpes", "quantite": 0.3, "unite": "kg"},
+            {"nom": "Jus d'orange", "quantite": 0.2, "unite": "L"},
+            {"nom": "Beurre", "quantite": 0.05, "unite": "kg"}
+        ]
     },
     {
         "nom": "Mont Blanc classique",
         "categorie": "Dessert",
         "portions": 4,
         "prix_vente": 12.00,
-        "ingredients": []
+        "ingredients": [
+            {"nom": "Marrons", "quantite": 0.4, "unite": "kg"},
+            {"nom": "Crème fraîche", "quantite": 0.2, "unite": "L"}
+        ]
     },
     
     # COCKTAILS & BAR
