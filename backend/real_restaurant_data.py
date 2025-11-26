@@ -406,7 +406,9 @@ REAL_RECETTES = [
         "categorie": "Dessert",
         "portions": 4,
         "prix_vente": 13.00,
-        "ingredients": []
+        "ingredients": [
+            {"nom": "Yaourt", "quantite": 0.5, "unite": "kg"}
+        ]
     },
     {
         "nom": "Tiramisu de Mamet",
