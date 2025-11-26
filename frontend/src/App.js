@@ -3939,6 +3939,34 @@ function App() {
                 )}
               </div>
               
+              {/* Message si pas de données */}
+              {filteredAnalytics.caTotal === 0 && (
+                <div style={{
+                  padding: '40px',
+                  textAlign: 'center',
+                  background: 'var(--color-background-card-light)',
+                  borderRadius: '8px',
+                  border: '2px dashed var(--color-border)'
+                }}>
+                  <div style={{fontSize: '48px', marginBottom: '16px'}}>📈</div>
+                  <h3 style={{color: 'var(--color-text-primary)', marginBottom: '8px'}}>Aucune donnée de rentabilité disponible</h3>
+                  <p style={{color: 'var(--color-text-secondary)', fontSize: '14px', marginBottom: '16px'}}>
+                    L'analyse de rentabilité nécessite :
+                  </p>
+                  <ul style={{
+                    textAlign: 'left',
+                    display: 'inline-block',
+                    color: 'var(--color-text-secondary)',
+                    fontSize: '14px'
+                  }}>
+                    <li>💰 Données de ventes (CA)</li>
+                    <li>📄 Données de coûts (factures)</li>
+                    <li>🍽️ Recettes avec coûts matière calculés</li>
+                  </ul>
+                </div>
+              )}
+              
+              {filteredAnalytics.caTotal > 0 && (
               <div className="kpi-grid">
                 <div className="kpi-card">
                   <div className="icon">💹</div>
