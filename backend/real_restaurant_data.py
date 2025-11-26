@@ -148,7 +148,7 @@ REAL_PREPARATIONS = [
         "perte": 0.15,
         "perte_pourcentage": 15.0,
         "nombre_portions": 8,
-        "taille_portion": 0.106,  # 106g par portion
+        "taille_portion": 0.106,
         "unite_portion": "kg",
         "dlc_jours": 2
     },
@@ -163,9 +163,51 @@ REAL_PREPARATIONS = [
         "perte": 0.4,
         "perte_pourcentage": 20.0,
         "nombre_portions": 16,
-        "taille_portion": 0.1,  # 100g par portion
+        "taille_portion": 0.1,
         "unite_portion": "kg",
         "dlc_jours": 3
+    },
+    {
+        "nom": "Pâte à crêpes",
+        "produit_brut": "Farine",
+        "forme_decoupe": "mélange",
+        "quantite_produit_brut": 0.5,  # 500g farine
+        "unite_produit_brut": "kg",
+        "quantite_preparee": 1.5,  # 1.5L de pâte
+        "unite_preparee": "L",
+        "perte": 0.0,
+        "perte_pourcentage": 0.0,
+        "nombre_portions": 12,
+        "taille_portion": 0.125,  # 125ml par crêpe
+        "unite_portion": "L",
+        "dlc_jours": 2,
+        "ingredients_supplementaires": [
+            {"nom": "Lait", "quantite": 0.75, "unite": "L"},
+            {"nom": "Œufs", "quantite": 0.2, "unite": "kg"},  # ~4 œufs
+            {"nom": "Sucre", "quantite": 0.05, "unite": "kg"},
+            {"nom": "Grand Marnier", "quantite": 0.03, "unite": "L"}
+        ]
+    },
+    {
+        "nom": "Sauce tomate maison",
+        "produit_brut": "Tomates cerises",
+        "forme_decoupe": "concassé",
+        "quantite_produit_brut": 2.0,
+        "unite_produit_brut": "kg",
+        "quantite_preparee": 1.5,
+        "unite_preparee": "L",
+        "perte": 0.5,
+        "perte_pourcentage": 25.0,
+        "nombre_portions": 15,
+        "taille_portion": 0.1,  # 100ml par portion
+        "unite_portion": "L",
+        "dlc_jours": 5,
+        "ingredients_supplementaires": [
+            {"nom": "Thym", "quantite": 1, "unite": "botte"},
+            {"nom": "Romarin", "quantite": 1, "unite": "botte"},
+            {"nom": "Sel", "quantite": 0.02, "unite": "kg"},
+            {"nom": "Poivre", "quantite": 0.005, "unite": "kg"}
+        ]
     }
 ]
 
