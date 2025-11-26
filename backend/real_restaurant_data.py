@@ -392,8 +392,8 @@ REAL_RECETTES = [
         "prix_vente": 33.00,
         "ingredients": [
             {"nom": "Poisson du jour", "quantite": 1.2, "unite": "kg"},
-            {"nom": "Pommes de terre", "quantite": 0.4, "unite": "kg"},
-            {"nom": "Tomates cerises", "quantite": 0.2, "unite": "kg"}
+            {"nom": "Pommes de terre épluchées et coupées", "quantite": 0.35, "unite": "kg", "ingredient_type": "preparation"},
+            {"nom": "Tomates cerises lavées et coupées", "quantite": 0.17, "unite": "kg", "ingredient_type": "preparation"}
         ]
     },
     {
