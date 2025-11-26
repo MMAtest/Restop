@@ -3,7 +3,7 @@ Données réelles du restaurant La Table d'Augustine
 À utiliser pour restaurer les vraies données du restaurant
 """
 
-# Fournisseurs réels
+# Fournisseurs réels - UN PAR CATÉGORIE
 REAL_FOURNISSEURS = [
     {
         "nom": "Maison Artigiana",
@@ -22,6 +22,30 @@ REAL_FOURNISSEURS = [
         "categorie": "frais",
         "telephone": "04 95 XX XX XX",
         "email": "contact@maestracci.fr"
+    },
+    {
+        "nom": "Maraîcher du Cap Corse",
+        "categorie": "légumes",
+        "telephone": "04 95 XX XX XX",
+        "email": "contact@maraichers-capcorse.fr"
+    },
+    {
+        "nom": "Fromagerie de Corse",
+        "categorie": "crêmerie",
+        "telephone": "04 95 XX XX XX",
+        "email": "info@fromagerie-corse.fr"
+    },
+    {
+        "nom": "Caves & Spiritueux d'Ajaccio",
+        "categorie": "boissons",
+        "telephone": "04 95 XX XX XX",
+        "email": "contact@caves-ajaccio.fr"
+    },
+    {
+        "nom": "Épices & Aromates du Marché",
+        "categorie": "épices",
+        "telephone": "04 95 XX XX XX",
+        "email": "info@epices-marche.fr"
     }
 ]
 
