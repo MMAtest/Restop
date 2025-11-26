@@ -5,6 +5,7 @@ const DateRangePicker = ({ onDateRangeChange, initialRange = null }) => {
   const [customStartDate, setCustomStartDate] = useState('');
   const [customEndDate, setCustomEndDate] = useState('');
   const [showCustomPicker, setShowCustomPicker] = useState(false);
+  const [currentDateOffset, setCurrentDateOffset] = useState(0); // Nombre de jours depuis aujourd'hui
 
   // Options prédéfinies
   const rangeOptions = [
