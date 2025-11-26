@@ -508,8 +508,7 @@ REAL_RECETTES = [
         "portions": 4,
         "prix_vente": 6.00,
         "ingredients": [
-            {"nom": "Courgettes", "quantite": 0.5, "unite": "kg"},
-            {"nom": "Aubergines", "quantite": 0.5, "unite": "kg"},
+            {"nom": "Légumes grillés (courgettes, aubergines)", "quantite": 0.8, "unite": "kg", "ingredient_type": "preparation"},
             {"nom": "Poivrons", "quantite": 0.4, "unite": "kg"}
         ]
     },
