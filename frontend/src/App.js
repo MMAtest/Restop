@@ -3488,6 +3488,7 @@ function App() {
                   </div>
                 </div>
               </div>
+              )}
 
               {/* Section DLC < 3 jours */}
               {!hideDemoData && (
