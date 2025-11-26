@@ -4139,13 +4139,31 @@ function App() {
                 {/* KPIs Stocks - MASQUÉS pour employé cuisine */}
                 {currentUser?.role !== 'employe_cuisine' && (
                   <div className="kpi-grid">
-                    <div className="kpi-card">
+                    <div 
+                      className="kpi-card"
+                      onClick={() => setStockFilter(stockFilter === 'all' ? 'all' : 'all')}
+                      style={{
+                        cursor: 'pointer',
+                        border: stockFilter === 'all' ? '2px solid var(--color-primary-blue)' : '1px solid var(--color-border)',
+                        transform: stockFilter === 'all' ? 'scale(1.02)' : 'scale(1)',
+                        transition: 'all 0.2s ease'
+                      }}
+                    >
                       <div className="icon">📈</div>
                       <div className="title">Stock Total</div>
                       <div className="value">{stocks.length} produits</div>
                     </div>
                     
-                    <div className="kpi-card">
+                    <div 
+                      className="kpi-card"
+                      onClick={() => setStockFilter(stockFilter === 'critical' ? 'all' : 'critical')}
+                      style={{
+                        cursor: 'pointer',
+                        border: stockFilter === 'critical' ? '2px solid var(--color-warning-orange)' : '1px solid var(--color-border)',
+                        transform: stockFilter === 'critical' ? 'scale(1.02)' : 'scale(1)',
+                        transition: 'all 0.2s ease'
+                      }}
+                    >
                       <div className="icon">⚠️</div>
                       <div className="title">Stocks Critiques</div>
                       <div className="value warning">
@@ -4153,7 +4171,16 @@ function App() {
                       </div>
                     </div>
                     
-                    <div className="kpi-card">
+                    <div 
+                      className="kpi-card"
+                      onClick={() => setStockFilter(stockFilter === 'all' ? 'all' : 'all')}
+                      style={{
+                        cursor: 'pointer',
+                        border: stockFilter === 'all' ? '2px solid var(--color-primary-blue)' : '1px solid var(--color-border)',
+                        transform: stockFilter === 'all' ? 'scale(1.02)' : 'scale(1)',
+                        transition: 'all 0.2s ease'
+                      }}
+                    >
                       <div className="icon">💰</div>
                       <div className="title">Valeur Totale</div>
                       <div className="value">
@@ -4165,7 +4192,16 @@ function App() {
                       </div>
                     </div>
                     
-                    <div className="kpi-card">
+                    <div 
+                      className="kpi-card"
+                      onClick={() => setStockFilter(stockFilter === 'dlc' ? 'all' : 'dlc')}
+                      style={{
+                        cursor: 'pointer',
+                        border: stockFilter === 'dlc' ? '2px solid var(--color-danger-red)' : '1px solid var(--color-border)',
+                        transform: stockFilter === 'dlc' ? 'scale(1.02)' : 'scale(1)',
+                        transition: 'all 0.2s ease'
+                      }}
+                    >
                       <div className="icon">⏰</div>
                       <div className="title">DLC &lt; 3 jours</div>
                       <div className="value" style={{color: 'var(--color-warning-orange)'}}>
