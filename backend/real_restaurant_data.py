@@ -63,6 +63,22 @@ REAL_PRODUITS = [
     # Huiles et condiments
     {"nom": "Huile d'olive", "categorie": "Épicerie", "unite": "L", "reference_price": 12.00},
     {"nom": "Vinaigre balsamique", "categorie": "Épicerie", "unite": "L", "reference_price": 8.50},
+    
+    # Bar et spiritueux
+    {"nom": "Vodka", "categorie": "Boissons", "unite": "L", "reference_price": 25.00},
+    {"nom": "Rhum", "categorie": "Boissons", "unite": "L", "reference_price": 28.00},
+    {"nom": "Apérol", "categorie": "Boissons", "unite": "L", "reference_price": 18.00},
+    {"nom": "Prosecco", "categorie": "Boissons", "unite": "L", "reference_price": 12.00},
+    {"nom": "Triple Sec", "categorie": "Boissons", "unite": "L", "reference_price": 15.00},
+    
+    # Mixeurs et jus
+    {"nom": "Ginger Beer", "categorie": "Boissons", "unite": "L", "reference_price": 3.50},
+    {"nom": "Jus de Cranberry", "categorie": "Boissons", "unite": "L", "reference_price": 4.00},
+    {"nom": "Jus d'orange", "categorie": "Boissons", "unite": "L", "reference_price": 3.00},
+    {"nom": "Purée de Passion", "categorie": "Boissons", "unite": "L", "reference_price": 8.00},
+    {"nom": "Crème de fraise", "categorie": "Boissons", "unite": "L", "reference_price": 10.00},
+    {"nom": "Crème de pêche", "categorie": "Boissons", "unite": "L", "reference_price": 10.00},
+    {"nom": "Menthe fraîche", "categorie": "Épices", "unite": "kg", "reference_price": 15.00},
 ]
 
 # Préparations réelles
