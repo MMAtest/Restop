@@ -3082,11 +3082,12 @@ function App() {
                   </div>
                 )}
               </div>
+              )}
             </div>
           )}
 
           {/* ONGLET ALERTES */}
-          {activeDashboardTab === "alertes" && !hideDemoData && (
+          {activeDashboardTab === "alertes" && (
             <div className="section-card">
               <div className="section-title">
                 ⚠️ Alertes & Notifications (Données de Démo)
