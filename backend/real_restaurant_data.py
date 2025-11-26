@@ -196,12 +196,26 @@ REAL_RECETTES = [
         "ingredients": []
     },
     
-    # PLATS
+    # PLATS - CARTE COMPLÈTE
     {
-        "nom": "Linguine aux palourdes",
+        "nom": "Pêche du jour au four façon grand-mère",
         "categorie": "Plat",
         "portions": 4,
-        "prix_vente": 22.00,
+        "prix_vente": 33.00,
+        "ingredients": []
+    },
+    {
+        "nom": "La sole meunière, l'excellence",
+        "categorie": "Plat",
+        "portions": 4,
+        "prix_vente": 48.00,
+        "ingredients": []
+    },
+    {
+        "nom": "Linguine aux palourdes & sauce à l'ail",
+        "categorie": "Plat",
+        "portions": 4,
+        "prix_vente": 29.00,
         "ingredients": [
             {"nom": "Linguine", "quantite": 0.4, "unite": "kg"},
             {"nom": "Palourdes", "quantite": 0.8, "unite": "kg"},
@@ -210,64 +224,108 @@ REAL_RECETTES = [
         ]
     },
     {
-        "nom": "Rigatoni à la truffe",
+        "nom": "Rigatoni à la truffe fraîche de Bourgogne",
         "categorie": "Plat",
         "portions": 4,
-        "prix_vente": 28.50,
+        "prix_vente": 35.00,
         "ingredients": [
             {"nom": "Rigatoni", "quantite": 0.4, "unite": "kg"},
             {"nom": "Parmesan", "quantite": 0.08, "unite": "kg"}
         ]
     },
     {
-        "nom": "Bœuf Wellington",
+        "nom": "Gnocchi d'Augustine sauce napolitaine",
         "categorie": "Plat",
-        "portions": 2,
-        "prix_vente": 36.00,
+        "portions": 4,
+        "prix_vente": 25.00,
+        "ingredients": []
+    },
+    {
+        "nom": "Nos farcis provençaux",
+        "categorie": "Plat",
+        "portions": 4,
+        "prix_vente": 31.00,
         "ingredients": [
-            {"nom": "Bœuf (filet)", "quantite": 0.4, "unite": "kg"}
+            {"nom": "Courgettes", "quantite": 0.3, "unite": "kg"},
+            {"nom": "Tomates cerises", "quantite": 0.3, "unite": "kg"},
+            {"nom": "Aubergines", "quantite": 0.3, "unite": "kg"}
         ]
     },
     {
-        "nom": "Souris d'agneau confite",
+        "nom": "La merveilleuse souris d'agneau",
         "categorie": "Plat",
         "portions": 4,
-        "prix_vente": 32.00,
+        "prix_vente": 36.00,
         "ingredients": [
             {"nom": "Agneau (souris)", "quantite": 1.2, "unite": "kg"},
             {"nom": "Ail", "quantite": 0.03, "unite": "kg"}
         ]
     },
     {
-        "nom": "Veau à la milanaise",
+        "nom": "Le fameux boeuf Wellington à la truffe",
         "categorie": "Plat",
-        "portions": 4,
-        "prix_vente": 26.00,
+        "portions": 2,
+        "prix_vente": 56.00,
         "ingredients": [
-            {"nom": "Veau (escalope)", "quantite": 0.6, "unite": "kg"},
-            {"nom": "Parmesan", "quantite": 0.05, "unite": "kg"}
+            {"nom": "Bœuf (filet)", "quantite": 0.4, "unite": "kg"}
         ]
     },
     {
-        "nom": "Daurade grillée",
+        "nom": "Magret de canard de la ferme du Puntoun",
         "categorie": "Plat",
         "portions": 4,
-        "prix_vente": 28.00,
+        "prix_vente": 42.00,
+        "ingredients": []
+    },
+    {
+        "nom": "Côte de boeuf Aubrac",
+        "categorie": "Plat",
+        "portions": 2,
+        "prix_vente": 110.00,
         "ingredients": [
-            {"nom": "Daurade", "quantite": 1.2, "unite": "kg"},
-            {"nom": "Basilic frais", "quantite": 1, "unite": "botte"}
+            {"nom": "Bœuf (filet)", "quantite": 1.0, "unite": "kg"}
         ]
     },
     {
-        "nom": "Légumes grillés du moment",
+        "nom": "Jarret de veau du Sud Ouest",
         "categorie": "Plat",
         "portions": 4,
-        "prix_vente": 18.50,
+        "prix_vente": 80.00,
+        "ingredients": [
+            {"nom": "Veau (escalope)", "quantite": 1.5, "unite": "kg"}
+        ]
+    },
+    {
+        "nom": "Écrasé de pomme de terre",
+        "categorie": "Plat",
+        "portions": 4,
+        "prix_vente": 6.00,
+        "ingredients": []
+    },
+    {
+        "nom": "Poêlée de légumes",
+        "categorie": "Plat",
+        "portions": 4,
+        "prix_vente": 6.00,
         "ingredients": [
             {"nom": "Courgettes", "quantite": 0.5, "unite": "kg"},
             {"nom": "Aubergines", "quantite": 0.5, "unite": "kg"},
             {"nom": "Poivrons", "quantite": 0.4, "unite": "kg"}
         ]
+    },
+    {
+        "nom": "Purée à la truffe (Uncinatum)",
+        "categorie": "Plat",
+        "portions": 4,
+        "prix_vente": 11.00,
+        "ingredients": []
+    },
+    {
+        "nom": "Gnocchi artisanaux au beurre",
+        "categorie": "Plat",
+        "portions": 4,
+        "prix_vente": 11.00,
+        "ingredients": []
     },
     
     # DESSERTS
