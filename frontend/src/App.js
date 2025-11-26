@@ -4559,11 +4559,26 @@ function App() {
                                 return icons[categorie] || "📦";
                               };
 
-                              const preparationsCritiques = preparationsCategory.filter(p => 
+                              // Appliquer le filtre de card
+                              let filteredPreparationsCategory = preparationsCategory;
+                              if (stockFilter === 'critical') {
+                                filteredPreparationsCategory = preparationsCategory.filter(p => 
+                                  p.quantite_disponible <= p.quantite_min
+                                );
+                              } else if (stockFilter === 'dlc') {
+                                filteredPreparationsCategory = preparationsCategory.filter(p => 
+                                  p.dlc && new Date(p.dlc) < new Date(Date.now() + 3 * 24 * 60 * 60 * 1000)
+                                );
+                              }
+
+                              // Si après filtrage il n'y a plus de préparations, ne pas afficher la catégorie
+                              if (filteredPreparationsCategory.length === 0) return null;
+
+                              const preparationsCritiques = filteredPreparationsCategory.filter(p => 
                                 p.quantite_disponible <= p.quantite_min
                               );
 
-                              const preparationsDlc = preparationsCategory.filter(p => 
+                              const preparationsDlc = filteredPreparationsCategory.filter(p => 
                                 p.dlc && new Date(p.dlc) < new Date(Date.now() + 3 * 24 * 60 * 60 * 1000)
                               );
 
