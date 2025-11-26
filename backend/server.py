@@ -5846,6 +5846,7 @@ async def init_real_restaurant_data():
                 nom=recette_data["nom"],
                 categorie=recette_data["categorie"],
                 portions=recette_data["portions"],
+                prix_vente=recette_data.get("prix_vente", 0.0),
                 ingredients=ingredients
             )
             await db.recettes.insert_one(recette.dict())
