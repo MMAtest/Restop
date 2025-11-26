@@ -518,9 +518,8 @@ REAL_RECETTES = [
         "portions": 4,
         "prix_vente": 11.00,
         "ingredients": [
-            {"nom": "Pommes de terre", "quantite": 0.8, "unite": "kg"},
-            {"nom": "Truffe (Uncinatum)", "quantite": 0.015, "unite": "kg"},
-            {"nom": "Crème fraîche", "quantite": 0.2, "unite": "L"}
+            {"nom": "Purée de pommes de terre", "quantite": 0.59, "unite": "kg", "ingredient_type": "preparation"},
+            {"nom": "Truffe (Uncinatum)", "quantite": 0.015, "unite": "kg"}
         ]
     },
     {
