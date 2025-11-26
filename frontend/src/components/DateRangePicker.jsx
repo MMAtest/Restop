@@ -249,7 +249,7 @@ const DateRangePicker = ({ onDateRangeChange, initialRange = null }) => {
             <button
               key={option.key}
               className={`button small ${selectedRange === option.key ? '' : 'secondary'}`}
-              onClick={() => handleRangeChange(option.key)}
+              onClick={() => handleRangeChangeWithReset(option.key)}
               style={{
                 background: selectedRange === option.key 
                   ? 'var(--color-primary-blue)' 
