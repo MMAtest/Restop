@@ -359,8 +359,7 @@ REAL_RECETTES = [
         "prix_vente": 24.00,
         "ingredients": [
             {"nom": "Cuisses de grenouilles", "quantite": 0.6, "unite": "kg"},
-            {"nom": "Ail", "quantite": 0.02, "unite": "kg"},
-            {"nom": "Persil", "quantite": 1, "unite": "botte"}
+            {"nom": "Persillade (ail et persil)", "quantite": 0.04, "unite": "kg", "ingredient_type": "preparation"}
         ]
     },
     {
