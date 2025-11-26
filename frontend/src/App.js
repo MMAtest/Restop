@@ -4965,7 +4965,7 @@ function App() {
                             <div style={{textAlign: 'center', padding: '40px', color: 'var(--color-text-secondary)'}}>
                               <div style={{fontSize: '48px', marginBottom: '16px'}}>🔪</div>
                               <div style={{fontSize: '18px', fontWeight: 'bold', marginBottom: '8px'}}>Aucune préparation</div>
-                              <div>Utilisez l'auto-génération dans Production > Préparations</div>
+                              <div>Utilisez l'auto-génération dans Production &gt; Préparations</div>
                             </div>
                           )}
                         </>
