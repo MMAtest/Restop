@@ -5745,12 +5745,44 @@ async def init_real_restaurant_data():
             fournisseur_ids[fournisseur_data["nom"]] = fournisseur.id
             fournisseurs_created += 1
         
-        # 2. Créer les produits
+        # 2. Créer les produits et les assigner aux fournisseurs par catégorie
         produit_ids = {}
+        
+        # Mapping catégorie produit → fournisseur
+        categorie_to_fournisseur = {
+            "Poissons": "Pêcherie des Sanguinaires",
+            "Viandes": "Boucherie Maestracci",
+            "Légumes": "Maraîcher du Cap Corse",
+            "Crêmerie": "Fromagerie de Corse",
+            "Boissons": "Caves & Spiritueux d'Ajaccio",
+            "Épices": "Épices & Aromates du Marché",
+            "Épicerie": "Maison Artigiana"
+        }
+        
         for produit_data in REAL_PRODUITS:
-            produit = Produit(**produit_data)
+            # Trouver le fournisseur approprié selon la catégorie
+            categorie = produit_data.get("categorie", "Épicerie")
+            fournisseur_nom = categorie_to_fournisseur.get(categorie, "Maison Artigiana")
+            fournisseur_id = fournisseur_ids.get(fournisseur_nom)
+            
+            # Créer le produit avec le fournisseur
+            produit = Produit(
+                **produit_data,
+                main_supplier_id=fournisseur_id,
+                fournisseur_id=fournisseur_id,  # Legacy
+                fournisseur_nom=fournisseur_nom  # Legacy
+            )
             await db.produits.insert_one(produit.dict())
             produit_ids[produit_data["nom"]] = produit.id
+            
+            # Créer la relation fournisseur-produit
+            supplier_relation = SupplierProductInfo(
+                supplier_id=fournisseur_id,
+                product_id=produit.id,
+                price=produit_data.get("reference_price", 0),
+                is_preferred=True
+            )
+            await db.supplier_product_info.insert_one(supplier_relation.dict())
             
             # Créer un stock initial vide
             stock = Stock(
