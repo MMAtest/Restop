@@ -328,34 +328,36 @@ REAL_RECETTES = [
         "ingredients": []
     },
     
-    # DESSERTS
+    # DESSERTS - CARTE COMPLÈTE
     {
-        "nom": "Tiramisù maison",
+        "nom": "La glace yaourt dessert signature",
+        "categorie": "Dessert",
+        "portions": 4,
+        "prix_vente": 13.00,
+        "ingredients": []
+    },
+    {
+        "nom": "Tiramisu de Mamet",
         "categorie": "Dessert",
         "portions": 6,
         "prix_vente": 12.00,
         "ingredients": [
-            {"nom": "Mozzarella", "quantite": 0.3, "unite": "kg"}  # Mascarpone simplifié
+            {"nom": "Mozzarella", "quantite": 0.3, "unite": "kg"}
         ]
     },
     {
-        "nom": "Panna cotta",
-        "categorie": "Dessert",
-        "portions": 6,
-        "prix_vente": 9.50,
-        "ingredients": [
-            {"nom": "Mozzarella", "quantite": 0.2, "unite": "kg"}
-        ]
-    },
-    {
-        "nom": "Plateau de fromages corses",
+        "nom": "Crêpe Suzette recette de 1961",
         "categorie": "Dessert",
         "portions": 4,
-        "prix_vente": 16.00,
-        "ingredients": [
-            {"nom": "Brocciu", "quantite": 0.2, "unite": "kg"},
-            {"nom": "Parmesan", "quantite": 0.15, "unite": "kg"}
-        ]
+        "prix_vente": 12.00,
+        "ingredients": []
+    },
+    {
+        "nom": "Mont Blanc classique",
+        "categorie": "Dessert",
+        "portions": 4,
+        "prix_vente": 12.00,
+        "ingredients": []
     },
     
     # COCKTAILS & BAR
