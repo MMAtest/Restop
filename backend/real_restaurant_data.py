@@ -247,5 +247,79 @@ REAL_RECETTES = [
             {"nom": "Brocciu", "quantite": 0.2, "unite": "kg"},
             {"nom": "Parmesan", "quantite": 0.15, "unite": "kg"}
         ]
+    },
+    
+    # COCKTAILS & BAR
+    {
+        "nom": "Moscow Mule",
+        "categorie": "Bar",
+        "portions": 1,
+        "prix_vente": 12.00,
+        "ingredients": [
+            {"nom": "Vodka", "quantite": 0.05, "unite": "L"},
+            {"nom": "Ginger Beer", "quantite": 0.15, "unite": "L"}
+        ]
+    },
+    {
+        "nom": "Cosmopolitain",
+        "categorie": "Bar",
+        "portions": 1,
+        "prix_vente": 12.00,
+        "ingredients": [
+            {"nom": "Vodka", "quantite": 0.05, "unite": "L"},
+            {"nom": "Triple Sec", "quantite": 0.02, "unite": "L"},
+            {"nom": "Jus de Cranberry", "quantite": 0.05, "unite": "L"}
+        ]
+    },
+    {
+        "nom": "Caïpi Passion",
+        "categorie": "Bar",
+        "portions": 1,
+        "prix_vente": 12.00,
+        "ingredients": [
+            {"nom": "Vodka", "quantite": 0.05, "unite": "L"},
+            {"nom": "Purée de Passion", "quantite": 0.03, "unite": "L"}
+        ]
+    },
+    {
+        "nom": "Spritz d'Augustine",
+        "categorie": "Bar",
+        "portions": 1,
+        "prix_vente": 11.00,
+        "ingredients": [
+            {"nom": "Apérol", "quantite": 0.06, "unite": "L"},
+            {"nom": "Jus d'orange", "quantite": 0.05, "unite": "L"},
+            {"nom": "Prosecco", "quantite": 0.1, "unite": "L"}
+        ]
+    },
+    {
+        "nom": "Mojito de Mamie",
+        "categorie": "Bar",
+        "portions": 1,
+        "prix_vente": 12.00,
+        "ingredients": [
+            {"nom": "Rhum", "quantite": 0.05, "unite": "L"},
+            {"nom": "Menthe fraîche", "quantite": 0.01, "unite": "kg"}
+        ]
+    },
+    {
+        "nom": "Le Rossini Mio",
+        "categorie": "Bar",
+        "portions": 1,
+        "prix_vente": 12.00,
+        "ingredients": [
+            {"nom": "Prosecco", "quantite": 0.1, "unite": "L"},
+            {"nom": "Crème de fraise", "quantite": 0.03, "unite": "L"}
+        ]
+    },
+    {
+        "nom": "Le Bellini",
+        "categorie": "Bar",
+        "portions": 1,
+        "prix_vente": 12.00,
+        "ingredients": [
+            {"nom": "Prosecco", "quantite": 0.1, "unite": "L"},
+            {"nom": "Crème de pêche", "quantite": 0.03, "unite": "L"}
+        ]
     }
 ]
