@@ -4664,7 +4664,7 @@ function App() {
                                         return (
                                           <div key={stockPrep.preparation_id} style={{
                                             padding: '16px',
-                                            borderBottom: index < preparationsCategory.length - 1 ? '1px solid var(--color-border)' : 'none',
+                                            borderBottom: index < filteredPreparationsCategory.length - 1 ? '1px solid var(--color-border)' : 'none',
                                             background: index % 2 === 0 ? 'transparent' : 'var(--color-background-secondary)',
                                             display: 'flex',
                                             alignItems: 'center',
