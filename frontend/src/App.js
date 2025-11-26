@@ -3255,6 +3255,7 @@ function App() {
                   </>
                 )}
               </div>
+              )}
 
               {/* Nouvelle section : Stock critique (ruptures uniquement) */}
               <div className="alert-section">
