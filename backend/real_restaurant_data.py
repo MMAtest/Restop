@@ -169,56 +169,80 @@ REAL_RECETTES = [
         "categorie": "Entrée",
         "portions": 4,
         "prix_vente": 27.00,
-        "ingredients": []
+        "ingredients": [
+            {"nom": "Saint-Jacques", "quantite": 0.4, "unite": "kg"},
+            {"nom": "Beurre", "quantite": 0.05, "unite": "kg"}
+        ]
     },
     {
         "nom": "Le crabe sublimé d'Augustine",
         "categorie": "Entrée",
         "portions": 4,
         "prix_vente": 29.00,
-        "ingredients": []
+        "ingredients": [
+            {"nom": "Crabe", "quantite": 0.8, "unite": "kg"}
+        ]
     },
     {
         "nom": "Les panisses de l'Estaque",
         "categorie": "Entrée",
         "portions": 4,
         "prix_vente": 15.00,
-        "ingredients": []
+        "ingredients": [
+            {"nom": "Farine de pois chiche", "quantite": 0.25, "unite": "kg"},
+            {"nom": "Huile d'olive", "quantite": 0.1, "unite": "L"}
+        ]
     },
     {
         "nom": "Le pâté en croûte de Mamet Augustine",
         "categorie": "Entrée",
         "portions": 4,
         "prix_vente": 18.00,
-        "ingredients": []
+        "ingredients": [
+            {"nom": "Veau (escalope)", "quantite": 0.3, "unite": "kg"},
+            {"nom": "Pâte feuilletée", "quantite": 0.4, "unite": "kg"}
+        ]
     },
     {
         "nom": "La soupe à l'oignon, foie gras & Comté",
         "categorie": "Entrée",
         "portions": 4,
         "prix_vente": 19.00,
-        "ingredients": []
+        "ingredients": [
+            {"nom": "Oignons", "quantite": 0.6, "unite": "kg"},
+            {"nom": "Foie gras de canard", "quantite": 0.1, "unite": "kg"},
+            {"nom": "Comté", "quantite": 0.1, "unite": "kg"}
+        ]
     },
     {
         "nom": "Cuisses de grenouilles à la française",
         "categorie": "Entrée",
         "portions": 4,
         "prix_vente": 24.00,
-        "ingredients": []
+        "ingredients": [
+            {"nom": "Cuisses de grenouilles", "quantite": 0.6, "unite": "kg"},
+            {"nom": "Ail", "quantite": 0.02, "unite": "kg"},
+            {"nom": "Persil", "quantite": 1, "unite": "botte"}
+        ]
     },
     {
         "nom": "La fameuse poêlée de sanguins des chasseurs",
         "categorie": "Entrée",
         "portions": 4,
         "prix_vente": 23.00,
-        "ingredients": []
+        "ingredients": [
+            {"nom": "Sanguins (gibier)", "quantite": 0.8, "unite": "kg"},
+            {"nom": "Oignons", "quantite": 0.2, "unite": "kg"}
+        ]
     },
     {
         "nom": "Foie gras de canard IGP",
         "categorie": "Entrée",
         "portions": 4,
         "prix_vente": 28.00,
-        "ingredients": []
+        "ingredients": [
+            {"nom": "Foie gras de canard", "quantite": 0.4, "unite": "kg"}
+        ]
     },
     
     # PLATS - CARTE COMPLÈTE
