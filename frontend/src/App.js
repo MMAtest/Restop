@@ -4214,7 +4214,7 @@ function App() {
                       <div className="icon">⏰</div>
                       <div className="title">DLC &lt; 3 jours</div>
                       <div className="value" style={{color: 'var(--color-warning-orange)'}}>
-                        {preparations.filter(p => p.dlc && new Date(p.dlc) < new Date(Date.now() + 3 * 24 * 60 * 60 * 1000)).length} produits
+                        {stocksPreparations.filter(p => p.dlc && new Date(p.dlc) < new Date(Date.now() + 3 * 24 * 60 * 60 * 1000)).length} préparations
                       </div>
                     </div>
                   </div>
