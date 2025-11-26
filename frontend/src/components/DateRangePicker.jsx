@@ -320,18 +320,88 @@ const DateRangePicker = ({ onDateRangeChange, initialRange = null }) => {
           </div>
         )}
 
-        {/* Affichage de la période sélectionnée */}
+        {/* Affichage de la période sélectionnée avec navigation */}
         {selectedRange !== 'custom' && (
           <div style={{
             background: 'var(--color-success-green)',
             color: 'white',
             borderRadius: 'var(--border-radius-sm)',
             padding: 'var(--spacing-sm)',
-            textAlign: 'center',
-            fontSize: '12px',
-            fontWeight: '500'
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: 'var(--spacing-sm)'
           }}>
-            ✓ {rangeOptions.find(opt => opt.key === selectedRange)?.label}
+            {/* Flèche gauche */}
+            <button
+              onClick={handlePreviousDay}
+              disabled={selectedRange !== 'today' && selectedRange !== 'yesterday'}
+              style={{
+                background: 'rgba(255, 255, 255, 0.2)',
+                color: 'white',
+                border: 'none',
+                borderRadius: '4px',
+                padding: '6px 10px',
+                cursor: selectedRange === 'today' || selectedRange === 'yesterday' ? 'pointer' : 'not-allowed',
+                opacity: selectedRange === 'today' || selectedRange === 'yesterday' ? 1 : 0.3,
+                fontSize: '16px',
+                fontWeight: 'bold',
+                transition: 'all 0.2s ease',
+                minWidth: '36px'
+              }}
+              onMouseEnter={(e) => {
+                if (selectedRange === 'today' || selectedRange === 'yesterday') {
+                  e.target.style.background = 'rgba(255, 255, 255, 0.3)';
+                }
+              }}
+              onMouseLeave={(e) => {
+                e.target.style.background = 'rgba(255, 255, 255, 0.2)';
+              }}
+            >
+              ←
+            </button>
+
+            {/* Texte de la période avec date */}
+            <div style={{
+              flex: 1,
+              textAlign: 'center',
+              fontSize: '13px',
+              fontWeight: '500'
+            }}>
+              ✓ {(() => {
+                const dateRange = calculateDateRange(selectedRange, currentDateOffset);
+                return dateRange?.label || rangeOptions.find(opt => opt.key === selectedRange)?.label;
+              })()}
+            </div>
+
+            {/* Flèche droite */}
+            <button
+              onClick={handleNextDay}
+              disabled={selectedRange !== 'today' && selectedRange !== 'yesterday'}
+              style={{
+                background: 'rgba(255, 255, 255, 0.2)',
+                color: 'white',
+                border: 'none',
+                borderRadius: '4px',
+                padding: '6px 10px',
+                cursor: selectedRange === 'today' || selectedRange === 'yesterday' ? 'pointer' : 'not-allowed',
+                opacity: selectedRange === 'today' || selectedRange === 'yesterday' ? 1 : 0.3,
+                fontSize: '16px',
+                fontWeight: 'bold',
+                transition: 'all 0.2s ease',
+                minWidth: '36px'
+              }}
+              onMouseEnter={(e) => {
+                if (selectedRange === 'today' || selectedRange === 'yesterday') {
+                  e.target.style.background = 'rgba(255, 255, 255, 0.3)';
+                }
+              }}
+              onMouseLeave={(e) => {
+                e.target.style.background = 'rgba(255, 255, 255, 0.2)';
+              }}
+            >
+              →
+            </button>
           </div>
         )}
       </div>
