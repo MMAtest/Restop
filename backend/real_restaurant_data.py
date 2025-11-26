@@ -27,11 +27,16 @@ REAL_FOURNISSEURS = [
 
 # Produits réels (ingrédients)
 REAL_PRODUITS = [
-    # Poissons
+    # Poissons et fruits de mer
     {"nom": "Supions", "categorie": "Poissons", "unite": "kg", "reference_price": 18.50},
+    {"nom": "Moules", "categorie": "Poissons", "unite": "kg", "reference_price": 8.00},
+    {"nom": "Saint-Jacques", "categorie": "Poissons", "unite": "kg", "reference_price": 65.00},
+    {"nom": "Crabe", "categorie": "Poissons", "unite": "kg", "reference_price": 45.00},
     {"nom": "Palourdes", "categorie": "Poissons", "unite": "kg", "reference_price": 12.00},
     {"nom": "Rougets", "categorie": "Poissons", "unite": "kg", "reference_price": 22.00},
     {"nom": "Daurade", "categorie": "Poissons", "unite": "kg", "reference_price": 16.00},
+    {"nom": "Sole", "categorie": "Poissons", "unite": "kg", "reference_price": 42.00},
+    {"nom": "Poisson du jour", "categorie": "Poissons", "unite": "kg", "reference_price": 28.00},
     
     # Viandes
     {"nom": "Bœuf (filet)", "categorie": "Viandes", "unite": "kg", "reference_price": 35.00},
