@@ -929,7 +929,7 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Test accès Orders pour rôle Patron - TERMINÉ"
+    - "Vue par Catégorie dans la Page Production - TERMINÉ"
     - "Module de suivi des livraisons dans Orders"
     - "Titres de catégories Par Préparation"
   stuck_tasks: []
