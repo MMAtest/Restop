@@ -289,8 +289,7 @@ REAL_RECETTES = [
         "prix_vente": 26.00,
         "ingredients": [
             {"nom": "Supions", "quantite": 0.4, "unite": "kg"},
-            {"nom": "Persil", "quantite": 1, "unite": "botte"},
-            {"nom": "Ail", "quantite": 0.02, "unite": "kg"}
+            {"nom": "Persillade (ail et persil)", "quantite": 0.04, "unite": "kg", "ingredient_type": "preparation"}
         ]
     },
     {
