@@ -347,7 +347,7 @@ REAL_RECETTES = [
         "portions": 4,
         "prix_vente": 19.00,
         "ingredients": [
-            {"nom": "Oignons", "quantite": 0.6, "unite": "kg"},
+            {"nom": "Oignons émincés caramélisés", "quantite": 0.21, "unite": "kg", "ingredient_type": "preparation"},
             {"nom": "Foie gras de canard", "quantite": 0.1, "unite": "kg"},
             {"nom": "Comté", "quantite": 0.1, "unite": "kg"}
         ]
