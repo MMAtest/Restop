@@ -498,7 +498,7 @@ REAL_RECETTES = [
         "portions": 4,
         "prix_vente": 6.00,
         "ingredients": [
-            {"nom": "Pommes de terre", "quantite": 0.8, "unite": "kg"},
+            {"nom": "Pommes de terre épluchées et coupées", "quantite": 0.66, "unite": "kg", "ingredient_type": "preparation"},
             {"nom": "Beurre", "quantite": 0.05, "unite": "kg"}
         ]
     },
