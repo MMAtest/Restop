@@ -4623,7 +4623,7 @@ function App() {
                                         background: categoriesPreparationsExpanded[categoryName] ? 'rgba(255,255,255,0.2)' : 'var(--color-accent-orange)',
                                         color: 'white'
                                       }}>
-                                        {preparationsCategory.length}
+                                        {filteredPreparationsCategory.length}
                                       </span>
                                       {/* Badges d'alerte */}
                                       {preparationsCritiques.length > 0 && (
