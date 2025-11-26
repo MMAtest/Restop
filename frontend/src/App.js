@@ -4211,6 +4211,39 @@ function App() {
                   </div>
                 )}
 
+                {/* Indicateur de filtre actif */}
+                {stockFilter !== 'all' && (
+                  <div style={{
+                    padding: '12px',
+                    background: stockFilter === 'critical' ? 'rgba(251, 146, 60, 0.1)' : 'rgba(220, 38, 38, 0.1)',
+                    borderLeft: `4px solid ${stockFilter === 'critical' ? 'var(--color-warning-orange)' : 'var(--color-danger-red)'}`,
+                    borderRadius: '6px',
+                    marginBottom: '16px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between'
+                  }}>
+                    <span style={{fontSize: '14px', fontWeight: '500'}}>
+                      {stockFilter === 'critical' && '⚠️ Filtre actif : Stocks critiques uniquement'}
+                      {stockFilter === 'dlc' && '⏰ Filtre actif : DLC < 3 jours uniquement'}
+                    </span>
+                    <button
+                      onClick={() => setStockFilter('all')}
+                      style={{
+                        background: 'var(--color-primary-blue)',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '4px',
+                        padding: '6px 12px',
+                        fontSize: '12px',
+                        cursor: 'pointer'
+                      }}
+                    >
+                      ✕ Supprimer le filtre
+                    </button>
+                  </div>
+                )}
+
                 {/* Liste des produits en stock avec recherche et filtres */}
                 <div className="item-list">
                   <div className="section-title">
