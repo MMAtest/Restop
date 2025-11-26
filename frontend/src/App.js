@@ -3758,6 +3758,7 @@ function App() {
                   <div className="subtitle">{getPeriodComparison(selectedDateRange)}</div>
                 </div>
               </div>
+              )}
 
               {/* Répartition par catégorie de productions */}
               <div className="item-list">
