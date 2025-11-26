@@ -137,10 +137,106 @@ const DateRangePicker = ({ onDateRangeChange, initialRange = null }) => {
     }
   }, [customStartDate, customEndDate]);
 
+  // Fonctions de navigation par flèches
+  const handlePreviousDay = () => {
+    if (selectedRange === 'today' || selectedRange === 'yesterday') {
+      const newOffset = currentDateOffset - 1;
+      setCurrentDateOffset(newOffset);
+      const dateRange = calculateDateRange(selectedRange, newOffset);
+      if (dateRange && onDateRangeChange) {
+        onDateRangeChange(dateRange);
+      }
+    }
+  };
+
+  const handleNextDay = () => {
+    if (selectedRange === 'today' || selectedRange === 'yesterday') {
+      const newOffset = currentDateOffset + 1;
+      setCurrentDateOffset(newOffset);
+      const dateRange = calculateDateRange(selectedRange, newOffset);
+      if (dateRange && onDateRangeChange) {
+        onDateRangeChange(dateRange);
+      }
+    }
+  };
+
+  // Réinitialiser l'offset quand on change de type de période
+  const handleRangeChangeWithReset = (rangeKey) => {
+    setCurrentDateOffset(0);
+    handleRangeChange(rangeKey);
+  };
+
   return (
     <div className="date-range-picker">
       <div className="section-card" style={{ marginBottom: 'var(--spacing-md)' }}>
-        <div className="section-title">📅 Période d'analyse</div>
+        {/* Titre avec boutons de navigation */}
+        <div style={{ 
+          display: 'flex', 
+          alignItems: 'center', 
+          justifyContent: 'space-between',
+          marginBottom: 'var(--spacing-md)'
+        }}>
+          {/* Bouton précédent */}
+          <button
+            onClick={handlePreviousDay}
+            disabled={selectedRange !== 'today' && selectedRange !== 'yesterday'}
+            style={{
+              background: 'var(--color-primary-green)',
+              color: 'white',
+              border: 'none',
+              borderRadius: 'var(--border-radius-sm)',
+              padding: '8px 12px',
+              cursor: selectedRange === 'today' || selectedRange === 'yesterday' ? 'pointer' : 'not-allowed',
+              opacity: selectedRange === 'today' || selectedRange === 'yesterday' ? 1 : 0.3,
+              fontSize: '18px',
+              fontWeight: 'bold',
+              transition: 'all 0.2s ease'
+            }}
+            onMouseEnter={(e) => {
+              if (selectedRange === 'today' || selectedRange === 'yesterday') {
+                e.target.style.transform = 'scale(1.05)';
+              }
+            }}
+            onMouseLeave={(e) => {
+              e.target.style.transform = 'scale(1)';
+            }}
+          >
+            ←
+          </button>
+
+          {/* Titre */}
+          <div className="section-title" style={{ margin: 0, flex: 1, textAlign: 'center' }}>
+            📅 Période d'analyse
+          </div>
+
+          {/* Bouton suivant */}
+          <button
+            onClick={handleNextDay}
+            disabled={selectedRange !== 'today' && selectedRange !== 'yesterday'}
+            style={{
+              background: 'var(--color-primary-green)',
+              color: 'white',
+              border: 'none',
+              borderRadius: 'var(--border-radius-sm)',
+              padding: '8px 12px',
+              cursor: selectedRange === 'today' || selectedRange === 'yesterday' ? 'pointer' : 'not-allowed',
+              opacity: selectedRange === 'today' || selectedRange === 'yesterday' ? 1 : 0.3,
+              fontSize: '18px',
+              fontWeight: 'bold',
+              transition: 'all 0.2s ease'
+            }}
+            onMouseEnter={(e) => {
+              if (selectedRange === 'today' || selectedRange === 'yesterday') {
+                e.target.style.transform = 'scale(1.05)';
+              }
+            }}
+            onMouseLeave={(e) => {
+              e.target.style.transform = 'scale(1)';
+            }}
+          >
+            →
+          </button>
+        </div>
         
         {/* Options rapides */}
         <div style={{
