@@ -111,9 +111,12 @@ REAL_PRODUITS = [
     {"nom": "Huile d'olive", "categorie": "Épicerie", "unite": "L", "reference_price": 12.00},
     {"nom": "Vinaigre balsamique", "categorie": "Épicerie", "unite": "L", "reference_price": 8.50},
     {"nom": "Truffe (Uncinatum)", "categorie": "Épicerie", "unite": "kg", "reference_price": 450.00},
-    {"nom": "Sauce tomate", "categorie": "Épicerie", "unite": "L", "reference_price": 4.00},
     {"nom": "Marrons", "categorie": "Épicerie", "unite": "kg", "reference_price": 12.00},
-    {"nom": "Crêpes", "categorie": "Épicerie", "unite": "kg", "reference_price": 6.00},
+    {"nom": "Farine", "categorie": "Épicerie", "unite": "kg", "reference_price": 1.80},
+    {"nom": "Sucre", "categorie": "Épicerie", "unite": "kg", "reference_price": 2.00},
+    {"nom": "Sel", "categorie": "Épicerie", "unite": "kg", "reference_price": 1.00},
+    {"nom": "Poivre", "categorie": "Épicerie", "unite": "kg", "reference_price": 15.00},
+    {"nom": "Grand Marnier", "categorie": "Boissons", "unite": "L", "reference_price": 35.00},
     
     # Bar et spiritueux
     {"nom": "Vodka", "categorie": "Boissons", "unite": "L", "reference_price": 25.00},
