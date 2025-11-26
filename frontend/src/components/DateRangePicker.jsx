@@ -112,7 +112,7 @@ const DateRangePicker = ({ onDateRangeChange, initialRange = null }) => {
     setShowCustomPicker(rangeKey === 'custom');
     
     if (rangeKey !== 'custom') {
-      const dateRange = calculateDateRange(rangeKey);
+      const dateRange = calculateDateRange(rangeKey, 0); // Toujours réinitialiser l'offset à 0
       if (dateRange && onDateRangeChange) {
         onDateRangeChange(dateRange);
       }
