@@ -60,6 +60,9 @@ REAL_PRODUITS = [
     # Pâtes et féculents
     {"nom": "Linguine", "categorie": "Épicerie", "unite": "kg", "reference_price": 3.80},
     {"nom": "Rigatoni", "categorie": "Épicerie", "unite": "kg", "reference_price": 3.90},
+    {"nom": "Gnocchi", "categorie": "Épicerie", "unite": "kg", "reference_price": 4.50},
+    {"nom": "Farine de pois chiche", "categorie": "Épicerie", "unite": "kg", "reference_price": 3.20},
+    {"nom": "Pâte feuilletée", "categorie": "Épicerie", "unite": "kg", "reference_price": 5.00},
     
     # Produits laitiers
     {"nom": "Parmesan", "categorie": "Crêmerie", "unite": "kg", "reference_price": 32.00},
