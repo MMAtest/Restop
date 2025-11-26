@@ -412,8 +412,7 @@ REAL_RECETTES = [
         "ingredients": [
             {"nom": "Linguine", "quantite": 0.4, "unite": "kg"},
             {"nom": "Palourdes", "quantite": 0.8, "unite": "kg"},
-            {"nom": "Ail", "quantite": 0.015, "unite": "kg"},
-            {"nom": "Persil", "quantite": 1, "unite": "botte"}
+            {"nom": "Persillade (ail et persil)", "quantite": 0.036, "unite": "kg", "ingredient_type": "preparation"}
         ]
     },
     {
