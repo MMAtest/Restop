@@ -4194,7 +4194,16 @@ function App() {
                     
                     <div 
                       className="kpi-card"
-                      onClick={() => setStockFilter(stockFilter === 'dlc' ? 'all' : 'dlc')}
+                      onClick={() => {
+                        if (stockFilter === 'dlc') {
+                          setStockFilter('all');
+                        } else {
+                          // Basculer automatiquement vers les préparations car les DLC concernent les préparations
+                          setStockViewMode('preparations');
+                          fetchStocksPreparations();
+                          setStockFilter('dlc');
+                        }
+                      }}
                       style={{
                         cursor: 'pointer',
                         border: stockFilter === 'dlc' ? '2px solid var(--color-danger-red)' : '1px solid var(--color-border)',
