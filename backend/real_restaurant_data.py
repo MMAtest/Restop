@@ -335,7 +335,9 @@ REAL_RECETTES = [
         "categorie": "Plat",
         "portions": 4,
         "prix_vente": 42.00,
-        "ingredients": []
+        "ingredients": [
+            {"nom": "Magret de canard", "quantite": 0.8, "unite": "kg"}
+        ]
     },
     {
         "nom": "Côte de boeuf Aubrac",
