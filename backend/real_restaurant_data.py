@@ -208,6 +208,74 @@ REAL_PREPARATIONS = [
             {"nom": "Sel", "quantite": 0.02, "unite": "kg"},
             {"nom": "Poivre", "quantite": 0.005, "unite": "kg"}
         ]
+    },
+    # NOUVELLES PRÉPARATIONS AJOUTÉES
+    {
+        "nom": "Pommes de terre épluchées et coupées",
+        "produit_brut": "Pommes de terre",
+        "forme_decoupe": "carré",
+        "quantite_produit_brut": 1.0,
+        "unite_produit_brut": "kg",
+        "quantite_preparee": 0.82,
+        "unite_preparee": "kg",
+        "perte": 0.18,
+        "perte_pourcentage": 18.0,
+        "nombre_portions": 8,
+        "taille_portion": 0.103,
+        "unite_portion": "kg",
+        "dlc_jours": 1
+    },
+    {
+        "nom": "Persillade (ail et persil)",
+        "produit_brut": "Persil",
+        "forme_decoupe": "haché",
+        "quantite_produit_brut": 0.2,
+        "unite_produit_brut": "kg",
+        "quantite_preparee": 0.18,
+        "unite_preparee": "kg",
+        "perte": 0.02,
+        "perte_pourcentage": 10.0,
+        "nombre_portions": 20,
+        "taille_portion": 0.009,
+        "unite_portion": "kg",
+        "dlc_jours": 1,
+        "ingredients_supplementaires": [
+            {"nom": "Ail", "quantite": 0.05, "unite": "kg"}
+        ]
+    },
+    {
+        "nom": "Purée de pommes de terre",
+        "produit_brut": "Pommes de terre",
+        "forme_decoupe": "purée",
+        "quantite_produit_brut": 2.0,
+        "unite_produit_brut": "kg",
+        "quantite_preparee": 2.2,
+        "unite_preparee": "kg",
+        "perte": 0.2,
+        "perte_pourcentage": 10.0,
+        "nombre_portions": 15,
+        "taille_portion": 0.147,
+        "unite_portion": "kg",
+        "dlc_jours": 2,
+        "ingredients_supplementaires": [
+            {"nom": "Beurre", "quantite": 0.15, "unite": "kg"},
+            {"nom": "Lait", "quantite": 0.3, "unite": "L"}
+        ]
+    },
+    {
+        "nom": "Oignons émincés caramélisés",
+        "produit_brut": "Oignons",
+        "forme_decoupe": "émincé",
+        "quantite_produit_brut": 1.0,
+        "unite_produit_brut": "kg",
+        "quantite_preparee": 0.35,
+        "unite_preparee": "kg",
+        "perte": 0.65,
+        "perte_pourcentage": 65.0,
+        "nombre_portions": 7,
+        "taille_portion": 0.05,
+        "unite_portion": "kg",
+        "dlc_jours": 3
     }
 ]
 
