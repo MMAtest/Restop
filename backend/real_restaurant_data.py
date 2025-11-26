@@ -54,6 +54,8 @@ REAL_PRODUITS = [
     {"nom": "Courgettes", "categorie": "Légumes", "unite": "kg", "reference_price": 2.80},
     {"nom": "Aubergines", "categorie": "Légumes", "unite": "kg", "reference_price": 3.20},
     {"nom": "Poivrons", "categorie": "Légumes", "unite": "kg", "reference_price": 3.50},
+    {"nom": "Oignons", "categorie": "Légumes", "unite": "kg", "reference_price": 1.50},
+    {"nom": "Pommes de terre", "categorie": "Légumes", "unite": "kg", "reference_price": 1.80},
     
     # Pâtes et féculents
     {"nom": "Linguine", "categorie": "Épicerie", "unite": "kg", "reference_price": 3.80},
