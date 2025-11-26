@@ -564,9 +564,10 @@ REAL_RECETTES = [
         "portions": 4,
         "prix_vente": 12.00,
         "ingredients": [
-            {"nom": "Pâte à crêpes", "quantite": 0.5, "unite": "L", "type": "preparation"},
+            {"nom": "Pâte à crêpes", "quantite": 0.5, "unite": "L", "ingredient_type": "preparation"},
             {"nom": "Jus d'orange", "quantite": 0.2, "unite": "L"},
-            {"nom": "Beurre", "quantite": 0.05, "unite": "kg"}
+            {"nom": "Beurre", "quantite": 0.05, "unite": "kg"},
+            {"nom": "Grand Marnier", "quantite": 0.03, "unite": "L"}
         ]
     },
     {
