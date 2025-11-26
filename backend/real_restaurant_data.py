@@ -251,14 +251,21 @@ REAL_RECETTES = [
         "categorie": "Plat",
         "portions": 4,
         "prix_vente": 33.00,
-        "ingredients": []
+        "ingredients": [
+            {"nom": "Poisson du jour", "quantite": 1.2, "unite": "kg"},
+            {"nom": "Pommes de terre", "quantite": 0.4, "unite": "kg"},
+            {"nom": "Tomates cerises", "quantite": 0.2, "unite": "kg"}
+        ]
     },
     {
         "nom": "La sole meunière, l'excellence",
         "categorie": "Plat",
         "portions": 4,
         "prix_vente": 48.00,
-        "ingredients": []
+        "ingredients": [
+            {"nom": "Sole", "quantite": 1.2, "unite": "kg"},
+            {"nom": "Beurre", "quantite": 0.1, "unite": "kg"}
+        ]
     },
     {
         "nom": "Linguine aux palourdes & sauce à l'ail",
