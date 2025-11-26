@@ -5830,7 +5830,20 @@ async def init_real_restaurant_data():
         for recette_data in REAL_RECETTES:
             ingredients = []
             for ing in recette_data["ingredients"]:
-                if ing["nom"] in produit_ids:
+                # Vérifier si c'est une préparation ou un produit
+                ingredient_type = ing.get("ingredient_type", "produit")
+                
+                if ingredient_type == "preparation" and ing["nom"] in preparation_ids:
+                    # C'est une préparation
+                    ingredients.append({
+                        "ingredient_id": preparation_ids[ing["nom"]],
+                        "ingredient_type": "preparation",
+                        "ingredient_nom": ing["nom"],
+                        "quantite": ing["quantite"],
+                        "unite": ing["unite"]
+                    })
+                elif ing["nom"] in produit_ids:
+                    # C'est un produit
                     ingredients.append({
                         "ingredient_id": produit_ids[ing["nom"]],
                         "ingredient_type": "produit",
