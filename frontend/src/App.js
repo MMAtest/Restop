@@ -3680,11 +3680,12 @@ function App() {
                   </div>
                 </div>
               </div>
+              )}
             </div>
           )}
 
           {/* ONGLET COÛTS */}
-          {activeDashboardTab === "couts" && !hideDemoData && (
+          {activeDashboardTab === "couts" && (
             <div className="section-card">
               <div className="section-title">
                 💰 Analyse des Coûts (Données de Démo)
