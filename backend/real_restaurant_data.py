@@ -40,8 +40,14 @@ REAL_PRODUITS = [
     
     # Viandes
     {"nom": "Bœuf (filet)", "categorie": "Viandes", "unite": "kg", "reference_price": 35.00},
+    {"nom": "Bœuf (côte)", "categorie": "Viandes", "unite": "kg", "reference_price": 42.00},
     {"nom": "Veau (escalope)", "categorie": "Viandes", "unite": "kg", "reference_price": 28.00},
+    {"nom": "Veau (jarret)", "categorie": "Viandes", "unite": "kg", "reference_price": 22.00},
     {"nom": "Agneau (souris)", "categorie": "Viandes", "unite": "kg", "reference_price": 24.00},
+    {"nom": "Magret de canard", "categorie": "Viandes", "unite": "kg", "reference_price": 32.00},
+    {"nom": "Foie gras de canard", "categorie": "Viandes", "unite": "kg", "reference_price": 85.00},
+    {"nom": "Cuisses de grenouilles", "categorie": "Viandes", "unite": "kg", "reference_price": 38.00},
+    {"nom": "Sanguins (gibier)", "categorie": "Viandes", "unite": "kg", "reference_price": 28.00},
     
     # Légumes
     {"nom": "Tomates cerises", "categorie": "Légumes", "unite": "kg", "reference_price": 4.50},
