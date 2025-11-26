@@ -35,14 +35,23 @@ const DateRangePicker = ({ onDateRangeChange, initialRange = null }) => {
     
     switch (range) {
       case 'today':
-      case 'yesterday':
-        // Pour aujourd'hui et hier, on applique l'offset
-        const targetDate = new Date(today);
-        targetDate.setDate(today.getDate() + offset);
+        // Pour aujourd'hui, on applique l'offset
+        const todayTarget = new Date(today);
+        todayTarget.setDate(today.getDate() + offset);
         return { 
-          startDate: targetDate, 
-          endDate: targetDate,
-          label: formatDate(targetDate)
+          startDate: todayTarget, 
+          endDate: todayTarget,
+          label: formatDate(todayTarget)
+        };
+      
+      case 'yesterday':
+        // Pour hier, on applique l'offset à partir d'hier
+        const yesterday = new Date(today);
+        yesterday.setDate(today.getDate() - 1 + offset);
+        return { 
+          startDate: yesterday, 
+          endDate: yesterday,
+          label: formatDate(yesterday)
         };
       
       case 'thisWeek':
