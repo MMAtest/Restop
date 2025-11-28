@@ -3835,35 +3835,23 @@ function App() {
                 )}
               </div>
 
-              {/* Message si pas de données */}
-              {hideDemoData && (
+              {/* Message d'info si pas de données */}
+              {filteredAnalytics.caTotal === 0 && (
                 <div style={{
-                  padding: '40px',
+                  padding: '16px',
                   textAlign: 'center',
-                  background: 'var(--color-background-card-light)',
+                  background: 'rgba(59, 130, 246, 0.1)',
                   borderRadius: '8px',
-                  border: '2px dashed var(--color-border)'
+                  border: '1px solid var(--color-primary-blue)',
+                  marginBottom: '16px'
                 }}>
-                  <div style={{fontSize: '48px', marginBottom: '16px'}}>💰</div>
-                  <h3 style={{color: 'var(--color-text-primary)', marginBottom: '8px'}}>Aucune donnée de coûts disponible</h3>
-                  <p style={{color: 'var(--color-text-secondary)', fontSize: '14px', marginBottom: '16px'}}>
-                    Pour analyser vos coûts, vous devez :
-                  </p>
-                  <ul style={{
-                    textAlign: 'left',
-                    display: 'inline-block',
-                    color: 'var(--color-text-secondary)',
-                    fontSize: '14px'
-                  }}>
-                    <li>📄 Importer des factures via OCR</li>
-                    <li>💰 Enregistrer les achats de produits</li>
-                    <li>📊 Avoir des données de ventes pour calculer les ratios</li>
-                  </ul>
+                  <div style={{fontSize: '14px', color: 'var(--color-text-secondary)'}}>
+                    ℹ️ Aucune donnée de coûts pour la période sélectionnée. Importez des factures via OCR.
+                  </div>
                 </div>
               )}
 
-              {/* KPIs des coûts totaux */}
-              {!hideDemoData && (
+              {/* KPIs des coûts totaux - TOUJOURS AFFICHÉS */}
               <div className="kpi-grid">
                 <div className="kpi-card">
                   <div className="icon">💸</div>
