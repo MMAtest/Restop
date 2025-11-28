@@ -656,6 +656,18 @@ function App() {
     }
   };
 
+  const fetchMissingDataAlerts = async () => {
+    try {
+      const response = await axios.get(`${API}/dashboard/missing-data-alerts`);
+      setMissingDataAlerts(response.data.alerts || []);
+      console.log("⚠️ Alertes de données manquantes:", response.data);
+    } catch (error) {
+      console.error("Erreur lors de la récupération des alertes:", error);
+      setMissingDataAlerts([]);
+    }
+  };
+
+
   // ✅ Fonctions d'authentification
   const handleLoginSuccess = (user, session_id) => {
     setCurrentUser(user);
