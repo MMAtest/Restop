@@ -3120,6 +3120,116 @@ function App() {
                 )}
               </div>
               
+              {/* Section Données Manquantes - TOUJOURS AFFICHÉE */}
+              <div className="alert-section" style={{marginBottom: 'var(--spacing-lg)'}}>
+                <div className="alert-header">
+                  <div className="alert-title">⚠️ Données Manquantes</div>
+                  <button 
+                    onClick={fetchMissingDataAlerts}
+                    className="button small"
+                    style={{
+                      background: 'var(--color-primary-blue)',
+                      color: 'white',
+                      padding: '6px 12px',
+                      fontSize: '12px'
+                    }}
+                  >
+                    🔄 Actualiser
+                  </button>
+                </div>
+                
+                {missingDataAlerts.length === 0 ? (
+                  <div style={{
+                    padding: '24px',
+                    textAlign: 'center',
+                    background: 'var(--color-background-card-light)',
+                    borderRadius: '8px',
+                    border: '1px dashed var(--color-border)'
+                  }}>
+                    <div style={{fontSize: '32px', marginBottom: '8px'}}>✅</div>
+                    <div style={{color: 'var(--color-success-green)', fontWeight: 'bold', marginBottom: '4px'}}>
+                      Aucune donnée manquante
+                    </div>
+                    <div style={{fontSize: '12px', color: 'var(--color-text-secondary)'}}>
+                      Toutes les données essentielles sont présentes
+                    </div>
+                  </div>
+                ) : (
+                  <div style={{display: 'grid', gap: '12px'}}>
+                    {missingDataAlerts.map((alert, index) => (
+                      <div 
+                        key={alert.id || index}
+                        style={{
+                          padding: '16px',
+                          background: 'var(--color-background-card)',
+                          borderRadius: '8px',
+                          borderLeft: `4px solid ${
+                            alert.severity === 'high' ? 'var(--color-danger-red)' : 
+                            alert.severity === 'medium' ? 'var(--color-warning-orange)' : 
+                            'var(--color-primary-blue)'
+                          }`,
+                          display: 'flex',
+                          alignItems: 'flex-start',
+                          justifyContent: 'space-between',
+                          gap: '12px'
+                        }}
+                      >
+                        <div style={{flex: 1}}>
+                          <div style={{display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px'}}>
+                            <span style={{fontSize: '20px'}}>{alert.icon}</span>
+                            <div>
+                              <div style={{fontWeight: 'bold', fontSize: '14px'}}>{alert.title}</div>
+                              <div style={{fontSize: '11px', color: 'var(--color-text-secondary)'}}>{alert.category}</div>
+                            </div>
+                          </div>
+                          <div style={{fontSize: '13px', color: 'var(--color-text-secondary)', marginBottom: '8px'}}>
+                            {alert.description}
+                          </div>
+                          {alert.details && alert.details.length > 0 && (
+                            <div style={{
+                              fontSize: '12px',
+                              color: 'var(--color-text-muted)',
+                              background: 'rgba(0,0,0,0.03)',
+                              padding: '8px',
+                              borderRadius: '4px',
+                              marginTop: '8px'
+                            }}>
+                              <strong>Exemples:</strong>
+                              <ul style={{margin: '4px 0 0 0', paddingLeft: '20px'}}>
+                                {alert.details.slice(0, 3).map((detail, i) => (
+                                  <li key={i}>{detail}</li>
+                                ))}
+                                {alert.details.length > 3 && (
+                                  <li>... et {alert.details.length - 3} autre(s)</li>
+                                )}
+                              </ul>
+                            </div>
+                          )}
+                        </div>
+                        <button
+                          onClick={() => {
+                            // Navigation vers la page concernée
+                            if (alert.action_link === '/orders') setActiveTab('orders');
+                            else if (alert.action_link === '/production') setActiveTab('production');
+                            else if (alert.action_link === '/stocks') setActiveTab('stocks');
+                          }}
+                          className="button small"
+                          style={{
+                            background: 'var(--color-primary-green)',
+                            color: 'white',
+                            whiteSpace: 'nowrap',
+                            fontSize: '12px',
+                            padding: '8px 12px'
+                          }}
+                        >
+                          {alert.action}
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
               {/* Message si pas de données */}
               {hideDemoData && (
                 <div style={{
