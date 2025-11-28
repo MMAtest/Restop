@@ -2911,8 +2911,22 @@ function App() {
                   </div>
                 </div>
 
+                {/* Message si pas de données */}
+                {(!filteredAnalytics.topProductions || filteredAnalytics.topProductions.length === 0) && (
+                  <div style={{
+                    padding: '24px',
+                    textAlign: 'center',
+                    background: 'var(--color-background-card-light)',
+                    borderRadius: '8px',
+                    color: 'var(--color-text-secondary)',
+                    fontSize: '14px'
+                  }}>
+                    📊 Aucune production pour cette période
+                  </div>
+                )}
+                
                 {/* Liste des productions filtrées avec coefficients */}
-                {getFilteredProductions(filteredAnalytics.topProductions, selectedProductionCategory)
+                {filteredAnalytics.topProductions && filteredAnalytics.topProductions.length > 0 && getFilteredProductions(filteredAnalytics.topProductions, selectedProductionCategory)
                   .slice(0, showMoreTopProductions ? 9 : 4)
                   .map((production, index) => {
                   // Assurer que tous les produits ont des coefficients (valeurs par défaut si manquantes)
