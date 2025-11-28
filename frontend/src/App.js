@@ -104,25 +104,13 @@ function App() {
   const [selectedProductionCategory, setSelectedProductionCategory] = useState(''); // Filtre pour les top productions
   const [selectedFlopCategory, setSelectedFlopCategory] = useState(''); // Filtre pour les flop productions séparé
   const [filteredAnalytics, setFilteredAnalytics] = useState({
-    caTotal: 8975.50,
-    caMidi: 16775.85,  // 60% du CA total
-    caSoir: 11183.90,  // 40% du CA total
-    couvertsMidi: 87,
-    couvertsSoir: 64,
-    topProductions: [
-      { nom: "Rigatoni à la truffe", ventes: 2418, portions: 78, categorie: "Plat", coefficientPrevu: 2.85, coefficientReel: 2.87, coutMatiere: 774.00, prixVente: 28.50 }, // 28.50 / (774.00/78) = 2.87
-      { nom: "Fleurs de courgettes", ventes: 1911, portions: 91, categorie: "Entrée", coefficientPrevu: 3.25, coefficientReel: 3.25, coutMatiere: 482.75, prixVente: 17.25 }, // 17.25 / (482.75/91) = 3.25
-      { nom: "Souris d'agneau", ventes: 1872, portions: 52, categorie: "Plat", coefficientPrevu: 1.50, coefficientReel: 1.37, coutMatiere: 1368.00, prixVente: 36.00 }, // 36.00 / (1368.00/52) = 1.37
-      { nom: "Tiramisù maison", ventes: 1654, portions: 67, categorie: "Dessert", coefficientPrevu: 3.00, coefficientReel: 3.04, coutMatiere: 264.64, prixVente: 12.00 }, // 12.00 / (264.64/67) = 3.04
-      { nom: "Cocktail Spritz", ventes: 1543, portions: 124, categorie: "Bar", coefficientPrevu: 6.90, coefficientReel: 6.90, coutMatiere: 201.59, prixVente: 11.20 }, // 11.20 / (201.59/124) = 6.90
-      { nom: "Salade de saison", ventes: 1387, portions: 89, categorie: "Entrée", coefficientPrevu: 3.60, coefficientReel: 3.58, coutMatiere: 360.22, prixVente: 14.50 }, // 14.50 / (360.22/89) = 3.58
-      { nom: "Plateau de fromages", ventes: 987, portions: 34, categorie: "Autres", coefficientPrevu: 2.10, coefficientReel: 2.08, coutMatiere: 473.76, prixVente: 29.00 } // 29.00 / (473.76/34) = 2.08
-    ],
-    flopProductions: [
-      { nom: "Soupe froide", ventes: 187, portions: 12, categorie: "Entrée", coefficientPrevu: 3.50, coefficientReel: 3.43, coutMatiere: 54.60, prixVente: 15.60 }, // 15.60 / (54.60/12) = 3.43
-      { nom: "Tartare de légumes", ventes: 156, portions: 8, categorie: "Autres", coefficientPrevu: 1.90, coefficientReel: 1.90, coutMatiere: 70.20, prixVente: 16.70 }, // 16.70 / (70.20/8) = 1.90
-      { nom: "Mocktail exotique", ventes: 134, portions: 9, categorie: "Bar", coefficientPrevu: 3.20, coefficientReel: 3.21, coutMatiere: 37.52, prixVente: 13.40 }, // 13.40 / (37.52/9) = 3.21
-      { nom: "Panna cotta", ventes: 98, portions: 6, categorie: "Dessert", coefficientPrevu: 1.95, coefficientReel: 1.94, coutMatiere: 30.38, prixVente: 9.80 }, // 9.80 / (30.38/6) = 1.94
+    caTotal: 0,
+    caMidi: 0,
+    caSoir: 0,
+    couvertsMidi: 0,
+    couvertsSoir: 0,
+    topProductions: [],
+    flopProductions: [],
       { nom: "Salade tiède", ventes: 87, portions: 5, categorie: "Entrée", coefficientPrevu: 2.80, coefficientReel: 2.65, coutMatiere: 35.20, prixVente: 8.70 }, // 8.70 / (35.20/5) = 2.65
       { nom: "Velouté automnal", ventes: 76, portions: 4, categorie: "Plat", coefficientPrevu: 3.00, coefficientReel: 2.85, coutMatiere: 28.15, prixVente: 7.60 }, // 7.60 / (28.15/4) = 2.85
       { nom: "Smoothie détox", ventes: 65, portions: 3, categorie: "Bar", coefficientPrevu: 2.50, coefficientReel: 2.40, coutMatiere: 25.30, prixVente: 6.50 } // 6.50 / (25.30/3) = 2.40
