@@ -2830,9 +2830,7 @@ function App() {
                   <div className="subtitle">par couvert</div>
                 </div>
               </div>
-              )}
               {/* Ventes par catégorie complètes - Remontées */}
-              {!hideDemoData && filteredAnalytics.caTotal > 0 && (
               <div className="kpi-grid">
                 <div className="kpi-card">
                   <div className="icon">🥗</div>
