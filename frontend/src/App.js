@@ -437,6 +437,7 @@ function App() {
     fetchProduits();
     fetchFournisseurs();
     fetchDashboardAnalytics();
+    fetchMissingDataAlerts(); // Récupérer les alertes de données manquantes
     fetchStocks();
     fetchMouvements();
     fetchRecettes();
