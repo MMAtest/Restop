@@ -2781,7 +2781,6 @@ function App() {
                   </div>
                 </div>
               )}
-              
               {/* KPIs Ventes - TOUJOURS AFFICHÉS */}
               <div className="kpi-grid">
                 <div className="kpi-card">
