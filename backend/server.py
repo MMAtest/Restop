@@ -4900,7 +4900,14 @@ async def get_missing_data_alerts():
     
     # Récupérer les dates avec Tickets Z
     rapports_z = await db.rapports_z.find({}, {"date": 1, "_id": 0}).to_list(1000)
-    dates_with_z = set([r.get("date", "").split("T")[0] for r in rapports_z if r.get("date")])
+    dates_with_z = set()
+    for r in rapports_z:
+        date_val = r.get("date")
+        if date_val:
+            if isinstance(date_val, str):
+                dates_with_z.add(date_val.split("T")[0])
+            elif isinstance(date_val, datetime):
+                dates_with_z.add(date_val.date().isoformat())
     
     missing_z_count = 0
     missing_z_dates = []
