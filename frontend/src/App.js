@@ -1783,39 +1783,21 @@ function App() {
       const recettesData = recettesResponse.data || [];
       
       if (rapports.length === 0) {
-        // Si pas de données réelles, utiliser données de démonstration
+        // Si pas de données réelles, retourner des 0
         return {
-          caTotal: 8975.50,
-          caMidi: 5385.30,
-          caSoir: 3590.20,
-          couvertsMidi: 87,
-          couvertsSoir: 64,
-          topProductions: recettesData.slice(0, 7).map((recette, i) => ({
-            nom: recette.nom,
-            ventes: Math.floor(Math.random() * 3000) + 500,
-            portions: recette.portions || Math.floor(Math.random() * 100) + 20,
-            categorie: recette.categorie || "Autres",
-            coefficientPrevu: recette.coefficient_prevu || 2.5,
-            coefficientReel: recette.coefficient_reel || 2.4,
-            coutMatiere: recette.cout_matiere || Math.floor(Math.random() * 500) + 100,
-            prixVente: recette.prix_vente || Math.floor(Math.random() * 30) + 15
-          })),
-          flopProductions: recettesData.slice(7, 14).map((recette, i) => ({
-            nom: recette.nom,
-            ventes: Math.floor(Math.random() * 300) + 50,
-            portions: Math.floor(Math.random() * 20) + 5,
-            categorie: recette.categorie || "Autres",
-            coefficientPrevu: recette.coefficient_prevu || 2.5,
-            coefficientReel: recette.coefficient_reel || 2.4,
-            coutMatiere: recette.cout_matiere || Math.floor(Math.random() * 100) + 20,
-            prixVente: recette.prix_vente || Math.floor(Math.random() * 20) + 8
-          })),
+          caTotal: 0,
+          caMidi: 0,
+          caSoir: 0,
+          couvertsMidi: 0,
+          couvertsSoir: 0,
+          topProductions: [],
+          flopProductions: [],
           ventesParCategorie: {
-            entrees: Math.floor(Math.random() * 5000) + 2000,
-            plats: Math.floor(Math.random() * 8000) + 4000,
-            desserts: Math.floor(Math.random() * 3000) + 1500,
-            boissons: Math.floor(Math.random() * 6000) + 3000,
-            autres: Math.floor(Math.random() * 1500) + 500
+            entrees: 0,
+            plats: 0,
+            desserts: 0,
+            boissons: 0,
+            autres: 0
           }
         };
       }
