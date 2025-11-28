@@ -111,16 +111,12 @@ function App() {
     couvertsSoir: 0,
     topProductions: [],
     flopProductions: [],
-      { nom: "Salade tiède", ventes: 87, portions: 5, categorie: "Entrée", coefficientPrevu: 2.80, coefficientReel: 2.65, coutMatiere: 35.20, prixVente: 8.70 }, // 8.70 / (35.20/5) = 2.65
-      { nom: "Velouté automnal", ventes: 76, portions: 4, categorie: "Plat", coefficientPrevu: 3.00, coefficientReel: 2.85, coutMatiere: 28.15, prixVente: 7.60 }, // 7.60 / (28.15/4) = 2.85
-      { nom: "Smoothie détox", ventes: 65, portions: 3, categorie: "Bar", coefficientPrevu: 2.50, coefficientReel: 2.40, coutMatiere: 25.30, prixVente: 6.50 } // 6.50 / (25.30/3) = 2.40
-    ],
     ventesParCategorie: {
-      plats: 6201,
-      boissons: 4987,
-      desserts: 2156,
-      entrees: 3247,
-      autres: 892
+      plats: 0,
+      boissons: 0,
+      desserts: 0,
+      entrees: 0,
+      autres: 0
     }
   });
   const [dashboardStats, setDashboardStats] = useState({});
