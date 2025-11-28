@@ -2765,7 +2765,6 @@ function App() {
                   </span>
                 )}
               </div>
-              
               {/* Message d'info si pas de données */}
               {filteredAnalytics.caTotal === 0 && (
                 <div style={{
@@ -2789,21 +2788,18 @@ function App() {
                   <div className="value">{filteredAnalytics.caTotal.toLocaleString('fr-FR')} €</div>
                   <div className="subtitle">{(filteredAnalytics.couvertsMidi + filteredAnalytics.couvertsSoir)} couverts</div>
                 </div>
-                
                 <div className="kpi-card">
                   <div className="icon">☀️</div>
                   <div className="title">Service Midi</div>
                   <div className="value">{filteredAnalytics.caMidi.toLocaleString('fr-FR')} €</div>
                   <div className="subtitle">{filteredAnalytics.couvertsMidi} couverts</div>
                 </div>
-                
                 <div className="kpi-card">
                   <div className="icon">🌙</div>
                   <div className="title">Service Soir</div>
                   <div className="value">{filteredAnalytics.caSoir.toLocaleString('fr-FR')} €</div>
                   <div className="subtitle">{filteredAnalytics.couvertsSoir} couverts</div>
                 </div>
-                
                 {/* Nouveaux KPIs - Ticket moyen par couvert */}
                 <div className="kpi-card">
                   <div className="icon">🍽️</div>
@@ -2816,7 +2812,6 @@ function App() {
                   </div>
                   <div className="subtitle">par couvert</div>
                 </div>
-                
                 <div className="kpi-card">
                   <div className="icon">🕐</div>
                   <div className="title">Ticket Moyen par Service</div>
@@ -2836,7 +2831,6 @@ function App() {
                 </div>
               </div>
               )}
-
               {/* Ventes par catégorie complètes - Remontées */}
               {!hideDemoData && filteredAnalytics.caTotal > 0 && (
               <div className="kpi-grid">
@@ -2845,25 +2839,21 @@ function App() {
                   <div className="title">Entrées</div>
                   <div className="value">{filteredAnalytics.ventesParCategorie.entrees.toLocaleString('fr-FR')} €</div>
                 </div>
-                
                 <div className="kpi-card">
                   <div className="icon">🍽️</div>
                   <div className="title">Plats</div>
                   <div className="value">{filteredAnalytics.ventesParCategorie.plats.toLocaleString('fr-FR')} €</div>
                 </div>
-                
                 <div className="kpi-card">
                   <div className="icon">🍰</div>
                   <div className="title">Desserts</div>
                   <div className="value">{filteredAnalytics.ventesParCategorie.desserts.toLocaleString('fr-FR')} €</div>
                 </div>
-                
                 <div className="kpi-card">
                   <div className="icon">🍹</div>
                   <div className="title">Bar</div>
                   <div className="value">{filteredAnalytics.ventesParCategorie.boissons.toLocaleString('fr-FR')} €</div>
                 </div>
-                
                 <div className="kpi-card">
                   <div className="icon">📝</div>
                   <div className="title">Autres</div>
@@ -2873,7 +2863,6 @@ function App() {
               {/* Top Productions avec filtre */}
               <div className="item-list">
                 <div className="section-title">🍽️ Top Productions</div>
-                
                 {/* Filtre par catégorie */}
                 <div className="filter-section" style={{marginBottom: '15px'}}>
                   <div className="filter-group" style={{display: 'flex', alignItems: 'center', gap: '10px'}}>
@@ -2899,7 +2888,6 @@ function App() {
                       <option value="Bar">🍹 Bar</option>
                       <option value="Autres">📝 Autres</option>
                     </select>
-                    
                     <div className="filter-info" style={{
                       fontSize: '12px', 
                       color: 'var(--color-text-secondary)'
@@ -2908,7 +2896,6 @@ function App() {
                     </div>
                   </div>
                 </div>
-
                 {/* Message si pas de données */}
                 {(!filteredAnalytics.topProductions || filteredAnalytics.topProductions.length === 0) && (
                   <div style={{
@@ -2922,7 +2909,6 @@ function App() {
                     📊 Aucune production pour cette période
                   </div>
                 )}
-                
                 {/* Liste des productions filtrées avec coefficients */}
                 {filteredAnalytics.topProductions && filteredAnalytics.topProductions.length > 0 && getFilteredProductions(filteredAnalytics.topProductions, selectedProductionCategory)
                   .slice(0, showMoreTopProductions ? 9 : 4)
@@ -2933,7 +2919,6 @@ function App() {
                   const coefficientStatus = coefficientReel >= coefficientPrevu ? 'success' : 'warning';
                   const coefficientIcon = coefficientReel >= coefficientPrevu ? '✅' : '⚠️';
                   const coefficientText = coefficientReel >= coefficientPrevu ? 'Respecté' : 'Pas atteint';
-                  
                   return (
                     <div key={index} className="item-row">
                       <div className="item-info">
@@ -2971,7 +2956,6 @@ function App() {
                     </div>
                   );
                 })}
-                
                 {/* Bouton Voir plus pour Top Productions */}
                 {getFilteredProductions(filteredAnalytics.topProductions, selectedProductionCategory).length > 4 && (
                   <div style={{textAlign: 'center', marginTop: '15px', marginBottom: '20px'}}>
@@ -2991,11 +2975,9 @@ function App() {
                   </div>
                 )}
               </div>
-
               {/* Flop Productions avec filtre */}
               <div className="item-list">
                 <div className="section-title">📉 Flop Productions</div>
-                
                 {/* Filtre par catégorie pour les flops */}
                 <div className="filter-section" style={{marginBottom: '15px'}}>
                   <div className="filter-group" style={{display: 'flex', alignItems: 'center', gap: '10px'}}>
@@ -3021,7 +3003,6 @@ function App() {
                       <option value="Bar">🍹 Bar</option>
                       <option value="Autres">📝 Autres</option>
                     </select>
-                    
                     <div className="filter-info" style={{
                       fontSize: '12px', 
                       color: 'var(--color-text-secondary)'
@@ -3030,7 +3011,6 @@ function App() {
                     </div>
                   </div>
                 </div>
-
                 {/* Liste des flop productions filtrées avec coefficients */}
                 {getFilteredProductions(filteredAnalytics.flopProductions, selectedFlopCategory)
                   .slice(0, showMoreFlopProductions ? 9 : 4)
@@ -3041,7 +3021,6 @@ function App() {
                   const coefficientStatus = coefficientReel >= coefficientPrevu ? 'success' : 'warning';
                   const coefficientIcon = coefficientReel >= coefficientPrevu ? '✅' : '⚠️';
                   const coefficientText = coefficientReel >= coefficientPrevu ? 'Respecté' : 'Pas atteint';
-                  
                   return (
                     <div key={index} className="item-row">
                       <div className="item-info">
@@ -3079,7 +3058,6 @@ function App() {
                     </div>
                   );
                 })}
-                
                 {/* Bouton Voir plus pour Flop Productions */}
                 {getFilteredProductions(filteredAnalytics.flopProductions, selectedFlopCategory).length > 4 && (
                   <div style={{textAlign: 'center', marginTop: '15px', marginBottom: '20px'}}>
@@ -3101,7 +3079,6 @@ function App() {
               </div>
             </div>
           )}
-
           {/* ONGLET ALERTES */}
           {activeDashboardTab === "alertes" && (
             <div className="section-card">
