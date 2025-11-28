@@ -2780,7 +2780,6 @@ function App() {
                     ℹ️ Aucune donnée de vente pour la période sélectionnée. Importez un Ticket Z via OCR pour voir les statistiques.
                   </div>
                 </div>
-              )}
               
               {/* KPIs Ventes - TOUJOURS AFFICHÉS */}
               <div className="kpi-grid">
