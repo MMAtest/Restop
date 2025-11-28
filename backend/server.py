@@ -4881,6 +4881,175 @@ async def get_dashboard_analytics():
         "is_real_data": True
     }
 
+
+@api_router.get("/dashboard/missing-data-alerts")
+async def get_missing_data_alerts():
+    """
+    Détecte les données manquantes ou incomplètes dans l'application
+    - Tickets Z non uploadés
+    - Factures manquantes pour commandes livrées
+    - Recettes incomplètes
+    - Produits sans prix
+    - Autres anomalies
+    """
+    alerts = []
+    
+    # 1. Vérifier les Tickets Z manquants (derniers 7 jours)
+    today = datetime.utcnow().date()
+    last_7_days = [(today - timedelta(days=i)).isoformat() for i in range(7)]
+    
+    # Récupérer les dates avec Tickets Z
+    rapports_z = await db.rapports_z.find({}, {"date": 1, "_id": 0}).to_list(1000)
+    dates_with_z = set([r.get("date", "").split("T")[0] for r in rapports_z if r.get("date")])
+    
+    missing_z_count = 0
+    missing_z_dates = []
+    for date_str in last_7_days:
+        if date_str not in dates_with_z:
+            missing_z_count += 1
+            missing_z_dates.append(date_str)
+    
+    if missing_z_count > 0:
+        alerts.append({
+            "id": "missing_z_reports",
+            "type": "warning",
+            "category": "Tickets Z",
+            "icon": "📄",
+            "title": f"{missing_z_count} Ticket(s) Z manquant(s)",
+            "description": f"Les tickets Z n'ont pas été uploadés pour {missing_z_count} jour(s) des 7 derniers jours",
+            "details": missing_z_dates[:3],  # Afficher les 3 premiers
+            "action": "Importer via OCR",
+            "action_link": "/orders",
+            "severity": "medium"
+        })
+    
+    # 2. Vérifier les recettes incomplètes (sans ingrédients ou sans prix)
+    recettes = await db.recettes.find({}, {"_id": 0}).to_list(1000)
+    recettes_incomplete = []
+    recettes_sans_prix = []
+    
+    for recette in recettes:
+        ingredients = recette.get("ingredients", [])
+        prix_vente = recette.get("prix_vente", 0)
+        
+        if not ingredients or len(ingredients) == 0:
+            recettes_incomplete.append(recette.get("nom", "Sans nom"))
+        
+        if not prix_vente or prix_vente == 0:
+            recettes_sans_prix.append(recette.get("nom", "Sans nom"))
+    
+    if recettes_incomplete:
+        alerts.append({
+            "id": "incomplete_recipes",
+            "type": "error",
+            "category": "Recettes",
+            "icon": "🍽️",
+            "title": f"{len(recettes_incomplete)} Recette(s) sans ingrédients",
+            "description": "Ces recettes n'ont pas d'ingrédients définis, ce qui empêche le calcul des coûts",
+            "details": recettes_incomplete[:5],
+            "action": "Compléter les recettes",
+            "action_link": "/production",
+            "severity": "high"
+        })
+    
+    if recettes_sans_prix:
+        alerts.append({
+            "id": "recipes_no_price",
+            "type": "warning",
+            "category": "Recettes",
+            "icon": "💰",
+            "title": f"{len(recettes_sans_prix)} Recette(s) sans prix de vente",
+            "description": "Le prix de vente n'est pas défini pour ces recettes",
+            "details": recettes_sans_prix[:5],
+            "action": "Définir les prix",
+            "action_link": "/production",
+            "severity": "medium"
+        })
+    
+    # 3. Vérifier les produits sans prix de référence
+    produits = await db.produits.find({}, {"_id": 0}).to_list(1000)
+    produits_sans_prix = []
+    
+    for produit in produits:
+        if not produit.get("prix_achat") and not produit.get("reference_price"):
+            produits_sans_prix.append(produit.get("nom", "Sans nom"))
+    
+    if produits_sans_prix:
+        alerts.append({
+            "id": "products_no_price",
+            "type": "warning",
+            "category": "Produits",
+            "icon": "📦",
+            "title": f"{len(produits_sans_prix)} Produit(s) sans prix",
+            "description": "Ces produits n'ont pas de prix de référence, ce qui affecte les calculs de coûts",
+            "details": produits_sans_prix[:5],
+            "action": "Définir les prix",
+            "action_link": "/stocks",
+            "severity": "medium"
+        })
+    
+    # 4. Vérifier les factures manquantes (à implémenter selon votre logique de commandes)
+    # Pour l'instant, placeholder
+    commandes = await db.orders.find({"status": "delivered"}, {"_id": 0}).to_list(100)
+    factures = await db.invoices.find({}, {"order_id": 1, "_id": 0}).to_list(1000)
+    facture_order_ids = set([f.get("order_id") for f in factures if f.get("order_id")])
+    
+    commandes_sans_facture = []
+    for commande in commandes:
+        order_id = commande.get("id")
+        if order_id and order_id not in facture_order_ids:
+            commandes_sans_facture.append({
+                "order_id": order_id,
+                "fournisseur": commande.get("fournisseur_nom", "Inconnu"),
+                "date": commande.get("date_livraison", "Inconnue")
+            })
+    
+    if commandes_sans_facture:
+        alerts.append({
+            "id": "missing_invoices",
+            "type": "warning",
+            "category": "Factures",
+            "icon": "📃",
+            "title": f"{len(commandes_sans_facture)} Facture(s) manquante(s)",
+            "description": "Ces commandes sont marquées comme livrées mais n'ont pas de facture associée",
+            "details": [f"{c['fournisseur']} - {c['date']}" for c in commandes_sans_facture[:3]],
+            "action": "Importer les factures",
+            "action_link": "/orders",
+            "severity": "medium"
+        })
+    
+    # 5. Vérifier les préparations sans DLC
+    preparations = await db.preparations.find({}, {"_id": 0}).to_list(100)
+    preparations_sans_dlc = []
+    
+    for prep in preparations:
+        if not prep.get("dlc_jours"):
+            preparations_sans_dlc.append(prep.get("nom", "Sans nom"))
+    
+    if preparations_sans_dlc:
+        alerts.append({
+            "id": "preparations_no_dlc",
+            "type": "info",
+            "category": "Préparations",
+            "icon": "⏰",
+            "title": f"{len(preparations_sans_dlc)} Préparation(s) sans DLC",
+            "description": "La durée de conservation n'est pas définie pour ces préparations",
+            "details": preparations_sans_dlc[:5],
+            "action": "Définir les DLC",
+            "action_link": "/production",
+            "severity": "low"
+        })
+    
+    return {
+        "alerts": alerts,
+        "total_count": len(alerts),
+        "summary": {
+            "high": len([a for a in alerts if a.get("severity") == "high"]),
+            "medium": len([a for a in alerts if a.get("severity") == "medium"]),
+            "low": len([a for a in alerts if a.get("severity") == "low"])
+        }
+    }
+
 # Routes pour le traitement OCR
 @api_router.post("/ocr/upload-document")  # No response_model to allow flexible multi-invoice responses
 async def upload_and_process_document(
