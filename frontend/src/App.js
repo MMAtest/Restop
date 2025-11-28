@@ -89,6 +89,8 @@ function App() {
   const [showBurgerMenu, setShowBurgerMenu] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(false); // State pour le thème (false = light par défaut)
   const [alerteStockType, setAlerteStockType] = useState("produits"); // State pour le switch Produits/Productions dans les alertes
+  const [missingDataAlerts, setMissingDataAlerts] = useState([]);
+
   
   // ✅ États pour l'authentification et les rôles
   const [isAuthenticated, setIsAuthenticated] = useState(false);
