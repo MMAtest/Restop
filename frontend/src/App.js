@@ -2870,7 +2870,6 @@ function App() {
                   <div className="value">{filteredAnalytics.ventesParCategorie.autres.toLocaleString('fr-FR')} €</div>
                 </div>
               </div>
-
               {/* Top Productions avec filtre */}
               <div className="item-list">
                 <div className="section-title">🍽️ Top Productions</div>
