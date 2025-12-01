@@ -190,7 +190,8 @@ const LoginPage = ({ onLoginSuccess }) => {
           </button>
         </form>
 
-        {/* Comptes de test */}
+        {/* Comptes de test - MASQUÉS EN PRODUCTION */}
+        {process.env.NODE_ENV === 'development' && (
         <div style={{marginTop: '32px', padding: '20px', background: '#f9fafb', borderRadius: '8px'}}>
           <h3 style={{
             fontSize: '16px',
