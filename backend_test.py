@@ -6392,6 +6392,369 @@ Nombre de couverts: 32"""
         except Exception as e:
             self.log_result("Workflow Complet Mission", False, "Exception", str(e))
 
+    def test_orders_management_complete(self):
+        """Test complet de la gestion des commandes (ORDER) selon la review request"""
+        print("\n=== TEST COMPLET GESTION DES COMMANDES (ORDER) ===")
+        
+        # Variables pour stocker les IDs créés
+        created_order_id = None
+        test_supplier_id = None
+        
+        # 1. Récupérer les commandes existantes
+        print("\n--- 1. Récupération des commandes existantes ---")
+        try:
+            response = requests.get(f"{BASE_URL}/orders")
+            if response.status_code == 200:
+                orders = response.json()
+                if isinstance(orders, list):
+                    self.log_result("GET /orders - Récupération commandes", True, 
+                                  f"Total commandes: {len(orders)}")
+                    
+                    # Afficher les 5 premières commandes
+                    for i, order in enumerate(orders[:5]):
+                        order_id = order.get("id", "N/A")
+                        status = order.get("status", "N/A")
+                        supplier_name = order.get("supplier_name", "N/A")
+                        print(f"  - ID: {order_id}, Status: {status}, Fournisseur: {supplier_name}")
+                else:
+                    self.log_result("GET /orders - Récupération commandes", False, "Format de réponse incorrect")
+            else:
+                self.log_result("GET /orders - Récupération commandes", False, f"Erreur {response.status_code}", response.text)
+        except Exception as e:
+            self.log_result("GET /orders - Récupération commandes", False, "Exception", str(e))
+        
+        # Récupérer un fournisseur existant pour les tests
+        try:
+            suppliers_response = requests.get(f"{BASE_URL}/fournisseurs")
+            if suppliers_response.status_code == 200:
+                suppliers = suppliers_response.json()
+                if suppliers and len(suppliers) > 0:
+                    test_supplier_id = suppliers[0]["id"]
+                    supplier_name = suppliers[0]["nom"]
+                    print(f"  Utilisation du fournisseur: {supplier_name} (ID: {test_supplier_id})")
+                else:
+                    # Créer un fournisseur de test si aucun n'existe
+                    supplier_data = {
+                        "nom": "Test Fournisseur Commandes",
+                        "contact": "Jean Test",
+                        "email": "test@commandes.fr",
+                        "telephone": "01.23.45.67.89"
+                    }
+                    create_response = requests.post(f"{BASE_URL}/fournisseurs", json=supplier_data, headers=HEADERS)
+                    if create_response.status_code == 200:
+                        test_supplier_id = create_response.json()["id"]
+                        supplier_name = supplier_data["nom"]
+                        print(f"  Fournisseur créé: {supplier_name} (ID: {test_supplier_id})")
+        except Exception as e:
+            self.log_result("Préparation fournisseur test", False, "Exception", str(e))
+            return
+        
+        # 2. Tester la création d'une nouvelle commande
+        print("\n--- 2. Création d'une nouvelle commande ---")
+        if test_supplier_id:
+            order_data = {
+                "supplier_id": test_supplier_id,
+                "items": [
+                    {
+                        "product_id": "prod-1",
+                        "product_name": "Tomates",
+                        "quantity": 10.0,
+                        "unit": "kg",
+                        "unit_price": 5.0,
+                        "total_price": 50.0
+                    }
+                ],
+                "notes": "Commande de test - livraison hebdomadaire"
+            }
+            
+            try:
+                response = requests.post(f"{BASE_URL}/orders", json=order_data, headers=HEADERS)
+                if response.status_code == 200:
+                    created_order = response.json()
+                    created_order_id = created_order.get("id")
+                    order_number = created_order.get("order_number", "N/A")
+                    total_amount = created_order.get("total_amount", 0)
+                    status = created_order.get("status", "N/A")
+                    
+                    self.log_result("POST /orders - Création commande", True, 
+                                  f"Commande créée: {order_number}, Montant: {total_amount}€, Status: {status}")
+                    
+                    # Vérifier la structure de la réponse
+                    required_fields = ["id", "order_number", "supplier_id", "items", "total_amount", "status", "order_date"]
+                    if all(field in created_order for field in required_fields):
+                        self.log_result("Structure commande créée", True, "Tous les champs requis présents")
+                    else:
+                        missing = [f for f in required_fields if f not in created_order]
+                        self.log_result("Structure commande créée", False, f"Champs manquants: {missing}")
+                else:
+                    self.log_result("POST /orders - Création commande", False, f"Erreur {response.status_code}", response.text)
+            except Exception as e:
+                self.log_result("POST /orders - Création commande", False, "Exception", str(e))
+        
+        # 3. Tester la confirmation d'une commande (CRITICAL)
+        print("\n--- 3. Confirmation d'une commande (CRITICAL) ---")
+        if created_order_id:
+            try:
+                # D'abord récupérer une commande pending
+                get_response = requests.get(f"{BASE_URL}/orders/{created_order_id}")
+                if get_response.status_code == 200:
+                    order = get_response.json()
+                    if order.get("status") == "pending":
+                        # Confirmer la commande
+                        from datetime import datetime, timedelta
+                        delivery_date = (datetime.now() + timedelta(days=1)).isoformat()
+                        
+                        confirm_data = {
+                            "estimated_delivery_date": delivery_date
+                        }
+                        
+                        response = requests.put(f"{BASE_URL}/orders/{created_order_id}/confirm", 
+                                              json=confirm_data, headers=HEADERS)
+                        if response.status_code == 200:
+                            confirmed_order = response.json()
+                            if confirmed_order.get("status") == "confirmed":
+                                self.log_result("PUT /orders/{id}/confirm - Confirmation", True, 
+                                              f"Commande confirmée, nouveau status: {confirmed_order['status']}")
+                                
+                                # Vérifier que la date de livraison a été mise à jour
+                                if confirmed_order.get("estimated_delivery_date"):
+                                    self.log_result("Date livraison estimée", True, 
+                                                  f"Date mise à jour: {confirmed_order['estimated_delivery_date']}")
+                                else:
+                                    self.log_result("Date livraison estimée", False, "Date non mise à jour")
+                            else:
+                                self.log_result("PUT /orders/{id}/confirm - Confirmation", False, 
+                                              f"Status incorrect après confirmation: {confirmed_order.get('status')}")
+                        else:
+                            self.log_result("PUT /orders/{id}/confirm - Confirmation", False, 
+                                          f"Erreur {response.status_code}", response.text)
+                    else:
+                        self.log_result("Commande pending pour test", False, 
+                                      f"Commande n'est pas pending: {order.get('status')}")
+                else:
+                    self.log_result("Récupération commande pour confirmation", False, 
+                                  f"Erreur {get_response.status_code}")
+            except Exception as e:
+                self.log_result("PUT /orders/{id}/confirm - Confirmation", False, "Exception", str(e))
+        
+        # 4. Tester l'annulation d'une commande (CRITICAL)
+        print("\n--- 4. Annulation d'une commande (CRITICAL) ---")
+        # Créer une nouvelle commande pour l'annuler
+        if test_supplier_id:
+            cancel_order_data = {
+                "supplier_id": test_supplier_id,
+                "items": [
+                    {
+                        "product_id": "prod-cancel",
+                        "product_name": "Test Cancel",
+                        "quantity": 5.0,
+                        "unit": "kg",
+                        "unit_price": 20.0,
+                        "total_price": 100.0
+                    }
+                ],
+                "notes": "Commande de test pour annulation"
+            }
+            
+            try:
+                create_response = requests.post(f"{BASE_URL}/orders", json=cancel_order_data, headers=HEADERS)
+                if create_response.status_code == 200:
+                    cancel_order = create_response.json()
+                    cancel_order_id = cancel_order.get("id")
+                    
+                    print(f"  Commande créée pour annulation: {cancel_order_id}")
+                    
+                    # Annuler la commande
+                    response = requests.delete(f"{BASE_URL}/orders/{cancel_order_id}")
+                    if response.status_code == 200:
+                        result = response.json()
+                        self.log_result("DELETE /orders/{id} - Annulation", True, 
+                                      f"Commande annulée: {result.get('message', 'OK')}")
+                        
+                        # Vérifier que la commande a bien été supprimée ou marquée comme annulée
+                        check_response = requests.get(f"{BASE_URL}/orders/{cancel_order_id}")
+                        if check_response.status_code == 404:
+                            self.log_result("Vérification annulation", True, "Commande supprimée de la base")
+                        elif check_response.status_code == 200:
+                            cancelled_order = check_response.json()
+                            if cancelled_order.get("status") == "cancelled":
+                                self.log_result("Vérification annulation", True, "Commande marquée comme annulée")
+                            else:
+                                self.log_result("Vérification annulation", False, 
+                                              f"Status incorrect: {cancelled_order.get('status')}")
+                        else:
+                            self.log_result("Vérification annulation", False, 
+                                          f"Erreur vérification: {check_response.status_code}")
+                    else:
+                        self.log_result("DELETE /orders/{id} - Annulation", False, 
+                                      f"Erreur {response.status_code}", response.text)
+                else:
+                    self.log_result("Création commande pour annulation", False, 
+                                  f"Erreur {create_response.status_code}")
+            except Exception as e:
+                self.log_result("DELETE /orders/{id} - Annulation", False, "Exception", str(e))
+        
+        # 5. Tester la modification d'une commande
+        print("\n--- 5. Modification d'une commande ---")
+        if created_order_id:
+            try:
+                # Vérifier d'abord le status actuel
+                get_response = requests.get(f"{BASE_URL}/orders/{created_order_id}")
+                if get_response.status_code == 200:
+                    current_order = get_response.json()
+                    current_status = current_order.get("status")
+                    
+                    # Modifier la commande
+                    update_data = {
+                        "status": "delivered",
+                        "actual_delivery_date": datetime.now().isoformat(),
+                        "notes": "Commande livrée et vérifiée"
+                    }
+                    
+                    response = requests.put(f"{BASE_URL}/orders/{created_order_id}", 
+                                          json=update_data, headers=HEADERS)
+                    if response.status_code == 200:
+                        updated_order = response.json()
+                        if updated_order.get("status") == "delivered":
+                            self.log_result("PUT /orders/{id} - Modification", True, 
+                                          f"Status mis à jour: {current_status} → delivered")
+                            
+                            # Vérifier que la date de livraison réelle a été mise à jour
+                            if updated_order.get("actual_delivery_date"):
+                                self.log_result("Date livraison réelle", True, "Date de livraison réelle mise à jour")
+                            else:
+                                self.log_result("Date livraison réelle", False, "Date non mise à jour")
+                        else:
+                            self.log_result("PUT /orders/{id} - Modification", False, 
+                                          f"Status non mis à jour: {updated_order.get('status')}")
+                    else:
+                        self.log_result("PUT /orders/{id} - Modification", False, 
+                                      f"Erreur {response.status_code}", response.text)
+                else:
+                    self.log_result("Récupération commande pour modification", False, 
+                                  f"Erreur {get_response.status_code}")
+            except Exception as e:
+                self.log_result("PUT /orders/{id} - Modification", False, "Exception", str(e))
+        
+        # 6. Vérifier les statuts disponibles
+        print("\n--- 6. Vérification des statuts disponibles ---")
+        expected_statuses = ["pending", "confirmed", "in_transit", "delivered", "cancelled"]
+        
+        try:
+            # Récupérer toutes les commandes pour vérifier les statuts
+            response = requests.get(f"{BASE_URL}/orders")
+            if response.status_code == 200:
+                orders = response.json()
+                if isinstance(orders, list) and len(orders) > 0:
+                    found_statuses = set()
+                    for order in orders:
+                        status = order.get("status")
+                        if status:
+                            found_statuses.add(status)
+                    
+                    valid_statuses = [s for s in found_statuses if s in expected_statuses]
+                    invalid_statuses = [s for s in found_statuses if s not in expected_statuses]
+                    
+                    if len(invalid_statuses) == 0:
+                        self.log_result("Validation statuts", True, 
+                                      f"Statuts valides trouvés: {list(valid_statuses)}")
+                    else:
+                        self.log_result("Validation statuts", False, 
+                                      f"Statuts invalides: {invalid_statuses}")
+                    
+                    # Vérifier que les statuts de base sont supportés
+                    basic_statuses = ["pending", "confirmed", "delivered", "cancelled"]
+                    supported_basic = [s for s in basic_statuses if s in found_statuses]
+                    if len(supported_basic) >= 3:  # Au moins 3 statuts de base
+                        self.log_result("Support statuts de base", True, 
+                                      f"Statuts de base supportés: {supported_basic}")
+                    else:
+                        self.log_result("Support statuts de base", False, 
+                                      f"Pas assez de statuts de base: {supported_basic}")
+                else:
+                    self.log_result("Vérification statuts", True, "Aucune commande pour vérifier les statuts")
+            else:
+                self.log_result("Récupération commandes pour statuts", False, 
+                              f"Erreur {response.status_code}")
+        except Exception as e:
+            self.log_result("Vérification statuts", False, "Exception", str(e))
+        
+        # 7. Tests de cohérence
+        print("\n--- 7. Tests de cohérence ---")
+        
+        # Test: Vérifier qu'une commande confirmée ne peut pas être annulée (si cette règle existe)
+        if created_order_id:
+            try:
+                # Récupérer le status actuel
+                get_response = requests.get(f"{BASE_URL}/orders/{created_order_id}")
+                if get_response.status_code == 200:
+                    order = get_response.json()
+                    current_status = order.get("status")
+                    
+                    if current_status in ["confirmed", "delivered"]:
+                        # Essayer d'annuler une commande confirmée/livrée
+                        delete_response = requests.delete(f"{BASE_URL}/orders/{created_order_id}")
+                        if delete_response.status_code == 400:
+                            self.log_result("Cohérence - Annulation commande confirmée", True, 
+                                          "Annulation correctement refusée pour commande confirmée")
+                        elif delete_response.status_code == 200:
+                            self.log_result("Cohérence - Annulation commande confirmée", False, 
+                                          "Annulation autorisée pour commande confirmée (peut être normal)")
+                        else:
+                            self.log_result("Cohérence - Annulation commande confirmée", False, 
+                                          f"Réponse inattendue: {delete_response.status_code}")
+                    else:
+                        self.log_result("Test cohérence annulation", True, 
+                                      f"Commande en status {current_status} - test non applicable")
+            except Exception as e:
+                self.log_result("Test cohérence annulation", False, "Exception", str(e))
+        
+        # Test: Vérifier que les produits de la commande sont bien enregistrés
+        if created_order_id:
+            try:
+                response = requests.get(f"{BASE_URL}/orders/{created_order_id}")
+                if response.status_code == 200:
+                    order = response.json()
+                    items = order.get("items", [])
+                    
+                    if len(items) > 0:
+                        item = items[0]
+                        required_item_fields = ["product_id", "product_name", "quantity", "unit", "unit_price", "total_price"]
+                        if all(field in item for field in required_item_fields):
+                            self.log_result("Cohérence - Structure items", True, 
+                                          f"Items correctement structurés: {len(items)} item(s)")
+                            
+                            # Vérifier la cohérence des calculs
+                            calculated_total = item["quantity"] * item["unit_price"]
+                            if abs(calculated_total - item["total_price"]) < 0.01:
+                                self.log_result("Cohérence - Calculs prix", True, 
+                                              f"Calcul correct: {item['quantity']} × {item['unit_price']} = {item['total_price']}")
+                            else:
+                                self.log_result("Cohérence - Calculs prix", False, 
+                                              f"Calcul incorrect: {calculated_total} ≠ {item['total_price']}")
+                        else:
+                            missing_fields = [f for f in required_item_fields if f not in item]
+                            self.log_result("Cohérence - Structure items", False, 
+                                          f"Champs manquants dans items: {missing_fields}")
+                    else:
+                        self.log_result("Cohérence - Items commande", False, "Aucun item dans la commande")
+            except Exception as e:
+                self.log_result("Cohérence - Vérification items", False, "Exception", str(e))
+        
+        # Résumé des tests de commandes
+        print("\n--- RÉSUMÉ TESTS COMMANDES ---")
+        order_tests = [r for r in self.test_results if "orders" in r["test"].lower() or "commande" in r["test"].lower()]
+        passed_tests = [t for t in order_tests if t["success"]]
+        failed_tests = [t for t in order_tests if not t["success"]]
+        
+        print(f"  ✅ Tests réussis: {len(passed_tests)}")
+        print(f"  ❌ Tests échoués: {len(failed_tests)}")
+        
+        if len(failed_tests) > 0:
+            print("  Tests échoués:")
+            for test in failed_tests:
+                print(f"    - {test['test']}: {test['message']}")
+
     def run_all_tests(self):
         """Exécute tous les tests"""
         print("🚀 DÉBUT DES TESTS BACKEND - GESTION STOCKS RESTAURANT + OCR")
