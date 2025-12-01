@@ -6174,7 +6174,7 @@ async def init_real_restaurant_data():
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=f"Erreur: {str(e)}")
 
-@api_router.post("/demo/init-missions-users")
+@api_router.api_route("/demo/init-missions-users", methods=["GET", "POST"])
 async def init_demo_missions_and_users():
     """Créer les utilisateurs test et missions de démonstration"""
     try:
