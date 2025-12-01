@@ -6779,6 +6779,12 @@ Nombre de couverts: 32"""
         self.test_recettes_excel_import()
         self.test_recette_delete()
         
+        # ✅ TEST COMPLET GESTION DES COMMANDES (ORDER) - REVIEW REQUEST
+        print("\n" + "=" * 60)
+        print("📦 TEST COMPLET GESTION DES COMMANDES (ORDER) 📦")
+        print("=" * 60)
+        self.test_orders_management_complete()
+        
         # ✅ NOUVEAUX TESTS ENHANCED OCR AVEC SUPPORT PDF - PRIORITÉ 1-4
         print("\n" + "=" * 60)
         print("🔥 TESTS ENHANCED OCR AVEC SUPPORT PDF - VERSION 3 🔥")
