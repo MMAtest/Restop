@@ -3053,7 +3053,7 @@ function App() {
           {activeDashboardTab === "alertes" && (
             <div className="section-card">
               <div className="section-title">
-                ⚠️ Alertes & Notifications {!hideDemoData && '(Données de Démo)'}
+                ⚠️ Alertes & Notifications {showDemoData && '(Données de Démo)'}
                 {selectedDateRange && (
                   <span style={{ 
                     fontSize: '12px', 
