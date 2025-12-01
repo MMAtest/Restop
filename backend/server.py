@@ -2775,10 +2775,8 @@ async def get_cost_analysis():
 # Configuration OCR
 pytesseract.pytesseract.tesseract_cmd = '/usr/bin/tesseract'
 
-# Configuration de la base de données
-MONGO_URL = os.environ.get('MONGO_URL', 'mongodb://localhost:27017')
-client = AsyncIOMotorClient(MONGO_URL)
-db = client.restaurant_stock
+# Configuration de la base de données (déjà fait au début du fichier)
+# La connexion MongoDB et db sont déjà initialisés au début du fichier
 
 # Fonctions utilitaires pour OCR
 def preprocess_image(image):
