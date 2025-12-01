@@ -70,6 +70,48 @@ CATEGORIES_FOURNISSEURS = [
     "frais", "surgelés", "primeur", "marée", "boucherie", "fromagerie", "extra", "hygiène", "bar"
 ]
 
+# ✅ Système d'unités standardisé avec conversions
+UNITES_STANDARDISEES = {
+    # Poids
+    "kg": {"type": "poids", "base": 1000, "label": "Kilogramme (kg)"},
+    "g": {"type": "poids", "base": 1, "label": "Gramme (g)"},
+    "mg": {"type": "poids", "base": 0.001, "label": "Milligramme (mg)"},
+    "tonne": {"type": "poids", "base": 1000000, "label": "Tonne (t)"},
+    
+    # Volume
+    "L": {"type": "volume", "base": 1000, "label": "Litre (L)"},
+    "mL": {"type": "volume", "base": 1, "label": "Millilitre (mL)"},
+    "cL": {"type": "volume", "base": 10, "label": "Centilitre (cL)"},
+    "dL": {"type": "volume", "base": 100, "label": "Décilitre (dL)"},
+    
+    # Unités comptables
+    "unité": {"type": "unite", "base": 1, "label": "Unité"},
+    "pièce": {"type": "unite", "base": 1, "label": "Pièce"},
+    "portion": {"type": "unite", "base": 1, "label": "Portion"},
+    "barquette": {"type": "unite", "base": 1, "label": "Barquette"},
+    "sachet": {"type": "unite", "base": 1, "label": "Sachet"},
+    "boîte": {"type": "unite", "base": 1, "label": "Boîte"},
+    "bouteille": {"type": "unite", "base": 1, "label": "Bouteille"},
+}
+
+def convertir_unite(quantite: float, unite_source: str, unite_cible: str) -> float:
+    """Convertit une quantité d'une unité à une autre"""
+    if unite_source not in UNITES_STANDARDISEES or unite_cible not in UNITES_STANDARDISEES:
+        raise ValueError(f"Unité non reconnue: {unite_source} ou {unite_cible}")
+    
+    source = UNITES_STANDARDISEES[unite_source]
+    cible = UNITES_STANDARDISEES[unite_cible]
+    
+    # Vérifier que les unités sont du même type
+    if source["type"] != cible["type"]:
+        raise ValueError(f"Impossible de convertir {unite_source} ({source['type']}) en {unite_cible} ({cible['type']})")
+    
+    # Convertir en unité de base puis en unité cible
+    quantite_base = quantite * source["base"]
+    resultat = quantite_base / cible["base"]
+    
+    return resultat
+
 # Models pour la gestion des stocks
 class DeliveryRules(BaseModel):
     """Règles de livraison spécifiques pour un fournisseur"""
