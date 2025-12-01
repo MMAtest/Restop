@@ -2700,8 +2700,8 @@ function App() {
             />
           )}
 
-          {/* Section Missions intégrée (visible selon le rôle) - CACHÉE SI hideDemoData */}
-          {currentUser && !hideDemoData && (
+          {/* Section Missions intégrée (visible selon le rôle) - TOUJOURS AFFICHÉE */}
+          {currentUser && (
             <RoleBasedDashboard 
               key={missionRefreshKey} // Forcer re-render quand missions changent
               user={currentUser} 
