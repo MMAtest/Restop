@@ -4432,6 +4432,33 @@ async def get_categories_production():
     """Récupère les catégories de production disponibles"""
     return {"categories": CATEGORIES_PRODUCTION}
 
+
+@api_router.get("/unites")
+async def get_unites():
+    """Récupère la liste des unités standardisées disponibles"""
+    unites_list = []
+    for unite_code, info in UNITES_STANDARDISEES.items():
+        unites_list.append({
+            "code": unite_code,
+            "label": info["label"],
+            "type": info["type"]
+        })
+    return {"unites": unites_list}
+
+@api_router.post("/convert-unite")
+async def convert_unite(quantite: float, unite_source: str, unite_cible: str):
+    """Convertit une quantité d'une unité à une autre"""
+    try:
+        resultat = convertir_unite(quantite, unite_source, unite_cible)
+        return {
+            "quantite_source": quantite,
+            "unite_source": unite_source,
+            "quantite_cible": resultat,
+            "unite_cible": unite_cible
+        }
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
 @api_router.post("/recettes", response_model=Recette)
 async def create_recette(recette: RecetteCreate):
     # Enrichir les ingrédients avec les noms des produits
