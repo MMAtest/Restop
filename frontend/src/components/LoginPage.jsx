@@ -252,6 +252,7 @@ const LoginPage = ({ onLoginSuccess }) => {
             💡 Mot de passe : <code style={{background: '#e5e7eb', padding: '2px 4px', borderRadius: '3px'}}>password123</code>
           </div>
         </div>
+        )}
       </div>
     </div>
   );
