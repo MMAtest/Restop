@@ -3799,7 +3799,25 @@ function App() {
                 )}
               </div>
 
-              {/* Message d'info si pas de données */}
+              {/* Message si mode démo caché */}
+              {hideDemoData && (
+                <div style={{
+                  padding: '40px',
+                  textAlign: 'center',
+                  background: 'var(--color-background-card-light)',
+                  borderRadius: '8px',
+                  border: '2px dashed var(--color-border)'
+                }}>
+                  <div style={{fontSize: '48px', marginBottom: '16px'}}>💰</div>
+                  <h3 style={{color: 'var(--color-text-primary)', marginBottom: '8px'}}>Données masquées</h3>
+                  <p style={{color: 'var(--color-text-secondary)', fontSize: '14px', marginBottom: '16px'}}>
+                    Les données de coûts sont masquées. Cliquez sur "👁️ Afficher Démo" dans le menu pour les voir.
+                  </p>
+                </div>
+              )}
+
+              {!hideDemoData && (
+              <>
               {filteredAnalytics.caTotal === 0 && (
                 <div style={{
                   padding: '16px',
@@ -3815,7 +3833,6 @@ function App() {
                 </div>
               )}
 
-              {/* KPIs des coûts totaux - TOUJOURS AFFICHÉS */}
               <div className="kpi-grid">
                 <div className="kpi-card">
                   <div className="icon">💸</div>
