@@ -421,6 +421,7 @@ function App() {
     fetchDashboardStats();
     fetchProduits();
     fetchFournisseurs();
+    fetchUnitesStandardisees(); // Charger les unités standardisées
     fetchDashboardAnalytics();
     fetchMissingDataAlerts(); // Récupérer les alertes de données manquantes
     fetchStocks();
