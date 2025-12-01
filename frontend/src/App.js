@@ -3176,8 +3176,8 @@ function App() {
                 )}
               </div>
 
-              {/* Message si pas de données */}
-              {hideDemoData && (
+              {/* Message si pas de données réelles */}
+              {!showDemoData && (
                 <div style={{
                   padding: '40px',
                   textAlign: 'center',
@@ -3203,8 +3203,8 @@ function App() {
                 </div>
               )}
               
-              {/* Alertes de stock faible avec switch */}
-              {!hideDemoData && (
+              {/* Alertes de démo - AFFICHÉES UNIQUEMENT EN MODE DÉMO */}
+              {showDemoData && (
               <div className="alert-section">
                 <div className="alert-header" style={{display: 'flex', alignItems: 'center', justifyContent: 'space-between'}}>
                   <div style={{display: 'flex', alignItems: 'center'}}>
