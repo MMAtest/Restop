@@ -6007,7 +6007,7 @@ async def clean_duplicates():
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=f"Erreur: {str(e)}")
 
-@api_router.post("/demo/init-real-restaurant-data")
+@api_router.api_route("/demo/init-real-restaurant-data", methods=["GET", "POST"])
 async def init_real_restaurant_data():
     """Initialiser uniquement les vraies données du restaurant (fournisseurs, produits, préparations, recettes)"""
     try:
