@@ -9558,14 +9558,19 @@ function App() {
                       onChange={(e) => setIngredientForm({...ingredientForm, quantite: e.target.value})}
                     />
                   </div>
-                  <div style={{width: '80px'}}>
-                    <input
-                      type="text"
-                      className="form-input"
-                      placeholder="Unité"
+                  <div style={{width: '120px'}}>
+                    <select
+                      className="form-select"
                       value={ingredientForm.unite}
                       onChange={(e) => setIngredientForm({...ingredientForm, unite: e.target.value})}
-                    />
+                    >
+                      <option value="">Unité</option>
+                      {unitesStandardisees.map((unite) => (
+                        <option key={unite.code} value={unite.code}>
+                          {unite.code}
+                        </option>
+                      ))}
+                    </select>
                   </div>
                   <button
                     type="button"
