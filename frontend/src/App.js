@@ -987,6 +987,24 @@ function App() {
     }
   };
 
+  const fetchUnitesStandardisees = async () => {
+    try {
+      const response = await axios.get(`${API}/unites`);
+      setUnitesStandardisees(response.data.unites);
+    } catch (error) {
+      console.error("Erreur lors du chargement des unités:", error);
+      // En cas d'erreur, utiliser des unités par défaut
+      setUnitesStandardisees([
+        {code: "kg", label: "Kilogramme (kg)", type: "poids"},
+        {code: "g", label: "Gramme (g)", type: "poids"},
+        {code: "L", label: "Litre (L)", type: "volume"},
+        {code: "mL", label: "Millilitre (mL)", type: "volume"},
+        {code: "pièce", label: "Pièce", type: "unite"},
+        {code: "portion", label: "Portion", type: "unite"}
+      ]);
+    }
+  };
+
   // Fonctions pour le système d'archivage
   const fetchArchives = async (itemType = null) => {
     try {
