@@ -3561,8 +3561,8 @@ function App() {
               </div>
               )}
 
-              {/* Section DLC < 3 jours */}
-              {!hideDemoData && (
+              {/* Section DLC < 3 jours - EN MODE DÉMO */}
+              {showDemoData && (
               <div className="alert-section">
                 <div className="alert-header" style={{display: 'flex', alignItems: 'center', justifyContent: 'space-between'}}>
                   <div style={{display: 'flex', alignItems: 'center'}}>
