@@ -656,6 +656,18 @@ backend:
         agent: "testing"
         comment: "❌ PERMISSIONS RÔLES - DÉPENDANCE UTILISATEURS ! Tests des permissions basées sur les rôles bloqués : ❌ PROBLÈME PRINCIPAL : Pas d'utilisateurs test disponibles pour tester les permissions par rôle ❌ CAUSE : Gestion des utilisateurs test défaillante entre les tests ✅ RÔLES DÉFINIS : 5 rôles RBAC implémentés (super_admin, gerant, chef_cuisine, barman, caissier) ✅ LOGIQUE PERMISSIONS : Patron → tous, Chef → cuisiniers implémentée. NÉCESSITE CORRECTION de la persistance des données utilisateur pour valider les permissions basées sur les rôles."
 
+  - task: "API Gestion des Commandes (ORDER) - Test Complet"
+    implemented: true
+    working: false
+    file: "/app/backend/server.py"
+    stuck_count: 1
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "testing"
+        comment: "🔥 TEST COMPLET GESTION DES COMMANDES (ORDER) - PROBLÈMES CRITIQUES IDENTIFIÉS ! Test exhaustif selon la review request française révèle des dysfonctionnements majeurs dans l'API de gestion des commandes : ✅ RÉCUPÉRATION COMMANDES : GET /orders fonctionne (5 commandes existantes avec statuts pending/confirmed/in_transit) ✅ CRÉATION COMMANDES : POST /orders fonctionne parfaitement (commande créée CMD-20251201-A99C5C, 50€, status pending, structure complète) ❌ PROBLÈME CRITIQUE 1 : PUT /orders/{id}/confirm retourne 404 - endpoint de confirmation non implémenté ou route incorrecte ❌ PROBLÈME CRITIQUE 2 : DELETE /orders/{id} retourne 405 Method Not Allowed - annulation de commandes non supportée ❌ PROBLÈME CRITIQUE 3 : PUT /orders/{id} retourne 405 Method Not Allowed - modification de commandes non supportée ✅ STATUTS PARTIELS : 3/5 statuts de base supportés (pending, confirmed, in_transit) mais manque delivered et cancelled ✅ COHÉRENCE DONNÉES : Structure items correcte, calculs prix validés (10.0 × 5.0 = 50.0) ❌ CONCLUSION : Seulement 50% des fonctionnalités ORDER opérationnelles. Les endpoints critiques de confirmation, annulation et modification sont manquants ou mal configurés. NÉCESSITE IMPLÉMENTATION URGENTE des endpoints PUT /orders/{id}/confirm, DELETE /orders/{id}, et PUT /orders/{id} pour un système de commandes complet."
+
 frontend:
   - task: "Accès Page Orders pour Rôle Barman"
     implemented: true
