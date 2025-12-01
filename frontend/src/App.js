@@ -8181,12 +8181,11 @@ function App() {
                   required
                 >
                   <option value="">Sélectionnez une unité</option>
-                  <option value="kg">Kilogramme (kg)</option>
-                  <option value="g">Gramme (g)</option>
-                  <option value="L">Litre (L)</option>
-                  <option value="mL">Millilitre (mL)</option>
-                  <option value="pièce">Pièce</option>
-                  <option value="paquet">Paquet</option>
+                  {unitesStandardisees.map((unite) => (
+                    <option key={unite.code} value={unite.code}>
+                      {unite.label}
+                    </option>
+                  ))}
                 </select>
               </div>
               <div className="form-group">
