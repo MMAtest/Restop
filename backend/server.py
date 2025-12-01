@@ -3958,25 +3958,42 @@ async def get_preparation(preparation_id: str):
 @api_router.put("/preparations/{preparation_id}", response_model=Preparation)
 async def update_preparation(preparation_id: str, prep_data: PreparationCreate):
     """Mettre à jour une préparation"""
-    # Récupérer le produit pour avoir son nom
-    produit = await db.produits.find_one({"id": prep_data.produit_id})
-    if not produit:
-        raise HTTPException(status_code=404, detail="Produit non trouvé")
-    
-    update_data = prep_data.dict()
-    update_data["produit_nom"] = produit["nom"]
-    update_data["updated_at"] = datetime.utcnow()
-    
-    result = await db.preparations.update_one(
-        {"id": preparation_id},
-        {"$set": update_data}
-    )
-    
-    if result.matched_count == 0:
-        raise HTTPException(status_code=404, detail="Préparation non trouvée")
-    
-    updated_prep = await db.preparations.find_one({"id": preparation_id})
-    return Preparation(**updated_prep)
+    try:
+        # Vérifier que la préparation existe
+        existing_prep = await db.preparations.find_one({"id": preparation_id})
+        if not existing_prep:
+            raise HTTPException(status_code=404, detail="Préparation non trouvée")
+        
+        # Récupérer le produit pour avoir son nom
+        produit = await db.produits.find_one({"id": prep_data.produit_id})
+        if not produit:
+            raise HTTPException(status_code=404, detail=f"Produit non trouvé (ID: {prep_data.produit_id})")
+        
+        # Valider les champs obligatoires
+        if not prep_data.quantite or prep_data.quantite <= 0:
+            raise HTTPException(status_code=400, detail="La quantité doit être supérieure à 0")
+        
+        if not prep_data.unite:
+            raise HTTPException(status_code=400, detail="L'unité est obligatoire")
+        
+        update_data = prep_data.dict()
+        update_data["produit_nom"] = produit["nom"]
+        update_data["updated_at"] = datetime.utcnow()
+        
+        result = await db.preparations.update_one(
+            {"id": preparation_id},
+            {"$set": update_data}
+        )
+        
+        if result.matched_count == 0:
+            raise HTTPException(status_code=404, detail="Préparation non trouvée")
+        
+        updated_prep = await db.preparations.find_one({"id": preparation_id})
+        return Preparation(**updated_prep)
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Erreur lors de la mise à jour: {str(e)}")
 
 @api_router.delete("/preparations/{preparation_id}")
 async def delete_preparation(preparation_id: str):
