@@ -46,7 +46,9 @@ ROLES = {
 
 mongo_url = os.environ['MONGO_URL']
 client = AsyncIOMotorClient(mongo_url)
-db = client[os.environ['DB_NAME']]
+# Utiliser DB_NAME de l'environnement (production) ou test_database par défaut (développement)
+db_name = os.environ.get('DB_NAME', 'test_database')
+db = client[db_name]
 
 # Create the main app without a prefix
 app = FastAPI()
