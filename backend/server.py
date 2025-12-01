@@ -3890,6 +3890,16 @@ async def update_order_status(order_id: str, status: str, actual_delivery_date: 
     
     return {"message": "Statut mis à jour", "status": status}
 
+@api_router.delete("/orders/clear-history")
+async def clear_orders_history():
+    """Vider l'historique des commandes"""
+    result = await db.orders.delete_many({})
+    return {
+        "message": "Historique des commandes vidé",
+        "deleted_count": result.deleted_count
+    }
+
+
 @api_router.get("/suppliers/{supplier_id}/delivery-estimate")
 async def get_delivery_estimate(supplier_id: str):
     """Calculer la date de livraison estimée pour un fournisseur"""
