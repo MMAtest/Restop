@@ -4261,30 +4261,51 @@ async def get_produit(produit_id: str):
 
 @api_router.put("/produits/{produit_id}", response_model=Produit)
 async def update_produit(produit_id: str, produit: ProduitCreate):
-    produit_dict = produit.dict()
-    
-    # Récupérer le nom du fournisseur si spécifié
-    if produit.fournisseur_id:
-        fournisseur = await db.fournisseurs.find_one({"id": produit.fournisseur_id})
-        if fournisseur:
+    try:
+        # Vérifier que le produit existe
+        existing_produit = await db.produits.find_one({"id": produit_id})
+        if not existing_produit:
+            raise HTTPException(status_code=404, detail="Produit non trouvé")
+        
+        # Valider les champs obligatoires
+        if not produit.nom or len(produit.nom.strip()) == 0:
+            raise HTTPException(status_code=400, detail="Le nom du produit est obligatoire")
+        
+        if not produit.unite:
+            raise HTTPException(status_code=400, detail="L'unité est obligatoire")
+        
+        if not produit.categorie:
+            raise HTTPException(status_code=400, detail="La catégorie est obligatoire")
+        
+        produit_dict = produit.dict()
+        
+        # Récupérer le nom du fournisseur si spécifié
+        if produit.fournisseur_id:
+            fournisseur = await db.fournisseurs.find_one({"id": produit.fournisseur_id})
+            if not fournisseur:
+                raise HTTPException(status_code=404, detail=f"Fournisseur non trouvé (ID: {produit.fournisseur_id})")
             produit_dict["fournisseur_nom"] = fournisseur["nom"]
-    
-    result = await db.produits.update_one(
-        {"id": produit_id},
-        {"$set": produit_dict}
-    )
-    if result.matched_count == 0:
-        raise HTTPException(status_code=404, detail="Produit non trouvé")
-    
-    updated_produit = await db.produits.find_one({"id": produit_id})
-    
-    # Mettre à jour le nom du produit dans le stock
-    await db.stocks.update_one(
-        {"produit_id": produit_id},
-        {"$set": {"produit_nom": updated_produit["nom"]}}
-    )
-    
-    return Produit(**updated_produit)
+        
+        result = await db.produits.update_one(
+            {"id": produit_id},
+            {"$set": produit_dict}
+        )
+        if result.matched_count == 0:
+            raise HTTPException(status_code=404, detail="Produit non trouvé")
+        
+        updated_produit = await db.produits.find_one({"id": produit_id})
+        
+        # Mettre à jour le nom du produit dans le stock
+        await db.stocks.update_one(
+            {"produit_id": produit_id},
+            {"$set": {"produit_nom": updated_produit["nom"]}}
+        )
+        
+        return Produit(**updated_produit)
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Erreur lors de la mise à jour: {str(e)}")
 
 @api_router.delete("/produits/{produit_id}")
 async def delete_produit(produit_id: str):
