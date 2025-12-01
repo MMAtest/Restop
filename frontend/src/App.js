@@ -1864,17 +1864,21 @@ function App() {
       
     } catch (error) {
       console.error('Erreur calcul analytics:', error);
-      // Fallback sur données de démo si erreur API
+      // Retourner des 0 en cas d'erreur (pas de fallback sur données de démo)
       return {
-        caTotal: 8975.50,
-        caMidi: 5385.30,
-        caSoir: 3590.20,
-        couvertsMidi: 87,
-        couvertsSoir: 64,
+        caTotal: 0,
+        caMidi: 0,
+        caSoir: 0,
+        couvertsMidi: 0,
+        couvertsSoir: 0,
         topProductions: [],
         flopProductions: [],
         ventesParCategorie: {
-          entrees: 3247, plats: 6201, desserts: 2156, boissons: 4987, autres: 892
+          entrees: 0,
+          plats: 0,
+          desserts: 0,
+          boissons: 0,
+          autres: 0
         }
       };
     }
