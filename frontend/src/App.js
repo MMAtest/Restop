@@ -2627,12 +2627,12 @@ function App() {
                   <button 
                     className="button secondary" 
                     onClick={() => {
-                      setHideDemoData(!hideDemoData);
+                      setShowDemoData(!showDemoData);
                       setShowBurgerMenu(false);
                     }}
                     style={{width: '100%', marginBottom: '8px'}}
                   >
-                    {hideDemoData ? '👁️ Afficher Démo' : '🙈 Cacher Démo'}
+                    {showDemoData ? '🙈 Cacher Démo' : '👁️ Afficher Démo'}
                   </button>
                 </>
               )}
