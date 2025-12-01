@@ -2723,7 +2723,7 @@ function App() {
               {activeDashboardTab === "ventes" && (
             <div className="section-card">
               <div className="section-title">
-                💰 Analyse des Ventes {!hideDemoData && '(Données de Démo)'}
+                💰 Analyse des Ventes {showDemoData && '(Données de Démo)'}
                 {selectedDateRange && (
                   <span style={{ 
                     fontSize: '12px', 
