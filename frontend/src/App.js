@@ -9267,13 +9267,13 @@ function App() {
                         className="form-select"
                         value={preparationForm.unite_produit_brut}
                         onChange={(e) => setPreparationForm({...preparationForm, unite_produit_brut: e.target.value})}
-                        style={{width: '100px'}}
+                        style={{width: '140px'}}
                       >
-                        <option value="kg">kg</option>
-                        <option value="g">g</option>
-                        <option value="L">L</option>
-                        <option value="cl">cl</option>
-                        <option value="pièces">pièces</option>
+                        {unitesStandardisees.map((unite) => (
+                          <option key={unite.code} value={unite.code}>
+                            {unite.code}
+                          </option>
+                        ))}
                       </select>
                     </div>
                   </div>
