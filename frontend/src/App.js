@@ -126,6 +126,7 @@ function App() {
   const [mouvements, setMouvements] = useState([]);
   const [recettes, setRecettes] = useState([]);
   const [documentsOcr, setDocumentsOcr] = useState([]);
+  const [unitesStandardisees, setUnitesStandardisees] = useState([]); // Unités standardisées depuis l'API
   const [loading, setLoading] = useState(false);
   
   // États pour la gestion des lots et DLC
