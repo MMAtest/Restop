@@ -7160,7 +7160,7 @@ function App() {
                   </div>
                 )
               })
-            )}
+            }
             </div>
           )}
 
