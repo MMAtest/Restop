@@ -5747,19 +5747,22 @@ async def diagnostic_archive_system():
 # ✅ Authentication Endpoints
 @api_router.post("/auth/login", response_model=LoginResponse)
 async def login(request: LoginRequest):
-    """Connexion simple avec username/password"""
+    """Connexion simple avec username/password (ou email)"""
     try:
-        # Chercher l'utilisateur
-        user = await db.users.find_one({"username": request.username})
+        # Chercher l'utilisateur par username OU email
+        user = await db.users.find_one({"$or": [
+            {"username": request.username},
+            {"email": request.username}
+        ]})
         
         if not user:
-            return LoginResponse(success=False, message="Nom d'utilisateur incorrect")
+            return LoginResponse(success=False, message="Identifiant incorrect")
         
         # Vérification simple du mot de passe (en production, utiliser bcrypt)
         user_obj = User(**user)
         
-        # Pour l'instant, vérification simple - en production utiliser bcrypt
-        if request.password != "password123":  # Mot de passe par défaut pour les comptes test
+        # Accepter password OU password123 pour la démo
+        if request.password != "password123" and request.password != "password":
             return LoginResponse(success=False, message="Mot de passe incorrect")
         
         # Créer une session
