@@ -7389,7 +7389,28 @@ function App() {
                   <div style={{display: 'grid', gap: '16px'}}>
                     {(() => {
                       // Grouper les recettes par catégorie
-                      const recettesByCategorie = (filteredRecettes.length > 0 ? filteredRecettes : recettes).reduce((acc, recette) => {
+                      const recettesToDisplay = filteredRecettes.length > 0 || !selectedCategoryFilter ? filteredRecettes : [];
+                      
+                      if (recettesToDisplay.length === 0 && selectedCategoryFilter) {
+                        return (
+                          <div style={{
+                            padding: '40px',
+                            textAlign: 'center',
+                            background: 'var(--color-background-card-light)',
+                            borderRadius: '8px'
+                          }}>
+                            <div style={{fontSize: '48px', marginBottom: '16px'}}>🔍</div>
+                            <h3 style={{color: 'var(--color-text-primary)', marginBottom: '8px'}}>
+                              Aucune recette trouvée
+                            </h3>
+                            <p style={{color: 'var(--color-text-secondary)', fontSize: '14px'}}>
+                              Aucune recette ne correspond à cette catégorie.
+                            </p>
+                          </div>
+                        );
+                      }
+                      
+                      const recettesByCategorie = recettesToDisplay.reduce((acc, recette) => {
                         const categorie = recette.categorie || 'Autres';
                         if (!acc[categorie]) acc[categorie] = [];
                         acc[categorie].push(recette);
