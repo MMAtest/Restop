@@ -378,18 +378,33 @@ const PurchaseOrderPage = ({ currentUser }) => {
 
       {/* KPIs */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8 px-6">
-        <div className="bg-white rounded-lg shadow-sm p-6">
+        {/* Commandes ce mois - Cliquable */}
+        <div 
+          className="bg-white rounded-lg shadow-sm p-6 cursor-pointer hover:shadow-md transition-shadow"
+          onClick={() => setActiveOrderTab('history')}
+        >
           <div className="flex items-center">
             <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center mr-3">
               <span className="text-xl">📋</span>
             </div>
             <div>
               <p className="text-sm text-gray-600">Commandes ce mois</p>
-              <p className="text-2xl font-bold text-gray-900">24</p>
+              <p className="text-2xl font-bold text-gray-900">
+                {(() => {
+                  const now = new Date();
+                  const thisMonth = orders.filter(o => {
+                    const orderDate = new Date(o.created_at || o.date_commande);
+                    return orderDate.getMonth() === now.getMonth() && 
+                           orderDate.getFullYear() === now.getFullYear();
+                  });
+                  return thisMonth.length;
+                })()}
+              </p>
             </div>
           </div>
         </div>
         
+        {/* Montant total */}
         <div className="bg-white rounded-lg shadow-sm p-6">
           <div className="flex items-center">
             <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center mr-3">
@@ -397,31 +412,56 @@ const PurchaseOrderPage = ({ currentUser }) => {
             </div>
             <div>
               <p className="text-sm text-gray-600">Montant total</p>
-              <p className="text-2xl font-bold text-gray-900">3 247€</p>
+              <p className="text-2xl font-bold text-gray-900">
+                {(() => {
+                  const now = new Date();
+                  const thisMonthOrders = orders.filter(o => {
+                    const orderDate = new Date(o.created_at || o.date_commande);
+                    return orderDate.getMonth() === now.getMonth() && 
+                           orderDate.getFullYear() === now.getFullYear();
+                  });
+                  const total = thisMonthOrders.reduce((sum, order) => sum + (order.montant_total || 0), 0);
+                  return `${total.toFixed(0)}€`;
+                })()}
+              </p>
             </div>
           </div>
         </div>
         
-        <div className="bg-white rounded-lg shadow-sm p-6">
+        {/* En attente - Cliquable */}
+        <div 
+          className="bg-white rounded-lg shadow-sm p-6 cursor-pointer hover:shadow-md transition-shadow"
+          onClick={() => setActiveOrderTab('history')}
+        >
           <div className="flex items-center">
             <div className="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center mr-3">
               <span className="text-xl">🚚</span>
             </div>
             <div>
               <p className="text-sm text-gray-600">En attente</p>
-              <p className="text-2xl font-bold text-gray-900">7</p>
+              <p className="text-2xl font-bold text-gray-900">
+                {orders.filter(o => o.statut === 'en_attente' || o.statut === 'confirmee').length}
+              </p>
             </div>
           </div>
         </div>
         
-        <div className="bg-white rounded-lg shadow-sm p-6">
+        {/* Fournisseurs actifs - Cliquable si accès */}
+        <div 
+          className="bg-white rounded-lg shadow-sm p-6 cursor-pointer hover:shadow-md transition-shadow"
+          onClick={() => {
+            if (currentUser?.role === 'patron' || currentUser?.role === 'super_admin' || currentUser?.role === 'chef_cuisine') {
+              window.location.href = '/?tab=production&subtab=fournisseurs';
+            }
+          }}
+        >
           <div className="flex items-center">
             <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center mr-3">
               <span className="text-xl">🏢</span>
             </div>
             <div>
               <p className="text-sm text-gray-600">Fournisseurs actifs</p>
-              <p className="text-2xl font-bold text-gray-900">12</p>
+              <p className="text-2xl font-bold text-gray-900">{suppliers.length}</p>
             </div>
           </div>
         </div>
