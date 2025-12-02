@@ -3407,61 +3407,45 @@ function App() {
                 {/* Contenu conditionnel selon le type sélectionné */}
                 {alerteStockType === "produits" ? (
                   <>
-                    <div className="alert-card critical">
-                      <div className="alert-item">
-                        <div className="product-info">
-                          <div className="product-name">🧄 Ail rose</div>
-                          <div className="stock-info">
-                            Stock: <span className="stock-current critical">0 kg</span> • Rupture totale
+                    {stocksCritiques.length === 0 ? (
+                      <div style={{
+                        padding: '40px',
+                        textAlign: 'center',
+                        background: 'var(--color-background-card-light)',
+                        borderRadius: '8px'
+                      }}>
+                        <div style={{fontSize: '48px', marginBottom: '16px'}}>✅</div>
+                        <h3 style={{color: 'var(--color-text-primary)', marginBottom: '8px'}}>
+                          Aucun stock critique
+                        </h3>
+                        <p style={{color: 'var(--color-text-secondary)', fontSize: '14px'}}>
+                          Tous les stocks sont à des niveaux satisfaisants
+                        </p>
+                      </div>
+                    ) : (
+                      stocksCritiques.slice(0, 10).map((stock, index) => (
+                        <div key={index} className={`alert-card ${stock.statut === 'rupture' ? 'critical' : 'warning'}`}>
+                          <div className="alert-item">
+                            <div className="product-info">
+                              <div className="product-name">{stock.produit_nom}</div>
+                              <div className="stock-info">
+                                Stock: <span className={`stock-current ${stock.statut === 'rupture' ? 'critical' : 'warning'}`}>
+                                  {stock.quantite} {stock.unite}
+                                </span> • {stock.statut === 'rupture' ? 'Rupture totale' : 'Stock critique'}
+                              </div>
+                            </div>
+                            <div className="item-actions">
+                              <button 
+                                className="button small critical"
+                                onClick={() => setActiveTab('orders')}
+                              >
+                                🚨 Commander
+                              </button>
+                            </div>
                           </div>
                         </div>
-                        <div className="item-actions">
-                          <button className="button small critical">🚨 Commander</button>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="alert-card critical">
-                      <div className="alert-item">
-                        <div className="product-info">
-                          <div className="product-name">🫒 Huile d'olive extra</div>
-                          <div className="stock-info">
-                            Stock: <span className="stock-current critical">0 L</span> • Plus en stock
-                          </div>
-                        </div>
-                        <div className="item-actions">
-                          <button className="button small critical">🚨 Commander</button>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="alert-card critical">
-                      <div className="alert-item">
-                        <div className="product-info">
-                          <div className="product-name">🌿 Basilic frais</div>
-                          <div className="stock-info">
-                            Stock: <span className="stock-current critical">0 kg</span> • Rupture stock
-                          </div>
-                        </div>
-                        <div className="item-actions">
-                          <button className="button small critical">🚨 Commander</button>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="alert-card critical">
-                      <div className="alert-item">
-                        <div className="product-info">
-                          <div className="product-name">🍋 Citrons</div>
-                          <div className="stock-info">
-                            Stock: <span className="stock-current critical">0 kg</span> • Stock épuisé
-                          </div>
-                        </div>
-                        <div className="item-actions">
-                          <button className="button small critical">🚨 Commander</button>
-                        </div>
-                      </div>
-                    </div>
+                      ))
+                    )}
                   </>
                 ) : (
                   <>
