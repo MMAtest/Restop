@@ -365,13 +365,13 @@ const PurchaseOrderPage = ({ currentUser }) => {
   };
 
   return (
-    <div className="bg-gradient-to-br from-gray-100 to-gray-200 min-h-screen" style={{ marginTop: '-16px' }}>
+    <div className="min-h-screen" style={{ marginTop: '-16px', background: 'var(--color-background-dark)', color: 'var(--color-text-primary)' }}>
       {/* Header */}
       <div className="mb-8 px-6 pt-2">
-        <h1 className="text-3xl font-bold text-gray-800 mb-2">
+        <h1 className="text-3xl font-bold mb-2" style={{ color: 'var(--color-text-primary)' }}>
           🛒 Gestion des Commandes
         </h1>
-        <p className="text-gray-600">
+        <p style={{ color: 'var(--color-text-secondary)' }}>
           Suivi et création de commandes fournisseurs
         </p>
       </div>
@@ -380,16 +380,17 @@ const PurchaseOrderPage = ({ currentUser }) => {
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8 px-6">
         {/* Commandes ce mois - Cliquable */}
         <div 
-          className="bg-white rounded-lg shadow-sm p-6 cursor-pointer hover:shadow-md transition-shadow"
+          className="rounded-lg shadow-sm p-6 cursor-pointer transition-shadow"
+          style={{ background: 'var(--color-background-card)', border: '1px solid var(--color-border)' }}
           onClick={() => setActiveOrderTab('history')}
         >
           <div className="flex items-center">
-            <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center mr-3">
+            <div className="w-10 h-10 rounded-lg flex items-center justify-center mr-3" style={{ background: 'rgba(59, 130, 246, 0.1)' }}>
               <span className="text-xl">📋</span>
             </div>
             <div>
-              <p className="text-sm text-gray-600">Commandes ce mois</p>
-              <p className="text-2xl font-bold text-gray-900">
+              <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>Commandes ce mois</p>
+              <p className="text-2xl font-bold" style={{ color: 'var(--color-text-primary)' }}>
                 {(() => {
                   const now = new Date();
                   const thisMonth = orders.filter(o => {
@@ -405,14 +406,14 @@ const PurchaseOrderPage = ({ currentUser }) => {
         </div>
         
         {/* Montant total */}
-        <div className="bg-white rounded-lg shadow-sm p-6">
+        <div className="rounded-lg shadow-sm p-6" style={{ background: 'var(--color-background-card)', border: '1px solid var(--color-border)' }}>
           <div className="flex items-center">
-            <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center mr-3">
+            <div className="w-10 h-10 rounded-lg flex items-center justify-center mr-3" style={{ background: 'rgba(16, 185, 129, 0.1)' }}>
               <span className="text-xl">💰</span>
             </div>
             <div>
-              <p className="text-sm text-gray-600">Montant total</p>
-              <p className="text-2xl font-bold text-gray-900">
+              <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>Montant total</p>
+              <p className="text-2xl font-bold" style={{ color: 'var(--color-text-primary)' }}>
                 {(() => {
                   const now = new Date();
                   const thisMonthOrders = orders.filter(o => {
@@ -430,16 +431,17 @@ const PurchaseOrderPage = ({ currentUser }) => {
         
         {/* En attente - Cliquable */}
         <div 
-          className="bg-white rounded-lg shadow-sm p-6 cursor-pointer hover:shadow-md transition-shadow"
+          className="rounded-lg shadow-sm p-6 cursor-pointer transition-shadow"
+          style={{ background: 'var(--color-background-card)', border: '1px solid var(--color-border)' }}
           onClick={() => setActiveOrderTab('history')}
         >
           <div className="flex items-center">
-            <div className="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center mr-3">
+            <div className="w-10 h-10 rounded-lg flex items-center justify-center mr-3" style={{ background: 'rgba(245, 158, 11, 0.1)' }}>
               <span className="text-xl">🚚</span>
             </div>
             <div>
-              <p className="text-sm text-gray-600">En attente</p>
-              <p className="text-2xl font-bold text-gray-900">
+              <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>En attente</p>
+              <p className="text-2xl font-bold" style={{ color: 'var(--color-text-primary)' }}>
                 {orders.filter(o => o.statut === 'en_attente' || o.statut === 'confirmee').length}
               </p>
             </div>
@@ -448,7 +450,8 @@ const PurchaseOrderPage = ({ currentUser }) => {
         
         {/* Fournisseurs actifs - Cliquable si accès */}
         <div 
-          className="bg-white rounded-lg shadow-sm p-6 cursor-pointer hover:shadow-md transition-shadow"
+          className="rounded-lg shadow-sm p-6 cursor-pointer transition-shadow"
+          style={{ background: 'var(--color-background-card)', border: '1px solid var(--color-border)' }}
           onClick={() => {
             if (currentUser?.role === 'patron' || currentUser?.role === 'super_admin' || currentUser?.role === 'chef_cuisine') {
               window.location.href = '/?tab=production&subtab=fournisseurs';
@@ -456,48 +459,50 @@ const PurchaseOrderPage = ({ currentUser }) => {
           }}
         >
           <div className="flex items-center">
-            <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center mr-3">
+            <div className="w-10 h-10 rounded-lg flex items-center justify-center mr-3" style={{ background: 'rgba(139, 92, 246, 0.1)' }}>
               <span className="text-xl">🏢</span>
             </div>
             <div>
-              <p className="text-sm text-gray-600">Fournisseurs actifs</p>
-              <p className="text-2xl font-bold text-gray-900">{suppliers.length}</p>
+              <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>Fournisseurs actifs</p>
+              <p className="text-2xl font-bold" style={{ color: 'var(--color-text-primary)' }}>{suppliers.length}</p>
             </div>
           </div>
         </div>
       </div>
 
       {/* Effectuer une commande */}
-      <div className="bg-white rounded-lg shadow-sm mb-8 mx-6">
-        <div className="p-6 border-b border-gray-200">
-          <h2 className="text-xl font-semibold">Effectuer une Commande</h2>
-          <p className="text-gray-600 mt-1">Créez vos commandes manuellement ou automatiquement</p>
+      <div className="rounded-lg shadow-sm mb-8 mx-6" style={{ background: 'var(--color-background-card)', border: '1px solid var(--color-border)' }}>
+        <div className="p-6 border-b" style={{ borderColor: 'var(--color-border)' }}>
+          <h2 className="text-xl font-semibold" style={{ color: 'var(--color-text-primary)' }}>Effectuer une Commande</h2>
+          <p className="mt-1" style={{ color: 'var(--color-text-secondary)' }}>Créez vos commandes manuellement ou automatiquement</p>
         </div>
         
         {/* Onglets avec surbrillance jaune */}
-        <div className="p-4 border-b border-gray-200">
+        <div className="p-4 border-b" style={{ borderColor: 'var(--color-border)' }}>
           <div className="flex space-x-1">
           {/* Commandes Manuelle et Auto - MASQUÉES pour employé cuisine */}
           {currentUser?.role !== 'employe_cuisine' && (
             <>
               <button
                 onClick={() => setActiveOrderTab('manual')}
-                className={`flex items-center px-4 py-2 rounded-md text-sm font-medium transition-all ${
-                  activeOrderTab === 'manual'
-                    ? 'bg-yellow-400 text-gray-900 shadow-sm'
-                    : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'
-                }`}
+                className={`flex items-center px-4 py-2 rounded-md text-sm font-medium transition-all`}
+                style={{
+                  background: activeOrderTab === 'manual' ? 'var(--color-accent-gold)' : 'transparent',
+                  color: activeOrderTab === 'manual' ? '#1a1a1a' : 'var(--color-text-secondary)',
+                  fontWeight: activeOrderTab === 'manual' ? 'bold' : 'normal'
+                }}
               >
                 <span className="mr-2">✋</span>
                 Commande Manuelle
               </button>
               <button
                 onClick={() => setActiveOrderTab('auto')}
-                className={`flex items-center px-4 py-2 rounded-md text-sm font-medium transition-all ${
-                  activeOrderTab === 'auto'
-                    ? 'bg-yellow-400 text-gray-900 shadow-sm'
-                    : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'
-                }`}
+                className={`flex items-center px-4 py-2 rounded-md text-sm font-medium transition-all`}
+                style={{
+                  background: activeOrderTab === 'auto' ? 'var(--color-accent-gold)' : 'transparent',
+                  color: activeOrderTab === 'auto' ? '#1a1a1a' : 'var(--color-text-secondary)',
+                  fontWeight: activeOrderTab === 'auto' ? 'bold' : 'normal'
+                }}
               >
                 <span className="mr-2">🤖</span>
                 Commande Automatique
@@ -508,11 +513,12 @@ const PurchaseOrderPage = ({ currentUser }) => {
           {/* Onglet Historique - Accessible à tous */}
           <button
             onClick={() => setActiveOrderTab('history')}
-            className={`flex items-center px-4 py-2 rounded-md text-sm font-medium transition-all ${
-              activeOrderTab === 'history'
-                ? 'bg-yellow-400 text-gray-900 shadow-sm'
-                : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'
-            }`}
+            className={`flex items-center px-4 py-2 rounded-md text-sm font-medium transition-all`}
+            style={{
+              background: activeOrderTab === 'history' ? 'var(--color-accent-gold)' : 'transparent',
+              color: activeOrderTab === 'history' ? '#1a1a1a' : 'var(--color-text-secondary)',
+              fontWeight: activeOrderTab === 'history' ? 'bold' : 'normal'
+            }}
           >
             <span className="mr-2">📋</span>
             Historique ({orders.length})
@@ -525,9 +531,9 @@ const PurchaseOrderPage = ({ currentUser }) => {
           {activeOrderTab === 'manual' && (
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Supplier Selection */}
-          <div className="bg-white rounded-lg shadow-sm">
-          <div className="p-6 border-b border-gray-200">
-            <h3 className="text-lg font-semibold flex items-center">
+          <div className="rounded-lg shadow-sm" style={{ background: 'var(--color-background-card-light)', border: '1px solid var(--color-border)' }}>
+          <div className="p-6 border-b" style={{ borderColor: 'var(--color-border)' }}>
+            <h3 className="text-lg font-semibold flex items-center" style={{ color: 'var(--color-text-primary)' }}>
               <span className="mr-2">🏢</span>
               1. Sélectionner le Fournisseur
             </h3>
@@ -537,11 +543,11 @@ const PurchaseOrderPage = ({ currentUser }) => {
               {suppliers.map((supplier) => (
                 <div
                   key={supplier.id}
-                  className={`p-3 border rounded-lg cursor-pointer transition-all ${
-                    selectedSupplier?.id === supplier.id
-                      ? 'border-primary-500 bg-primary-50'
-                      : 'border-gray-200 hover:border-gray-300'
-                  }`}
+                  className={`p-3 border rounded-lg cursor-pointer transition-all`}
+                  style={{
+                    borderColor: selectedSupplier?.id === supplier.id ? 'var(--color-primary-blue)' : 'var(--color-border)',
+                    background: selectedSupplier?.id === supplier.id ? 'rgba(59, 130, 246, 0.1)' : 'var(--color-background-card)',
+                  }}
                   onClick={() => handleSupplierSelect(supplier)}
                 >
                   <div className="flex items-center gap-2 mb-2">
@@ -557,7 +563,7 @@ const PurchaseOrderPage = ({ currentUser }) => {
                       {supplier.nom}
                     </div>
                   </div>
-                  <div className="text-sm text-gray-600">
+                  <div className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
                     {supplier.telephone && (
                       <span className="mr-3">📞 {supplier.telephone}</span>
                     )}
@@ -566,7 +572,7 @@ const PurchaseOrderPage = ({ currentUser }) => {
                     )}
                   </div>
                   {supplier.specialites && (
-                    <div className="text-xs text-gray-500 mt-1">
+                    <div className="text-xs mt-1" style={{ color: 'var(--color-text-muted)' }}>
                       Spécialités: {supplier.specialites}
                     </div>
                   )}
@@ -577,15 +583,15 @@ const PurchaseOrderPage = ({ currentUser }) => {
         </div>
 
         {/* Products Selection */}
-        <div className="bg-white rounded-lg shadow-sm">
-          <div className="p-6 border-b border-gray-200">
-            <h3 className="text-lg font-semibold flex items-center">
+        <div className="rounded-lg shadow-sm" style={{ background: 'var(--color-background-card-light)', border: '1px solid var(--color-border)' }}>
+          <div className="p-6 border-b" style={{ borderColor: 'var(--color-border)' }}>
+            <h3 className="text-lg font-semibold flex items-center" style={{ color: 'var(--color-text-primary)' }}>
               <span className="mr-2">📦</span>
               2. Produits Disponibles
             </h3>
             {selectedSupplier && (
               <div className="flex items-center gap-2 mt-1">
-                <span className="text-sm text-gray-600">Fournisseur:</span>
+                <span className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>Fournisseur:</span>
                 <span className="text-lg">{selectedSupplier.logo || '🏪'}</span>
                 <span 
                   className="text-sm px-2 py-1 rounded text-white font-medium"
@@ -598,17 +604,17 @@ const PurchaseOrderPage = ({ currentUser }) => {
           </div>
           <div className="p-6">
             {!selectedSupplier ? (
-              <div className="text-center py-8 text-gray-500">
+              <div className="text-center py-8" style={{ color: 'var(--color-text-muted)' }}>
                 <div className="text-4xl mb-2">🏢</div>
                 <p>Sélectionnez un fournisseur pour voir ses produits</p>
               </div>
             ) : loading ? (
               <div className="text-center py-8">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-500 mx-auto"></div>
-                <p className="mt-2 text-gray-600">Chargement des produits...</p>
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 mx-auto" style={{ borderColor: 'var(--color-primary-blue)' }}></div>
+                <p className="mt-2" style={{ color: 'var(--color-text-secondary)' }}>Chargement des produits...</p>
               </div>
             ) : supplierProducts.length === 0 ? (
-              <div className="text-center py-8 text-gray-500">
+              <div className="text-center py-8" style={{ color: 'var(--color-text-muted)' }}>
                 <div className="text-4xl mb-2">📦</div>
                 <p>Aucun produit disponible pour ce fournisseur</p>
               </div>
@@ -617,16 +623,17 @@ const PurchaseOrderPage = ({ currentUser }) => {
                 {supplierProducts.map((productRelation) => (
                   <div
                     key={productRelation.product_id}
-                    className="p-3 border border-gray-200 rounded-lg"
+                    className="p-3 border rounded-lg"
+                    style={{ borderColor: 'var(--color-border)', background: 'var(--color-background-card)' }}
                   >
                     <div className="flex justify-between items-start">
                       <div className="flex-1">
-                        <div className="font-medium">{productRelation.product_name}</div>
-                        <div className="text-sm text-gray-600">
+                        <div className="font-medium" style={{ color: 'var(--color-text-primary)' }}>{productRelation.product_name}</div>
+                        <div className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
                           {formatCurrency(productRelation.price)} / {productRelation.product_unit}
                         </div>
                         {productRelation.product_category && (
-                          <div className="text-xs text-gray-500">
+                          <div className="text-xs" style={{ color: 'var(--color-text-muted)' }}>
                             {productRelation.product_category}
                           </div>
                         )}
@@ -640,13 +647,18 @@ const PurchaseOrderPage = ({ currentUser }) => {
                       {/* Sélection de quantité et ajout au panier */}
                       <div className="flex items-center space-x-2 ml-4">
                         <div className="flex flex-col items-end">
-                          <label className="text-xs text-gray-500 mb-1">Quantité</label>
+                          <label className="text-xs mb-1" style={{ color: 'var(--color-text-secondary)' }}>Quantité</label>
                           <input
                             type="number"
                             min={productRelation.min_order_quantity || 1}
                             step="0.1"
                             defaultValue={productRelation.min_order_quantity || 1}
-                            className="w-20 px-2 py-1 text-sm border border-gray-300 rounded"
+                            className="w-20 px-2 py-1 text-sm border rounded"
+                            style={{ 
+                              background: 'var(--color-background-dark)', 
+                              color: 'var(--color-text-primary)',
+                              borderColor: 'var(--color-border)'
+                            }}
                             id={`quantity-${productRelation.product_id}`}
                             onKeyDown={(e) => {
                               if (e.key === 'Enter') {
@@ -665,7 +677,8 @@ const PurchaseOrderPage = ({ currentUser }) => {
                             addToOrder(productRelation, quantity);
                             quantityInput.value = productRelation.min_order_quantity || 1;
                           }}
-                          className="bg-primary-500 hover:bg-primary-600 text-white px-3 py-1 rounded text-sm flex items-center"
+                          className="text-white px-3 py-1 rounded text-sm flex items-center"
+                          style={{ background: 'var(--color-primary-blue)' }}
                         >
                           <span className="mr-1">➕</span>
                           Ajouter
@@ -680,19 +693,19 @@ const PurchaseOrderPage = ({ currentUser }) => {
         </div>
 
         {/* Order Summary */}
-        <div className="bg-white rounded-lg shadow-sm">
-          <div className="p-6 border-b border-gray-200">
-            <h3 className="text-lg font-semibold flex items-center">
+        <div className="rounded-lg shadow-sm" style={{ background: 'var(--color-background-card-light)', border: '1px solid var(--color-border)' }}>
+          <div className="p-6 border-b" style={{ borderColor: 'var(--color-border)' }}>
+            <h3 className="text-lg font-semibold flex items-center" style={{ color: 'var(--color-text-primary)' }}>
               <span className="mr-2">🛒</span>
               3. Panier de Commande
             </h3>
-            <p className="text-sm text-gray-600 mt-1">
+            <p className="text-sm mt-1" style={{ color: 'var(--color-text-secondary)' }}>
               {orderItems.length} article{orderItems.length > 1 ? 's' : ''}
             </p>
           </div>
           <div className="p-6">
             {orderItems.length === 0 ? (
-              <div className="text-center py-8 text-gray-500">
+              <div className="text-center py-8" style={{ color: 'var(--color-text-muted)' }}>
                 <div className="text-4xl mb-2">🛒</div>
                 <p>Panier vide</p>
                 <p className="text-sm">Ajoutez des produits pour créer une commande</p>
@@ -703,10 +716,11 @@ const PurchaseOrderPage = ({ currentUser }) => {
                   {orderItems.map((item) => (
                     <div
                       key={item.product_id}
-                      className="p-3 border border-gray-200 rounded-lg"
+                      className="p-3 border rounded-lg"
+                      style={{ borderColor: 'var(--color-border)', background: 'var(--color-background-card)' }}
                     >
                       <div className="flex justify-between items-start mb-2">
-                        <div className="font-medium">{item.product_name}</div>
+                        <div className="font-medium" style={{ color: 'var(--color-text-primary)' }}>{item.product_name}</div>
                         <button
                           onClick={() => updateQuantity(item.product_id, 0)}
                           className="text-red-500 hover:text-red-700 text-sm"
@@ -715,26 +729,28 @@ const PurchaseOrderPage = ({ currentUser }) => {
                         </button>
                       </div>
                       <div className="flex items-center justify-between">
-                        <div className="text-sm text-gray-600">
+                        <div className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
                           {formatCurrency(item.unit_price)} / {item.unit}
                         </div>
                         <div className="flex items-center space-x-2">
                           <button
                             onClick={() => updateQuantity(item.product_id, item.quantity - 1)}
-                            className="bg-gray-200 hover:bg-gray-300 text-gray-700 w-6 h-6 rounded text-sm"
+                            className="w-6 h-6 rounded text-sm"
+                            style={{ background: 'var(--color-background-dark)', color: 'var(--color-text-primary)', border: '1px solid var(--color-border)' }}
                           >
                             -
                           </button>
-                          <span className="w-8 text-center">{item.quantity}</span>
+                          <span className="w-8 text-center" style={{ color: 'var(--color-text-primary)' }}>{item.quantity}</span>
                           <button
                             onClick={() => updateQuantity(item.product_id, item.quantity + 1)}
-                            className="bg-gray-200 hover:bg-gray-300 text-gray-700 w-6 h-6 rounded text-sm"
+                            className="w-6 h-6 rounded text-sm"
+                            style={{ background: 'var(--color-background-dark)', color: 'var(--color-text-primary)', border: '1px solid var(--color-border)' }}
                           >
                             +
                           </button>
                         </div>
                       </div>
-                      <div className="text-right text-sm font-medium mt-1">
+                      <div className="text-right text-sm font-medium mt-1" style={{ color: 'var(--color-text-primary)' }}>
                         Total: {formatCurrency(item.unit_price * item.quantity)}
                       </div>
                     </div>
@@ -742,20 +758,20 @@ const PurchaseOrderPage = ({ currentUser }) => {
                 </div>
 
                 {/* Order Total */}
-                <div className="border-t border-gray-200 pt-4">
+                <div className="border-t pt-4" style={{ borderColor: 'var(--color-border)' }}>
                   <div className="flex justify-between items-center mb-4">
-                    <span className="text-lg font-semibold">Total Commande:</span>
-                    <span className="text-xl font-bold text-primary-600">
+                    <span className="text-lg font-semibold" style={{ color: 'var(--color-text-primary)' }}>Total Commande:</span>
+                    <span className="text-xl font-bold" style={{ color: 'var(--color-success-green)' }}>
                       {formatCurrency(getTotalOrder())}
                     </span>
                   </div>
                   
                   {selectedSupplier && (
-                    <div className="bg-gray-50 p-3 rounded-lg mb-4">
+                    <div className="p-3 rounded-lg mb-4" style={{ background: 'var(--color-background-card)', border: '1px solid var(--color-border)' }}>
                       <div className="text-sm">
-                        <div className="font-medium">Fournisseur: {selectedSupplier.nom}</div>
+                        <div className="font-medium" style={{ color: 'var(--color-text-primary)' }}>Fournisseur: {selectedSupplier.nom}</div>
                         {selectedSupplier.conditions_paiement && (
-                          <div className="text-gray-600">
+                          <div style={{ color: 'var(--color-text-secondary)' }}>
                             Conditions: {selectedSupplier.conditions_paiement}
                           </div>
                         )}
@@ -765,14 +781,14 @@ const PurchaseOrderPage = ({ currentUser }) => {
                   
                   {/* Estimation de livraison */}
                   {deliveryEstimate && (
-                    <div className="bg-blue-50 border border-blue-200 p-4 rounded-lg mb-4">
+                    <div className="p-4 rounded-lg mb-4" style={{ background: 'rgba(59, 130, 246, 0.05)', border: '1px solid rgba(59, 130, 246, 0.2)' }}>
                       <div className="flex items-start gap-3">
                         <span className="text-2xl">🚚</span>
                         <div className="flex-1">
-                          <div className="font-semibold text-blue-900 mb-1">
+                          <div className="font-semibold mb-1" style={{ color: 'var(--color-text-primary)' }}>
                             Livraison estimée
                           </div>
-                          <div className="text-sm text-blue-800 mb-2">
+                          <div className="text-sm mb-2" style={{ color: 'var(--color-primary-blue)' }}>
                             {new Date(deliveryEstimate.estimated_delivery_date).toLocaleDateString('fr-FR', {
                               weekday: 'long',
                               day: 'numeric',
@@ -782,15 +798,15 @@ const PurchaseOrderPage = ({ currentUser }) => {
                             })}
                           </div>
                           {deliveryEstimate.can_order_today ? (
-                            <div className="text-xs text-green-700 bg-green-100 inline-block px-2 py-1 rounded">
+                            <div className="text-xs inline-block px-2 py-1 rounded" style={{ background: 'rgba(16, 185, 129, 0.1)', color: 'var(--color-success-green)' }}>
                               ✅ Commande possible aujourd'hui
                             </div>
                           ) : (
-                            <div className="text-xs text-orange-700 bg-orange-100 inline-block px-2 py-1 rounded">
+                            <div className="text-xs inline-block px-2 py-1 rounded" style={{ background: 'rgba(245, 158, 11, 0.1)', color: 'var(--color-accent-gold)' }}>
                               ⏰ Prochaine commande: {new Date(deliveryEstimate.next_order_date).toLocaleDateString('fr-FR')}
                             </div>
                           )}
-                          <p className="text-xs text-gray-600 mt-2">
+                          <p className="text-xs mt-2" style={{ color: 'var(--color-text-muted)' }}>
                             {deliveryEstimate.explanation}
                           </p>
                         </div>
@@ -801,7 +817,8 @@ const PurchaseOrderPage = ({ currentUser }) => {
                   <button
                     onClick={handleCreateOrder}
                     disabled={loading}
-                    className="w-full bg-yellow-400 hover:bg-yellow-500 text-gray-900 py-2 rounded-lg font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="w-full py-2 rounded-lg font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                    style={{ background: 'var(--color-accent-gold)', color: '#1a1a1a' }}
                   >
                     {loading ? '⏳ Création...' : '✅ Valider Commande'}
                   </button>
