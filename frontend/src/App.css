@@ -370,6 +370,21 @@ body {
   border-bottom: none;
 }
 
+/* Boutons d'action dans les alertes */
+.alert-action-btn,
+.alert-action-btn.button.small {
+  background: #fbbf24 !important;
+  background-color: #fbbf24 !important;
+  color: #000 !important;
+  font-weight: 600 !important;
+  border: 2px solid #f59e0b !important;
+}
+
+.alert-action-btn:hover {
+  background: #f59e0b !important;
+  background-color: #f59e0b !important;
+}
+
 .alert-item .product-info {
   flex: 1;
 }
