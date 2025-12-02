@@ -3181,11 +3181,12 @@ function App() {
                           }}
                           className="button small"
                           style={{
-                            background: 'var(--color-primary-green)',
-                            color: 'white',
+                            background: '#fbbf24',
+                            color: '#000',
                             whiteSpace: 'nowrap',
                             fontSize: '12px',
-                            padding: '8px 12px'
+                            padding: '8px 12px',
+                            fontWeight: '600'
                           }}
                         >
                           {alert.action}
