@@ -75,7 +75,7 @@ const ProductionTab = ({
 
   return (
     <div id="production" className={`wireframe-section ${activeTab === "production" ? "active" : ""}`}>
-          <div className="section-card">
+      <div className="section-card">
             <div className="section-title">🍳 Production & Historique</div>
             
             {/* Sous-navigation Production */}
