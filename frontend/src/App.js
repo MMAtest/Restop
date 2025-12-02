@@ -7156,13 +7156,15 @@ function App() {
                       >
                         📁 Archiver
                       </button>
+                      </div>
                     </div>
-                  </div>
-                )
-              })
-            }
-            </div>
-          )}
+                  )
+                })
+              }
+                  </>
+                )}
+              </div>
+            )}
 
             {/* ONGLET PRÉPARATIONS */}
             {activeProductionTab === 'preparations' && (
