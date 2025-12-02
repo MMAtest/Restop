@@ -2,6 +2,7 @@ import React from "react";
 import "../App.css";
 import axios from "axios";
 import { Pie } from 'react-chartjs-2';
+import DataGridsPage from "../pages/DataGridsPage";
 import { getCategoryColor, getCategoryIcon } from "../utils/categoryHelpers";
 
 // Constantes locales (dupliquées pour éviter les problèmes d'export/import)
@@ -20,7 +21,8 @@ const getProductionCategoryIcon = (category) => {
 
 const ProductionTab = (props) => {
   // Placeholder for props destructuring
-  const { activeTab, activeProductionTab, setActiveProductionTab, preparations, currentUser, fetchArchives, setShowProduitModal, showCategoriesView, setShowCategoriesView, fetchProduitsParCategories, setProduitsParCategories, categoriesExpanded, setCategoriesExpanded, canEditItems, handleEdit, canArchiveItems, archiveItem, handleDelete, selectedCategoryFilter, filteredProduits, filteredRecettes, produits, fournisseurs, produitsParCategories, setShowFournisseurModal, showFournisseursCategoriesView, setShowFournisseursCategoriesView, restoreItem, deleteArchivePermanently, fetchHistoriqueProduction, historiqueProduction, showRecetteModal, setShowRecetteModal, handleExportRecettes, showRecettesCategoriesView, setShowRecettesCategoriesView, filterRecettesByCategory, categoriesProduction, loading, handleCalculerCouts, showPreparationModal, setShowPreparationModal, handleAutoGeneratePreparations, showPreparationsCategoriesView, setShowPreparationsCategoriesView, preparationForm, handlePreparationSubmit, resetPreparationForm, calculatePerte, calculatePortions, formesDecoupe, stocksPreparations, mouvementsPreparations, showMovementPreparationModal, setShowMovementPreparationModal, movementPreparationForm, preparationsParCategories, categoriesPreparationsExpanded, handleMovementPreparation, archivedItems, selectedArchiveType, setSelectedArchiveType, filterProduitsByCategory, canCreateItems, setPreparationForm, setMovementPreparationForm, setCategoriesPreparationsExpanded } = props;
+  const NOW = NOW;
+  const { activeTab, activeProductionTab, setActiveProductionTab, preparations, currentUser, fetchArchives, setShowProduitModal, showCategoriesView, setShowCategoriesView, fetchProduitsParCategories, setProduitsParCategories, categoriesExpanded, setCategoriesExpanded, canEditItems, handleEdit, canArchiveItems, archiveItem, handleDelete, selectedCategoryFilter, filteredProduits, filteredRecettes, produits, fournisseurs, produitsParCategories, setShowFournisseurModal, showFournisseursCategoriesView, setShowFournisseursCategoriesView, restoreItem, deleteArchivePermanently, fetchHistoriqueProduction, historiqueProduction, showRecetteModal, setShowRecetteModal, handleExportRecettes, showRecettesCategoriesView, setShowRecettesCategoriesView, filterRecettesByCategory, categoriesProduction, loading, handleCalculerCouts, showPreparationModal, setShowPreparationModal, handleAutoGeneratePreparations, showPreparationsCategoriesView, setShowPreparationsCategoriesView, preparationForm, handlePreparationSubmit, resetPreparationForm, calculatePerte, calculatePortions, formesDecoupe, stocksPreparations, mouvementsPreparations, showMovementPreparationModal, setShowMovementPreparationModal, movementPreparationForm, preparationsParCategories, categoriesPreparationsExpanded, handleMovementPreparation, archivedItems, selectedArchiveType, setSelectedArchiveType, filterProduitsByCategory, canCreateItems, recettes, setEditingItem, setPreparationForm, setMovementPreparationForm, setCategoriesPreparationsExpanded } = props;
 
   return (
     <>
@@ -622,12 +624,12 @@ const ProductionTab = (props) => {
                 </div>
 
                 {/* Alertes DLC */}
-                {preparations.filter(p => p.dlc && new Date(p.dlc) < new Date(Date.now() + 3 * 24 * 60 * 60 * 1000)).length > 0 && (
+                {preparations.filter(p => p.dlc && new Date(p.dlc) < new Date(NOW + 3 * 24 * 60 * 60 * 1000)).length > 0 && (
                   <div style={{background: '#fef3c7', border: '1px solid #fbbf24', borderRadius: '8px', padding: '12px', marginBottom: '20px'}}>
                     <div style={{fontWeight: 'bold', color: '#92400e', marginBottom: '8px'}}>
-                      ⚠️ Alertes DLC - {preparations.filter(p => p.dlc && new Date(p.dlc) < new Date(Date.now() + 3 * 24 * 60 * 60 * 1000)).length} préparation(s)
+                      ⚠️ Alertes DLC - {preparations.filter(p => p.dlc && new Date(p.dlc) < new Date(NOW + 3 * 24 * 60 * 60 * 1000)).length} préparation(s)
                     </div>
-                    {preparations.filter(p => p.dlc && new Date(p.dlc) < new Date(Date.now() + 3 * 24 * 60 * 60 * 1000)).map(prep => (
+                    {preparations.filter(p => p.dlc && new Date(p.dlc) < new Date(NOW + 3 * 24 * 60 * 60 * 1000)).map(prep => (
                       <div key={prep.id} style={{fontSize: '14px', color: '#78350f', marginTop: '4px'}}>
                         • {prep.nom} - DLC: {new Date(prep.dlc).toLocaleDateString('fr-FR')}
                       </div>
@@ -658,7 +660,7 @@ const ProductionTab = (props) => {
                           <div style={{padding: '16px', display: 'grid', gap: '12px'}}>
                             {preps.map((prep) => {
                               const dlcDate = prep.dlc ? new Date(prep.dlc) : null;
-                              const isDlcSoon = dlcDate && dlcDate < new Date(Date.now() + 3 * 24 * 60 * 60 * 1000);
+                              const isDlcSoon = dlcDate && dlcDate < new Date(NOW + 3 * 24 * 60 * 60 * 1000);
                               const isDlcExpired = dlcDate && dlcDate < new Date();
                               
                               return (
@@ -689,7 +691,7 @@ const ProductionTab = (props) => {
                     ) : (
                     preparations.map((prep) => {
                       const dlcDate = prep.dlc ? new Date(prep.dlc) : null;
-                      const isDlcSoon = dlcDate && dlcDate < new Date(Date.now() + 3 * 24 * 60 * 60 * 1000);
+                      const isDlcSoon = dlcDate && dlcDate < new Date(NOW + 3 * 24 * 60 * 60 * 1000);
                       const isDlcExpired = dlcDate && dlcDate < new Date();
                       
                       return (
@@ -1129,7 +1131,7 @@ const ProductionTab = (props) => {
                     <div style={{textAlign: 'center', padding: '40px', color: '#6b7280'}}>
                       <div style={{fontSize: '48px', marginBottom: '16px'}}>📊</div>
                       <div style={{fontSize: '16px', marginBottom: '8px'}}>Aucune opération récente</div>
-                      <div style={{fontSize: '14px'}}>L'historique se remplira automatiquement avec l'activité</div>
+                      <div style={{fontSize: '14px'}}>L&apos;historique se remplira automatiquement avec l'activité</div>
                     </div>
                   )}
                 </div>
