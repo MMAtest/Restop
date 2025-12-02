@@ -3718,7 +3718,7 @@ function App() {
                       </div>
                     </div>
                     <div className="item-actions">
-                      <button className="button small">📅 Planifier</button>
+                      <button className="button small" style={{background: '#fbbf24', color: '#000'}}>📅 Planifier</button>
                     </div>
                   </div>
                 </div>
@@ -3732,7 +3732,7 @@ function App() {
                       </div>
                     </div>
                     <div className="item-actions">
-                      <button className="button small">📅 Planifier</button>
+                      <button className="button small" style={{background: '#fbbf24', color: '#000'}}>📅 Planifier</button>
                     </div>
                   </div>
                 </div>
@@ -3746,7 +3746,7 @@ function App() {
                       </div>
                     </div>
                     <div className="item-actions">
-                      <button className="button small">📅 Planifier</button>
+                      <button className="button small" style={{background: '#fbbf24', color: '#000'}}>📅 Planifier</button>
                     </div>
                   </div>
                 </div>
@@ -3760,7 +3760,7 @@ function App() {
                       </div>
                     </div>
                     <div className="item-actions">
-                      <button className="button small">📅 Planifier</button>
+                      <button className="button small" style={{background: '#fbbf24', color: '#000'}}>📅 Planifier</button>
                     </div>
                   </div>
                 </div>
@@ -3774,7 +3774,7 @@ function App() {
                       </div>
                     </div>
                     <div className="item-actions">
-                      <button className="button small">📅 Planifier</button>
+                      <button className="button small" style={{background: '#fbbf24', color: '#000'}}>📅 Planifier</button>
                     </div>
                   </div>
                 </div>
