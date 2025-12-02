@@ -47,11 +47,14 @@ const ProductionTab = ({
   handleDeleteFournisseur,
   handleDeleteRecette,
   handleDeletePreparation,
-  archiveItem
+  archiveItem,
+  loading,
+  handleAutoGeneratePreparations
 }) => {
   // Local state for this tab
   const [activeProductionTab, setActiveProductionTab] = useState('produits');
   const [selectedCategoryFilter, setSelectedCategoryFilter] = useState('');
+  const [showPreparationsCategoriesView, setShowPreparationsCategoriesView] = useState(false);
 
   // Filter Logic
   const filteredProduits = useMemo(() => {
