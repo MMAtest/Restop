@@ -4396,7 +4396,7 @@ function App() {
                          'Stock par Production'}
                     
                     {/* Toggle View Mode */}
-                    <div style={{display: 'flex', gap: '5px', marginLeft: '15px', display: 'inline-flex'}}>
+                    <div style={{gap: '5px', marginLeft: '15px', display: 'inline-flex'}}>
                       <button 
                         className="button small"
                         onClick={() => {
