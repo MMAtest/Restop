@@ -244,6 +244,9 @@ body {
   grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
   gap: var(--spacing-md);
   margin-bottom: var(--spacing-lg);
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
 }
 
 .kpi-card {
