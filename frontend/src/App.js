@@ -61,13 +61,13 @@ const getProductionCategoryIcon = (category) => {
 };
 
 function App() {
-  const [activeTab, setActiveTab] = useState("dashboard");
+  const [activeTab, setActiveTab] = useState("orders");
   const [activeProductionTab, setActiveProductionTab] = useState("produits");
   const [activeHistoriqueTab, setActiveHistoriqueTab] = useState("ventes");
   const [activeStockTab, setActiveStockTab] = useState("stocks");
   const [activeDashboardTab, setActiveDashboardTab] = useState("ventes"); // Nouveau state pour les onglets dashboard
   const [showBurgerMenu, setShowBurgerMenu] = useState(false);
-  const [isDarkMode, setIsDarkMode] = useState(false); // State pour le thème (false = light par défaut)
+  const [isDarkMode, setIsDarkMode] = useState(true); // State pour le thème (false = light par défaut)
   const [alerteStockType, setAlerteStockType] = useState("produits"); // State pour le switch Produits/Productions dans les alertes
   const [missingDataAlerts, setMissingDataAlerts] = useState([]);
 
