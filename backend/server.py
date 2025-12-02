@@ -91,7 +91,10 @@ UNITES_STANDARDISEES = {
     "barquette": {"type": "unite", "base": 1, "label": "Barquette"},
     "sachet": {"type": "unite", "base": 1, "label": "Sachet"},
     "boîte": {"type": "unite", "base": 1, "label": "Boîte"},
-    "bouteille": {"type": "unite", "base": 1, "label": "Bouteille"},
+    
+    # Unités spécifiques pour les vins
+    "bouteille": {"type": "vin", "base": 6, "label": "Bouteille (75cL)"},
+    "verre": {"type": "vin", "base": 1, "label": "Verre (1/6 bouteille)"},
 }
 
 def convertir_unite(quantite: float, unite_source: str, unite_cible: str) -> float:
