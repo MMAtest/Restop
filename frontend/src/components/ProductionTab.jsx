@@ -5,7 +5,7 @@ import { Pie } from 'react-chartjs-2';
 import { getCategoryColor, getCategoryIcon } from "../utils/categoryHelpers";
 
 // Constantes locales (dupliquées pour éviter les problèmes d'export/import)
-const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
+const API = ;
 
 const getProductionCategoryIcon = (category) => {
   const icons = {
@@ -1137,61 +1137,6 @@ const ProductionTab = (props) => {
             )}
           </div>
         </div>
-
-
-
-        {/* USER MANAGEMENT */}
-        <div id="users" className={`wireframe-section ${activeTab === "users" ? "active" : ""}`}>
-          <UserManagementPage />
-        </div>
-
-      </div>
-
-      {/* Bottom Navigation */}
-      <div className="bottom-navigation">
-        <button 
-          className={`bottom-nav-item ${activeTab === "dashboard" ? "active" : ""}`}
-          onClick={() => setActiveTab("dashboard")}
-        >
-          <div className="bottom-nav-icon">🏠</div>
-          <div className="bottom-nav-label">Home</div>
-        </button>
-        
-        <button 
-          className={`bottom-nav-item ${activeTab === "stocks" ? "active" : ""}`}
-          onClick={() => {
-            console.log("Clic sur STOCK, activeTab actuel:", activeTab);
-            setActiveTab("stocks");
-            console.log("activeTab changé vers: stocks");
-          }}
-        >
-          <div className="bottom-nav-icon">📦</div>
-          <div className="bottom-nav-label">Stock</div>
-        </button>
-        
-        {/* Production - MASQUÉ pour employé cuisine */}
-        {currentUser?.role !== 'employe_cuisine' && (
-          <button 
-            className={`bottom-nav-item ${activeTab === "production" ? "active" : ""}`}
-            onClick={() => setActiveTab("production")}
-          >
-            <div className="bottom-nav-icon">🍳</div>
-            <div className="bottom-nav-label">Production</div>
-          </button>
-        )}
-        
-        {/* Orders - Accès Patron, Chef et Barman (pas employé cuisine ni caissier) */}
-        {canAccessOrders() && (
-          <button 
-            className={`bottom-nav-item ${activeTab === "orders" ? "active" : ""}`}
-            onClick={() => setActiveTab("orders")}
-          >
-            <div className="bottom-nav-icon">🛒</div>
-            <div className="bottom-nav-label">Orders</div>
-          </button>
-        )}
-      </div>
-
 
     </>
   );
