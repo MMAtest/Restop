@@ -20,7 +20,7 @@ const getProductionCategoryIcon = (category) => {
 
 const ProductionTab = (props) => {
   // Placeholder for props destructuring
-  // const { ... } = props;
+  const { activeTab, activeProductionTab, setActiveProductionTab, preparations, currentUser, fetchArchives, setShowProduitModal, showCategoriesView, setShowCategoriesView, fetchProduitsParCategories, setProduitsParCategories, categoriesExpanded, setCategoriesExpanded, canEditItems, handleEdit, canArchiveItems, archiveItem, handleDelete, selectedCategoryFilter, filteredProduits, filteredRecettes, produits, fournisseurs, produitsParCategories, setShowFournisseurModal, showFournisseursCategoriesView, setShowFournisseursCategoriesView, restoreItem, deleteArchivePermanently, fetchHistoriqueProduction, historiqueProduction, showRecetteModal, setShowRecetteModal, handleExportRecettes, showRecettesCategoriesView, setShowRecettesCategoriesView, filterRecettesByCategory, categoriesProduction, loading, handleCalculerCouts, showPreparationModal, setShowPreparationModal, handleAutoGeneratePreparations, showPreparationsCategoriesView, setShowPreparationsCategoriesView, preparationForm, handlePreparationSubmit, resetPreparationForm, calculatePerte, calculatePortions, formesDecoupe, stocksPreparations, mouvementsPreparations, showMovementPreparationModal, setShowMovementPreparationModal, movementPreparationForm, preparationsParCategories, categoriesPreparationsExpanded, handleMovementPreparation, archivedItems, selectedArchiveType, setSelectedArchiveType, filterProduitsByCategory, canCreateItems, setPreparationForm, setMovementPreparationForm, setCategoriesPreparationsExpanded } = props;
 
   return (
     <>
