@@ -606,10 +606,8 @@ REAL_RECETTES = [
         ]
     },
     
-    # VINS SUPPRIMÉS - Maintenant dans REAL_PRODUITS
+    # VINS SUPPRIMÉS - Maintenant dans REAL_PRODUITS (vins au verre et en bouteille)
     # Les vins sont des produits, pas des recettes
-    
-    # COCKTAILS & BAR
     
     # COCKTAILS & BAR
     {
