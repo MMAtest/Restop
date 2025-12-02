@@ -3448,63 +3448,23 @@ function App() {
                     )}
                   </>
                 ) : (
-                  <>
-                    <div className="alert-card critical">
-                      <div className="alert-item">
-                        <div className="product-info">
-                          <div className="product-name">🍝 Linguine aux palourdes</div>
-                          <div className="stock-info">
-                            Ingrédient manquant: Ail rose • <span className="stock-critical">Production impossible</span>
-                          </div>
-                        </div>
-                        <div className="item-actions">
-                          <button className="button small critical">🚫 Suspendue</button>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="alert-card critical">
-                      <div className="alert-item">
-                        <div className="product-info">
-                          <div className="product-name">🥗 Salade méditerranéenne</div>
-                          <div className="stock-info">
-                            Ingrédients manquants: Huile d'olive, Basilic • <span className="stock-critical">Production bloquée</span>
-                          </div>
-                        </div>
-                        <div className="item-actions">
-                          <button className="button small critical">🚫 Suspendue</button>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="alert-card critical">
-                      <div className="alert-item">
-                        <div className="product-info">
-                          <div className="product-name">🐟 Saumon grillé</div>
-                          <div className="stock-info">
-                            Ingrédient manquant: Citrons • <span className="stock-critical">Présentation incomplète</span>
-                          </div>
-                        </div>
-                        <div className="item-actions">
-                          <button className="button small warning">⚠️ Limitée</button>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="alert-card critical">
-                      <div className="alert-item">
-                        <div className="product-info">
-                          <div className="product-name">🍅 Caprese</div>
-                          <div className="stock-info">
-                            Ingrédient manquant: Basilic frais • <span className="stock-critical">Production impossible</span>
-                          </div>
-                        </div>
-                        <div className="item-actions">
-                          <button className="button small critical">🚫 Suspendue</button>
-                        </div>
-                      </div>
-                    </div>
-                  </>
+                  <div style={{
+                    padding: '40px',
+                    textAlign: 'center',
+                    background: 'var(--color-background-card-light)',
+                    borderRadius: '8px'
+                  }}>
+                    <div style={{fontSize: '48px', marginBottom: '16px'}}>🍽️</div>
+                    <h3 style={{color: 'var(--color-text-primary)', marginBottom: '8px'}}>
+                      Analyse des productions impactées
+                    </h3>
+                    <p style={{color: 'var(--color-text-secondary)', fontSize: '14px'}}>
+                      Cette fonctionnalité analyse automatiquement les recettes qui ne peuvent pas être produites en raison de stocks manquants.
+                    </p>
+                    <p style={{color: 'var(--color-text-secondary)', fontSize: '14px', marginTop: '8px'}}>
+                      Consultez l'onglet "Production" pour voir l'état de chaque recette.
+                    </p>
+                  </div>
                 )}
               </div>
 
