@@ -606,7 +606,10 @@ REAL_RECETTES = [
         ]
     },
     
-    # VINS AU VERRE (aussi disponibles en bouteille)
+    # VINS SUPPRIMÉS - Maintenant dans REAL_PRODUITS
+    # Les vins sont des produits, pas des recettes
+    
+    # COCKTAILS & BAR
     {
         "nom": "Château de Fonscolombe - Coteaux d'Aix (Verre)",
         "categorie": "Bar",
