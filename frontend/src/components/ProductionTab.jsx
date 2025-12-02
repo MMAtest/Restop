@@ -619,7 +619,7 @@ const ProductionTab = (props) => {
                     {showPreparationsCategoriesView ? '📋 Vue Liste' : '📁 Vue Catégories'}
                   </button>
                   <div style={{fontSize: '14px', alignSelf: 'center', color: 'var(--color-text-secondary)'}}>
-                    💡 L'auto-génération crée 2-3 préparations par produit
+                    💡 L&apos;auto-génération crée 2-3 préparations par produit
                   </div>
                 </div>
 
@@ -1131,7 +1131,7 @@ const ProductionTab = (props) => {
                     <div style={{textAlign: 'center', padding: '40px', color: '#6b7280'}}>
                       <div style={{fontSize: '48px', marginBottom: '16px'}}>📊</div>
                       <div style={{fontSize: '16px', marginBottom: '8px'}}>Aucune opération récente</div>
-                      <div style={{fontSize: '14px'}}>L&apos;historique se remplira automatiquement avec l'activité</div>
+                      <div style={{fontSize: '14px'}}>L&apos;historique se remplira automatiquement avec l&apos;activité</div>
                     </div>
                   )}
                 </div>
