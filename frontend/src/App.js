@@ -3179,14 +3179,16 @@ function App() {
                             else if (alert.action_link === '/production') setActiveTab('production');
                             else if (alert.action_link === '/stocks') setActiveTab('stocks');
                           }}
-                          className="button small"
+                          className="button small alert-action-btn"
                           style={{
-                            background: '#fbbf24',
-                            color: '#000',
+                            background: '#fbbf24 !important',
+                            backgroundColor: '#fbbf24',
+                            color: '#000 !important',
                             whiteSpace: 'nowrap',
                             fontSize: '12px',
                             padding: '8px 12px',
-                            fontWeight: '600'
+                            fontWeight: '600',
+                            border: '2px solid #f59e0b'
                           }}
                         >
                           {alert.action}
