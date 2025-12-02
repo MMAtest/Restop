@@ -6738,6 +6738,7 @@ function App() {
                           <option value="Crêmerie">🧀 Crêmerie</option>
                           <option value="Épices">🌶️ Épices & Condiments</option>
                           <option value="Fruits">🍎 Fruits</option>
+                          <option value="Épicerie">🥫 Épicerie</option>
                           <option value="Céréales">🌾 Céréales & Féculents</option>
                           <option value="Boissons">🥤 Boissons</option>
                           <option value="Autres">📦 Autres</option>
