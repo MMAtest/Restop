@@ -6943,8 +6943,8 @@ function App() {
                 ) : (
                   // Vue liste normale
                   <>
-                {/* Liste des produits filtrés */}
-                {filteredProduits.length === 0 && selectedCategoryFilter ? (
+                    {/* Liste des produits filtrés */}
+                    {filteredProduits.length === 0 && selectedCategoryFilter ? (
                   <div style={{
                     padding: '40px',
                     textAlign: 'center',
