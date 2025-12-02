@@ -16,6 +16,7 @@ import DateRangePicker from "./components/DateRangePicker";
 import LoginPage from "./components/LoginPage";
 import RoleBasedDashboard from "./components/RoleBasedDashboard";
 import ProductionTab from "./components/ProductionTab";
+import InvoiceValidationModal from "./components/InvoiceValidationModal";
 
 import { getCategoryColor, getCategoryIcon } from "./utils/categoryHelpers";
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
@@ -375,6 +376,9 @@ function App() {
   // ✅ États pour la validation des mercuriales
   const [showMercurialeValidation, setShowMercurialeValidation] = useState(false);
   const [mercurialeToValidate, setMercurialeToValidate] = useState(null);
+  // États pour la validation des factures
+  const [showInvoiceValidation, setShowInvoiceValidation] = useState(false);
+  const [invoiceToValidate, setInvoiceToValidate] = useState(null);
   const [selectedMercurialeProducts, setSelectedMercurialeProducts] = useState([]);
   const [mercurialeSelectedSupplier, setMercurialeSelectedSupplier] = useState('');
   const [fournisseurForm, setFournisseurForm] = useState({
