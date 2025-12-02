@@ -1187,8 +1187,8 @@ const ProductionTab = ({
             )}
           </div>
         </div>
-
-    null
+      </div>
+    )
   );
 };
 
