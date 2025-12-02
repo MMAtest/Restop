@@ -125,6 +125,37 @@ REAL_PRODUITS = [
     {"nom": "Prosecco", "categorie": "Boissons", "unite": "L", "reference_price": 12.00},
     {"nom": "Triple Sec", "categorie": "Boissons", "unite": "L", "reference_price": 15.00},
     
+    # Vins au verre (1 verre = 1/6 bouteille)
+    {"nom": "Château de Fonscolombe - Coteaux d'Aix", "categorie": "Boissons", "unite": "verre", "reference_price": 9.50},
+    {"nom": "Domaine de La Ferme Blanche - Cassis Rosé", "categorie": "Boissons", "unite": "verre", "reference_price": 12.00},
+    {"nom": "Domaine Guillaman - Côtes de Gascogne Rosé", "categorie": "Boissons", "unite": "verre", "reference_price": 9.00},
+    {"nom": "Vignobles Marrenon - Luberon Rosé", "categorie": "Boissons", "unite": "verre", "reference_price": 9.00},
+    {"nom": "MamET Les vieilles vignes - IGP Méditerranée Blanc", "categorie": "Boissons", "unite": "verre", "reference_price": 9.00},
+    {"nom": "Domaine Perrin - Côtes du Rhône Rouge", "categorie": "Boissons", "unite": "verre", "reference_price": 8.50},
+    {"nom": "Secret de Lunès - Pinot Noir", "categorie": "Boissons", "unite": "verre", "reference_price": 9.00},
+    {"nom": "Vignobles Marrenon - Luberon Rouge", "categorie": "Boissons", "unite": "verre", "reference_price": 11.00},
+    
+    # Vins en bouteille (75cl)
+    {"nom": "Château de Fonscolombe - Coteaux d'Aix (Bouteille)", "categorie": "Boissons", "unite": "bouteille", "reference_price": 45.00},
+    {"nom": "Domaine de La Ferme Blanche - Cassis Rosé (Bouteille)", "categorie": "Boissons", "unite": "bouteille", "reference_price": 55.00},
+    {"nom": "Domaine Guillaman - Côtes de Gascogne Rosé (Bouteille)", "categorie": "Boissons", "unite": "bouteille", "reference_price": 42.00},
+    {"nom": "Vignobles Marrenon - Luberon Rosé (Bouteille)", "categorie": "Boissons", "unite": "bouteille", "reference_price": 38.00},
+    {"nom": "Mas de Cadenet - Côtes de Provence Blanc (Bouteille)", "categorie": "Boissons", "unite": "bouteille", "reference_price": 52.00},
+    {"nom": "MamET Les vieilles vignes - IGP Méditerranée Blanc (Bouteille)", "categorie": "Boissons", "unite": "bouteille", "reference_price": 40.00},
+    {"nom": "Château de Brégançon - Côtes de Provence Blanc (Bouteille)", "categorie": "Boissons", "unite": "bouteille", "reference_price": 58.00},
+    {"nom": "Domaine Vincent Girardin - Meursault (Bouteille)", "categorie": "Boissons", "unite": "bouteille", "reference_price": 95.00},
+    {"nom": "Domaine Perrin - Côtes du Rhône Rouge (Bouteille)", "categorie": "Boissons", "unite": "bouteille", "reference_price": 38.00},
+    {"nom": "Secret de Lunès - Pinot Noir (Bouteille)", "categorie": "Boissons", "unite": "bouteille", "reference_price": 40.00},
+    {"nom": "Vignobles Marrenon - Luberon Rouge (Bouteille)", "categorie": "Boissons", "unite": "bouteille", "reference_price": 48.00},
+    {"nom": "Domaine Vincent Girardin - Bourgogne (Bouteille)", "categorie": "Boissons", "unite": "bouteille", "reference_price": 85.00},
+    
+    # Champagnes (75cl)
+    {"nom": "Louis Roederer - Brut Premier (Bouteille)", "categorie": "Boissons", "unite": "bouteille", "reference_price": 75.00},
+    {"nom": "Veuve Clicquot - Yellow Label (Bouteille)", "categorie": "Boissons", "unite": "bouteille", "reference_price": 80.00},
+    {"nom": "Moët & Chandon - Imperial Brut (Bouteille)", "categorie": "Boissons", "unite": "bouteille", "reference_price": 70.00},
+    {"nom": "Ruinart - Blanc de Blancs (Bouteille)", "categorie": "Boissons", "unite": "bouteille", "reference_price": 95.00},
+    {"nom": "Louis Roederer - Cristal (Bouteille)", "categorie": "Boissons", "unite": "bouteille", "reference_price": 350.00},
+    
     # Mixeurs et jus
     {"nom": "Ginger Beer", "categorie": "Boissons", "unite": "L", "reference_price": 3.50},
     {"nom": "Jus de Cranberry", "categorie": "Boissons", "unite": "L", "reference_price": 4.00},
