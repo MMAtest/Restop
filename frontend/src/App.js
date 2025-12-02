@@ -6960,13 +6960,9 @@ function App() {
                     </p>
                     </div>
                     ) : 
-                      filteredProduits.map((produit, index) => (
-                  <div key={index} className="item-card">
-                    <div className="item-header">
-                      <div className="item-name">
-                        {(() => {
-                          // Fonction pour obtenir l'icône selon la catégorie
-                          const getCategoryIcon = (categorie) => {
+                      filteredProduits.map((produit, index) => {
+                    // Fonction pour obtenir l'icône selon la catégorie
+                    const getCategoryIcon = (categorie) => {
                     if (!categorie) return '⚠️'; // Icône d'alerte si pas de catégorie
                     
                     switch(categorie) {
