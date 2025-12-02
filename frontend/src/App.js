@@ -107,7 +107,7 @@ function App() {
   const [mouvements, setMouvements] = useState([]);
   const [recettes, setRecettes] = useState([]);
   const [documentsOcr, setDocumentsOcr] = useState([]);
-  const [unitesStandardisees, setUnitesStandardisees] = useState([]); // Unités standardisées depuis l'API
+  const [unitesStandardisees, setUnitesStandardisees] = useState([]); // Unités standardisées depuis l&apos;API
   const [loading, setLoading] = useState(false);
   
   // États pour la gestion des lots et DLC
@@ -128,7 +128,7 @@ function App() {
   const [stockViewMode, setStockViewMode] = useState('produits'); // 'produits', 'preparations' ou 'productions'
   const [stockFilter, setStockFilter] = useState('all'); // 'all', 'critical', 'dlc'
   
-  // États pour le système d'archivage
+  // États pour le système d&apos;archivage
   const [archivedItems, setArchivedItems] = useState([]);
   const [showArchiveModal, setShowArchiveModal] = useState(false);
   const [showArchivePage, setShowArchivePage] = useState(false);
@@ -178,6 +178,7 @@ function App() {
   const [ocrCurrentPage, setOcrCurrentPage] = useState(1);
   const [ocrDocumentsPerPage] = useState(8); // 8 documents par page
   const [ocrFilterType, setOcrFilterType] = useState('all'); // 'all', 'z_report', 'facture_fournisseur'
+  const [ocrSearchTerm, setOcrSearchTerm] = useState('');
   
   // État pour la recherche dans les stocks
   const [stockSearchTerm, setStockSearchTerm] = useState('');
@@ -419,7 +420,7 @@ function App() {
     fetchFormesDecoupe(); // Récupérer les formes de découpe
     fetchStocksPreparations(); // Récupérer les stocks de préparations
     fetchAvailableUsers(); // Récupérer les utilisateurs pour missions
-    fetchHistoriqueProduction(); // Récupérer l'historique des opérations
+    fetchHistoriqueProduction(); // Récupérer l&apos;historique des opérations
     
     // Générer stocks prévisionnels après chargement des données
     setTimeout(() => {
@@ -579,8 +580,8 @@ function App() {
         alert(`❌ ERREUR : ${response.data.message}`);
       }
     } catch (error) {
-      console.error("Erreur lors de l'auto-génération:", error);
-      alert(`❌ Erreur lors de l'auto-génération: ${error.response?.data?.detail || error.message}`);
+      console.error("Erreur lors de l&apos;auto-génération:", error);
+      alert(`❌ Erreur lors de l&apos;auto-génération: ${error.response?.data?.detail || error.message}`);
     } finally {
       setLoading(false);
     }
@@ -597,7 +598,7 @@ function App() {
     }
   };
 
-  // Fonction pour récupérer les lots d'un produit spécifique
+  // Fonction pour récupérer les lots d&apos;un produit spécifique
   const fetchProductBatches = async (productId) => {
     try {
       const response = await axios.get(`${API}/stock/batch-info/${productId}`);
@@ -640,7 +641,7 @@ function App() {
   };
 
 
-  // ✅ Fonctions d'authentification
+  // ✅ Fonctions d&apos;authentification
   const handleLoginSuccess = (user, session_id) => {
     setCurrentUser(user);
     setSessionId(session_id);
@@ -744,10 +745,10 @@ function App() {
     window.dispatchEvent(new CustomEvent('refreshMissions'));
   };
 
-  // ✅ Fonction pour récupérer l'historique des opérations production
+  // ✅ Fonction pour récupérer l&apos;historique des opérations production
   const fetchHistoriqueProduction = async () => {
     try {
-      // Récupérer différentes données pour construire l'historique
+      // Récupérer différentes données pour construire l&apos;historique
       const [mouvementsResp, rapportsResp, missionsResp] = await Promise.all([
         axios.get(`${API}/mouvements`),
         axios.get(`${API}/rapports_z`),
@@ -758,7 +759,7 @@ function App() {
       const rapports = rapportsResp.data || [];
       const missions = missionsResp.data || [];
 
-      // Construire l'historique avec différents types d'opérations
+      // Construire l&apos;historique avec différents types d'opérations
       const operations = [];
 
       // Ajouter les mouvements de stock récents
@@ -1001,7 +1002,7 @@ function App() {
     }
   };
 
-  // Fonctions pour le système d'archivage
+  // Fonctions pour le système d&apos;archivage
   const fetchArchives = async (itemType = null) => {
     try {
       const url = itemType ? `${API}/archives?item_type=${itemType}` : `${API}/archives`;
@@ -1028,7 +1029,7 @@ function App() {
       fetchArchives();
       return true;
     } catch (error) {
-      console.error("Erreur lors de l'archivage:", error);
+      console.error("Erreur lors de l&apos;archivage:", error);
       return false;
     }
   };
@@ -1274,7 +1275,7 @@ function App() {
       setEditingItem(null);
     } catch (error) {
       console.error("Erreur:", error);
-      alert("❌ Erreur lors de l'enregistrement");
+      alert("❌ Erreur lors de l&apos;enregistrement");
     }
     
     setLoading(false);
@@ -1526,8 +1527,8 @@ function App() {
       alert("✅ Mouvement de préparation enregistré");
       
     } catch (error) {
-      console.error("Erreur lors de l'enregistrement:", error);
-      alert("❌ Erreur lors de l'enregistrement");
+      console.error("Erreur lors de l&apos;enregistrement:", error);
+      alert("❌ Erreur lors de l&apos;enregistrement");
     }
     
     setLoading(false);
@@ -1683,8 +1684,8 @@ function App() {
       link.click();
       link.remove();
     } catch (error) {
-      console.error("Erreur lors de l'export:", error);
-      alert("Erreur lors de l'export");
+      console.error("Erreur lors de l&apos;export:", error);
+      alert("Erreur lors de l&apos;export");
     }
   };
 
@@ -1703,8 +1704,8 @@ function App() {
       link.click();
       link.remove();
     } catch (error) {
-      console.error("Erreur lors de l'export des recettes:", error);
-      alert("Erreur lors de l'export des recettes");
+      console.error("Erreur lors de l&apos;export des recettes:", error);
+      alert("Erreur lors de l&apos;export des recettes");
     }
   };
 
@@ -1743,7 +1744,7 @@ function App() {
       
       alert(response.data.message);
       if (response.data.errors.length > 0) {
-        console.warn("Erreurs d'import:", response.data.errors);
+        console.warn("Erreurs d&apos;import:", response.data.errors);
       }
       
       fetchStocks();
@@ -1756,7 +1757,7 @@ function App() {
     event.target.value = '';
   };
 
-  // Fonction pour ajuster le stock d'un produit spécifique
+  // Fonction pour ajuster le stock d&apos;un produit spécifique
   const handleAjusterStock = (stock) => {
     // Trouver le produit pour récupérer l'unité
     const produit = produits.find(p => p.id === stock.produit_id);
@@ -1999,10 +2000,10 @@ function App() {
     }
   }, []);
   
-  // Initialiser l'onglet OCR par défaut selon le rôle utilisateur
+  // Initialiser l&apos;onglet OCR par défaut selon le rôle utilisateur
   useEffect(() => {
     if (currentUser) {
-      // Si l'utilisateur peut accéder aux tickets Z, définir comme onglet par défaut
+      // Si l&apos;utilisateur peut accéder aux tickets Z, définir comme onglet par défaut
       if (canAccessOcrTicketsZ()) {
         setActiveOcrTab('tickets-z');
       } else {
@@ -2017,7 +2018,7 @@ function App() {
     if (activeProductionTab === 'historique') {
       fetchHistoriqueProduction();
       
-      // Auto-refresh toutes les 30 secondes quand l'onglet historique est actif
+      // Auto-refresh toutes les 30 secondes quand l&apos;onglet historique est actif
       const interval = setInterval(fetchHistoriqueProduction, 30000);
       
       return () => clearInterval(interval);
@@ -2100,7 +2101,7 @@ function App() {
       
       alert(response.data.message);
       if (response.data.errors.length > 0) {
-        console.warn("Erreurs d'import:", response.data.errors);
+        console.warn("Erreurs d&apos;import:", response.data.errors);
       }
       
       fetchRecettes();
@@ -2162,7 +2163,7 @@ function App() {
     setPreviewDocument(null);
   };
 
-  // Utilitaires d'affichage
+  // Utilitaires d&apos;affichage
   const formatEuro = (amount) => {
     if (amount === undefined || amount === null || isNaN(amount)) return '—';
     try {
@@ -2181,7 +2182,7 @@ function App() {
     setProcessingOcr(true);
     
     try {
-      // Déterminer le type automatiquement selon l'onglet actuel
+      // Déterminer le type automatiquement selon l&apos;onglet actuel
       const documentType = activeOcrTab === 'tickets-z' ? 'z_report' : 
                            activeOcrTab === 'factures' ? 'facture_fournisseur' : 
                            'mercuriale';
@@ -2289,7 +2290,7 @@ function App() {
         // Pour l'instant, on simule juste l'action
         
         setTimeout(() => {
-          alert("✅ Traitement automatique terminé !\nConsultez l'historique pour voir les résultats.");
+          alert("✅ Traitement automatique terminé !\nConsultez l&apos;historique pour voir les résultats.");
           fetchDocumentsOcr();
         }, 2000);
       }
@@ -2333,13 +2334,13 @@ function App() {
       }
     } catch (error) {
       console.error("Erreur suppression documents OCR:", error);
-      alert("❌ Erreur lors de la suppression de l'historique");
+      alert("❌ Erreur lors de la suppression de l&apos;historique");
     } finally {
       setLoading(false);
     }
   };
 
-  // Sélectionner document dans l'historique
+  // Sélectionner document dans l&apos;historique
   const handleSelectDocument = (doc) => {
     setSelectedDocument(doc);
     
@@ -2386,7 +2387,7 @@ function App() {
     setOcrFile(null);
     setOcrPreview(null);
     setOcrResult(null);
-    // Ne pas réinitialiser ocrType pour garder le choix de l'utilisateur
+    // Ne pas réinitialiser ocrType pour garder le choix de l&apos;utilisateur
     setProcessingOcr(false);
   };
 
@@ -2484,7 +2485,7 @@ function App() {
       
       alert('✅ Import mercuriale annulé et supprimé avec succès');
       
-      // Rafraîchir l'historique OCR
+      // Rafraîchir l&apos;historique OCR
       fetchDocumentsOcr();
       
     } catch (error) {
@@ -2499,7 +2500,7 @@ function App() {
   const formatQuantity = (quantity, unit) => {
     if (quantity === undefined || quantity === null) return "0";
     
-    // Si c'est un nombre entier ou très proche d'un entier
+    // Si c'est un nombre entier ou très proche d&apos;un entier
     if (quantity % 1 === 0) {
       return `${Math.round(quantity)} ${unit || ''}`.trim();
     }
@@ -2512,7 +2513,7 @@ function App() {
     }
   };
 
-  // Fonction pour obtenir l'unité d'affichage appropriée
+  // Fonction pour obtenir l'unité d&apos;affichage appropriée
   const getDisplayUnit = (unit) => {
     const unitMapping = {
       'kg': 'kg',
@@ -2534,14 +2535,14 @@ function App() {
 
   return (
     <>
-      {/* Système d'authentification */}
+      {/* Système d&apos;authentification */}
       {!isAuthenticated ? (
         <LoginPage onLoginSuccess={handleLoginSuccess} />
       ) : (
         <div className="App">
       {/* Header Mobile */}
       <div className="header">
-        <h1>ResTop : La Table d'Augustine</h1>
+        <h1>ResTop : La Table d&apos;Augustineapos;Augustine</h1>
         {/* Boutons header mobile */}
         <div style={{display: 'flex', gap: '8px', alignItems: 'center'}}>
           {/* Menu Burger */}
@@ -2600,7 +2601,7 @@ function App() {
                           await axios.post(`${API}/api/demo/init-real-restaurant-data`);
                           alert('✅ Données réelles du restaurant restaurées !');
                           // Rafraîchir toutes les données
-                          fetchAll();
+                          refreshAllData();
                           setShowBurgerMenu(false);
                         } catch (error) {
                           console.error('Erreur restauration données:', error);
@@ -2624,7 +2625,7 @@ function App() {
                           const response = await axios.post(`${API}/api/demo/clean-duplicates`);
                           alert(`✅ ${response.data.total_removed} doublons supprimés !\n\nProduits: ${response.data.collections_cleaned.produits}\nFournisseurs: ${response.data.collections_cleaned.fournisseurs}\nPréparations: ${response.data.collections_cleaned.preparations}\nRecettes: ${response.data.collections_cleaned.recettes}`);
                           // Rafraîchir toutes les données
-                          fetchAll();
+                          refreshAllData();
                           setShowBurgerMenu(false);
                         } catch (error) {
                           console.error('Erreur nettoyage doublons:', error);
@@ -3204,8 +3205,8 @@ function App() {
                     color: 'var(--color-text-secondary)',
                     fontSize: '14px'
                   }}>
-                    <li>📦 Stock d'un produit devient critique</li>
-                    <li>⏰ DLC d'une préparation approche (&lt; 3 jours)</li>
+                    <li>📦 Stock d&apos;un produit devient critique</li>
+                    <li>⏰ DLC d&apos;une préparation approche (&lt; 3 jours)</li>
                     <li>🔄 Rupture de stock détectée</li>
                   </ul>
                 </div>
@@ -3443,7 +3444,7 @@ function App() {
                       Cette fonctionnalité analyse automatiquement les recettes qui ne peuvent pas être produites en raison de stocks manquants.
                     </p>
                     <p style={{color: 'var(--color-text-secondary)', fontSize: '14px', marginTop: '8px'}}>
-                      Consultez l'onglet "Production" pour voir l'état de chaque recette.
+                      Consultez l&apos;onglet "Production" pour voir l'état de chaque recette.
                     </p>
                   </div>
                 )}
@@ -4489,7 +4490,7 @@ function App() {
                           }}
                         >
                           <option value="all">Toutes catégories</option>
-                          {/* Options dynamiques selon le mode d'affichage */}
+                          {/* Options dynamiques selon le mode d&apos;affichage */}
                           {stockViewMode === 'productions' ? (
                             // Catégories de productions
                             <>
@@ -4602,13 +4603,13 @@ function App() {
                                   <button 
                                     className="button small warning" 
                                     onClick={async () => {
-                                      const reason = window.prompt(`Raison de l'archivage de "${production.nom}" (optionnel):`);
+                                      const reason = window.prompt(`Raison de l&apos;archivage de "${production.nom}" (optionnel):`);
                                       if (reason !== null) {
                                         const success = await archiveItem(production.id, 'production', reason || null);
                                       if (success) {
                                         alert(`${production.nom} archivé avec succès !`);
                                       } else {
-                                        alert("Erreur lors de l'archivage");
+                                        alert("Erreur lors de l&apos;archivage");
                                       }
                                     }
                                   }}
@@ -4941,14 +4942,14 @@ function App() {
                                                   onClick={async () => {
                                                     const preparation = preparations.find(p => p.id === stockPrep.preparation_id);
                                                     if (preparation) {
-                                                      const reason = window.prompt(`Raison de l'archivage de "${preparation.nom}" (optionnel):`);
+                                                      const reason = window.prompt(`Raison de l&apos;archivage de "${preparation.nom}" (optionnel):`);
                                                       if (reason !== null) {
                                                         const success = await archiveItem(preparation.id, 'preparation', reason || null);
                                                         if (success) {
                                                           alert(`${preparation.nom} archivée avec succès !`);
                                                           fetchStocksPreparations(); // Recharger
                                                         } else {
-                                                          alert("Erreur lors de l'archivage");
+                                                          alert("Erreur lors de l&apos;archivage");
                                                         }
                                                       }
                                                     }
@@ -4975,7 +4976,7 @@ function App() {
                             <div style={{textAlign: 'center', padding: '40px', color: 'var(--color-text-secondary)'}}>
                               <div style={{fontSize: '48px', marginBottom: '16px'}}>🔪</div>
                               <div style={{fontSize: '18px', fontWeight: 'bold', marginBottom: '8px'}}>Aucune préparation</div>
-                              <div>Utilisez l'auto-génération dans Production &gt; Préparations</div>
+                              <div>Utilisez l&apos;auto-génération dans Production &gt; Préparations</div>
                             </div>
                           )}
                         </>
@@ -5281,7 +5282,7 @@ function App() {
                       color: 'white'
                     }}
                   >
-                    🗑️ Vider l'historique
+                    🗑️ Vider l&apos;historique
                   </button>
                 </div>
 
@@ -5496,7 +5497,7 @@ function App() {
                       </h4>
                       <p style={{fontSize: '14px', lineHeight: '1.4', color: 'var(--color-text-muted)'}}>
                         L'OCR peut automatiquement détecter si votre document contient plusieurs factures et les traiter séparément. 
-                        Chaque facture sera analysée individuellement et apparaîtra comme un document distinct dans l'historique.
+                        Chaque facture sera analysée individuellement et apparaîtra comme un document distinct dans l&apos;historique.
                       </p>
                     </div>
                     
@@ -5625,7 +5626,7 @@ function App() {
                                 </div>
                               </div>
                               <div className="item-actions">
-                                <button className="button small" onClick={() => setSelectedDoc(doc)}>👁️ Aperçu</button>
+                                <button className="button small" onClick={() => setSelectedDocument(doc)}>👁️ Aperçu</button>
                               </div>
                             </div>
                           ))}
@@ -5922,7 +5923,7 @@ function App() {
                           <strong>3. ✅ Validation</strong> et création des nouveaux produits en un clic
                         </div>
                         <div style={{fontSize: '12px', marginTop: '8px', padding: '8px', background: 'white', borderRadius: '4px'}}>
-                          💡 <strong>Conseil :</strong> Les mercuriales permettent d'importer rapidement tous les nouveaux produits saisonniers de vos fournisseurs
+                          💡 <strong>Conseil :</strong> Les mercuriales permettent d&apos;importer rapidement tous les nouveaux produits saisonniers de vos fournisseurs
                         </div>
                       </div>
                     </div>
@@ -6153,7 +6154,7 @@ function App() {
                             <div style={{padding: '16px', textAlign: 'center', color: '#6b7280'}}>
                               <div style={{fontSize: '32px', marginBottom: '8px'}}>🔪</div>
                               <div style={{fontWeight: '500', marginBottom: '4px'}}>Aucune préparation pour ce produit</div>
-                              <div style={{fontSize: '14px'}}>Créez une préparation dans l'onglet Production → Préparations</div>
+                              <div style={{fontSize: '14px'}}>Créez une préparation dans l&apos;onglet Production → Préparations</div>
                             </div>
                           );
                         }
@@ -6718,7 +6719,7 @@ function App() {
                   color: 'white'
                 }}
               >
-                🗑️ Vider l'historique
+                🗑️ Vider l&apos;historique
               </button>
               <h4 style={{color: '#d4af37', margin: '20px 0 10px'}}>Historique (Cliquez pour détails)</h4>
               <div style={{fontSize: '0.9rem'}}>
@@ -6813,7 +6814,7 @@ function App() {
                 ) : (
                   <div className="table-row">
                     <span style={{fontStyle: 'italic', color: '#4a5568'}}>
-                      👆 Sélectionnez un document dans l'historique pour voir les données extraites
+                      👆 Sélectionnez un document dans l&apos;historique pour voir les données extraites
                     </span>
                   </div>
                 )}
@@ -7114,7 +7115,7 @@ function App() {
                 </select>
               </div>
               <div className="form-group">
-                <label className="form-label">Prix d'achat (€)</label>
+                <label className="form-label">Prix d&apos;achat (€)</label>
                 <input
                   type="number"
                   step="0.01"
@@ -8839,7 +8840,7 @@ function App() {
                       <div style={{ fontSize: '48px', marginBottom: '15px' }}>⚠️</div>
                       <p>Aucune donnée parsée disponible</p>
                       <p style={{ fontSize: '12px' }}>
-                        Le document n'a peut-être pas été traité correctement
+                        Le document n&apos;a peut-être pas été traité correctement
                       </p>
                     </div>
                   )}
