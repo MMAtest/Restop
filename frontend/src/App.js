@@ -6958,9 +6958,9 @@ function App() {
                     <p style={{color: 'var(--color-text-secondary)', fontSize: '14px'}}>
                       Aucun produit ne correspond à cette catégorie.
                     </p>
-                  </div>
-                ) : 
-                  filteredProduits.map((produit, index) => {
+                    </div>
+                    ) : 
+                      filteredProduits.map((produit, index) => {
                     // Fonction pour obtenir l'icône selon la catégorie
                     const getCategoryIcon = (categorie) => {
                     if (!categorie) return '⚠️'; // Icône d'alerte si pas de catégorie
