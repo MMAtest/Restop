@@ -8133,6 +8133,24 @@ function App() {
 
       {/* Modal Préparation */}
       {showPreparationModal && (
+      {/* Modal Validation Facture */}
+      {showInvoiceValidation && (
+        <InvoiceValidationModal 
+          documentId={invoiceToValidate}
+          produitsList={produits}
+          onClose={() => {
+            setShowInvoiceValidation(false);
+            setInvoiceToValidate(null);
+          }}
+          onSuccess={() => {
+            // Rafraîchir les données après validation
+            fetchStocks();
+            fetchDocumentsOcr();
+            fetchMouvements();
+            fetchDashboardStats();
+          }}
+        />
+      )}
         <div className="modal-overlay">
           <div className="modal-content" style={{maxWidth: '800px'}}>
             <h3 className="modal-header">
