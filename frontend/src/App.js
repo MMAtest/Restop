@@ -6941,10 +6941,9 @@ function App() {
                     ))}
                   </div>
                 ) : (
-                  // Vue liste normale
                   <>
-                    {/* Liste des produits filtrés */}
-                    {(filteredProduits.length > 0 ? filteredProduits : produits).map((produit, index) => {
+                {/* Liste des produits filtrés */}
+                {(filteredProduits.length > 0 ? filteredProduits : produits).map((produit, index) => {
                     // Fonction pour obtenir l'icône selon la catégorie
                     const getCategoryIcon = (categorie) => {
                     if (!categorie) return '⚠️'; // Icône d'alerte si pas de catégorie
