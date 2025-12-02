@@ -6944,23 +6944,7 @@ function App() {
                   // Vue liste normale
                   <>
                     {/* Liste des produits filtrés */}
-                    {filteredProduits.length === 0 && selectedCategoryFilter ? (
-                  <div style={{
-                    padding: '40px',
-                    textAlign: 'center',
-                    background: 'var(--color-background-card-light)',
-                    borderRadius: '8px'
-                  }}>
-                    <div style={{fontSize: '48px', marginBottom: '16px'}}>🔍</div>
-                    <h3 style={{color: 'var(--color-text-primary)', marginBottom: '8px'}}>
-                      Aucun produit trouvé
-                    </h3>
-                    <p style={{color: 'var(--color-text-secondary)', fontSize: '14px'}}>
-                      Aucun produit ne correspond à cette catégorie.
-                    </p>
-                    </div>
-                    ) : 
-                      filteredProduits.map((produit, index) => {
+                    {(filteredProduits.length > 0 ? filteredProduits : (selectedCategoryFilter ? [] : produits)).map((produit, index) => {
                     // Fonction pour obtenir l'icône selon la catégorie
                     const getCategoryIcon = (categorie) => {
                     if (!categorie) return '⚠️'; // Icône d'alerte si pas de catégorie
