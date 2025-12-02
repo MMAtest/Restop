@@ -13,7 +13,7 @@ import time
 from datetime import datetime
 
 # Configuration
-BASE_URL = "https://rest-mgmt-sys.preview.emergentagent.com/api"
+BASE_URL = "https://easy-resto-1.preview.emergentagent.com/api"
 HEADERS = {"Content-Type": "application/json"}
 
 class NewFeaturesTestSuite:

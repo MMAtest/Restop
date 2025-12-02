@@ -11,7 +11,7 @@ import io
 from datetime import datetime
 
 # Configuration
-BASE_URL = "https://rest-mgmt-sys.preview.emergentagent.com/api"
+BASE_URL = "https://easy-resto-1.preview.emergentagent.com/api"
 HEADERS = {"Content-Type": "application/json"}
 
 def create_mock_base64_image(text_content):

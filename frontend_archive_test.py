@@ -8,7 +8,7 @@ import requests
 import json
 
 # Configuration identique au frontend
-BACKEND_URL = "https://rest-mgmt-sys.preview.emergentagent.com"
+BACKEND_URL = "https://easy-resto-1.preview.emergentagent.com"
 API = f"{BACKEND_URL}/api"
 HEADERS = {"Content-Type": "application/json"}
 
