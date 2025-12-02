@@ -6629,16 +6629,31 @@ function App() {
               >
                 🍽️ Productions
               </button>
-              <button 
-                className="button" 
-                onClick={() => setActiveProductionTab('datagrids')}
-                style={{
-                  background: activeProductionTab === 'datagrids' ? 'var(--color-primary-blue)' : 'var(--color-background-card-light)',
-                  color: activeProductionTab === 'datagrids' ? 'white' : 'var(--color-text-secondary)'
-                }}
-              >
-                📊 Grilles de données
-              </button>
+              {/* Onglets réservés au super admin */}
+              {currentUser?.role === 'super_admin' && (
+                <>
+                  <button 
+                    className="button" 
+                    onClick={() => setActiveProductionTab('datagrids')}
+                    style={{
+                      background: activeProductionTab === 'datagrids' ? 'var(--color-primary-blue)' : 'var(--color-background-card-light)',
+                      color: activeProductionTab === 'datagrids' ? 'white' : 'var(--color-text-secondary)'
+                    }}
+                  >
+                    📊 Grilles de données
+                  </button>
+                  <button 
+                    className="button" 
+                    onClick={() => setActiveProductionTab('historique')}
+                    style={{
+                      background: activeProductionTab === 'historique' ? 'var(--color-primary-blue)' : 'var(--color-background-card-light)',
+                      color: activeProductionTab === 'historique' ? 'white' : 'var(--color-text-secondary)'
+                    }}
+                  >
+                    📊 Historique
+                  </button>
+                </>
+              )}
               <button 
                 className="button" 
                 onClick={() => {
@@ -6651,16 +6666,6 @@ function App() {
                 }}
               >
                 📁 Archives
-              </button>
-              <button 
-                className="button" 
-                onClick={() => setActiveProductionTab('historique')}
-                style={{
-                  background: activeProductionTab === 'historique' ? 'var(--color-primary-blue)' : 'var(--color-background-card-light)',
-                  color: activeProductionTab === 'historique' ? 'white' : 'var(--color-text-secondary)'
-                }}
-              >
-                📊 Historique
               </button>
             </div>
 
