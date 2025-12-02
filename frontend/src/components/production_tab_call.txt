@@ -1,0 +1,26 @@
+        {/* PRODUCTION - Refactored to Component */}
+        <ProductionTab
+             activeTab={activeTab}
+             currentUser={currentUser}
+             produits={produits}
+             fournisseurs={fournisseurs}
+             preparations={preparations}
+             recettes={recettes}
+             unitesStandardisees={unitesStandardisees}
+             setShowProduitModal={setShowProduitModal}
+             setShowFournisseurModal={setShowFournisseurModal}
+             setShowRecetteModal={setShowRecetteModal}
+             setShowPreparationModal={setShowPreparationModal}
+             setEditingItem={setEditingItem}
+             setProduitForm={setProduitForm}
+             setFournisseurForm={setFournisseurForm}
+             setRecetteForm={setRecetteForm}
+             setPreparationForm={setPreparationForm}
+             handleDeleteProduit={handleDeleteProduit}
+             handleDeleteFournisseur={handleDeleteFournisseur}
+             handleDeleteRecette={handleDeleteRecette}
+             handleDeletePreparation={handleDeletePreparation}
+             archiveItem={archiveItem}
+             loading={loading}
+             handleAutoGeneratePreparations={handleAutoGeneratePreparations}
+        />
