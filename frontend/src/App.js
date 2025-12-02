@@ -1769,7 +1769,8 @@ function App() {
       reference: `ADJ-${Date.now()}`,
       commentaire: `Ajustement stock pour ${stock.produit_nom}`,
       lot: "",
-      unite: produit ? produit.unite : ""
+      unite: produit ? produit.unite : "",
+      dlc: ""
     });
     setShowMouvementModal(true);
   };
