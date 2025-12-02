@@ -562,6 +562,9 @@ class MouvementCreate(BaseModel):
     reference: Optional[str] = None
     fournisseur_id: Optional[str] = None
     commentaire: Optional[str] = None
+    dlc: Optional[datetime] = None
+    lot: Optional[str] = None
+    unite: Optional[str] = None
 
 # Models pour la gestion des recettes (Productions)
 class RecetteIngredient(BaseModel):
@@ -4430,9 +4433,36 @@ async def create_mouvement(mouvement: MouvementCreate):
     if produit:
         mouvement_dict["produit_nom"] = produit["nom"]
     
-    mouvement_obj = MouvementStock(**mouvement_dict)
+    # Créer le mouvement
+    # On retire les champs spécifiques au batch (dlc, lot, unite) qui ne sont pas dans MouvementStock
+    mouvement_stock_dict = {k: v for k, v in mouvement_dict.items() if k not in ['dlc', 'lot', 'unite']}
+    mouvement_obj = MouvementStock(**mouvement_stock_dict)
     await db.mouvements_stock.insert_one(mouvement_obj.dict())
     
+    # Gestion des Lots (Batches) pour les entrées
+    if mouvement.type == "entree" and mouvement.quantite > 0:
+        # Si une DLC ou un Lot est spécifié, ou pour tout suivi de traçabilité
+        # On crée systématiquement un batch pour chaque entrée pour permettre le FIFO/FEFO
+        
+        batch_data = {
+            "product_id": mouvement.produit_id,
+            "quantity": mouvement.quantite,
+            "quantity_brute": mouvement.quantite,
+            "expiry_date": mouvement.dlc,
+            "batch_number": mouvement.lot,
+            "supplier_id": mouvement.fournisseur_id,
+            "received_date": datetime.utcnow(),
+            "created_at": datetime.utcnow(),
+            "is_consumed": False
+        }
+        
+        # Si pas de lot spécifié, on peut en générer un auto ou laisser vide
+        if not batch_data["batch_number"]:
+            batch_data["batch_number"] = f"BATCH-{datetime.utcnow().strftime('%Y%m%d')}-{str(uuid.uuid4())[:4]}"
+            
+        batch_obj = ProductBatch(**batch_data)
+        await db.product_batches.insert_one(batch_obj.dict())
+
     # Mettre à jour le stock (arrondi à 0.01)
     stock = await db.stocks.find_one({"produit_id": mouvement.produit_id})
     if stock:
@@ -4443,8 +4473,50 @@ async def create_mouvement(mouvement: MouvementCreate):
             nouvelle_quantite = round_stock_quantity(nouvelle_quantite + quantite_mouvement)
         elif mouvement.type == "sortie":
             nouvelle_quantite = round_stock_quantity(nouvelle_quantite - quantite_mouvement)
+            
+            # Gestion FIFO/FEFO pour la sortie de stock (consommation des lots)
+            # On essaie de déduire la quantité des lots existants (priorité DLC la plus proche ou plus ancien)
+            remaining_qty_to_remove = quantite_mouvement
+            
+            # Récupérer les lots disponibles triés par DLC (si existe) ou date de réception
+            batches = await db.product_batches.find({
+                "product_id": mouvement.produit_id, 
+                "is_consumed": False,
+                "quantity": {"$gt": 0}
+            }).sort([("expiry_date", 1), ("received_date", 1)]).to_list(length=100)
+            
+            for batch in batches:
+                if remaining_qty_to_remove <= 0:
+                    break
+                    
+                qty_in_batch = batch["quantity"]
+                if qty_in_batch >= remaining_qty_to_remove:
+                    # Ce lot suffit pour couvrir le reste
+                    new_batch_qty = qty_in_batch - remaining_qty_to_remove
+                    await db.product_batches.update_one(
+                        {"id": batch["id"]},
+                        {"$set": {
+                            "quantity": new_batch_qty, 
+                            "is_consumed": new_batch_qty <= 0
+                        }}
+                    )
+                    remaining_qty_to_remove = 0
+                else:
+                    # Ce lot est vidé, mais il en faut encore
+                    remaining_qty_to_remove -= qty_in_batch
+                    await db.product_batches.update_one(
+                        {"id": batch["id"]},
+                        {"$set": {
+                            "quantity": 0, 
+                            "is_consumed": True
+                        }}
+                    )
+
         elif mouvement.type == "ajustement":
             nouvelle_quantite = quantite_mouvement
+            # Pour l'ajustement, c'est complexe de réconcilier les lots.
+            # Idéalement il faudrait spécifier QUEL lot on ajuste.
+            # Pour l'instant, on laisse désynchronisé ou on alerte l'utilisateur.
         
         await db.stocks.update_one(
             {"produit_id": mouvement.produit_id},
