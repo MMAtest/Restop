@@ -6943,7 +6943,12 @@ function App() {
                 ) : (
                   <>
                 {/* Liste des produits filtrés */}
-                {(filteredProduits.length > 0 ? filteredProduits : produits).map((produit, index) => {
+                {selectedCategoryFilter && filteredProduits.length === 0 && (
+                  <div className="empty-state-message" style={{padding: '20px', textAlign: 'center', color: 'var(--color-text-secondary)'}}>
+                    Aucun produit dans cette catégorie.
+                  </div>
+                )}
+                {(selectedCategoryFilter ? filteredProduits : produits).map((produit, index) => {
                     // Fonction pour obtenir l'icône selon la catégorie
                     const getCategoryIcon = (categorie) => {
                     if (!categorie) return '⚠️'; // Icône d'alerte si pas de catégorie
