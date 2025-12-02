@@ -7434,6 +7434,256 @@ async def process_z_report_to_real_data(document_id: str):
 
 
 @api_router.post("/ocr/process-facture/{document_id}", response_model=FactureProcessingResult)
+
+# --------------------------------------------------------------------------------
+# ✅ NOUVEAU SYSTEME DE RECONCILIATION FACTURES (VALIDATION AVANT IMPORT)
+# --------------------------------------------------------------------------------
+
+class FactureItemAnalysis(BaseModel):
+    # Données OCR brutes
+    ocr_name: str
+    ocr_qty: float = 0
+    ocr_unit: str = "kg"
+    ocr_price: float = 0
+    ocr_total: float = 0
+    
+    # Correspondance Base de Données
+    product_id: Optional[str] = None
+    product_name: Optional[str] = None
+    confidence: float = 0.0
+    status: str = "new" # "matched", "new", "ambiguous"
+    
+    # Champs de Validation (à remplir par l'utilisateur)
+    selected_product_id: Optional[str] = None # ID final validé (vide si création)
+    final_name: Optional[str] = None # Nom final (si création)
+    final_unit: Optional[str] = None
+    final_qty: Optional[float] = None
+    dlc: Optional[datetime] = None # ✅ LA CLÉ DU SUIVI DLC
+    batch_number: Optional[str] = None
+
+class FactureAnalysisResult(BaseModel):
+    document_id: str
+    supplier_id: Optional[str] = None
+    supplier_name: str
+    is_new_supplier: bool = False
+    facture_date: str = ""
+    numero_facture: str = ""
+    items: List[FactureItemAnalysis]
+
+class ImportConfirmationRequest(BaseModel):
+    document_id: str
+    supplier_id: Optional[str] = None
+    supplier_name: str
+    create_supplier: bool = False
+    items: List[FactureItemAnalysis]
+
+@api_router.post("/ocr/analyze-facture/{document_id}", response_model=FactureAnalysisResult)
+async def analyze_facture_for_review(document_id: str):
+    """
+    Step 1 of Reconciliation: Analyze invoice and return data for user validation.
+    Does NOT write to stock.
+    """
+    try:
+        # 1. Récupérer le document
+        document = await db.documents_ocr.find_one({"id": document_id})
+        if not document:
+            raise HTTPException(status_code=404, detail="Document OCR non trouvé")
+        
+        if document["type_document"] != "facture_fournisseur":
+            raise HTTPException(status_code=400, detail="Ce document n'est pas une facture fournisseur")
+        
+        donnees_parsees = document.get("donnees_parsees", {})
+        if not donnees_parsees:
+            raise HTTPException(status_code=400, detail="Données parsées non disponibles")
+        
+        # 2. Analyser le Fournisseur
+        ocr_supplier_name = donnees_parsees.get("fournisseur", "Fournisseur inconnu")
+        supplier_match = await match_supplier_by_name(ocr_supplier_name)
+        
+        result = FactureAnalysisResult(
+            document_id=document_id,
+            supplier_name=ocr_supplier_name,
+            facture_date=donnees_parsees.get("date", datetime.utcnow().strftime("%d/%m/%Y")),
+            numero_facture=donnees_parsees.get("numero_facture", "N/A"),
+            items=[]
+        )
+        
+        if supplier_match and supplier_match["confidence"] >= 0.6:
+            result.supplier_id = supplier_match["supplier_id"]
+            result.supplier_name = supplier_match["supplier_name"] # Use known name
+            result.is_new_supplier = False
+        else:
+            result.is_new_supplier = True
+            
+        # 3. Analyser chaque produit (Matching sans création)
+        produits_facture = donnees_parsees.get("produits", [])
+        
+        for prod_data in produits_facture:
+            ocr_name = prod_data.get("nom", "")
+            if not ocr_name: continue
+            
+            item_analysis = FactureItemAnalysis(
+                ocr_name=ocr_name,
+                ocr_qty=prod_data.get("quantite", 0),
+                ocr_unit=prod_data.get("unite", "kg"),
+                ocr_price=prod_data.get("prix_unitaire", 0),
+                ocr_total=prod_data.get("prix_total", 0),
+                final_qty=prod_data.get("quantite", 0), # Suggestion par défaut
+                final_unit=prod_data.get("unite", "kg"),
+                final_name=ocr_name
+            )
+            
+            # Tentative de matching
+            product_match = await match_product_by_name(ocr_name)
+            
+            if product_match and product_match["confidence"] >= 0.6:
+                item_analysis.product_id = product_match["product_id"]
+                item_analysis.product_name = product_match["product_name"]
+                item_analysis.confidence = product_match["confidence"]
+                item_analysis.selected_product_id = product_match["product_id"] # Préselectionner
+                item_analysis.status = "matched"
+            else:
+                item_analysis.status = "new"
+                
+            result.items.append(item_analysis)
+            
+        return result
+        
+    except Exception as e:
+        print(f"❌ Erreur analyze facture: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Erreur d'analyse: {str(e)}")
+
+@api_router.post("/ocr/confirm-import", response_model=dict)
+async def confirm_import_facture(request: ImportConfirmationRequest):
+    """
+    Step 2 of Reconciliation: Apply validated data to system.
+    Creates Products, Suppliers, Stock Movements, and BATCHES with DLC.
+    """
+    try:
+        # 1. Gérer le fournisseur
+        supplier_id = request.supplier_id
+        if request.create_supplier and not supplier_id:
+            # Créer nouveau fournisseur
+            new_supplier = Fournisseur(
+                nom=request.supplier_name,
+                categorie="frais"
+            )
+            await db.fournisseurs.insert_one(new_supplier.dict())
+            supplier_id = new_supplier.id
+        
+        import_stats = {
+            "products_created": 0,
+            "stock_entries": 0,
+            "batches_created": 0
+        }
+        
+        # 2. Traiter chaque ligne validée
+        for item in request.items:
+            if item.final_qty <= 0:
+                continue
+                
+            product_id = item.selected_product_id
+            
+            # Création produit si nécessaire (Status 'new' ou 'matched' mais user a choisi 'Créer nouveau')
+            if not product_id:
+                new_product = Produit(
+                    nom=item.final_name or item.ocr_name,
+                    categorie="Autres",
+                    unite=item.final_unit or "kg",
+                    reference_price=item.ocr_price,
+                    main_supplier_id=supplier_id,
+                    fournisseur_id=supplier_id,
+                    fournisseur_nom=request.supplier_name
+                )
+                await db.produits.insert_one(new_product.dict())
+                product_id = new_product.id
+                import_stats["products_created"] += 1
+                
+                # Créer stock initial
+                await db.stocks.insert_one(Stock(
+                    produit_id=product_id,
+                    produit_nom=new_product.nom,
+                    quantite_actuelle=0,
+                    quantite_min=0
+                ).dict())
+                
+                # Créer relation prix
+                await db.supplier_product_info.insert_one(SupplierProductInfo(
+                    supplier_id=supplier_id,
+                    product_id=product_id,
+                    price=item.ocr_price,
+                    is_preferred=True
+                ).dict())
+            else:
+                # Mise à jour prix existant
+                await db.supplier_product_info.update_one(
+                    {"supplier_id": supplier_id, "product_id": product_id},
+                    {"$set": {"price": item.ocr_price, "last_updated": datetime.utcnow()}},
+                    upsert=True
+                )
+
+            # 3. CRÉATION DU LOT (BATCH) AVEC DLC
+            # C'est ici que la magie opère grâce à la validation utilisateur
+            batch_data = {
+                "product_id": product_id,
+                "quantity": item.final_qty,
+                "quantity_brute": item.final_qty,
+                "expiry_date": item.dlc, # DLC validée par l'utilisateur
+                "batch_number": item.batch_number, # Lot saisi par l'utilisateur
+                "supplier_id": supplier_id,
+                "received_date": datetime.utcnow(),
+                "created_at": datetime.utcnow(),
+                "is_consumed": False
+            }
+            
+            # Génération automatique numéro lot si vide
+            if not batch_data["batch_number"]:
+                date_str = datetime.utcnow().strftime('%Y%m%d')
+                batch_data["batch_number"] = f"REC-{date_str}-{str(uuid.uuid4())[:4]}"
+                
+            batch_obj = ProductBatch(**batch_data)
+            await db.product_batches.insert_one(batch_obj.dict())
+            import_stats["batches_created"] += 1
+            
+            # 4. Mouvement de Stock
+            mouvement = MouvementStock(
+                produit_id=product_id,
+                produit_nom=item.final_name or item.product_name,
+                type="entree",
+                quantite=item.final_qty,
+                reference=f"FACT-{request.document_id[:8]}",
+                fournisseur_id=supplier_id,
+                commentaire=f"Import Facture {request.document_id[:8]}"
+            )
+            await db.mouvements_stock.insert_one(mouvement.dict())
+            import_stats["stock_entries"] += 1
+            
+            # 5. Mise à jour Quantité Totale Stock
+            stock = await db.stocks.find_one({"produit_id": product_id})
+            if stock:
+                new_qty = round_stock_quantity(stock["quantite_actuelle"] + item.final_qty)
+                await db.stocks.update_one(
+                    {"produit_id": product_id},
+                    {"$set": {"quantite_actuelle": new_qty, "derniere_maj": datetime.utcnow()}}
+                )
+
+        # Marquer document comme traité
+        await db.documents_ocr.update_one(
+            {"id": request.document_id},
+            {"$set": {"statut": "integre", "date_traitement": datetime.utcnow()}}
+        )
+        
+        return {
+            "success": True, 
+            "message": "Import validé et stock mis à jour !",
+            "stats": import_stats
+        }
+
+    except Exception as e:
+        print(f"❌ Erreur confirmation import: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Erreur confirmation: {str(e)}")
+
+
 async def process_facture_to_real_data(document_id: str):
     """
     Process a supplier invoice and integrate it into real system data:
