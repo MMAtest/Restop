@@ -464,8 +464,9 @@ REAL_RECETTES = [
         "prix_vente": 25.00,
         "ingredients": [
             {"nom": "Gnocchi", "quantite": 0.6, "unite": "kg"},
-            {"nom": "Sauce tomate maison", "quantite": 0.3, "unite": "L", "ingredient_type": "preparation"},
-            {"nom": "Basilic frais", "quantite": 1, "unite": "botte"}
+            {"nom": "Sauce tomate maison", "quantite": 0.4, "unite": "L", "ingredient_type": "preparation"},
+            {"nom": "Basilic frais", "quantite": 1, "unite": "botte"},
+            {"nom": "Parmesan", "quantite": 0.05, "unite": "kg"}
         ]
     },
     {
