@@ -4376,6 +4376,35 @@ async def get_stock(produit_id: str):
         raise HTTPException(status_code=404, detail="Stock non trouvé")
     return Stock(**stock)
 
+@api_router.get("/stocks/critiques/produits")
+async def get_stocks_critiques():
+    """Récupère les produits en rupture de stock ou stock critique"""
+    stocks = await db.stocks.find({}, {"_id": 0}).to_list(1000)
+    stocks_critiques = []
+    
+    for stock in stocks:
+        quantite = stock.get("quantite", 0)
+        seuil_alerte = stock.get("seuil_alerte", 5)
+        
+        # Stock critique ou en rupture
+        if quantite == 0 or quantite <= seuil_alerte:
+            stocks_critiques.append({
+                "produit_id": stock.get("produit_id"),
+                "produit_nom": stock.get("produit_nom", "Produit inconnu"),
+                "quantite": quantite,
+                "unite": stock.get("unite", "unité"),
+                "seuil_alerte": seuil_alerte,
+                "statut": "rupture" if quantite == 0 else "critique"
+            })
+    
+    return {
+        "stocks_critiques": stocks_critiques,
+        "total": len(stocks_critiques),
+        "ruptures": len([s for s in stocks_critiques if s["statut"] == "rupture"]),
+        "critiques": len([s for s in stocks_critiques if s["statut"] == "critique"])
+    }
+
+
 @api_router.put("/stocks/{produit_id}", response_model=Stock)
 async def update_stock(produit_id: str, stock_update: StockUpdate):
     update_dict = {k: v for k, v in stock_update.dict().items() if v is not None}
