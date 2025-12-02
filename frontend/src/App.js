@@ -7441,7 +7441,12 @@ function App() {
                 ) : (
                   <>
                 {/* Liste des recettes filtrées */}
-                {(filteredRecettes.length > 0 ? filteredRecettes : recettes).map((recette, index) => {
+                {selectedCategoryFilter && filteredRecettes.length === 0 && (
+                  <div className="empty-state-message" style={{padding: '20px', textAlign: 'center', color: 'var(--color-text-secondary)'}}>
+                    Aucune recette dans cette catégorie.
+                  </div>
+                )}
+                {(selectedCategoryFilter ? filteredRecettes : recettes).map((recette, index) => {
                   // Fonction pour obtenir l'icône selon la catégorie de production
                   const getProductionCategoryIcon = (categorie) => {
                     if (!categorie) return '⚠️'; // Icône d'alerte si pas de catégorie
