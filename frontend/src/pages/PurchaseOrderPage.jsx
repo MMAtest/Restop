@@ -832,15 +832,15 @@ const PurchaseOrderPage = ({ currentUser }) => {
 
           {/* Récapitulatif de commande manuelle */}
           {manualOrderSummary && (
-            <div className="bg-white rounded-lg shadow-sm mt-6">
-              <div className="p-6 border-b border-gray-200">
+            <div className="rounded-lg shadow-sm mt-6" style={{ background: 'var(--color-background-card)', border: '1px solid var(--color-border)' }}>
+              <div className="p-6 border-b" style={{ borderColor: 'var(--color-border)' }}>
                 <div className="flex justify-between items-start">
                   <div>
-                    <h3 className="text-lg font-semibold flex items-center">
+                    <h3 className="text-lg font-semibold flex items-center" style={{ color: 'var(--color-text-primary)' }}>
                       <span className="mr-2">📋</span>
                       Récapitulatif de Commande - {manualOrderSummary.orderNumber}
                     </h3>
-                    <p className="text-sm text-gray-600 mt-1">
+                    <p className="text-sm mt-1" style={{ color: 'var(--color-text-secondary)' }}>
                       Fournisseur: {manualOrderSummary.supplier.nom}
                     </p>
                   </div>
@@ -849,7 +849,8 @@ const PurchaseOrderPage = ({ currentUser }) => {
                       onClick={() => {
                         alert(`PDF généré pour la commande ${manualOrderSummary.orderNumber}`);
                       }}
-                      className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-sm flex items-center"
+                      className="text-white px-3 py-1 rounded text-sm flex items-center"
+                      style={{ background: 'var(--color-primary-blue)' }}
                     >
                       <span className="mr-1">📄</span>
                       PDF
@@ -858,7 +859,8 @@ const PurchaseOrderPage = ({ currentUser }) => {
                       onClick={() => {
                         alert(`Email envoyé à ${manualOrderSummary.supplier.nom}`);
                       }}
-                      className="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded text-sm flex items-center"
+                      className="text-white px-3 py-1 rounded text-sm flex items-center"
+                      style={{ background: 'var(--color-success-green)' }}
                     >
                       <span className="mr-1">📧</span>
                       Email
@@ -868,7 +870,8 @@ const PurchaseOrderPage = ({ currentUser }) => {
                         setManualOrderSummary(null);
                         setOrderItems([]);
                       }}
-                      className="bg-gray-500 hover:bg-gray-600 text-white px-3 py-1 rounded text-sm flex items-center"
+                      className="text-white px-3 py-1 rounded text-sm flex items-center"
+                      style={{ background: 'var(--color-text-muted)' }}
                     >
                       <span className="mr-1">✖️</span>
                       Fermer
@@ -879,18 +882,18 @@ const PurchaseOrderPage = ({ currentUser }) => {
               
               <div className="p-6">
                 {/* Informations de livraison */}
-                <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-4">
-                  <h4 className="font-semibold text-yellow-800 mb-2">📅 Informations de Livraison</h4>
+                <div className="rounded-lg p-4 mb-4" style={{ background: 'rgba(245, 158, 11, 0.1)', border: '1px solid rgba(245, 158, 11, 0.3)' }}>
+                  <h4 className="font-semibold mb-2" style={{ color: 'var(--color-accent-gold)' }}>📅 Informations de Livraison</h4>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                     <div>
-                      <span className="text-yellow-700">Date de commande:</span>
-                      <span className="font-medium ml-2">
+                      <span style={{ color: 'var(--color-text-secondary)' }}>Date de commande:</span>
+                      <span className="font-medium ml-2" style={{ color: 'var(--color-text-primary)' }}>
                         {new Date(manualOrderSummary.orderDate).toLocaleDateString('fr-FR')}
                       </span>
                     </div>
                     <div>
-                      <span className="text-yellow-700">Livraison prévue:</span>
-                      <span className="font-medium ml-2 text-green-700">
+                      <span style={{ color: 'var(--color-text-secondary)' }}>Livraison prévue:</span>
+                      <span className="font-medium ml-2" style={{ color: 'var(--color-success-green)' }}>
                         {manualOrderSummary.estimatedDelivery}
                       </span>
                     </div>
@@ -900,28 +903,28 @@ const PurchaseOrderPage = ({ currentUser }) => {
                 {/* Détails des produits */}
                 <div className="space-y-2">
                   {manualOrderSummary.items.map((item, index) => (
-                    <div key={index} className="flex justify-between items-center py-2 border-b border-gray-100 last:border-b-0">
+                    <div key={index} className="flex justify-between items-center py-2 border-b last:border-b-0" style={{ borderColor: 'var(--color-border-light)' }}>
                       <div className="flex-1">
-                        <div className="font-medium">{item.product_name}</div>
-                        <div className="text-sm text-gray-600">
+                        <div className="font-medium" style={{ color: 'var(--color-text-primary)' }}>{item.product_name}</div>
+                        <div className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
                           {item.quantity} {item.unit} × {formatCurrency(item.unit_price)}
                         </div>
                       </div>
-                      <div className="font-medium text-right">
+                      <div className="font-medium text-right" style={{ color: 'var(--color-text-primary)' }}>
                         {formatCurrency(item.unit_price * item.quantity)}
                       </div>
                     </div>
                   ))}
                   
                   {/* Total */}
-                  <div className="flex justify-between items-center pt-4 border-t border-gray-200 font-semibold text-lg">
-                    <span>Total Commande:</span>
-                    <span className="text-2xl text-green-600">{formatCurrency(manualOrderSummary.total)}</span>
+                  <div className="flex justify-between items-center pt-4 border-t font-semibold text-lg" style={{ borderColor: 'var(--color-border)' }}>
+                    <span style={{ color: 'var(--color-text-primary)' }}>Total Commande:</span>
+                    <span className="text-2xl" style={{ color: 'var(--color-success-green)' }}>{formatCurrency(manualOrderSummary.total)}</span>
                   </div>
                 </div>
 
                 {/* Actions finales */}
-                <div className="mt-6 pt-4 border-t border-gray-200">
+                <div className="mt-6 pt-4 border-t" style={{ borderColor: 'var(--color-border)' }}>
                   <div className="flex justify-center space-x-4">
                     <button 
                       onClick={() => {
@@ -929,7 +932,8 @@ const PurchaseOrderPage = ({ currentUser }) => {
                         setManualOrderSummary(null);
                         setOrderItems([]);
                       }}
-                      className="bg-green-500 hover:bg-green-600 text-white px-6 py-2 rounded-lg font-medium flex items-center"
+                      className="text-white px-6 py-2 rounded-lg font-medium flex items-center"
+                      style={{ background: 'var(--color-success-green)' }}
                     >
                       <span className="mr-2">✅</span>
                       Confirmer la Commande
@@ -938,7 +942,8 @@ const PurchaseOrderPage = ({ currentUser }) => {
                       onClick={() => {
                         setManualOrderSummary(null);
                       }}
-                      className="bg-yellow-400 hover:bg-yellow-500 text-gray-900 px-6 py-2 rounded-lg font-medium flex items-center"
+                      className="px-6 py-2 rounded-lg font-medium flex items-center"
+                      style={{ background: 'var(--color-accent-gold)', color: '#1a1a1a' }}
                     >
                       <span className="mr-2">✏️</span>
                       Modifier
@@ -953,12 +958,12 @@ const PurchaseOrderPage = ({ currentUser }) => {
           {activeOrderTab === 'auto' && (
             <div className="space-y-6">
               {/* Sélection des productions */}
-              <div className="bg-gray-50 rounded-lg p-6">
-                <h3 className="text-lg font-semibold mb-4 flex items-center">
+              <div className="rounded-lg p-6" style={{ background: 'var(--color-background-card-light)' }}>
+                <h3 className="text-lg font-semibold mb-4 flex items-center" style={{ color: 'var(--color-text-primary)' }}>
                   <span className="mr-2">🍽️</span>
                   Sélectionner les Productions
                 </h3>
-                <p className="text-sm text-gray-600 mb-4">
+                <p className="text-sm mb-4" style={{ color: 'var(--color-text-secondary)' }}>
                   Choisissez les productions et quantités pour calculer automatiquement les commandes
                 </p>
                 
@@ -966,11 +971,11 @@ const PurchaseOrderPage = ({ currentUser }) => {
                   {recipes.map((recipe) => (
                     <div
                       key={recipe.id}
-                      className={`p-4 border rounded-lg cursor-pointer transition-all ${
-                        selectedRecipes.find(r => r.id === recipe.id)
-                          ? 'border-primary-500 bg-primary-50'
-                          : 'border-gray-200 hover:border-gray-300'
-                      }`}
+                      className={`p-4 border rounded-lg cursor-pointer transition-all`}
+                      style={{
+                        borderColor: selectedRecipes.find(r => r.id === recipe.id) ? 'var(--color-primary-blue)' : 'var(--color-border)',
+                        background: selectedRecipes.find(r => r.id === recipe.id) ? 'rgba(59, 130, 246, 0.1)' : 'var(--color-background-card)'
+                      }}
                       onClick={() => {
                         const isSelected = selectedRecipes.find(r => r.id === recipe.id);
                         if (isSelected) {
@@ -980,7 +985,7 @@ const PurchaseOrderPage = ({ currentUser }) => {
                         }
                       }}
                     >
-                      <div className="font-medium flex items-center">
+                      <div className="font-medium flex items-center" style={{ color: 'var(--color-text-primary)' }}>
                         <span className="mr-2">
                           {recipe.categorie === 'Entrée' ? '🥗' :
                            recipe.categorie === 'Plat' ? '🍽️' :
@@ -989,12 +994,12 @@ const PurchaseOrderPage = ({ currentUser }) => {
                         </span>
                         {recipe.nom}
                       </div>
-                      <div className="text-sm text-gray-600 mt-1">
+                      <div className="text-sm mt-1" style={{ color: 'var(--color-text-secondary)' }}>
                         {recipe.portions} portions • {recipe.categorie}
                       </div>
                       {selectedRecipes.find(r => r.id === recipe.id) && (
                         <div className="mt-2">
-                          <label className="text-xs text-gray-500">Quantité souhaitée:</label>
+                          <label className="text-xs" style={{ color: 'var(--color-text-secondary)' }}>Quantité souhaitée:</label>
                           <input
                             type="number"
                             min="1"
@@ -1007,6 +1012,11 @@ const PurchaseOrderPage = ({ currentUser }) => {
                             }}
                             onClick={(e) => e.stopPropagation()}
                             className="w-20 px-2 py-1 text-sm border rounded mt-1"
+                            style={{ 
+                              background: 'var(--color-background-dark)', 
+                              color: 'var(--color-text-primary)',
+                              borderColor: 'var(--color-border)'
+                            }}
                           />
                         </div>
                       )}
@@ -1015,15 +1025,16 @@ const PurchaseOrderPage = ({ currentUser }) => {
                 </div>
                 
                 {selectedRecipes.length > 0 && (
-                  <div className="mt-6 pt-4 border-t">
+                  <div className="mt-6 pt-4 border-t" style={{ borderColor: 'var(--color-border)' }}>
                     <div className="flex justify-between items-center">
-                      <div className="text-sm text-gray-600">
+                      <div className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
                         {selectedRecipes.length} production(s) sélectionnée(s)
                       </div>
                       <button
                         onClick={calculateAutoOrder}
                         disabled={loading}
-                        className="bg-yellow-400 hover:bg-yellow-500 text-gray-900 px-6 py-2 rounded-lg font-medium disabled:opacity-50"
+                        className="px-6 py-2 rounded-lg font-medium disabled:opacity-50"
+                        style={{ background: 'var(--color-accent-gold)', color: '#1a1a1a' }}
                       >
                         {loading ? 'Calcul...' : '🤖 Calculer les Commandes'}
                       </button>
@@ -1036,7 +1047,7 @@ const PurchaseOrderPage = ({ currentUser }) => {
               {autoOrderResults.length > 0 && (
                 <div className="space-y-4">
                   <div className="flex justify-between items-center">
-                    <h3 className="text-lg font-semibold flex items-center">
+                    <h3 className="text-lg font-semibold flex items-center" style={{ color: 'var(--color-text-primary)' }}>
                       <span className="mr-2">📊</span>
                       Commandes Suggérées par Fournisseur
                     </h3>
@@ -1046,7 +1057,8 @@ const PurchaseOrderPage = ({ currentUser }) => {
                           // Générer PDF pour toutes les commandes
                           alert('Téléchargement PDF de toutes les commandes...');
                         }}
-                        className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg text-sm flex items-center"
+                        className="text-white px-4 py-2 rounded-lg text-sm flex items-center"
+                        style={{ background: 'var(--color-primary-blue)' }}
                       >
                         <span className="mr-2">📄</span>
                         Télécharger tout (PDF)
@@ -1056,7 +1068,8 @@ const PurchaseOrderPage = ({ currentUser }) => {
                           // Envoyer emails à tous les fournisseurs
                           alert('Envoi des emails à tous les fournisseurs...');
                         }}
-                        className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg text-sm flex items-center"
+                        className="text-white px-4 py-2 rounded-lg text-sm flex items-center"
+                        style={{ background: 'var(--color-success-green)' }}
                       >
                         <span className="mr-2">📧</span>
                         Envoyer tout par email
@@ -1065,22 +1078,22 @@ const PurchaseOrderPage = ({ currentUser }) => {
                   </div>
                   
                   {/* Récapitulatif général */}
-                  <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-4">
-                    <h4 className="font-semibold text-yellow-800 mb-2">📋 Récapitulatif Général</h4>
+                  <div className="rounded-lg p-4 mb-4" style={{ background: 'rgba(245, 158, 11, 0.1)', border: '1px solid rgba(245, 158, 11, 0.3)' }}>
+                    <h4 className="font-semibold mb-2" style={{ color: 'var(--color-accent-gold)' }}>📋 Récapitulatif Général</h4>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
                       <div>
-                        <span className="text-yellow-700">Nombre de fournisseurs:</span>
-                        <span className="font-medium ml-2">{autoOrderResults.length}</span>
+                        <span style={{ color: 'var(--color-text-secondary)' }}>Nombre de fournisseurs:</span>
+                        <span className="font-medium ml-2" style={{ color: 'var(--color-text-primary)' }}>{autoOrderResults.length}</span>
                       </div>
                       <div>
-                        <span className="text-yellow-700">Total produits:</span>
-                        <span className="font-medium ml-2">
+                        <span style={{ color: 'var(--color-text-secondary)' }}>Total produits:</span>
+                        <span className="font-medium ml-2" style={{ color: 'var(--color-text-primary)' }}>
                           {autoOrderResults.reduce((total, order) => total + order.products.length, 0)}
                         </span>
                       </div>
                       <div>
-                        <span className="text-yellow-700">Montant total:</span>
-                        <span className="font-medium ml-2">
+                        <span style={{ color: 'var(--color-text-secondary)' }}>Montant total:</span>
+                        <span className="font-medium ml-2" style={{ color: 'var(--color-text-primary)' }}>
                           {formatCurrency(autoOrderResults.reduce((total, order) => total + order.total, 0))}
                         </span>
                       </div>
@@ -1089,12 +1102,12 @@ const PurchaseOrderPage = ({ currentUser }) => {
 
                   {/* Commandes par fournisseur */}
                   {autoOrderResults.map((order, index) => (
-                    <div key={index} className="border rounded-lg bg-white shadow-sm">
-                      <div className="p-4 border-b bg-gray-50">
+                    <div key={index} className="border rounded-lg shadow-sm" style={{ background: 'var(--color-background-card)', borderColor: 'var(--color-border)' }}>
+                      <div className="p-4 border-b" style={{ background: 'var(--color-background-card-light)', borderColor: 'var(--color-border)' }}>
                         <div className="flex justify-between items-start">
                           <div>
-                            <h4 className="font-semibold text-lg">{order.supplierName}</h4>
-                            <p className="text-sm text-gray-600">
+                            <h4 className="font-semibold text-lg" style={{ color: 'var(--color-text-primary)' }}>{order.supplierName}</h4>
+                            <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
                               {order.products.length} produit(s) • Total: {formatCurrency(order.total)}
                             </p>
                           </div>
@@ -1103,7 +1116,8 @@ const PurchaseOrderPage = ({ currentUser }) => {
                               onClick={() => {
                                 alert(`PDF généré pour ${order.supplierName}`);
                               }}
-                              className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-sm flex items-center"
+                              className="text-white px-3 py-1 rounded text-sm flex items-center"
+                              style={{ background: 'var(--color-primary-blue)' }}
                             >
                               <span className="mr-1">📄</span>
                               PDF
@@ -1112,7 +1126,8 @@ const PurchaseOrderPage = ({ currentUser }) => {
                               onClick={() => {
                                 alert(`Email envoyé à ${order.supplierName}`);
                               }}
-                              className="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded text-sm flex items-center"
+                              className="text-white px-3 py-1 rounded text-sm flex items-center"
+                              style={{ background: 'var(--color-success-green)' }}
                             >
                               <span className="mr-1">📧</span>
                               Email
@@ -1121,7 +1136,8 @@ const PurchaseOrderPage = ({ currentUser }) => {
                               onClick={() => {
                                 alert(`Commande validée pour ${order.supplierName}!`);
                               }}
-                              className="bg-yellow-400 hover:bg-yellow-500 text-gray-900 px-3 py-1 rounded text-sm font-medium flex items-center"
+                              className="px-3 py-1 rounded text-sm font-medium flex items-center"
+                              style={{ background: 'var(--color-accent-gold)', color: '#1a1a1a' }}
                             >
                               <span className="mr-1">✅</span>
                               Valider
@@ -1133,23 +1149,23 @@ const PurchaseOrderPage = ({ currentUser }) => {
                       <div className="p-4">
                         <div className="space-y-2">
                           {order.products.map((product, productIndex) => (
-                            <div key={productIndex} className="flex justify-between items-center py-2 border-b border-gray-100 last:border-b-0">
+                            <div key={productIndex} className="flex justify-between items-center py-2 border-b last:border-b-0" style={{ borderColor: 'var(--color-border-light)' }}>
                               <div className="flex-1">
-                                <div className="font-medium">{product.productName}</div>
-                                <div className="text-sm text-gray-600">
+                                <div className="font-medium" style={{ color: 'var(--color-text-primary)' }}>{product.productName}</div>
+                                <div className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
                                   {product.quantity} {product.unit} × {formatCurrency(product.pricePerUnit)}
                                 </div>
                               </div>
-                              <div className="font-medium text-right">
+                              <div className="font-medium text-right" style={{ color: 'var(--color-text-primary)' }}>
                                 {formatCurrency(product.totalPrice)}
                               </div>
                             </div>
                           ))}
                           
                           {/* Total par fournisseur */}
-                          <div className="flex justify-between items-center pt-2 border-t border-gray-200 font-semibold">
-                            <span>Total {order.supplierName}:</span>
-                            <span className="text-lg">{formatCurrency(order.total)}</span>
+                          <div className="flex justify-between items-center pt-2 border-t font-semibold" style={{ borderColor: 'var(--color-border)' }}>
+                            <span style={{ color: 'var(--color-text-primary)' }}>Total {order.supplierName}:</span>
+                            <span className="text-lg" style={{ color: 'var(--color-text-primary)' }}>{formatCurrency(order.total)}</span>
                           </div>
                         </div>
                       </div>
@@ -1164,23 +1180,24 @@ const PurchaseOrderPage = ({ currentUser }) => {
           {activeOrderTab === 'history' && (
             <div>
               <div className="mb-6">
-                <h3 className="text-xl font-bold mb-2">📋 Historique des Commandes</h3>
-                <p className="text-gray-600">Suivez l'état de vos commandes en temps réel</p>
+                <h3 className="text-xl font-bold mb-2" style={{ color: 'var(--color-text-primary)' }}>📋 Historique des Commandes</h3>
+                <p style={{ color: 'var(--color-text-secondary)' }}>Suivez l'état de vos commandes en temps réel</p>
               </div>
               
               {loading ? (
                 <div className="text-center py-12">
                   <div className="text-4xl mb-4">⏳</div>
-                  <p className="text-gray-600">Chargement des commandes...</p>
+                  <p style={{ color: 'var(--color-text-secondary)' }}>Chargement des commandes...</p>
                 </div>
               ) : orders.length === 0 ? (
-                <div className="text-center py-12 bg-gray-50 rounded-lg">
+                <div className="text-center py-12 rounded-lg" style={{ background: 'var(--color-background-card-light)' }}>
                   <div className="text-6xl mb-4">📦</div>
-                  <p className="text-xl font-medium text-gray-700 mb-2">Aucune commande</p>
-                  <p className="text-gray-600 mb-6">Créez votre première commande dans l'onglet "Commande Manuelle"</p>
+                  <p className="text-xl font-medium mb-2" style={{ color: 'var(--color-text-primary)' }}>Aucune commande</p>
+                  <p className="mb-6" style={{ color: 'var(--color-text-secondary)' }}>Créez votre première commande dans l'onglet "Commande Manuelle"</p>
                   <button
                     onClick={() => setActiveOrderTab('manual')}
-                    className="bg-yellow-400 hover:bg-yellow-500 text-gray-900 px-6 py-2 rounded-lg font-medium"
+                    className="px-6 py-2 rounded-lg font-medium"
+                    style={{ background: 'var(--color-accent-gold)', color: '#1a1a1a' }}
                   >
                     ➕ Créer une commande
                   </button>
@@ -1188,23 +1205,23 @@ const PurchaseOrderPage = ({ currentUser }) => {
               ) : (
                 <div className="space-y-6">
                   {orders.map((order) => (
-                    <div key={order.id} className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+                    <div key={order.id} className="rounded-lg shadow-sm border overflow-hidden" style={{ background: 'var(--color-background-card)', borderColor: 'var(--color-border)' }}>
                       {/* En-tête commande */}
-                      <div className="bg-gray-50 px-6 py-4 border-b border-gray-200">
+                      <div className="px-6 py-4 border-b" style={{ background: 'var(--color-background-card-light)', borderColor: 'var(--color-border)' }}>
                         <div className="flex justify-between items-start">
                           <div>
-                            <h4 className="text-lg font-semibold text-gray-800">
+                            <h4 className="text-lg font-semibold" style={{ color: 'var(--color-text-primary)' }}>
                               {order.supplier_name}
                             </h4>
-                            <p className="text-sm text-gray-600">
+                            <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
                               Commande n°{order.order_number}
                             </p>
                           </div>
                           <div className="text-right">
-                            <div className="text-2xl font-bold text-gray-800">
+                            <div className="text-2xl font-bold" style={{ color: 'var(--color-text-primary)' }}>
                               {formatCurrency(order.total_amount)}
                             </div>
-                            <p className="text-xs text-gray-500">
+                            <p className="text-xs" style={{ color: 'var(--color-text-muted)' }}>
                               {order.items.length} article{order.items.length > 1 ? 's' : ''}
                             </p>
                           </div>
@@ -1219,20 +1236,20 @@ const PurchaseOrderPage = ({ currentUser }) => {
                       {/* Détails produits */}
                       <div className="px-6 pb-4">
                         <details className="group">
-                          <summary className="cursor-pointer text-sm font-medium text-gray-700 hover:text-gray-900 flex items-center gap-2">
+                          <summary className="cursor-pointer text-sm font-medium hover:text-opacity-80 flex items-center gap-2" style={{ color: 'var(--color-text-primary)' }}>
                             <span className="group-open:rotate-90 transition-transform">▶</span>
                             Voir les produits commandés
                           </summary>
                           <div className="mt-4 space-y-2 pl-4">
                             {order.items.map((item, idx) => (
-                              <div key={idx} className="flex justify-between items-center py-2 border-b border-gray-100 text-sm">
+                              <div key={idx} className="flex justify-between items-center py-2 border-b text-sm" style={{ borderColor: 'var(--color-border-light)' }}>
                                 <div className="flex-1">
-                                  <span className="font-medium">{item.product_name}</span>
-                                  <span className="text-gray-500 ml-2">({item.quantity} {item.unit})</span>
+                                  <span className="font-medium" style={{ color: 'var(--color-text-primary)' }}>{item.product_name}</span>
+                                  <span className="ml-2" style={{ color: 'var(--color-text-secondary)' }}>({item.quantity} {item.unit})</span>
                                 </div>
                                 <div className="text-right">
-                                  <div className="font-medium">{formatCurrency(item.total_price)}</div>
-                                  <div className="text-xs text-gray-500">{formatCurrency(item.unit_price)}/{item.unit}</div>
+                                  <div className="font-medium" style={{ color: 'var(--color-text-primary)' }}>{formatCurrency(item.total_price)}</div>
+                                  <div className="text-xs" style={{ color: 'var(--color-text-muted)' }}>{formatCurrency(item.unit_price)}/{item.unit}</div>
                                 </div>
                               </div>
                             ))}
@@ -1246,7 +1263,8 @@ const PurchaseOrderPage = ({ currentUser }) => {
                           {order.status === 'pending' && (
                             <button
                               onClick={() => updateOrderStatus(order.id, 'confirmed')}
-                              className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700"
+                              className="px-4 py-2 rounded-lg text-sm font-medium hover:bg-opacity-90 text-white"
+                              style={{ background: 'var(--color-primary-blue)' }}
                             >
                               ✓ Confirmer
                             </button>
@@ -1254,7 +1272,8 @@ const PurchaseOrderPage = ({ currentUser }) => {
                           {order.status === 'confirmed' && (
                             <button
                               onClick={() => updateOrderStatus(order.id, 'in_transit')}
-                              className="px-4 py-2 bg-purple-600 text-white rounded-lg text-sm font-medium hover:bg-purple-700"
+                              className="px-4 py-2 rounded-lg text-sm font-medium hover:bg-opacity-90 text-white"
+                              style={{ background: '#8B5CF6' }}
                             >
                               🚚 En transit
                             </button>
@@ -1262,7 +1281,8 @@ const PurchaseOrderPage = ({ currentUser }) => {
                           {order.status === 'in_transit' && (
                             <button
                               onClick={() => updateOrderStatus(order.id, 'delivered')}
-                              className="px-4 py-2 bg-green-600 text-white rounded-lg text-sm font-medium hover:bg-green-700"
+                              className="px-4 py-2 rounded-lg text-sm font-medium hover:bg-opacity-90 text-white"
+                              style={{ background: 'var(--color-success-green)' }}
                             >
                               ✅ Marquer comme livré
                             </button>
@@ -1274,7 +1294,8 @@ const PurchaseOrderPage = ({ currentUser }) => {
                                   updateOrderStatus(order.id, 'cancelled');
                                 }
                               }}
-                              className="px-4 py-2 bg-red-600 text-white rounded-lg text-sm font-medium hover:bg-red-700"
+                              className="px-4 py-2 rounded-lg text-sm font-medium hover:bg-opacity-90 text-white"
+                              style={{ background: 'var(--color-danger-red)' }}
                             >
                               ❌ Annuler
                             </button>
