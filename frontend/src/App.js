@@ -6959,7 +6959,7 @@ function App() {
                       Aucun produit ne correspond à cette catégorie.
                     </p>
                   </div>
-                ) : (
+                ) : 
                   filteredProduits.map((produit, index) => {
                     // Fonction pour obtenir l'icône selon la catégorie
                     const getCategoryIcon = (categorie) => {
