@@ -157,6 +157,9 @@ function App() {
   const [dlcViewMode3Days, setDlcViewMode3Days] = useState('produits'); // pour DLC < 3 jours
   const [dlcViewMode7Days, setDlcViewMode7Days] = useState('produits'); // pour DLC < 7 jours
   
+  // États pour les stocks critiques
+  const [stocksCritiques, setStocksCritiques] = useState([]);
+  
   // États pour les boutons "Voir plus" des productions
   const [showMoreTopProductions, setShowMoreTopProductions] = useState(false);
   const [showMoreFlopProductions, setShowMoreFlopProductions] = useState(false);
