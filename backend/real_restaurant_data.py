@@ -475,7 +475,8 @@ REAL_RECETTES = [
         "prix_vente": 31.00,
         "ingredients": [
             {"nom": "Légumes grillés (courgettes, aubergines)", "quantite": 0.48, "unite": "kg", "ingredient_type": "preparation"},
-            {"nom": "Tomates cerises lavées et coupées", "quantite": 0.26, "unite": "kg", "ingredient_type": "preparation"}
+            {"nom": "Tomates cerises lavées et coupées", "quantite": 0.26, "unite": "kg", "ingredient_type": "preparation"},
+            {"nom": "Chair à saucisse", "quantite": 0.2, "unite": "kg"}
         ]
     },
     {
