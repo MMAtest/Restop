@@ -214,6 +214,9 @@ body {
   padding: var(--spacing-md);
   padding-bottom: 100px; /* Space for bottom navigation */
   overflow-y: auto;
+  overflow-x: hidden; /* Empêche le débordement horizontal */
+  width: 100%;
+  max-width: 100vw;
 }
 
 /* Remove top padding for orders page */
