@@ -428,6 +428,7 @@ function App() {
     fetchDashboardAnalytics();
     fetchMissingDataAlerts(); // Récupérer les alertes de données manquantes
     fetchStocks();
+    fetchStocksCritiques(); // Charger les stocks critiques pour les alertes
     fetchMouvements();
     fetchRecettes();
     fetchDocumentsOcr();
