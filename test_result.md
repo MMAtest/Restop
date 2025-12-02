@@ -942,6 +942,7 @@ metadata:
 test_plan:
   current_focus:
     - "Vue par Catégorie dans la Page Production - TERMINÉ"
+    - "Production Tab Filter Fix - TERMINÉ"
     - "Module de suivi des livraisons dans Orders"
     - "Titres de catégories Par Préparation"
   stuck_tasks: []
