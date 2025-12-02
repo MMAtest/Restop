@@ -12,7 +12,7 @@ from PIL import Image, ImageDraw, ImageFont
 from datetime import datetime
 
 # Configuration
-BASE_URL = "https://easy-resto-1.preview.emergentagent.com/api"
+BASE_URL = "https://cuisinepro.preview.emergentagent.com/api"
 HEADERS = {"Content-Type": "application/json"}
 
 class OCRTestSuite:

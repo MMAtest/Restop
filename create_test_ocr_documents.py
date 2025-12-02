@@ -12,7 +12,7 @@ import base64
 from PIL import Image, ImageDraw, ImageFont
 import io
 
-BASE_URL = "https://easy-resto-1.preview.emergentagent.com/api"
+BASE_URL = "https://cuisinepro.preview.emergentagent.com/api"
 
 def create_mock_image_content(text_content, width=800, height=600):
     """Créer une image simulée avec du texte"""
