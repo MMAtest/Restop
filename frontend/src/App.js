@@ -11,6 +11,7 @@ import AnalyticsPage from "./pages/AnalyticsPage";
 import AdvancedStockPage from "./pages/AdvancedStockPage";
 import UserManagementPage from "./pages/UserManagementPage";
 import DataGridsPage from "./pages/DataGridsPage";
+import ProductionTab from "./components/ProductionTab";
 import PurchaseOrderPage from "./pages/PurchaseOrderPage";
 import DateRangePicker from "./components/DateRangePicker";
 import LoginPage from "./components/LoginPage";
