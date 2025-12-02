@@ -1190,6 +1190,7 @@ const ProductionTab = ({
         </div>
       </div>
     </div>
+    </>
   );
 };
 
