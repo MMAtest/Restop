@@ -390,7 +390,7 @@ function App() {
   });
   const [showDeliveryRulesConfig, setShowDeliveryRulesConfig] = useState(false);
   const [mouvementForm, setMouvementForm] = useState({
-    produit_id: "", type: "entree", quantite: "", reference: "", commentaire: "", lot: "", unite: ""
+    produit_id: "", type: "entree", quantite: "", reference: "", commentaire: "", lot: "", unite: "", dlc: ""
   });
   const [recetteForm, setRecetteForm] = useState({
     nom: "", description: "", categorie: "", portions: "", temps_preparation: "", 
@@ -1191,7 +1191,7 @@ function App() {
 
       await axios.post(`${API}/mouvements`, formData);
       setShowMouvementModal(false);
-      setMouvementForm({ produit_id: "", type: "entree", quantite: "", reference: "", commentaire: "" });
+      setMouvementForm({ produit_id: "", type: "entree", quantite: "", reference: "", commentaire: "", lot: "", unite: "", dlc: "" });
       fetchMouvements();
       fetchStocks();
       fetchDashboardStats();
@@ -7572,7 +7572,7 @@ function App() {
                 />
               </div>
               
-              {/* Nouveaux champs Lot et Unité */}
+              {/* Nouveaux champs Lot, Unité et DLC */}
               <div className="form-row" style={{display: 'flex', gap: '15px'}}>
                 <div className="form-group" style={{flex: 1}}>
                   <label className="form-label">Lot</label>
@@ -7592,6 +7592,15 @@ function App() {
                     value={mouvementForm.unite}
                     onChange={(e) => setMouvementForm({...mouvementForm, unite: e.target.value})}
                     placeholder="Ex: kg, L, pièces"
+                  />
+                </div>
+                <div className="form-group" style={{flex: 1}}>
+                  <label className="form-label">DLC (Expiration)</label>
+                  <input
+                    type="date"
+                    className="form-input"
+                    value={mouvementForm.dlc}
+                    onChange={(e) => setMouvementForm({...mouvementForm, dlc: e.target.value})}
                   />
                 </div>
               </div>
@@ -7619,7 +7628,7 @@ function App() {
                   className="button btn-cancel"
                   onClick={() => {
                     setShowMouvementModal(false);
-                    setMouvementForm({ produit_id: "", type: "entree", quantite: "", reference: "", commentaire: "", lot: "", unite: "" });
+                    setMouvementForm({ produit_id: "", type: "entree", quantite: "", reference: "", commentaire: "", lot: "", unite: "", dlc: "" });
                   }}
                 >
                   Annuler
