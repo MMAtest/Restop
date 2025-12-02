@@ -16,6 +16,7 @@ import DateRangePicker from "./components/DateRangePicker";
 import LoginPage from "./components/LoginPage";
 import RoleBasedDashboard from "./components/RoleBasedDashboard";
 
+import { getCategoryColor, getCategoryIcon } from "./utils/categoryHelpers";
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
 
