@@ -72,6 +72,7 @@ REAL_PRODUITS = [
     {"nom": "Foie gras de canard", "categorie": "Viandes", "unite": "kg", "reference_price": 85.00},
     {"nom": "Cuisses de grenouilles", "categorie": "Viandes", "unite": "kg", "reference_price": 38.00},
     {"nom": "Sanguins (gibier)", "categorie": "Viandes", "unite": "kg", "reference_price": 28.00},
+    {"nom": "Chair à saucisse", "categorie": "Viandes", "unite": "kg", "reference_price": 12.00},
     
     # Légumes
     {"nom": "Tomates cerises", "categorie": "Légumes", "unite": "kg", "reference_price": 4.50},
