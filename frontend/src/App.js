@@ -5632,6 +5632,16 @@ function App() {
                               </div>
                               <div className="item-actions">
                                 <button className="button small" onClick={() => setSelectedDocument(doc)}>👁️ Aperçu</button>
+                                <button 
+                                  className="button small success" 
+                                  onClick={() => {
+                                    setInvoiceToValidate(doc.id);
+                                    setShowInvoiceValidation(true);
+                                  }}
+                                  style={{marginLeft: '5px'}}
+                                >
+                                  ✅ Valider
+                                </button>
                               </div>
                             </div>
                           ))}
