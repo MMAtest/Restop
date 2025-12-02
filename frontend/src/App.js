@@ -8131,8 +8131,6 @@ function App() {
         </div>
       )}
 
-      {/* Modal Préparation */}
-      {showPreparationModal && (
       {/* Modal Validation Facture */}
       {showInvoiceValidation && (
         <InvoiceValidationModal 
@@ -8143,7 +8141,6 @@ function App() {
             setInvoiceToValidate(null);
           }}
           onSuccess={() => {
-            // Rafraîchir les données après validation
             fetchStocks();
             fetchDocumentsOcr();
             fetchMouvements();
@@ -8151,6 +8148,9 @@ function App() {
           }}
         />
       )}
+
+      {/* Modal Préparation */}
+      {showPreparationModal && (
         <div className="modal-overlay">
           <div className="modal-content" style={{maxWidth: '800px'}}>
             <h3 className="modal-header">
