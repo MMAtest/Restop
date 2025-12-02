@@ -1009,6 +1009,16 @@ function App() {
     }
   };
 
+  const fetchStocksCritiques = async () => {
+    try {
+      const response = await axios.get(`${API}/stocks/critiques/produits`);
+      setStocksCritiques(response.data.stocks_critiques || []);
+    } catch (error) {
+      console.error("Erreur lors du chargement des stocks critiques:", error);
+      setStocksCritiques([]);
+    }
+  };
+
   // Fonctions pour le système d'archivage
   const fetchArchives = async (itemType = null) => {
     try {
