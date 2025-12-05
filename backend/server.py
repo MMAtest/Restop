@@ -3470,121 +3470,49 @@ def detect_supplier_strategy(text: str) -> str:
         
     return "GENERIC"
 
-def parse_gfd_lerda_facture(text: str) -> List[dict]:
-    """Parser specific for GFD LERDA layout"""
+def parse_terreazur_facture(text: str) -> List[dict]:
+    """Parser spécifique TERREAZUR (Stratégie Code Pomona 6 chiffres)"""
     produits = []
     lines = text.split('\n')
     
-    # Lerda: Souvent "Nom Produit" sur une ligne, "Poids/Prix" sur une autre ou loin
-    # Ex vu: "GIGOTIN OU SOURIS D AGNEAU..."
+    # TerreAzur / Pomona utilise presque toujours un code à 6 chiffres en début de ligne
+    # Ex: "123456 TOMATE RONDE..."
     
-    blacklist = ["TVA", "SIRET", "TEL", "PLACE", "MARSEILLE", "ROUTE", "TOTAL", "MONTANT", "POIDS", "COLIS"]
-    
-    for i, line in enumerate(lines):
+    for line in lines:
         line = line.strip()
         if len(line) < 10: continue
         
-        # Detection Produit par Mots Clés Viande
-        keywords = ["AGNEAU", "BOEUF", "VEAU", "PORC", "POULET", "CANARD", "MAGRET", "ENTRECOTE", "FILET", "GIGOT"]
+        # 1. Stratégie Code : 6 chiffres suivis d'un espace
+        match_code = re.search(r'^\s*(\d{6})\s+(.+)', line)
         
-        is_product_text = line.isupper() and any(k in line for k in keywords) and not any(b in line for b in blacklist)
+        # 2. Stratégie Mots-Clés (si le code est mal lu, ex: "l23456")
+        keywords = ["KG", "COLIS", "PIECE", "BOTTE", "BARQUETTE", "SACHET", "FILET"]
+        has_keyword = any(k in line.upper() for k in keywords)
         
-        if is_product_text:
-            # On a trouvé un nom de produit !
-            # On cherche le poids/prix dans les lignes proches (i-1, i+1, i+2)
-            qty = 1.0
-            price = 0.0
-            
-            # Chercher un nombre flottant proche
-            context = " ".join(lines[max(0, i-1):min(len(lines), i+3)])
-            numbers = re.findall(r'(\d+[\.,]\d{2})', context)
-            
-            if numbers:
-                # Heuristique: Le plus grand est le prix total, le plus petit la quantité (poids)
-                vals = [float(n.replace(',', '.')) for n in numbers]
-                vals.sort(reverse=True)
-                
-                # Si on a un gros montant (> 50), c'est surement le prix total
-                # Si on a un nombre ~1-20, c'est le poids
-                
-                for v in vals:
-                    if v > 20: price = v # Total estimé
-                    elif v > 0: qty = v # Poids estimé
-            
-            produits.append({
-                "nom": line,
-                "quantite": qty,
-                "prix_unitaire": 0.0, # Difficile à deviner
-                "total": price, # Total estimé
-                "unite": "kg",
-                "ligne_originale": line
-            })
-            
-    return produits
+        # Filtre anti-bruit (Adresses, Tél)
+        if any(b in line.upper() for b in ["TEL", "FAX", "RCS", "SIRET", "TVA", "CODE CLIENT", "LIVRAISON"]):
+            continue
 
-def parse_royaume_des_mers_facture(text: str) -> List[dict]:
-    """Parser specific for ROYAUME DES MERS layout"""
-    produits = []
-    lines = text.split('\n')
-    
-    # Format vu: "SEICHE DECCGL1/3 NOIR DLC-J CONDI"
-    # Format vu: "Lot: 25_008679 (30,08)" -> 30,08 est le poids
-    
-    current_product = None
-    
-    for line in lines:
-        line = line.strip()
-        
-        # 1. Détection Ligne Produit (Texte Majuscule spécifique Marée)
-        if re.match(r'^[A-Z\s\/\d\-]+$', line) and len(line) > 10:
-            keywords = ["SEICHE", "SAUMON", "FILET", "DOS", "BAR", "DORADE", "HUITRE", "MOULE", "GAMBAS", "CREVETTE"]
-            if any(k in line for k in keywords):
-                current_product = line
-                continue
-        
-        # 2. Détection Poids (souvent entre parenthèses après "Lot:")
-        if current_product and "Lot:" in line:
-            match_weight = re.search(r'\(([\d,]+)\)', line)
-            qty = 1.0
-            if match_weight:
+        if match_code or (has_keyword and len(line) > 15):
+            nom = match_code.group(2) if match_code else line
+            
+            # Nettoyage du nom (enlever les prix à la fin)
+            # On cherche le dernier nombre décimal de la ligne pour le prix
+            prices = re.findall(r'(\d+[\.,]\d{2})', line)
+            total = 0.0
+            if prices:
+                # Le total est souvent le dernier chiffre
                 try:
-                    qty = float(match_weight.group(1).replace(',', '.'))
+                    total = float(prices[-1].replace(',', '.'))
+                    # Si on a trouvé un prix, on nettoie le nom en le retirant de la fin
+                    nom = nom.replace(prices[-1], '').strip()
                 except: pass
             
             produits.append({
-                "nom": current_product,
-                "quantite": qty,
-                "prix_unitaire": 0.0,
-                "total": 0.0,
-                "unite": "kg",
-                "ligne_originale": f"{current_product} {line}"
-            })
-            current_product = None
-            
-    return produits
-
-def parse_terreazur_facture(text: str) -> List[dict]:
-    """Parser specific for TERREAZUR layout"""
-    produits = []
-    lines = text.split('\n')
-    
-    # TerreAzur: Code 6 chiffres souvent.
-    # Mais le texte brut est très bruité.
-    # On va chercher les lignes qui ont un format "Code Description ... Prix"
-    
-    for line in lines:
-        # Regex permissive: Code(6) ... Texte ... Montant
-        match = re.search(r'(\d{6})\s+([A-Z\s\-\.]+?)\s+.*(\d+[\.,]\d{2})', line)
-        if match:
-            # Filtrer les faux positifs (téléphones, dates)
-            if "04 42" in line: continue # Tel
-            if "2025" in line: continue # Date
-            
-            produits.append({
-                "nom": match.group(2).strip(),
+                "nom": nom.strip(),
                 "quantite": 1.0,
                 "prix_unitaire": 0.0,
-                "total": float(match.group(3).replace(',', '.')),
+                "total": total,
                 "unite": "pièce/kg",
                 "ligne_originale": line
             })
@@ -3592,26 +3520,43 @@ def parse_terreazur_facture(text: str) -> List[dict]:
     return produits
 
 def parse_presthyg_facture(text: str) -> List[dict]:
-    """Parser specific for PREST'HYG layout"""
+    """Parser spécifique PREST'HYG (Stratégie Dictionnaire Hygiène)"""
     produits = []
     lines = text.split('\n')
     
-    # Prest'Hyg: Produits d'hygiène.
-    # Cherchons des mots clés + Prix
-    
-    keywords = ["SAVON", "EPONGE", "SAC", "POUBELLE", "ROULEAU", "PAPIER", "BOBINE", "DETERGENT", "LAVETTE", "GANTS"]
+    # Dictionnaire large pour attraper tous les produits d'entretien
+    keywords = [
+        "SAVON", "EPONGE", "SAC", "POUBELLE", "ROULEAU", "PAPIER", "BOBINE", 
+        "DETERGENT", "LAVETTE", "GANTS", "LIQUIDE", "VAISSELLE", "SOL", 
+        "VITRE", "DEGRAISSANT", "DESINFECTANT", "CHIFFON", "BALAI", "BROSSE",
+        "ESSUIE", "MAIN", "MOUCHOIR", "SERVIETTE", "OUATE", "ALUMINIUM", "FILM"
+    ]
     
     for line in lines:
         line_upper = line.upper()
-        if any(k in line_upper for k in keywords):
-            # Chercher un prix sur la ligne
-            prices = re.findall(r'(\d+[\.,]\d{2})', line)
+        
+        # On prend la ligne si elle contient un mot clé OU un format "Qté x Prix"
+        is_product = any(k in line_upper for k in keywords)
+        
+        # Ou format spécifique PrestHyg: "Code ... Désignation ... Qté ... Prix"
+        # On cherche une ligne avec au moins 2 chiffres séparés (Qté/Prix)
+        nums = re.findall(r'\d+[\.,]\d{2}', line)
+        has_numbers = len(nums) >= 1
+        
+        if (is_product or has_numbers) and len(line) > 15:
+            # Filtrer les adresses et totaux
+            if any(b in line_upper for b in ["RUE", "AVENUE", "BP", "CEDEX", "TOTAL", "TVA", "NET A PAYER"]):
+                continue
+                
+            # Extraction Prix
             total = 0.0
-            if prices:
-                total = float(prices[-1].replace(',', '.'))
+            if nums:
+                try:
+                    total = float(nums[-1].replace(',', '.'))
+                except: pass
                 
             produits.append({
-                "nom": line,
+                "nom": line, # On prend toute la ligne comme nom, l'utilisateur nettoiera
                 "quantite": 1.0,
                 "prix_unitaire": 0.0,
                 "total": total,
@@ -3619,6 +3564,96 @@ def parse_presthyg_facture(text: str) -> List[dict]:
                 "ligne_originale": line
             })
             
+    return produits
+
+def parse_gfd_lerda_facture(text: str) -> List[dict]:
+    """Parser spécifique GFD LERDA (Stratégie Viande & Poids)"""
+    produits = []
+    lines = text.split('\n')
+    
+    # Mots clés Viande
+    meat_keywords = ["AGNEAU", "BOEUF", "VEAU", "PORC", "POULET", "CANARD", 
+                    "MAGRET", "ENTRECOTE", "FILET", "GIGOT", "BAVETTE", "FAUX", "ONGLET", "CARCASSE"]
+    
+    for line in lines:
+        line_upper = line.upper()
+        if len(line) < 10: continue
+        
+        # 1. Détection par mots clés Viande
+        is_meat = any(k in line_upper for k in meat_keywords)
+        
+        # 2. Détection par Unité de Poids (Lerda vend au KG)
+        has_weight = "KG" in line_upper or "GR" in line_upper
+        
+        # Filtres
+        if "UNION EUROPEENNE" in line_upper: continue # Origine, pas produit
+        if "NE EN" in line_upper or "ELEVE EN" in line_upper: continue # Tracabilité
+        if "TOTAL" in line_upper: continue
+        
+        if is_meat or (has_weight and re.search(r'\d', line)):
+            # Extraction Prix
+            prices = re.findall(r'(\d+[\.,]\d{2})', line)
+            total = 0.0
+            if prices:
+                try:
+                    total = float(prices[-1].replace(',', '.'))
+                except: pass
+            
+            produits.append({
+                "nom": line,
+                "quantite": 1.0,
+                "prix_unitaire": 0.0,
+                "total": total,
+                "unite": "kg",
+                "ligne_originale": line
+            })
+            
+    return produits
+
+def parse_royaume_des_mers_facture(text: str) -> List[dict]:
+    """Parser spécifique ROYAUME DES MERS (Stratégie Poisson & Lots)"""
+    produits = []
+    lines = text.split('\n')
+    
+    # Mots clés Poisson
+    fish_keywords = ["SEICHE", "SAUMON", "FILET", "DOS", "BAR", "DORADE", 
+                    "HUITRE", "MOULE", "GAMBAS", "CREVETTE", "LOUP", "TURBOT", "CALAMAR", "POULPE"]
+    
+    current_product_name = None
+    
+    for i, line in enumerate(lines):
+        line = line.strip()
+        if len(line) < 5: continue
+        
+        # A. Ligne Produit (Texte majuscule avec mot clé)
+        if any(k in line.upper() for k in fish_keywords) and not "LOT:" in line.upper():
+            current_product_name = line
+            # On l'ajoute tout de suite (on cherchera le prix après)
+            produits.append({
+                "nom": line,
+                "quantite": 1.0,
+                "prix_unitaire": 0.0,
+                "total": 0.0,
+                "unite": "kg",
+                "ligne_originale": line
+            })
+            continue
+            
+        # B. Ligne Lot/Poids (souvent juste en dessous)
+        # Ex: "Lot: 25_008679 (30,08)"
+        if "LOT" in line.upper() and "(" in line:
+            # Si on a un produit juste avant, on met à jour son poids
+            if produits:
+                last_prod = produits[-1]
+                # Chercher le poids entre parenthèses
+                weight_match = re.search(r'\(([\d,]+)\)', line)
+                if weight_match:
+                    try:
+                        weight = float(weight_match.group(1).replace(',', '.'))
+                        last_prod["quantite"] = weight
+                        last_prod["ligne_originale"] += f" | {line}"
+                    except: pass
+
     return produits
 
 def parse_mammafiore_facture(text: str) -> List[dict]:
