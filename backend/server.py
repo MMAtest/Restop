@@ -3470,30 +3470,23 @@ def detect_supplier_strategy(text: str) -> str:
     return "GENERIC"
 
 def parse_metro_facture(text: str) -> List[dict]:
-    """Parser specific for METRO layout based on raw text analysis"""
+    """Parser specific for METRO layout"""
     produits = []
     lines = text.split('\n')
+    
+    # Mots-clés à bannir strictement
+    blacklist = ["SIRET", "R.C.", "R. C.", "ICS", "TVA", "CAPITAL", "EUR"]
+    
     for line in lines:
-        # Skip headers/footers/junk
-        if "***" in line or "Total" in line: continue
-        if len(line) < 10: continue
+        if any(b in line.upper() for b in blacklist): continue
         
-        # METRO Code MUST be 7 digits exactly based on examples (0791335, 2177285)
-        # Strict Regex: 
-        # ^\s*(\d{7})   <- 7 digits code
-        # \s+(.+?)      <- Description
-        # \s+(\d+,\s*\d{3}) <- Price with 3 decimals (10, 450)
-        # .*?           <- Junk in middle
-        # \s+(\d+)      <- Qty (Integer)
-        # \s+(\d+,\s*\d{2}) <- Total (2 decimals)
-        
+        # METRO Code: 7 digits EXACTLY at start of line, followed by SPACE
+        # Ex: 0791335 PATE...
         match = re.search(r'^\s*(\d{7})\s+(.+?)\s+(\d+,\s*\d{3})\s+.*?\s+(\d+)\s+(\d+,\s*\d{2})', line)
         
         if match:
             try:
-                code = match.group(1)
                 desc = match.group(2).strip()
-                # Clean numbers
                 price_str = match.group(3).replace(' ', '').replace(',', '.')
                 qty_str = match.group(4)
                 total_str = match.group(5).replace(' ', '').replace(',', '.')
@@ -3512,83 +3505,86 @@ def parse_metro_facture(text: str) -> List[dict]:
                         "ligne_originale": line
                     })
             except: continue
-                
     return produits
 
 def parse_mammafiore_facture(text: str) -> List[dict]:
-    """Parser specific for MAMMAFIORE layout with sliding window"""
+    """Parser specific for MAMMAFIORE (Zip Strategy)"""
     produits = []
     lines = text.split('\n')
     
-    # Sliding window of 4 lines to catch split data
-    for i in range(len(lines)):
-        # Window context
-        window = " ".join(lines[i:min(i+4, len(lines))])
+    product_headers = []
+    number_groups = []
+    
+    # Phase 1: Extraction séparée
+    for line in lines:
+        line = line.strip()
+        if not line: continue
         
-        # Look for Product Code Start: 10000... (10 digits)
-        # Followed by Description
-        # Then look for sequence of numbers in the window
-        
-        # Regex to find Code + Desc at start of line i
-        line_start = lines[i].strip()
-        code_match = re.search(r'^(10\d{8})\s+(.+)', line_start)
-        
+        # Détection Produit (Code 10 chiffres)
+        code_match = re.search(r'^(10\d{8})\s+(.+)', line)
         if code_match:
-            code = code_match.group(1)
-            raw_desc = code_match.group(2).strip()
+            product_headers.append({
+                "code": code_match.group(1),
+                "nom": code_match.group(2).strip()
+            })
+            continue
             
-            # Cleanup Desc (remove trailing junk or single chars)
-            desc = re.sub(r'\s+\(u\).*', '', raw_desc) # Remove (u) ...
-            
-            # Search for Qty/Price in the window
-            # Pattern: float ... float ... float
-            # We look for Price (~3-50€) and Total
-            
-            # Find all floats in the window
-            floats = re.findall(r'(\d+[\.,]\d{2})', window)
-            integers = re.findall(r'\b(\d{1,3})\b', window) # Small integers for qty
-            
+        # Détection Groupe de Chiffres (Qté/Prix)
+        # On cherche une ligne qui contient au moins 2 nombres décimaux
+        # Mammafiore format: 1.00 3.97 ...
+        floats = re.findall(r'(\d+[\.,]\d{2})', line)
+        if len(floats) >= 2:
+            # Convertir en floats
             vals = [float(n.replace(',', '.')) for n in floats]
-            ints = [float(n) for n in integers]
+            # Heuristique: Si on a un pattern [Petite Qté, Prix moyen, Prix moyen]
+            # Ex: 1.00, 13.82, 13.82
             
-            all_nums = sorted(list(set(vals + ints)), reverse=True) # Descending
-            
-            # Heuristic: Total is usually the largest number (if > 0)
-            # Price is Total / Qty
-            
-            found_valid = False
-            
-            # Try to match Q * P = T
-            for t in all_nums:
-                if t > 2000: continue # Too big
-                for p in all_nums:
-                    if p >= t or p <= 0: continue
-                    
-                    # Calculate implied Qty
-                    q_calc = t / p
-                    
-                    # Check if q_calc is close to an integer or a simple decimal (0.5, 1.5)
-                    if abs(q_calc - round(q_calc)) < 0.05:
-                        qty = round(q_calc)
-                        if qty > 0:
-                            produits.append({
-                                "nom": desc,
-                                "quantite": float(qty),
-                                "prix_unitaire": p,
-                                "total": t,
-                                "unite": "pièce",
-                                "ligne_originale": window[:100]
-                            })
-                            found_valid = True
-                            break
-                if found_valid: break
-            
-            # If simple heuristic failed, look for specific pattern in floats only
-            # Item 1 example: 1.00 ... 3.97 ... 3.97
-            if not found_valid and len(vals) >= 3:
-                 if vals[0] * vals[1] == vals[2]: # 1 * 3.97 = ? No
-                     pass 
-                     
+            # On stocke ce groupe de valeurs potentielles
+            if any(v > 0 for v in vals):
+                number_groups.append(vals)
+
+    # Phase 2: Zip (Association séquentielle)
+    # On suppose que l'ordre est conservé
+    limit = min(len(product_headers), len(number_groups))
+    
+    for i in range(limit):
+        header = product_headers[i]
+        nums = number_groups[i]
+        
+        # Essayer de deviner Qté / Prix / Total dans le groupe de nombres
+        qty = 1.0
+        price = 0.0
+        total = 0.0
+        
+        # Logique: Total est souvent le plus grand, Qté le plus petit
+        sorted_nums = sorted(nums, reverse=True)
+        if len(sorted_nums) >= 2:
+            total = sorted_nums[0]
+            # Trouver le prix qui correspond (Total / Qty ou juste le 2eme plus grand)
+            # Souvent Price == Total si Qty = 1
+            if len(sorted_nums) >= 2:
+                price = sorted_nums[1] if sorted_nums[1] < total else sorted_nums[0]
+                # Calculer Qty
+                if price > 0:
+                    qty_calc = total / price
+                    if abs(qty_calc - round(qty_calc)) < 0.1:
+                        qty = float(round(qty_calc))
+                    else:
+                        # Fallback: chercher un petit entier dans les nombres originaux
+                        for n in nums:
+                            if n.is_integer() and n < 50 and n > 0:
+                                qty = n
+                                break
+        
+        produits.append({
+            "nom": header["nom"],
+            "quantite": qty,
+            "prix_unitaire": price,
+            "total": total,
+            "unite": "pièce",
+            "ligne_originale": f"{header['code']} {header['nom']}"
+        })
+        
     return produits
 
 def parse_facture_fournisseur(texte_ocr: str) -> FactureFournisseurData:
