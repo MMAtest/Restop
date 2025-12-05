@@ -3508,12 +3508,28 @@ def parse_facture_fournisseur(texte_ocr: str) -> FactureFournisseurData:
             r'([A-Za-zÀ-ÿ\s\'\-]{3,40})\s+(\d+[,.]?\d*)\s+(\d+[,.]?\d*)\s+(\d+[,.]?\d*)',
         ]
         
+        # Patterns d'exclusion (Anti-Bruit)
+        # Si une ligne contient un de ces mots, elle n'est pas un produit
+        exclude_patterns = [
+            'SIRET', 'IBAN', 'CAPITAL', 'TÉL', 'TEL', 'FAX', 'TVA', 'RCS', 
+            'EMAIL', 'WWW', 'HTTP', 'S.A.S', 'SARL', 'EURL', 'CODE NAF', 'APE',
+            'INTRACOMMUNAUTAIRE', 'BIC', 'BANQUE', 'AGENCE', 'COMPTE', 'RIB',
+            'PAGE', 'TOTAL', 'SOUS-TOTAL', 'REMISE', 'ESCOMPTE', 'NET A PAYER',
+            'DATE', 'NUMERO', 'CLIENT', 'ADRESSE', 'LIVRAISON', 'COMMANDE',
+            'MONTANT', 'PRIX', 'QUANTITE', 'DESIGNATION', 'UNITAIRE'
+        ]
+
         for line in texte_ocr.split('\n'):
             line = line.strip()
             if len(line) < 8:  # Ignorer les lignes trop courtes
                 continue
             
-            # Ignorer les lignes de total/sous-total
+            # Application du filtre Anti-Bruit
+            line_upper = line.upper()
+            if any(excl in line_upper for excl in exclude_patterns):
+                continue
+                
+            # Ignorer les lignes de total/sous-total (redondance de sécurité)
             if re.search(r'total|sous.total|tva|€\s*$', line.lower()):
                 continue
                 
