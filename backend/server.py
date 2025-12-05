@@ -3611,11 +3611,16 @@ def parse_royaume_des_mers_facture(text: str) -> List[dict]:
     produits = []
     lines = text.split('\n')
     
+    # Format:
+    # Ligne 1: SEICHE DECCGL1/3 NOIR DLC-J CONDI
+    # Ligne 2: Lot: 25_008679 (30,08)
+    
     # Mots clés Poisson
     fish_keywords = ["SEICHE", "SAUMON", "FILET", "DOS", "BAR", "DORADE", 
-                    "HUITRE", "MOULE", "GAMBAS", "CREVETTE", "LOUP", "TURBOT", "CALAMAR", "POULPE"]
+                    "HUITRE", "MOULE", "GAMBAS", "CREVETTE", "LOUP", "TURBOT", 
+                    "CALAMAR", "POULPE", "PALOURDE", "COKTAIL", "FRITURE"]
     
-    current_product_name = None
+    current_product = None
     
     for i, line in enumerate(lines):
         line = line.strip()
