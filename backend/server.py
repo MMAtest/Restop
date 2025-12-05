@@ -3482,31 +3482,27 @@ def parse_terreazur_facture(text: str) -> List[dict]:
         line = line.strip()
         if len(line) < 10: continue
         
-        # 1. Stratégie Code : 6 chiffres suivis d'un espace
-        match_code = re.search(r'^\s*(\d{6})\s+(.+)', line)
+        # Regex améliorée pour le code Pomona
+        # Accepte: "123456", "0/123456", "D/ 123456"
+        match_code = re.search(r'(?:^|[\s\/])(\d{6})\s+(.+)', line)
         
-        # 2. Stratégie Mots-Clés (si le code est mal lu, ex: "l23456")
-        keywords = ["KG", "COLIS", "PIECE", "BOTTE", "BARQUETTE", "SACHET", "FILET"]
-        has_keyword = any(k in line.upper() for k in keywords)
-        
-        # Filtre anti-bruit (Adresses, Tél)
-        if any(b in line.upper() for b in ["TEL", "FAX", "RCS", "SIRET", "TVA", "CODE CLIENT", "LIVRAISON"]):
-            continue
-
-        if match_code or (has_keyword and len(line) > 15):
-            nom = match_code.group(2) if match_code else line
+        if match_code:
+            code = match_code.group(1)
+            reste = match_code.group(2).strip()
             
-            # Nettoyage du nom (enlever les prix à la fin)
+            # Nettoyage du nom (retirer les codes de fin type "ES", "PT", et les prix)
             # On cherche le dernier nombre décimal de la ligne pour le prix
             prices = re.findall(r'(\d+[\.,]\d{2})', line)
             total = 0.0
             if prices:
-                # Le total est souvent le dernier chiffre
                 try:
                     total = float(prices[-1].replace(',', '.'))
-                    # Si on a trouvé un prix, on nettoie le nom en le retirant de la fin
-                    nom = nom.replace(prices[-1], '').strip()
+                    # On nettoie la fin de ligne
+                    reste = reste.split(prices[-1])[0].strip()
                 except: pass
+            
+            # Nettoyage spécifique TerreAzur (codes fin de ligne)
+            reste = re.sub(r'\s+[A-Z]{2}$', '', reste)
             
             produits.append({
                 "nom": nom.strip(),
