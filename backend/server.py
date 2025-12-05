@@ -7500,7 +7500,10 @@ async def analyze_facture_for_review(document_id: str):
             raise HTTPException(status_code=400, detail="Données parsées non disponibles")
         
         # 2. Analyser le Fournisseur
-        ocr_supplier_name = donnees_parsees.get("fournisseur", "Fournisseur inconnu")
+        ocr_supplier_name = donnees_parsees.get("fournisseur")
+        if not ocr_supplier_name:
+            ocr_supplier_name = "Fournisseur inconnu"
+            
         supplier_match = await match_supplier_by_name(ocr_supplier_name)
         
         result = FactureAnalysisResult(
