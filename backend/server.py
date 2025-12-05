@@ -3536,7 +3536,7 @@ def parse_metro_facture(text: str) -> List[dict]:
     return produits
 
 def parse_mammafiore_facture(text: str) -> List[dict]:
-    """Parser specific for MAMMAFIORE layout (Block Reconstruct Strategy)"""
+    """Parser specific for MAMMAFIORE layout handling column-block OCR output"""
     produits = []
     lines = text.split('\n')
     
@@ -3544,139 +3544,113 @@ def parse_mammafiore_facture(text: str) -> List[dict]:
     col_codes = []
     col_descs = []
     col_prices = []
+    col_quantities = []
     
-    # 1. COLLECTE DES DONNÉES PAR TYPES (SCAN GLOBAL)
+    # 1. COLLECTE DES DONNÉES PAR TYPES
     for line in lines:
         line = line.strip()
         if not line: continue
         
-        # A. Codes Mammafiore (10 chiffres commençant par 10...)
+        # A. Codes (10 chiffres commençant par 10...)
         if re.match(r'^10\d{8,9}$', line):
             col_codes.append(line)
             continue
             
-        # B. Prix / Quantités (Nombres décimaux ou entiers isolés)
+        # B. Nombres (Prix / Quantités)
         # On cherche des lignes qui ne contiennent QUE des chiffres/points/virgules
+        # Mammafiore a souvent des prix comme 3.97, 1.71 sur des lignes seules
         if re.match(r'^[\d\s\.,]+$', line) and len(line) < 20:
             # Nettoyer et extraire les nombres
-            nums = re.findall(r'(\d+[\.,]\d+)', line)
-            for n in nums:
-                try:
-                    val = float(n.replace(',', '.'))
-                    if val > 0: col_prices.append(val)
-                except: pass
+            try:
+                val_str = line.replace(',', '.')
+                # Si c'est un format type "1.00" ou "3.97"
+                if re.search(r'\d+\.\d{2}', val_str):
+                    val = float(val_str)
+                    # Heuristique simple : < 50 = Prix Unitaire ou Qté, > 50 = Total (souvent)
+                    # Ou on stocke tout et on triera après
+                    col_prices.append(val)
+                elif re.match(r'^\d+$', val_str):
+                    # Entier simple = Qté potentielle
+                    col_quantities.append(float(val_str))
+            except: pass
             continue
             
-        # C. Descriptions (Le reste, en majuscules souvent)
-        # On filtre le bruit (TVA, Page, Total, Date...)
-        blacklist = ["TOTAL", "PAGE", "DATE", "TVA", "MONTANT", "REMISE", "NET", "EUR", "SARL", "TEL", "EMAIL"]
-        if len(line) > 5 and not any(b in line.upper() for b in blacklist):
-            # Mammafiore descriptions sont souvent en MAJUSCULES
-            # Ex: "CAPRES A TIGE 1700ML"
-            # On évite les phrases trop longues (adresses)
-            if len(line) < 80: 
+        # C. Descriptions
+        # Majuscules, assez long, pas de mots clés système
+        blacklist = ["TOTAL", "PAGE", "DATE", "TVA", "MONTANT", "REMISE", "NET", "EUR", "SARL", "TEL", "EMAIL", "MIN DES", "AVENUE", "MARSEILLE", "FRANCE"]
+        if len(line) > 8 and not any(b in line.upper() for b in blacklist):
+            # Exclure les lignes qui ressemblent à des adresses ou infos légales
+            if not re.search(r'\d{5}', line): # Pas de code postal
                 col_descs.append(line)
 
-    # 2. RECONSTRUCTION (ZIP INTELLIGENT)
-    # L'objectif est d'aligner [Code] <-> [Desc] <-> [Prix/Total]
+    # 2. RECONSTRUCTION (ZIP SÉQUENTIEL)
+    # On aligne Code[i] avec Desc[i] et Prix[i]
     
-    # On se base sur le nombre de codes trouvés (c'est souvent le plus fiable)
-    count_items = len(col_codes)
+    count_codes = len(col_codes)
     
-    # Si pas de codes mais des descriptions, on prend les descriptions
-    if count_items == 0 and len(col_descs) > 0:
-        # Mode "Sans Codes" (Frais de sortie, etc.)
-        # On essaie de matcher Desc <-> Prix
-        # Logique: 1 Desc consomme 1 ou 2 Prix (Qté/Total)
+    # Sécurité : On ne peut pas matcher si les listes sont trop déséquilibrées
+    # Mais on tente le "Best Effort"
+    
+    for i in range(count_codes):
+        code = col_codes[i]
         
-        price_idx = 0
-        for desc in col_descs:
-            # On s'arrête si on a épuisé les prix probables (ceux > 0)
-            if price_idx >= len(col_prices): break
+        # Trouver la description (Best Effort : index i)
+        nom = "Produit Inconnu"
+        if i < len(col_descs):
+            nom = col_descs[i]
             
-            # Hypothèse: Le prochain nombre est la Qté (souvent 1.0) ou le Prix
-            qty = 1.0
-            price = 0.0
-            
-            if price_idx < len(col_prices):
-                val1 = col_prices[price_idx]
-                # Si c'est un petit entier, c'est surement une quantité
-                if val1.is_integer() and val1 < 50:
-                    qty = val1
-                    price_idx += 1
-                    if price_idx < len(col_prices):
-                        price = col_prices[price_idx]
-                        price_idx += 1
-                else:
-                    # Sinon c'est le prix (Qté = 1 par défaut)
-                    price = val1
-                    price_idx += 1
-            
-            produits.append({
-                "nom": desc,
-                "quantite": qty,
-                "prix_unitaire": price,
-                "total": qty * price,
-                "unite": "pièce",
-                "ligne_originale": f"? {desc}"
-            })
-            
-    else:
-        # Mode "Avec Codes" (Plus fiable)
-        desc_idx = 0
-        price_idx = 0
+        # Trouver le prix/qté
+        # Mammafiore structure typique dans la colonne chiffres : [Qté] [Prix] [Total] répété
+        # OU BIEN : [Prix] [Total] si Qté=1
+        # C'est le point délicat.
         
-        for code in col_codes:
-            # 1. Trouver la description
-            nom = "Produit Inconnu"
-            if desc_idx < len(col_descs):
-                nom = col_descs[desc_idx]
-                desc_idx += 1
+        # Hypothèse simple : On prend les prix dans l'ordre.
+        # Si on a détecté 5 codes et 15 chiffres -> 3 chiffres par produit (Qté/Prix/Total)
+        # Si on a détecté 5 codes et 10 chiffres -> 2 chiffres par produit
+        
+        qty = 1.0
+        price = 0.0
+        
+        ratio = 0
+        if count_codes > 0:
+            ratio = len(col_prices) / count_codes
             
-            # 2. Trouver le prix/qté
-            qty = 1.0
-            price = 0.0
-            
-            # On cherche dans la liste des prix
-            # Pattern Mammafiore observé: [Qté] [Prix] [Total] ou juste [Prix] [Total]
-            # On va prendre les 2 ou 3 prochaines valeurs
-            
-            if price_idx < len(col_prices):
-                # On prend une fenêtre de 3 nombres
-                candidates = col_prices[price_idx:min(price_idx+3, len(col_prices))]
+        base_idx = 0
+        if ratio >= 2.5: # Probablement Qté / Prix / Total
+            base_idx = int(i * ratio)
+            if base_idx + 1 < len(col_prices):
+                # Souvent : Qté(1.00) Prix(3.97) Total(3.97)
+                # Ou : Prix(3.97) Total(3.97) avec Qté implicite
                 
-                # On cherche la logique Q * P = T
-                match_found = False
+                # On cherche le plus petit comme Qté (souvent 1, 6, 12...)
+                # On cherche le prix moyen
+                candidates = col_prices[base_idx : base_idx+3]
+                candidates.sort()
                 
-                if len(candidates) >= 3:
-                    q, p, t = candidates[0], candidates[1], candidates[2]
-                    if abs(q * p - t) < 0.05:
-                        qty, price = q, p
-                        price_idx += 3 # Consommé 3
-                        match_found = True
-                
-                if not match_found and len(candidates) >= 2:
-                    # Peut-être juste [Prix] [Total] (Qté=1 implicite)
-                    p, t = candidates[0], candidates[1]
-                    if abs(1 * p - t) < 0.05:
-                        price = p
-                        price_idx += 2 # Consommé 2
-                        match_found = True
-                
-                if not match_found and len(candidates) >= 1:
-                    # Juste un prix isolé
-                    price = candidates[0]
-                    price_idx += 1 # Consommé 1
-            
-            produits.append({
-                "nom": nom,
-                "quantite": qty,
-                "prix_unitaire": price,
-                "total": qty * price,
-                "unite": "pièce",
-                "ligne_originale": f"{code} {nom}"
-            })
+                if len(candidates) >= 2:
+                    qty = candidates[0] if candidates[0] < 50 else 1.0
+                    price = candidates[1]
+        elif ratio >= 1.5: # Probablement Prix / Total
+             base_idx = int(i * ratio)
+             if base_idx < len(col_prices):
+                 price = col_prices[base_idx] # On prend le premier qui vient
+        else:
+            # 1 chiffre par produit ?
+            if i < len(col_prices):
+                price = col_prices[i]
 
+        produits.append({
+            "nom": nom,
+            "quantite": qty,
+            "prix_unitaire": price,
+            "total": qty * price,
+            "unite": "pièce",
+            "ligne_originale": f"{code} {nom}"
+        })
+        
+    # Cas spécial : Pas de codes mais des descriptions (Frais, etc.)
+    # On ne gère pas pour l'instant pour éviter le bruit, on se concentre sur les produits codifiés
+    
     return produits
 
 def parse_facture_fournisseur(texte_ocr: str) -> FactureFournisseurData:
