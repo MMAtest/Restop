@@ -3470,103 +3470,157 @@ def detect_supplier_strategy(text: str) -> str:
     return "GENERIC"
 
 def parse_metro_facture(text: str) -> List[dict]:
-    """Parser specific for METRO layout"""
+    """Parser specific for METRO layout based on raw text analysis"""
     produits = []
-    # Pattern METRO approx: ... Designation ... Prix ... Qté ... Montant
-    # Based on visual inspection of Artifact 1
-    # Line example (hypothesis): 0791335 PATE A TARTINER... 10,450 1 4 41,80
-    # This regex is flexible to catch lines with product code, name, price, qty
+    # Raw text pattern:
+    # 0791335 PATE A TARTINERSPECULOOS 1.6K 10, 450 1 4 41,80 B
+    # Code(7) Desc Price(with space after comma) ? Qty Total TVA
     
-    # Strategy: Look for lines with 13-digit EAN or 6-7 digit ref at start
     lines = text.split('\n')
     for line in lines:
-        # Exclude section headers like "*** EPICERIE"
-        if "***" in line: continue
+        # Skip headers/footers
+        if "***" in line or "Total" in line: continue
+        if len(line) < 10: continue
         
-        # Try to capture: Code (opt) | Description | ... | Price | ... | Qty | ... | Total
-        # This regex looks for a price structure towards the end
-        # Regex: (Description) ... (Price) ... (Qty) ... (Total) [B/D/E code]
-        match = re.search(r'^\s*(\d+)?\s+([A-Z\s\d\%\*\-\.]+?)\s+(\d+[,.]\d{2,3})\s+\d+\s+(\d+)\s+(\d+[,.]\d{2})', line)
+        # Regex specific for Metro line with spacing handling
+        # 1. Code: ^(\d{6,8})
+        # 2. Desc: (.+?)
+        # 3. Price: (\d+,\s*\d{3}|\d+,\s*\d{2}) -> Handles "10, 450"
+        # 4. Junk digits: \s+\d+\s+
+        # 5. Qty: (\d+)
+        # 6. Total: (\d+,\s*\d{2})
+        
+        match = re.search(r'^\s*(\d{6,8})\s+(.+?)\s+(\d+,\s*\d{2,3})\s+(?:\d+\s+)?(\d+)\s+(\d+,\s*\d{2})', line)
         
         if match:
             try:
+                code = match.group(1)
                 desc = match.group(2).strip()
-                unit_price = float(match.group(3).replace(',', '.'))
-                qty = float(match.group(4))
                 
+                # Clean numbers (remove space after comma)
+                price_str = match.group(3).replace(' ', '').replace(',', '.')
+                qty_str = match.group(4)
+                total_str = match.group(5).replace(' ', '').replace(',', '.')
+                
+                unit_price = float(price_str)
+                qty = float(qty_str)
+                total = float(total_str)
+                
+                # Verification sanity check
                 if qty > 0 and unit_price > 0:
                     produits.append({
                         "nom": desc,
                         "quantite": qty,
                         "prix_unitaire": unit_price,
-                        "total": qty * unit_price,
-                        "unite": "pièce" # Default for Metro usually
+                        "total": total,
+                        "unite": "pièce", # Metro default
+                        "ligne_originale": line
                     })
-            except: continue
-            
+            except Exception as e:
+                print(f"Error parsing Metro line: {line} -> {e}")
+                continue
+                
     return produits
 
 def parse_mammafiore_facture(text: str) -> List[dict]:
-    """Parser specific for MAMMAFIORE layout"""
+    """Parser specific for MAMMAFIORE layout based on raw text analysis"""
     produits = []
-    # Layout: Code | Description | ... | Price | ... | Total
     lines = text.split('\n')
-    for line in lines:
-        # Filter header/footer
-        if "Page" in line or "Total" in line: continue
+    
+    # State machine for Mammafiore
+    # We look for a product code, then scan next lines for the financial values
+    
+    current_product = None
+    
+    for i, line in enumerate(lines):
+        line = line.strip()
+        if not line: continue
         
-        # Pattern: Code (8-10 digits) | Description | ... | Price | ... | Total
-        # Example: 1000010053 Frais De Sortie ... 3.97 ... 3.97
-        match = re.search(r'^\s*(\d{8,12})\s+(.+?)\s+(\d+[,.]\d{2})\s', line)
-        
-        # Mammafiore often puts Qty in separate column before price
-        # Let's try a more robust regex for the table line
-        # Code Desc ... Qty Unit ... Price ...
-        match_full = re.search(r'^\s*(\d+)\s+(.+?)\s+(\d+[,.]\d{2})\s+(\d+[,.]\d{2})', line)
-        
-        if match_full:
-            # This is tricky without raw text confirmation, using generic fallback logic enhanced
-            # Let's look for lines ending with monetary values
-            pass
+        # 1. Detection of Product Line: Starts with 10-digit code (starts with 1000...)
+        # Ex: 1000001140 RIGATONI N°50 500GR*16 - RUMMO (u)
+        code_match = re.search(r'^(10\d{8})\s+(.+)', line)
+        if code_match:
+            # If we had a previous product without numbers, save it? No, discard it (incomplete)
+            current_product = {
+                "code": code_match.group(1),
+                "nom": code_match.group(2).strip(),
+                "found_numbers": False
+            }
+            continue
             
-    # Use a simpler strategy for Mammafiore based on visual:
-    # Search for lines starting with long number code
-    for line in lines:
-        match = re.search(r'^\s*(\d{8,12})\s+(.+?)\s+(\d+[.,]\d{2})\s+(\d+[.,]\d{2})', line)
-        if match:
-            # This matches Code Desc Qty?? Price?? 
-            # Mammafiore layout: Code Desc Pieces Colis Unite Kg Price ...
-            # It's hard to map columns without OCR text.
-            # We will use a generic fallback for now but flagged as Mammafiore
-            pass
-
-    # Since we lack raw text precision, let's use a regex that catches the "Code Description" pattern strongly
-    for line in lines:
-        # Catch lines starting with large integer
-        if re.match(r'^\s*\d{8,}', line):
-            parts = line.split()
-            if len(parts) > 4:
-                # Assume last parts are numbers (amounts)
-                # Assume first part is code
-                # Description is in between
+        # 2. Detection of Numbers (Qty, Price, Total)
+        # This often appears 1-3 lines AFTER the description, or interspersed with "N° lot"
+        if current_product and not current_product["found_numbers"]:
+            # Look for a sequence of numbers
+            # Ex raw: 2 32.00 1.71 27.00 39.95
+            # Or: 1.00 3.97 1.00 13.82 3.97
+            
+            # We look for at least 2 floats
+            numbers = re.findall(r'(\d+[\.,]\d{2})', line)
+            integers = re.findall(r'\b(\d+)\b', line) # For Qty if integer
+            
+            if len(numbers) >= 2:
                 try:
-                    # Find first float from right -> Amount
-                    # Find second float from right -> Price
-                    # Find integer/float before that -> Qty
-                    # This is heuristics.
+                    # Heuristic: Try to find Qty * Price = Total relation
+                    # Candidates for Price and Total are usually the floats
+                    # Candidate for Qty is usually an integer at start or one of the floats
                     
-                    # Extract numbers
-                    numbers = re.findall(r'(\d+[,.]\d+)', line)
-                    if len(numbers) >= 2:
-                        price = float(numbers[-2].replace(',', '.'))
-                        qty = float(numbers[-3].replace(',', '.')) if len(numbers) >= 3 else 1.0
+                    vals = [float(n.replace(',', '.')) for n in numbers]
+                    
+                    found = False
+                    qty = 1.0
+                    price = 0.0
+                    total = 0.0
+                    
+                    # Try to find Q * P = T in the values
+                    # usually Q is small, P is mid, T is large
+                    
+                    # Case A: Qty is an integer captured separately?
+                    if integers:
+                        pot_qtys = [float(x) for x in integers if float(x) < 1000]
+                        for q in pot_qtys:
+                            for p in vals:
+                                for t in vals:
+                                    if abs(q * p - t) < 0.05 and p > 0:
+                                        qty, price, total = q, p, t
+                                        found = True
+                                        break
+                                if found: break
+                            if found: break
+                    
+                    # Case B: Qty is one of the floats (e.g. 1.00)
+                    if not found:
+                        for i1 in range(len(vals)):
+                            for i2 in range(len(vals)):
+                                if i1 == i2: continue
+                                for i3 in range(len(vals)):
+                                    if i3 == i1 or i3 == i2: continue
+                                    
+                                    q, p, t = vals[i1], vals[i2], vals[i3]
+                                    if abs(q * p - t) < 0.05 and p > 0:
+                                        qty, price, total = q, p, t
+                                        found = True
+                                        break
+                                if found: break
+                            if found: break
+                    
+                    if found:
+                        # Success!
+                        produits.append({
+                            "nom": current_product["nom"],
+                            "quantite": qty,
+                            "prix_unitaire": price,
+                            "total": total,
+                            "unite": "pièce", # Mammafiore default (u) usually
+                            "ligne_originale": f"{current_product['code']} ... {line}"
+                        })
+                        current_product = None # Reset
                         
-                        # Description: between Code and first number?
-                        # This is risky.
-                        pass
                 except: pass
 
-    return produits # Return empty to fallback to generic if specialized fails
+    # If specific parser failed (empty list), do we fallback?
+    # The main function handles fallback if this returns empty.
+    return produits
 
 def parse_facture_fournisseur(texte_ocr: str) -> FactureFournisseurData:
     """Parser les données d'une facture fournisseur avec stratégie Multi-Fournisseurs"""
