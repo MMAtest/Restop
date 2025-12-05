@@ -3622,38 +3622,47 @@ def parse_royaume_des_mers_facture(text: str) -> List[dict]:
     
     current_product = None
     
-    for i, line in enumerate(lines):
+    for line in lines:
         line = line.strip()
         if len(line) < 5: continue
         
         # A. Ligne Produit (Texte majuscule avec mot clé)
-        if any(k in line.upper() for k in fish_keywords) and not "LOT:" in line.upper():
-            current_product_name = line
-            # On l'ajoute tout de suite (on cherchera le prix après)
-            produits.append({
+        is_product_line = any(k in line.upper() for k in fish_keywords) and not "LOT:" in line.upper()
+        
+        if is_product_line:
+            # On enregistre ce produit et on attend la ligne de poids
+            if current_product:
+                # On sauvegarde le précédent qui n'a peut-être pas eu de ligne poids
+                produits.append(current_product)
+            
+            current_product = {
                 "nom": line,
                 "quantite": 1.0,
                 "prix_unitaire": 0.0,
                 "total": 0.0,
                 "unite": "kg",
                 "ligne_originale": line
-            })
+            }
             continue
             
         # B. Ligne Lot/Poids (souvent juste en dessous)
-        # Ex: "Lot: 25_008679 (30,08)"
-        if "LOT" in line.upper() and "(" in line:
-            # Si on a un produit juste avant, on met à jour son poids
-            if produits:
-                last_prod = produits[-1]
-                # Chercher le poids entre parenthèses
-                weight_match = re.search(r'\(([\d,]+)\)', line)
-                if weight_match:
-                    try:
-                        weight = float(weight_match.group(1).replace(',', '.'))
-                        last_prod["quantite"] = weight
-                        last_prod["ligne_originale"] += f" | {line}"
-                    except: pass
+        if current_product and ("LOT:" in line.upper() or "(" in line):
+            # Chercher le poids entre parenthèses: (30,08)
+            weight_match = re.search(r'\(([\d,]+)\)', line)
+            if weight_match:
+                try:
+                    weight = float(weight_match.group(1).replace(',', '.'))
+                    current_product["quantite"] = weight
+                    current_product["ligne_originale"] += f" | {line}"
+                except: pass
+            
+            # On valide ce produit maintenant qu'on a (peut-être) le poids
+            produits.append(current_product)
+            current_product = None
+
+    # Ne pas oublier le dernier produit en suspens
+    if current_product:
+        produits.append(current_product)
 
     return produits
 
