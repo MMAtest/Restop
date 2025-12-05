@@ -3475,8 +3475,8 @@ def parse_terreazur_facture(text: str) -> List[dict]:
     produits = []
     lines = text.split('\n')
     
-    # TerreAzur / Pomona utilise presque toujours un code à 6 chiffres en début de ligne
-    # Ex: "123456 TOMATE RONDE..."
+    # Format observé: "0/293598 HF menthe sac zip 200g ES"
+    # Structure: Préfixe(1-2 chars)/Code(6) Nom
     
     for line in lines:
         line = line.strip()
