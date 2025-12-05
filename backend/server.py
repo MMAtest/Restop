@@ -3505,7 +3505,7 @@ def parse_terreazur_facture(text: str) -> List[dict]:
             reste = re.sub(r'\s+[A-Z]{2}$', '', reste)
             
             produits.append({
-                "nom": nom.strip(),
+                "nom": reste,
                 "quantite": 1.0,
                 "prix_unitaire": 0.0,
                 "total": total,
