@@ -8136,6 +8136,7 @@ function App() {
         <InvoiceValidationModal 
           documentId={invoiceToValidate}
           produitsList={produits}
+          fournisseursList={fournisseurs}
           onClose={() => {
             setShowInvoiceValidation(false);
             setInvoiceToValidate(null);
@@ -8145,6 +8146,7 @@ function App() {
             fetchDocumentsOcr();
             fetchMouvements();
             fetchDashboardStats();
+            fetchFournisseurs(); // Rafraîchir la liste des fournisseurs
           }}
         />
       )}
