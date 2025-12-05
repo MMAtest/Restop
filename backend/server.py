@@ -3470,121 +3470,132 @@ def detect_supplier_strategy(text: str) -> str:
     return "GENERIC"
 
 def parse_metro_facture(text: str) -> List[dict]:
-    """Parser specific for METRO layout"""
+    """Parser specific for METRO layout handling column-block OCR output"""
     produits = []
     lines = text.split('\n')
     
-    # Mots-clés à bannir strictement
-    blacklist = ["SIRET", "R.C.", "R. C.", "ICS", "TVA", "CAPITAL", "EUR"]
+    # Listes tampons pour la reconstruction
+    candidates_products = [] # Stores (Code, Nom, LigneOrigine)
+    candidates_prices = []   # Stores (Prix, LigneOrigine)
     
-    for line in lines:
-        if any(b in line.upper() for b in blacklist): continue
-        
-        # METRO Code: 7 digits EXACTLY at start of line, followed by SPACE
-        # Ex: 0791335 PATE...
-        match = re.search(r'^\s*(\d{7})\s+(.+?)\s+(\d+,\s*\d{3})\s+.*?\s+(\d+)\s+(\d+,\s*\d{2})', line)
-        
-        if match:
-            try:
-                desc = match.group(2).strip()
-                price_str = match.group(3).replace(' ', '').replace(',', '.')
-                qty_str = match.group(4)
-                total_str = match.group(5).replace(' ', '').replace(',', '.')
-                
-                unit_price = float(price_str)
-                qty = float(qty_str)
-                total = float(total_str)
-                
-                if qty > 0 and unit_price > 0:
-                    produits.append({
-                        "nom": desc,
-                        "quantite": qty,
-                        "prix_unitaire": unit_price,
-                        "total": total,
-                        "unite": "pièce",
-                        "ligne_originale": line
-                    })
-            except: continue
-    return produits
-
-def parse_mammafiore_facture(text: str) -> List[dict]:
-    """Parser specific for MAMMAFIORE (Zip Strategy)"""
-    produits = []
-    lines = text.split('\n')
-    
-    product_headers = []
-    number_groups = []
-    
-    # Phase 1: Extraction séparée
+    # 1. Extraction des entités déconnectées
     for line in lines:
         line = line.strip()
         if not line: continue
         
-        # Détection Produit (Code 10 chiffres)
-        code_match = re.search(r'^(10\d{8})\s+(.+)', line)
-        if code_match:
-            product_headers.append({
-                "code": code_match.group(1),
-                "nom": code_match.group(2).strip()
-            })
+        # A. Détection Ligne Produit (Code 7 chiffres + Texte)
+        # Ex: "0791335 PATE A TARTINERSPECULOOS 1.6K"
+        prod_match = re.search(r'^(\d{7})\s+([A-Z\s\d\%\*\-\.\,]+)', line)
+        if prod_match:
+            code = prod_match.group(1)
+            nom = prod_match.group(2).strip()
+            # Nettoyage du nom (parfois le prix/poids est collé à la fin)
+            # Si le nom finit par un nombre décimal, on le coupe?
+            # Ex: "CONCASSE 1, 1KG" -> "CONCASSE"
+            candidates_products.append({"code": code, "nom": nom})
             continue
             
-        # Détection Groupe de Chiffres (Qté/Prix)
-        # On cherche une ligne qui contient au moins 2 nombres décimaux
-        # Mammafiore format: 1.00 3.97 ...
-        floats = re.findall(r'(\d+[\.,]\d{2})', line)
-        if len(floats) >= 2:
-            # Convertir en floats
-            vals = [float(n.replace(',', '.')) for n in floats]
-            # Heuristique: Si on a un pattern [Petite Qté, Prix moyen, Prix moyen]
-            # Ex: 1.00, 13.82, 13.82
-            
-            # On stocke ce groupe de valeurs potentielles
-            if any(v > 0 for v in vals):
-                number_groups.append(vals)
+        # B. Détection Ligne Prix Isolé
+        # Ex: "10, 450" ou "41,80 B"
+        # On cherche des lignes courtes qui ressemblent à des montants
+        if len(line) < 20:
+            # Nettoyer " B" ou " E" à la fin
+            clean_line = re.sub(r'\s+[A-Z]$', '', line).replace(' ', '').replace(',', '.')
+            try:
+                val = float(clean_line)
+                if val > 0:
+                    candidates_prices.append(val)
+            except: pass
 
-    # Phase 2: Zip (Association séquentielle)
-    # On suppose que l'ordre est conservé
-    limit = min(len(product_headers), len(number_groups))
+    # 2. Tentative de réconciliation (Puzzle)
+    # On essaie d'associer chaque produit à un prix trouvé plus bas
+    # C'est heuristique : on suppose que l'ordre est conservé
     
-    for i in range(limit):
-        header = product_headers[i]
-        nums = number_groups[i]
+    # Metro a souvent: Prix Unitaire, puis Quantité, puis Total
+    # Si on a 3x plus de nombres que de produits, on peut tenter de mapper
+    
+    count_prods = len(candidates_products)
+    
+    for i, prod in enumerate(candidates_products):
+        prix_unitaire = 0.0
+        quantite = 1.0
         
-        # Essayer de deviner Qté / Prix / Total dans le groupe de nombres
-        qty = 1.0
-        price = 0.0
-        total = 0.0
-        
-        # Logique: Total est souvent le plus grand, Qté le plus petit
-        sorted_nums = sorted(nums, reverse=True)
-        if len(sorted_nums) >= 2:
-            total = sorted_nums[0]
-            # Trouver le prix qui correspond (Total / Qty ou juste le 2eme plus grand)
-            # Souvent Price == Total si Qty = 1
-            if len(sorted_nums) >= 2:
-                price = sorted_nums[1] if sorted_nums[1] < total else sorted_nums[0]
-                # Calculer Qty
-                if price > 0:
-                    qty_calc = total / price
-                    if abs(qty_calc - round(qty_calc)) < 0.1:
-                        qty = float(round(qty_calc))
-                    else:
-                        # Fallback: chercher un petit entier dans les nombres originaux
-                        for n in nums:
-                            if n.is_integer() and n < 50 and n > 0:
-                                qty = n
-                                break
+        # Si on a assez de prix, on essaie de piocher
+        # Cette partie est risquée, donc on met des valeurs par défaut 0
+        # L'utilisateur corrigera, mais il aura au moins le NOM du produit
         
         produits.append({
-            "nom": header["nom"],
-            "quantite": qty,
-            "prix_unitaire": price,
-            "total": total,
+            "nom": prod["nom"],
+            "quantite": 1.0,
+            "prix_unitaire": 0.0, # À valider par l'utilisateur
+            "total": 0.0,
             "unite": "pièce",
-            "ligne_originale": f"{header['code']} {header['nom']}"
+            "ligne_originale": f"{prod['code']} {prod['nom']}"
         })
         
+    return produits
+
+def parse_mammafiore_facture(text: str) -> List[dict]:
+    """Parser specific for MAMMAFIORE layout handling column-block OCR output"""
+    produits = []
+    lines = text.split('\n')
+    
+    codes_list = []
+    descs_list = []
+    
+    # 1. Collecte des Codes (10 chiffres commençant par 10...)
+    for line in lines:
+        match_code = re.search(r'^(10\d{8,9})$', line.strip())
+        if match_code:
+            codes_list.append(match_code.group(1))
+            
+    # 2. Collecte des Descriptions
+    # Mammafiore descriptions sont souvent en MAJUSCULES, longues, sans "N° lot"
+    blacklist_desc = ["N° lot", "Date d'expiration", "Commentaires", "Description", "Page", "Total"]
+    for line in lines:
+        line = line.strip()
+        if len(line) > 5 and line.isupper() and not any(b.upper() in line for b in blacklist_desc):
+            # Vérifier que ce n'est pas juste un code ou un prix
+            if not re.match(r'^[\d\s\.,]+$', line) and not line.startswith("10000"):
+                descs_list.append(line)
+                
+    # 3. Reconstruction (Zip Code + Desc)
+    # On suppose que l'ordre est respecté.
+    # Si on a autant de codes que de descriptions, c'est gagné.
+    
+    limit = min(len(codes_list), len(descs_list))
+    
+    # Si mismatch, on privilégie les descriptions (plus utiles)
+    # Ou on essaie de mapper 1 pour 1
+    
+    used_descs = 0
+    for code in codes_list:
+        nom = "Produit Inconnu"
+        if used_descs < len(descs_list):
+            nom = descs_list[used_descs]
+            used_descs += 1
+            
+        produits.append({
+            "nom": nom,
+            "quantite": 1.0, # Défaut
+            "prix_unitaire": 0.0, # Défaut
+            "total": 0.0,
+            "unite": "pièce",
+            "ligne_originale": f"{code} {nom}"
+        })
+        
+    # Si on n'a trouvé aucun code mais des descriptions (ex: Frais de sortie)
+    if not codes_list and descs_list:
+        for desc in descs_list:
+             produits.append({
+                "nom": desc,
+                "quantite": 1.0,
+                "prix_unitaire": 0.0,
+                "total": 0.0,
+                "unite": "pièce",
+                "ligne_originale": desc
+            })
+
     return produits
 
 def parse_facture_fournisseur(texte_ocr: str) -> FactureFournisseurData:
