@@ -3471,7 +3471,7 @@ def detect_supplier_strategy(text: str) -> str:
     return "GENERIC"
 
 def parse_terreazur_facture(text: str) -> List[dict]:
-    """Parser spécifique TERREAZUR (Stratégie Code Pomona Optimisée)"""
+    """Parser spécifique TERREAZUR (Stratégie Code Pomona Optimisée + Fallback)"""
     produits = []
     lines = text.split('\n')
     
@@ -3483,35 +3483,43 @@ def parse_terreazur_facture(text: str) -> List[dict]:
         if len(line) < 10: continue
         
         # Regex améliorée pour le code Pomona
-        # Accepte: "123456", "0/123456", "D/ 123456"
         match_code = re.search(r'(?:^|[\s\/])(\d{6})\s+(.+)', line)
         
-        if match_code:
-            code = match_code.group(1)
-            reste = match_code.group(2).strip()
+        # Stratégie Secours : Fin de ligne typique TerreAzur (ES, PT, FR, IT, MA, PL...)
+        # Ex: "Moule bouchot 5kg FR"
+        has_country_code = re.search(r'\s+[A-Z]{2}$', line)
+        
+        if match_code or has_country_code:
+            if match_code:
+                reste = match_code.group(2).strip()
+            else:
+                reste = line # On prend toute la ligne si pas de code
             
             # Nettoyage du nom (retirer les codes de fin type "ES", "PT", et les prix)
-            # On cherche le dernier nombre décimal de la ligne pour le prix
             prices = re.findall(r'(\d+[\.,]\d{2})', line)
             total = 0.0
             if prices:
                 try:
                     total = float(prices[-1].replace(',', '.'))
-                    # On nettoie la fin de ligne
                     reste = reste.split(prices[-1])[0].strip()
                 except: pass
             
             # Nettoyage spécifique TerreAzur (codes fin de ligne)
-            reste = re.sub(r'\s+[A-Z]{2}$', '', reste)
+            nom_final = re.sub(r'\s+[A-Z]{2}$', '', reste).strip()
             
-            produits.append({
-                "nom": reste,
-                "quantite": 1.0,
-                "prix_unitaire": 0.0,
-                "total": total,
-                "unite": "pièce/kg",
-                "ligne_originale": line
-            })
+            # Filtre anti-bruit final (ne pas prendre les adresses)
+            if "CEDEX" in nom_final or "MARSEILLE" in nom_final: continue
+            
+            # Éviter doublons
+            if not any(p["nom"] == nom_final for p in produits):
+                produits.append({
+                    "nom": nom_final,
+                    "quantite": 1.0,
+                    "prix_unitaire": 0.0,
+                    "total": total,
+                    "unite": "pièce/kg",
+                    "ligne_originale": line
+                })
             
     return produits
 
