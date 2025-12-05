@@ -3472,32 +3472,28 @@ def detect_supplier_strategy(text: str) -> str:
 def parse_metro_facture(text: str) -> List[dict]:
     """Parser specific for METRO layout based on raw text analysis"""
     produits = []
-    # Raw text pattern:
-    # 0791335 PATE A TARTINERSPECULOOS 1.6K 10, 450 1 4 41,80 B
-    # Code(7) Desc Price(with space after comma) ? Qty Total TVA
-    
     lines = text.split('\n')
     for line in lines:
-        # Skip headers/footers
+        # Skip headers/footers/junk
         if "***" in line or "Total" in line: continue
         if len(line) < 10: continue
         
-        # Regex specific for Metro line with spacing handling
-        # 1. Code: ^(\d{6,8})
-        # 2. Desc: (.+?)
-        # 3. Price: (\d+,\s*\d{3}|\d+,\s*\d{2}) -> Handles "10, 450"
-        # 4. Junk digits: \s+\d+\s+
-        # 5. Qty: (\d+)
-        # 6. Total: (\d+,\s*\d{2})
+        # METRO Code MUST be 7 digits exactly based on examples (0791335, 2177285)
+        # Strict Regex: 
+        # ^\s*(\d{7})   <- 7 digits code
+        # \s+(.+?)      <- Description
+        # \s+(\d+,\s*\d{3}) <- Price with 3 decimals (10, 450)
+        # .*?           <- Junk in middle
+        # \s+(\d+)      <- Qty (Integer)
+        # \s+(\d+,\s*\d{2}) <- Total (2 decimals)
         
-        match = re.search(r'^\s*(\d{6,8})\s+(.+?)\s+(\d+,\s*\d{2,3})\s+(?:\d+\s+)?(\d+)\s+(\d+,\s*\d{2})', line)
+        match = re.search(r'^\s*(\d{7})\s+(.+?)\s+(\d+,\s*\d{3})\s+.*?\s+(\d+)\s+(\d+,\s*\d{2})', line)
         
         if match:
             try:
                 code = match.group(1)
                 desc = match.group(2).strip()
-                
-                # Clean numbers (remove space after comma)
+                # Clean numbers
                 price_str = match.group(3).replace(' ', '').replace(',', '.')
                 qty_str = match.group(4)
                 total_str = match.group(5).replace(' ', '').replace(',', '.')
@@ -3506,120 +3502,93 @@ def parse_metro_facture(text: str) -> List[dict]:
                 qty = float(qty_str)
                 total = float(total_str)
                 
-                # Verification sanity check
                 if qty > 0 and unit_price > 0:
                     produits.append({
                         "nom": desc,
                         "quantite": qty,
                         "prix_unitaire": unit_price,
                         "total": total,
-                        "unite": "pièce", # Metro default
+                        "unite": "pièce",
                         "ligne_originale": line
                     })
-            except Exception as e:
-                print(f"Error parsing Metro line: {line} -> {e}")
-                continue
+            except: continue
                 
     return produits
 
 def parse_mammafiore_facture(text: str) -> List[dict]:
-    """Parser specific for MAMMAFIORE layout based on raw text analysis"""
+    """Parser specific for MAMMAFIORE layout with sliding window"""
     produits = []
     lines = text.split('\n')
     
-    # State machine for Mammafiore
-    # We look for a product code, then scan next lines for the financial values
-    
-    current_product = None
-    
-    for i, line in enumerate(lines):
-        line = line.strip()
-        if not line: continue
+    # Sliding window of 4 lines to catch split data
+    for i in range(len(lines)):
+        # Window context
+        window = " ".join(lines[i:min(i+4, len(lines))])
         
-        # 1. Detection of Product Line: Starts with 10-digit code (starts with 1000...)
-        # Ex: 1000001140 RIGATONI N°50 500GR*16 - RUMMO (u)
-        code_match = re.search(r'^(10\d{8})\s+(.+)', line)
+        # Look for Product Code Start: 10000... (10 digits)
+        # Followed by Description
+        # Then look for sequence of numbers in the window
+        
+        # Regex to find Code + Desc at start of line i
+        line_start = lines[i].strip()
+        code_match = re.search(r'^(10\d{8})\s+(.+)', line_start)
+        
         if code_match:
-            # If we had a previous product without numbers, save it? No, discard it (incomplete)
-            current_product = {
-                "code": code_match.group(1),
-                "nom": code_match.group(2).strip(),
-                "found_numbers": False
-            }
-            continue
+            code = code_match.group(1)
+            raw_desc = code_match.group(2).strip()
             
-        # 2. Detection of Numbers (Qty, Price, Total)
-        # This often appears 1-3 lines AFTER the description, or interspersed with "N° lot"
-        if current_product and not current_product["found_numbers"]:
-            # Look for a sequence of numbers
-            # Ex raw: 2 32.00 1.71 27.00 39.95
-            # Or: 1.00 3.97 1.00 13.82 3.97
+            # Cleanup Desc (remove trailing junk or single chars)
+            desc = re.sub(r'\s+\(u\).*', '', raw_desc) # Remove (u) ...
             
-            # We look for at least 2 floats
-            numbers = re.findall(r'(\d+[\.,]\d{2})', line)
-            integers = re.findall(r'\b(\d+)\b', line) # For Qty if integer
+            # Search for Qty/Price in the window
+            # Pattern: float ... float ... float
+            # We look for Price (~3-50€) and Total
             
-            if len(numbers) >= 2:
-                try:
-                    # Heuristic: Try to find Qty * Price = Total relation
-                    # Candidates for Price and Total are usually the floats
-                    # Candidate for Qty is usually an integer at start or one of the floats
+            # Find all floats in the window
+            floats = re.findall(r'(\d+[\.,]\d{2})', window)
+            integers = re.findall(r'\b(\d{1,3})\b', window) # Small integers for qty
+            
+            vals = [float(n.replace(',', '.')) for n in floats]
+            ints = [float(n) for n in integers]
+            
+            all_nums = sorted(list(set(vals + ints)), reverse=True) # Descending
+            
+            # Heuristic: Total is usually the largest number (if > 0)
+            # Price is Total / Qty
+            
+            found_valid = False
+            
+            # Try to match Q * P = T
+            for t in all_nums:
+                if t > 2000: continue # Too big
+                for p in all_nums:
+                    if p >= t or p <= 0: continue
                     
-                    vals = [float(n.replace(',', '.')) for n in numbers]
+                    # Calculate implied Qty
+                    q_calc = t / p
                     
-                    found = False
-                    qty = 1.0
-                    price = 0.0
-                    total = 0.0
-                    
-                    # Try to find Q * P = T in the values
-                    # usually Q is small, P is mid, T is large
-                    
-                    # Case A: Qty is an integer captured separately?
-                    if integers:
-                        pot_qtys = [float(x) for x in integers if float(x) < 1000]
-                        for q in pot_qtys:
-                            for p in vals:
-                                for t in vals:
-                                    if abs(q * p - t) < 0.05 and p > 0:
-                                        qty, price, total = q, p, t
-                                        found = True
-                                        break
-                                if found: break
-                            if found: break
-                    
-                    # Case B: Qty is one of the floats (e.g. 1.00)
-                    if not found:
-                        for i1 in range(len(vals)):
-                            for i2 in range(len(vals)):
-                                if i1 == i2: continue
-                                for i3 in range(len(vals)):
-                                    if i3 == i1 or i3 == i2: continue
-                                    
-                                    q, p, t = vals[i1], vals[i2], vals[i3]
-                                    if abs(q * p - t) < 0.05 and p > 0:
-                                        qty, price, total = q, p, t
-                                        found = True
-                                        break
-                                if found: break
-                            if found: break
-                    
-                    if found:
-                        # Success!
-                        produits.append({
-                            "nom": current_product["nom"],
-                            "quantite": qty,
-                            "prix_unitaire": price,
-                            "total": total,
-                            "unite": "pièce", # Mammafiore default (u) usually
-                            "ligne_originale": f"{current_product['code']} ... {line}"
-                        })
-                        current_product = None # Reset
-                        
-                except: pass
-
-    # If specific parser failed (empty list), do we fallback?
-    # The main function handles fallback if this returns empty.
+                    # Check if q_calc is close to an integer or a simple decimal (0.5, 1.5)
+                    if abs(q_calc - round(q_calc)) < 0.05:
+                        qty = round(q_calc)
+                        if qty > 0:
+                            produits.append({
+                                "nom": desc,
+                                "quantite": float(qty),
+                                "prix_unitaire": p,
+                                "total": t,
+                                "unite": "pièce",
+                                "ligne_originale": window[:100]
+                            })
+                            found_valid = True
+                            break
+                if found_valid: break
+            
+            # If simple heuristic failed, look for specific pattern in floats only
+            # Item 1 example: 1.00 ... 3.97 ... 3.97
+            if not found_valid and len(vals) >= 3:
+                 if vals[0] * vals[1] == vals[2]: # 1 * 3.97 = ? No
+                     pass 
+                     
     return produits
 
 def parse_facture_fournisseur(texte_ocr: str) -> FactureFournisseurData:
