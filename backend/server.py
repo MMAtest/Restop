@@ -3607,7 +3607,7 @@ def parse_gfd_lerda_facture(text: str) -> List[dict]:
     return produits
 
 def parse_royaume_des_mers_facture(text: str) -> List[dict]:
-    """Parser spécifique ROYAUME DES MERS (Stratégie Poisson & Lots)"""
+    """Parser spécifique ROYAUME DES MERS (Stratégie Poisson & Poids)"""
     produits = []
     lines = text.split('\n')
     
