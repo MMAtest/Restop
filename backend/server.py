@@ -3456,7 +3456,8 @@ def detect_supplier_strategy(text: str) -> str:
     
     if "METRO" in text_upper:
         return "METRO"
-    if "MAMMAFIORE" in text_upper:
+    # Assouplissement Mammafiore : Mamma, Fiore, Manma...
+    if "MAMMA" in text_upper or "FIORE" in text_upper:
         return "MAMMAFIORE"
     if "TERREAZUR" in text_upper or "POMONA" in text_upper:
         return "TERREAZUR"
@@ -3646,6 +3647,9 @@ def parse_facture_fournisseur(texte_ocr: str) -> FactureFournisseurData:
     if strategy == "METRO":
         metro_prods = parse_metro_facture(texte_ocr)
         if metro_prods: produits = metro_prods
+    elif strategy == "MAMMAFIORE":
+        mamma_prods = parse_mammafiore_facture(texte_ocr)
+        if mamma_prods: produits = mamma_prods
         
     # Si le parser spécifique n'a rien trouvé (ou n'est pas implémenté), fallback sur le générique
     if not produits:
