@@ -3470,6 +3470,220 @@ def detect_supplier_strategy(text: str) -> str:
         
     return "GENERIC"
 
+def parse_gfd_lerda_facture(text: str) -> List[dict]:
+    """Parser specific for GFD LERDA layout"""
+    produits = []
+    lines = text.split('\n')
+    
+    # Lerda: Souvent "Nom Produit" sur une ligne, "Poids/Prix" sur une autre ou loin
+    # Ex vu: "GIGOTIN OU SOURIS D AGNEAU..."
+    
+    blacklist = ["TVA", "SIRET", "TEL", "PLACE", "MARSEILLE", "ROUTE", "TOTAL", "MONTANT", "POIDS", "COLIS"]
+    
+    for i, line in enumerate(lines):
+        line = line.strip()
+        if len(line) < 10: continue
+        
+        # Detection Produit par Mots Clés Viande
+        keywords = ["AGNEAU", "BOEUF", "VEAU", "PORC", "POULET", "CANARD", "MAGRET", "ENTRECOTE", "FILET", "GIGOT"]
+        
+        is_product_text = line.isupper() and any(k in line for k in keywords) and not any(b in line for b in blacklist)
+        
+        if is_product_text:
+            # On a trouvé un nom de produit !
+            # On cherche le poids/prix dans les lignes proches (i-1, i+1, i+2)
+            qty = 1.0
+            price = 0.0
+            
+            # Chercher un nombre flottant proche
+            context = " ".join(lines[max(0, i-1):min(len(lines), i+3)])
+            numbers = re.findall(r'(\d+[\.,]\d{2})', context)
+            
+            if numbers:
+                # Heuristique: Le plus grand est le prix total, le plus petit la quantité (poids)
+                vals = [float(n.replace(',', '.')) for n in numbers]
+                vals.sort(reverse=True)
+                
+                # Si on a un gros montant (> 50), c'est surement le prix total
+                # Si on a un nombre ~1-20, c'est le poids
+                
+                for v in vals:
+                    if v > 20: price = v # Total estimé
+                    elif v > 0: qty = v # Poids estimé
+            
+            produits.append({
+                "nom": line,
+                "quantite": qty,
+                "prix_unitaire": 0.0, # Difficile à deviner
+                "total": price, # Total estimé
+                "unite": "kg",
+                "ligne_originale": line
+            })
+            
+    return produits
+
+def parse_royaume_des_mers_facture(text: str) -> List[dict]:
+    """Parser specific for ROYAUME DES MERS layout"""
+    produits = []
+    lines = text.split('\n')
+    
+    # Format vu: "SEICHE DECCGL1/3 NOIR DLC-J CONDI"
+    # Format vu: "Lot: 25_008679 (30,08)" -> 30,08 est le poids
+    
+    current_product = None
+    
+    for line in lines:
+        line = line.strip()
+        
+        # 1. Détection Ligne Produit (Texte Majuscule spécifique Marée)
+        if re.match(r'^[A-Z\s\/\d\-]+$', line) and len(line) > 10:
+            keywords = ["SEICHE", "SAUMON", "FILET", "DOS", "BAR", "DORADE", "HUITRE", "MOULE", "GAMBAS", "CREVETTE"]
+            if any(k in line for k in keywords):
+                current_product = line
+                continue
+        
+        # 2. Détection Poids (souvent entre parenthèses après "Lot:")
+        if current_product and "Lot:" in line:
+            match_weight = re.search(r'\(([\d,]+)\)', line)
+            qty = 1.0
+            if match_weight:
+                try:
+                    qty = float(match_weight.group(1).replace(',', '.'))
+                except: pass
+            
+            produits.append({
+                "nom": current_product,
+                "quantite": qty,
+                "prix_unitaire": 0.0,
+                "total": 0.0,
+                "unite": "kg",
+                "ligne_originale": f"{current_product} {line}"
+            })
+            current_product = None
+            
+    return produits
+
+def parse_terreazur_facture(text: str) -> List[dict]:
+    """Parser specific for TERREAZUR layout"""
+    produits = []
+    lines = text.split('\n')
+    
+    # TerreAzur: Code 6 chiffres souvent.
+    # Mais le texte brut est très bruité.
+    # On va chercher les lignes qui ont un format "Code Description ... Prix"
+    
+    for line in lines:
+        # Regex permissive: Code(6) ... Texte ... Montant
+        match = re.search(r'(\d{6})\s+([A-Z\s\-\.]+?)\s+.*(\d+[\.,]\d{2})', line)
+        if match:
+            # Filtrer les faux positifs (téléphones, dates)
+            if "04 42" in line: continue # Tel
+            if "2025" in line: continue # Date
+            
+            produits.append({
+                "nom": match.group(2).strip(),
+                "quantite": 1.0,
+                "prix_unitaire": 0.0,
+                "total": float(match.group(3).replace(',', '.')),
+                "unite": "pièce/kg",
+                "ligne_originale": line
+            })
+            
+    return produits
+
+def parse_presthyg_facture(text: str) -> List[dict]:
+    """Parser specific for PREST'HYG layout"""
+    produits = []
+    lines = text.split('\n')
+    
+    # Prest'Hyg: Produits d'hygiène.
+    # Cherchons des mots clés + Prix
+    
+    keywords = ["SAVON", "EPONGE", "SAC", "POUBELLE", "ROULEAU", "PAPIER", "BOBINE", "DETERGENT", "LAVETTE", "GANTS"]
+    
+    for line in lines:
+        line_upper = line.upper()
+        if any(k in line_upper for k in keywords):
+            # Chercher un prix sur la ligne
+            prices = re.findall(r'(\d+[\.,]\d{2})', line)
+            total = 0.0
+            if prices:
+                total = float(prices[-1].replace(',', '.'))
+                
+            produits.append({
+                "nom": line,
+                "quantite": 1.0,
+                "prix_unitaire": 0.0,
+                "total": total,
+                "unite": "pièce",
+                "ligne_originale": line
+            })
+            
+    return produits
+
+def parse_mammafiore_facture(text: str) -> List[dict]:
+    """Parser specific for MAMMAFIORE layout handling column-block OCR output"""
+    produits = []
+    lines = text.split('\n')
+    
+    codes_list = []
+    descs_list = []
+    
+    # 1. Collecte des Codes (10 chiffres commençant par 10...)
+    for line in lines:
+        match_code = re.search(r'^(10\d{8,9})$', line.strip())
+        if match_code:
+            codes_list.append(match_code.group(1))
+            
+    # 2. Collecte des Descriptions
+    # Mammafiore descriptions sont souvent en MAJUSCULES, longues, sans "N° lot"
+    blacklist_desc = ["N° lot", "Date d'expiration", "Commentaires", "Description", "Page", "Total"]
+    for line in lines:
+        line = line.strip()
+        if len(line) > 5 and line.isupper() and not any(b.upper() in line for b in blacklist_desc):
+            # Vérifier que ce n'est pas juste un code ou un prix
+            if not re.match(r'^[\d\s\.,]+$', line) and not line.startswith("10000"):
+                descs_list.append(line)
+                
+    # 3. Reconstruction (Zip Code + Desc)
+    # On suppose que l'ordre est respecté.
+    # Si on a autant de codes que de descriptions, c'est gagné.
+    
+    limit = min(len(codes_list), len(descs_list))
+    
+    # Si mismatch, on privilégie les descriptions (plus utiles)
+    # Ou on essaie de mapper 1 pour 1
+    
+    used_descs = 0
+    for code in codes_list:
+        nom = "Produit Inconnu"
+        if used_descs < len(descs_list):
+            nom = descs_list[used_descs]
+            used_descs += 1
+            
+        produits.append({
+            "nom": nom,
+            "quantite": 1.0, # Défaut
+            "prix_unitaire": 0.0, # Défaut
+            "total": 0.0,
+            "unite": "pièce",
+            "ligne_originale": f"{code} {nom}"
+        })
+        
+    # Si on n'a trouvé aucun code mais des descriptions (ex: Frais de sortie)
+    if not codes_list and descs_list:
+        for desc in descs_list:
+             produits.append({
+                "nom": desc,
+                "quantite": 1.0,
+                "prix_unitaire": 0.0,
+                "total": 0.0,
+                "unite": "pièce",
+                "ligne_originale": desc
+            })
+
+    return produits
+
 def parse_metro_facture(text: str) -> List[dict]:
     """Parser specific for METRO layout handling column-block OCR output"""
     produits = []
@@ -3512,7 +3726,7 @@ def parse_metro_facture(text: str) -> List[dict]:
     # On essaie d'associer chaque produit à un prix trouvé plus bas
     # C'est heuristique : on suppose que l'ordre est conservé
     
-    # Metro a souvent: Prix Unitaire, puis Quantité, puis Total
+    # Metro a often: Prix Unitaire, puis Quantité, puis Total
     # Si on a 3x plus de nombres que de produits, on peut tenter de mapper
     
     count_prods = len(candidates_products)
@@ -3536,50 +3750,6 @@ def parse_metro_facture(text: str) -> List[dict]:
         
     return produits
 
-def parse_mammafiore_facture(text: str) -> List[dict]:
-    """Parser specific for MAMMAFIORE (Brute Force Strategy)"""
-    produits = []
-    lines = text.split('\n')
-    
-    # On cherche juste les codes produits et on essaie de trouver le nom associé
-    # On abandonne l'idée de trouver le prix parfait automatiquement si c'est trop dur
-    
-    for i, line in enumerate(lines):
-        line = line.strip()
-        # Code Mammafiore: 10 chiffres commençant par 10
-        # Parfois collé au texte: 1000010053CAPRES...
-        match = re.search(r'(10\d{8,9})\s*(.*)', line)
-        
-        if match:
-            code = match.group(1)
-            reste_ligne = match.group(2).strip()
-            
-            nom = "Produit Mammafiore"
-            
-            # Si le nom est sur la même ligne
-            if len(reste_ligne) > 3:
-                nom = reste_ligne
-            # Sinon, il est peut-être sur la ligne suivante
-            elif i+1 < len(lines):
-                next_line = lines[i+1].strip()
-                if not re.match(r'^10\d{8,9}', next_line): # Pas un autre code
-                    nom = next_line
-            
-            # Nettoyage du nom (retirer les prix si collés)
-            nom = re.sub(r'\d+[\.,]\d{2}.*', '', nom).strip()
-            
-            # On ajoute le produit (Prix 0 par défaut)
-            produits.append({
-                "nom": nom,
-                "quantite": 1.0,
-                "prix_unitaire": 0.0,
-                "total": 0.0,
-                "unite": "pièce",
-                "ligne_originale": f"{code} {nom}"
-            })
-            
-    return produits
-
 def parse_facture_fournisseur(texte_ocr: str) -> FactureFournisseurData:
     """Parser les données d'une facture fournisseur avec stratégie Multi-Fournisseurs"""
     data = FactureFournisseurData()
@@ -3601,10 +3771,8 @@ def parse_facture_fournisseur(texte_ocr: str) -> FactureFournisseurData:
     if strategy != "GENERIC":
         data.fournisseur = supplier_names.get(strategy, "Inconnu")
     
-    # 2. EXTRACTION DATE & NUMERO (Commun à tous, sauf si surcharge)
-    # ... (Garder la logique existante pour date/numéro qui est robuste) ...
-    # Rechercher le fournisseur - adapté aux formats réels
-    # (Si non détecté par stratégie)
+    # 2. EXTRACTION DATE & NUMERO (Commun à tous)
+    # ... (Code date/numéro existant conservé) ...
     if not data.fournisseur:
         lines = texte_ocr.split('\n')
         fournisseur_candidates = []
@@ -3645,15 +3813,21 @@ def parse_facture_fournisseur(texte_ocr: str) -> FactureFournisseurData:
     produits = []
     
     if strategy == "METRO":
-        metro_prods = parse_metro_facture(texte_ocr)
-        if metro_prods: produits = metro_prods
+        produits = parse_metro_facture(texte_ocr)
     elif strategy == "MAMMAFIORE":
-        mamma_prods = parse_mammafiore_facture(texte_ocr)
-        if mamma_prods: produits = mamma_prods
+        produits = parse_mammafiore_facture(texte_ocr)
+    elif strategy == "TERREAZUR":
+        produits = parse_terreazur_facture(texte_ocr)
+    elif strategy == "ROYAUME_DES_MERS":
+        produits = parse_royaume_des_mers_facture(texte_ocr)
+    elif strategy == "PREST_HYG":
+        produits = parse_presthyg_facture(texte_ocr)
+    elif strategy == "GFD_LERDA":
+        produits = parse_gfd_lerda_facture(texte_ocr)
         
-    # Si le parser spécifique n'a rien trouvé (ou n'est pas implémenté), fallback sur le générique
-    if not produits:
-        # ... (Code générique existant avec exclusion patterns) ...
+    # Si le parser spécifique n'a rien trouvé, fallback sur le générique (sauf pour Mammafiore/Metro qui sont stricts)
+    if not produits and strategy == "GENERIC":
+        # ... (Code générique existant) ...
         produit_patterns = [
             r'([A-ZÁÀÂÄÇÉÈÊËÏÎÔÙÛÜŸ][A-Za-zÀ-ÿ\s\d\*\-\(\)\.]{10,80})\s+(\d+[,.]?\d*)\s+(\d+[,.]?\d*)',
             r'([A-ZÁÀÂÄÇÉÈÊËÏÎÔÙÛÜŸ\s]{3,40})\s+(\d{1,3})\s+(\d{1,3})\s+KG\s+(\d+[,.]?\d*)\s+(\d+[,.]?\d*)',
