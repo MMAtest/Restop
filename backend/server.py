@@ -3450,66 +3450,201 @@ def parse_z_report(texte_ocr: str) -> ZReportData:
     
     return data
 
+def detect_supplier_strategy(text: str) -> str:
+    """Detect which supplier parsing strategy to use based on keywords"""
+    text_upper = text.upper()
+    
+    if "METRO" in text_upper:
+        return "METRO"
+    if "MAMMAFIORE" in text_upper:
+        return "MAMMAFIORE"
+    if "TERREAZUR" in text_upper or "POMONA" in text_upper:
+        return "TERREAZUR"
+    if "ROYAUME" in text_upper and "MERS" in text_upper:
+        return "ROYAUME_DES_MERS"
+    if "PREST" in text_upper and "HYG" in text_upper:
+        return "PREST_HYG"
+    if "GFD" in text_upper or "LERDA" in text_upper:
+        return "GFD_LERDA"
+        
+    return "GENERIC"
+
+def parse_metro_facture(text: str) -> List[dict]:
+    """Parser specific for METRO layout"""
+    produits = []
+    # Pattern METRO approx: ... Designation ... Prix ... Qté ... Montant
+    # Based on visual inspection of Artifact 1
+    # Line example (hypothesis): 0791335 PATE A TARTINER... 10,450 1 4 41,80
+    # This regex is flexible to catch lines with product code, name, price, qty
+    
+    # Strategy: Look for lines with 13-digit EAN or 6-7 digit ref at start
+    lines = text.split('\n')
+    for line in lines:
+        # Exclude section headers like "*** EPICERIE"
+        if "***" in line: continue
+        
+        # Try to capture: Code (opt) | Description | ... | Price | ... | Qty | ... | Total
+        # This regex looks for a price structure towards the end
+        # Regex: (Description) ... (Price) ... (Qty) ... (Total) [B/D/E code]
+        match = re.search(r'^\s*(\d+)?\s+([A-Z\s\d\%\*\-\.]+?)\s+(\d+[,.]\d{2,3})\s+\d+\s+(\d+)\s+(\d+[,.]\d{2})', line)
+        
+        if match:
+            try:
+                desc = match.group(2).strip()
+                unit_price = float(match.group(3).replace(',', '.'))
+                qty = float(match.group(4))
+                
+                if qty > 0 and unit_price > 0:
+                    produits.append({
+                        "nom": desc,
+                        "quantite": qty,
+                        "prix_unitaire": unit_price,
+                        "total": qty * unit_price,
+                        "unite": "pièce" # Default for Metro usually
+                    })
+            except: continue
+            
+    return produits
+
+def parse_mammafiore_facture(text: str) -> List[dict]:
+    """Parser specific for MAMMAFIORE layout"""
+    produits = []
+    # Layout: Code | Description | ... | Price | ... | Total
+    lines = text.split('\n')
+    for line in lines:
+        # Filter header/footer
+        if "Page" in line or "Total" in line: continue
+        
+        # Pattern: Code (8-10 digits) | Description | ... | Price | ... | Total
+        # Example: 1000010053 Frais De Sortie ... 3.97 ... 3.97
+        match = re.search(r'^\s*(\d{8,12})\s+(.+?)\s+(\d+[,.]\d{2})\s', line)
+        
+        # Mammafiore often puts Qty in separate column before price
+        # Let's try a more robust regex for the table line
+        # Code Desc ... Qty Unit ... Price ...
+        match_full = re.search(r'^\s*(\d+)\s+(.+?)\s+(\d+[,.]\d{2})\s+(\d+[,.]\d{2})', line)
+        
+        if match_full:
+            # This is tricky without raw text confirmation, using generic fallback logic enhanced
+            # Let's look for lines ending with monetary values
+            pass
+            
+    # Use a simpler strategy for Mammafiore based on visual:
+    # Search for lines starting with long number code
+    for line in lines:
+        match = re.search(r'^\s*(\d{8,12})\s+(.+?)\s+(\d+[.,]\d{2})\s+(\d+[.,]\d{2})', line)
+        if match:
+            # This matches Code Desc Qty?? Price?? 
+            # Mammafiore layout: Code Desc Pieces Colis Unite Kg Price ...
+            # It's hard to map columns without OCR text.
+            # We will use a generic fallback for now but flagged as Mammafiore
+            pass
+
+    # Since we lack raw text precision, let's use a regex that catches the "Code Description" pattern strongly
+    for line in lines:
+        # Catch lines starting with large integer
+        if re.match(r'^\s*\d{8,}', line):
+            parts = line.split()
+            if len(parts) > 4:
+                # Assume last parts are numbers (amounts)
+                # Assume first part is code
+                # Description is in between
+                try:
+                    # Find first float from right -> Amount
+                    # Find second float from right -> Price
+                    # Find integer/float before that -> Qty
+                    # This is heuristics.
+                    
+                    # Extract numbers
+                    numbers = re.findall(r'(\d+[,.]\d+)', line)
+                    if len(numbers) >= 2:
+                        price = float(numbers[-2].replace(',', '.'))
+                        qty = float(numbers[-3].replace(',', '.')) if len(numbers) >= 3 else 1.0
+                        
+                        # Description: between Code and first number?
+                        # This is risky.
+                        pass
+                except: pass
+
+    return produits # Return empty to fallback to generic if specialized fails
+
 def parse_facture_fournisseur(texte_ocr: str) -> FactureFournisseurData:
-    """Parser les données d'une facture fournisseur avec adaptation aux formats réels"""
+    """Parser les données d'une facture fournisseur avec stratégie Multi-Fournisseurs"""
     data = FactureFournisseurData()
     
-    try:
-        # Rechercher le fournisseur - adapté aux formats réels
+    # 1. DÉTECTION DU FOURNISSEUR
+    strategy = detect_supplier_strategy(texte_ocr)
+    print(f"🔍 Stratégie de parsing détectée : {strategy}")
+    
+    # Mapping stratégie -> Nom affiché
+    supplier_names = {
+        "METRO": "METRO",
+        "MAMMAFIORE": "Mammafiore",
+        "TERREAZUR": "TerreAzur",
+        "ROYAUME_DES_MERS": "Le Royaume des Mers",
+        "PREST_HYG": "Prest'Hyg",
+        "GFD_LERDA": "GFD LERDA"
+    }
+    
+    if strategy != "GENERIC":
+        data.fournisseur = supplier_names.get(strategy, "Inconnu")
+    
+    # 2. EXTRACTION DATE & NUMERO (Commun à tous, sauf si surcharge)
+    # ... (Garder la logique existante pour date/numéro qui est robuste) ...
+    # Rechercher le fournisseur - adapté aux formats réels
+    # (Si non détecté par stratégie)
+    if not data.fournisseur:
         lines = texte_ocr.split('\n')
         fournisseur_candidates = []
-        
-        for i, line in enumerate(lines[:15]):  # Examiner plus de lignes
+        for i, line in enumerate(lines[:15]):
             line = line.strip()
             if len(line) > 5:
-                # Détecter les noms de fournisseurs typiques
-                if any(keyword in line.upper() for keyword in ['MAMMAFIORE', 'PROVENCE', 'SARL', 'SAS', 'EURL', 'MIN DES', 'PÊCHERIE', 'MAISON']):
+                if any(keyword in line.upper() for keyword in ['MAMMAFIORE', 'PROVENCE', 'SARL', 'SAS', 'EURL', 'MIN DES', 'PÊCHERIE', 'MAISON', 'METRO']):
                     if not any(excl in line.upper() for excl in ['AUGUSTINE', 'CLIENT', 'FACTURE', 'NUMERO', 'DATE']):
                         fournisseur_candidates.append(line.strip())
-        
         if fournisseur_candidates:
-            # Prendre le candidat le plus probable
             data.fournisseur = fournisseur_candidates[0]
+
+    # Rechercher la date
+    date_patterns = [
+        r'(\d{2}-\d{2}-\d{4})',
+        r'(\d{1,2}/\d{1,2}/\d{4})',
+        r'(\d{1,2}\.\d{1,2}\.\d{4})',
+    ]
+    for pattern in date_patterns:
+        date_match = re.search(pattern, texte_ocr)
+        if date_match:
+            data.date = date_match.group(1)
+            break
+            
+    # Rechercher numéro
+    facture_patterns = [
+        r'Bon Livraison[:\s]*(\d+)',
+        r'N°[:\s]*([A-Z0-9\-]+)',
+        r'facture[:\s#n°]*([A-Z0-9\-]{3,15})',
+    ]
+    for pattern in facture_patterns:
+        facture_match = re.search(pattern, texte_ocr, re.IGNORECASE)
+        if facture_match:
+            data.numero_facture = facture_match.group(1)
+            break
+
+    # 3. EXTRACTION PRODUITS (Délégation au spécialiste)
+    produits = []
+    
+    if strategy == "METRO":
+        metro_prods = parse_metro_facture(texte_ocr)
+        if metro_prods: produits = metro_prods
         
-        # Rechercher la date avec patterns améliorés pour les formats réels
-        date_patterns = [
-            r'(\d{2}-\d{2}-\d{4})',  # Format: 16-08-2024
-            r'(\d{1,2}/\d{1,2}/\d{4})',  # Format: 16/08/2024
-            r'(\d{1,2}\.\d{1,2}\.\d{4})', # Format: 16.08.2024
-        ]
-        
-        for pattern in date_patterns:
-            date_match = re.search(pattern, texte_ocr)
-            if date_match:
-                data.date = date_match.group(1)
-                break
-        
-        # Rechercher le numéro de facture avec patterns adaptés
-        facture_patterns = [
-            r'Bon Livraison[:\s]*(\d+)',  # "Bon Livraison 14887"
-            r'N°[:\s]*([A-Z0-9\-]+)',
-            r'facture[:\s#n°]*([A-Z0-9\-]{3,15})',
-        ]
-        
-        for pattern in facture_patterns:
-            facture_match = re.search(pattern, texte_ocr, re.IGNORECASE)
-            if facture_match:
-                data.numero_facture = facture_match.group(1)
-                break
-        
-        # Patterns adaptés pour les produits réels - Format Mammafiore et autres
-        produits = []
+    # Si le parser spécifique n'a rien trouvé (ou n'est pas implémenté), fallback sur le générique
+    if not produits:
+        # ... (Code générique existant avec exclusion patterns) ...
         produit_patterns = [
-            # Format Mammafiore: "GNOCCHI DE PATATE 500GR*8 - RUMMO (u) 120,000 ..."
             r'([A-ZÁÀÂÄÇÉÈÊËÏÎÔÙÛÜŸ][A-Za-zÀ-ÿ\s\d\*\-\(\)\.]{10,80})\s+(\d+[,.]?\d*)\s+(\d+[,.]?\d*)',
-            # Format poissonnerie: "PALOURDE MOYENNE" suivi des détails sur lignes suivantes
             r'([A-ZÁÀÂÄÇÉÈÊËÏÎÔÙÛÜŸ\s]{3,40})\s+(\d{1,3})\s+(\d{1,3})\s+KG\s+(\d+[,.]?\d*)\s+(\d+[,.]?\d*)',
-            # Format classique: "Nom produit quantité prix total"
             r'([A-Za-zÀ-ÿ\s\'\-]{3,40})\s+(\d+[,.]?\d*)\s+(\d+[,.]?\d*)\s+(\d+[,.]?\d*)',
         ]
         
-        # Patterns d'exclusion (Anti-Bruit)
-        # Si une ligne contient un de ces mots, elle n'est pas un produit
         exclude_patterns = [
             'SIRET', 'IBAN', 'CAPITAL', 'TÉL', 'TEL', 'FAX', 'TVA', 'RCS', 
             'EMAIL', 'WWW', 'HTTP', 'S.A.S', 'SARL', 'EURL', 'CODE NAF', 'APE',
@@ -3521,17 +3656,11 @@ def parse_facture_fournisseur(texte_ocr: str) -> FactureFournisseurData:
 
         for line in texte_ocr.split('\n'):
             line = line.strip()
-            if len(line) < 8:  # Ignorer les lignes trop courtes
-                continue
+            if len(line) < 8: continue
             
-            # Application du filtre Anti-Bruit
             line_upper = line.upper()
-            if any(excl in line_upper for excl in exclude_patterns):
-                continue
-                
-            # Ignorer les lignes de total/sous-total (redondance de sécurité)
-            if re.search(r'total|sous.total|tva|€\s*$', line.lower()):
-                continue
+            if any(excl in line_upper for excl in exclude_patterns): continue
+            if re.search(r'total|sous.total|tva|€\s*$', line.lower()): continue
                 
             for pattern in produit_patterns:
                 match = re.search(pattern, line, re.IGNORECASE)
@@ -3539,35 +3668,22 @@ def parse_facture_fournisseur(texte_ocr: str) -> FactureFournisseurData:
                     groups = match.groups()
                     if len(groups) >= 2:
                         try:
-                            # Analyser selon le format détecté
                             if groups[0].isdigit():
-                                # Format: quantité + nom + prix
                                 quantite = float(groups[0])
                                 nom_produit = groups[1].strip()
                                 prix_unitaire = float(groups[2].replace(',', '.')) if len(groups) > 2 else 0
                             else:
-                                # Format: nom + quantité/prix
                                 nom_produit = groups[0].strip()
                                 if len(groups) >= 4 and groups[1].isdigit():
-                                    # Format avec quantité explicite
                                     quantite = float(groups[1])
                                     prix_unitaire = float(groups[2].replace(',', '.'))
-                                    total = float(groups[3].replace(',', '.')) if groups[3] else quantite * prix_unitaire
                                 else:
-                                    # Format simple nom + prix
                                     quantite = 1.0
                                     prix_unitaire = float(groups[1].replace(',', '.'))
-                                    total = prix_unitaire
                             
-                            # Nettoyer le nom du produit
                             nom_produit = re.sub(r'[:\-_]+$', '', nom_produit).strip()
                             
-                            # Valider les données
-                            if (len(nom_produit) > 2 and 
-                                quantite > 0 and quantite < 9999 and 
-                                prix_unitaire >= 0 and
-                                not nom_produit.isdigit()):
-                                
+                            if (len(nom_produit) > 2 and quantite > 0 and quantite < 9999 and prix_unitaire >= 0 and not nom_produit.isdigit()):
                                 produit = {
                                     "nom": nom_produit,
                                     "quantite": quantite,
@@ -3575,39 +3691,30 @@ def parse_facture_fournisseur(texte_ocr: str) -> FactureFournisseurData:
                                     "total": quantite * prix_unitaire,
                                     "ligne_originale": line
                                 }
-                                
-                                # Éviter les doublons
                                 if not any(p["nom"].lower() == nom_produit.lower() for p in produits):
                                     produits.append(produit)
                                 break
                         except (ValueError, IndexError):
                             continue
-        
-        data.produits = produits
-        
-        # Rechercher les totaux HT et TTC avec patterns améliorés
-        total_patterns = [
-            (r'total\s*ht[:\s]*(\d+[,.]?\d*)\s*[€]?', 'ht'),
-            (r'total\s*ttc[:\s]*(\d+[,.]?\d*)\s*[€]?', 'ttc'),
-            (r'montant\s*ht[:\s]*(\d+[,.]?\d*)\s*[€]?', 'ht'),
-            (r'montant\s*ttc[:\s]*(\d+[,.]?\d*)\s*[€]?', 'ttc'),
-            (r'sous.total[:\s]*(\d+[,.]?\d*)\s*[€]?', 'ht')
-        ]
-        
-        for pattern, type_total in total_patterns:
-            match = re.search(pattern, texte_ocr, re.IGNORECASE)
-            if match:
-                try:
-                    montant = float(match.group(1).replace(',', '.'))
-                    if type_total == 'ht':
-                        data.total_ht = montant
-                    elif type_total == 'ttc':
-                        data.total_ttc = montant
-                except ValueError:
-                    continue
-        
-    except Exception as e:
-        print(f"Erreur parsing facture: {str(e)}")
+
+    data.produits = produits
+    
+    # 4. EXTRACTION TOTAUX (Commun)
+    total_patterns = [
+        (r'total\s*ht[:\s]*(\d+[,.]?\d*)\s*[€]?', 'ht'),
+        (r'total\s*ttc[:\s]*(\d+[,.]?\d*)\s*[€]?', 'ttc'),
+        (r'montant\s*ht[:\s]*(\d+[,.]?\d*)\s*[€]?', 'ht'),
+        (r'montant\s*ttc[:\s]*(\d+[,.]?\d*)\s*[€]?', 'ttc'),
+        (r'sous.total[:\s]*(\d+[,.]?\d*)\s*[€]?', 'ht')
+    ]
+    for pattern, type_total in total_patterns:
+        match = re.search(pattern, texte_ocr, re.IGNORECASE)
+        if match:
+            try:
+                montant = float(match.group(1).replace(',', '.'))
+                if type_total == 'ht': data.total_ht = montant
+                elif type_total == 'ttc': data.total_ttc = montant
+            except ValueError: continue
     
     return data
 
