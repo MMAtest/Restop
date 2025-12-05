@@ -3471,7 +3471,7 @@ def detect_supplier_strategy(text: str) -> str:
     return "GENERIC"
 
 def parse_terreazur_facture(text: str) -> List[dict]:
-    """Parser spécifique TERREAZUR (Stratégie Code Pomona 6 chiffres)"""
+    """Parser spécifique TERREAZUR (Stratégie Code Pomona Optimisée)"""
     produits = []
     lines = text.split('\n')
     
