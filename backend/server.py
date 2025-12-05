@@ -789,8 +789,11 @@ def round_stock_quantity(quantity: float) -> float:
 # ===== Product Matching Helper Functions =====
 def calculate_similarity(str1: str, str2: str) -> float:
     """Calculate similarity between two strings (simple Levenshtein-like)"""
-    str1 = str1.lower().strip()
-    str2 = str2.lower().strip()
+    if not str1 or not str2:
+        return 0.0
+        
+    str1 = str(str1).lower().strip()
+    str2 = str(str2).lower().strip()
     
     if str1 == str2:
         return 1.0
