@@ -63,7 +63,7 @@ const getProductionCategoryIcon = (category) => {
 };
 
 function App() {
-  const [activeTab, setActiveTab] = useState("orders");
+  const [activeTab, setActiveTab] = useState("dashboard");
   const [activeProductionTab, setActiveProductionTab] = useState("produits");
   const [activeHistoriqueTab, setActiveHistoriqueTab] = useState("ventes");
   const [activeStockTab, setActiveStockTab] = useState("stocks");
