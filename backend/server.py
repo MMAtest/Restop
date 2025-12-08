@@ -3912,7 +3912,18 @@ def parse_mammafiore_facture(text: str) -> List[dict]:
             continue
             
         # C. Descriptions
+        # Blacklist spécifique Mammafiore (Adresses, En-têtes)
+        mamma_blacklist = [
+            "MAMMAFIORE", "PROVENCE", "MANGIARE", "QUALITA", "MIN DES", "ARNAVAUX",
+            "TABLE", "AUGUSTINE", "PLACE", "MARSEILLE", "AVENUE", "MARCHE", "NATIONAL",
+            "EXPEDITION", "ECHEANCE", "CLIENT", "LIVRAISON", "COMMANDE", "CONDUCTEUR",
+            "TRANSPORTEUR", "VIEUX PORT", "FABIO", "MARTINI"
+        ]
+        
         if len(line) > 8 and not is_noise_line(line): # 🧹 NETTOYAGE
+            # Filtre Spécifique Anti-Adresse
+            if any(b in line.upper() for b in mamma_blacklist): continue
+            
             # Mammafiore descriptions sont souvent en MAJUSCULES
             if not re.search(r'\d{5}', line): # Pas de code postal
                 col_descs.append(line)
