@@ -4078,6 +4078,60 @@ def parse_metro_facture(text: str) -> List[dict]:
         
     return produits
 
+def parse_diamant_terroir_facture(text: str) -> List[dict]:
+    """Parser spécifique LE DIAMANT DU TERROIR (Produits Luxe / Truffes)"""
+    produits = []
+    lines = text.split('\n')
+    
+    for line in lines:
+        line = line.strip()
+        if len(line) < 10: continue
+        if is_noise_line(line): continue
+        
+        # Regex : Code (Alphanum) ... Texte ... Qté ... Prix
+        # TRF37 TRUFFE FRAICHE... 0,5000 240,00
+        match = re.search(r'^([A-Z0-9]{3,10})\s+(.+?)\s+(\d+[\.,]\d{2,4})\s+(\d+[\.,]\d{2})', line)
+        
+        if match:
+            try:
+                code = match.group(1)
+                desc = match.group(2).strip()
+                qty_str = match.group(3).replace(',', '.')
+                price_str = match.group(4).replace(',', '.')
+                
+                qty = float(qty_str)
+                price = float(price_str)
+                total = qty * price
+                
+                produits.append({
+                    "nom": desc,
+                    "quantite": qty,
+                    "prix_unitaire": price,
+                    "total": total,
+                    "unite": "kg" if qty < 1 else "pièce",
+                    "ligne_originale": line
+                })
+            except: pass
+            
+    # Si le parser strict échoue, on tente le 'Ramasse-Miettes' sur les lignes avec code
+    if not produits:
+        for line in lines:
+            if re.match(r'^[A-Z0-9]{3,8}\s', line):
+                parts = line.split(maxsplit=1)
+                if len(parts) > 1:
+                    nom = re.sub(r'\d+[\.,]\d+.*', '', parts[1]).strip()
+                    produits.append({
+                        "nom": nom,
+                        "quantite": 1.0,
+                        "prix_unitaire": 0.0,
+                        "total": 0.0,
+                        "unite": "pièce",
+                        "ligne_originale": line
+                    })
+        
+        produits = reconcile_orphan_prices(produits, text)
+
+    return produits
 def parse_facture_fournisseur(texte_ocr: str) -> FactureFournisseurData:
     """Parser les données d'une facture fournisseur avec stratégie Multi-Fournisseurs"""
     data = FactureFournisseurData()
