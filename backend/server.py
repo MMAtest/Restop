@@ -6026,7 +6026,8 @@ async def upload_and_process_document(
                 for i, invoice in enumerate(separated_invoices):
                     try:
                         # Vérifier la qualité avant traitement
-                        if invoice['quality_score'] < 0.6:
+                        # TOLÉRANCE : On abaisse le seuil à 0.4 pour accepter les factures "Diamant" très blanches
+                        if invoice['quality_score'] < 0.4:
                             rejected_invoices.append({
                                 'index': invoice['index'],
                                 'header': invoice['header'],
@@ -6048,14 +6049,14 @@ async def upload_and_process_document(
                             "is_multi_invoice": True,
                             "invoice_index": invoice['index'],
                             "total_invoices": len(separated_invoices),
-                            "total_processed": len([inv for inv in separated_invoices if inv['quality_score'] >= 0.6]),
+                            "total_processed": len([inv for inv in separated_invoices if inv['quality_score'] >= 0.4]),
                             "header_detected": invoice['header'],
                             "quality_score": invoice['quality_score'],
                             "quality_issues": invoice['quality_issues']
                         }
                         
                         # Déterminer le statut selon la qualité
-                        statut = "traite" if invoice['quality_score'] >= 0.8 else "traite_avec_avertissement"
+                        statut = "traite" if invoice['quality_score'] >= 0.7 else "traite_avec_avertissement"
                         
                         # Créer un document pour chaque facture valide
                         document = DocumentOCR(
