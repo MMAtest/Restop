@@ -3842,19 +3842,18 @@ def parse_metro_facture(text: str) -> List[dict]:
     count_prods = len(candidates_products)
     
     for i, prod in enumerate(candidates_products):
-        prix_unitaire = 0.0
-        quantite = 1.0
+        nom_brut = prod["nom"]
         
-        # Si on a assez de prix, on essaie de piocher
-        # Cette partie est risquée, donc on met des valeurs par défaut 0
-        # L'utilisateur corrigera, mais il aura au moins le NOM du produit
+        # ✅ INTELLIGENCE : Extraction Quantité/Unité depuis le nom
+        # Metro met souvent "1.6K" ou "1L" dans le nom
+        qty, unit, nom_final = extract_implicit_quantity(nom_brut, 1.0)
         
         produits.append({
-            "nom": prod["nom"],
-            "quantite": 1.0,
-            "prix_unitaire": 0.0, # À valider par l'utilisateur
+            "nom": nom_final,
+            "quantite": qty,
+            "prix_unitaire": 0.0, 
             "total": 0.0,
-            "unite": "pièce",
+            "unite": unit,
             "ligne_originale": f"{prod['code']} {prod['nom']}"
         })
         
