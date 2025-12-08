@@ -4091,7 +4091,8 @@ def parse_facture_fournisseur(texte_ocr: str) -> FactureFournisseurData:
         "TERREAZUR": "TerreAzur",
         "ROYAUME_DES_MERS": "Le Royaume des Mers",
         "PREST_HYG": "Prest'Hyg",
-        "GFD_LERDA": "GFD LERDA"
+        "GFD_LERDA": "GFD LERDA",
+        "DIAMANT_TERROIR": "Le Diamant du Terroir"
     }
     
     if strategy != "GENERIC":
