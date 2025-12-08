@@ -3917,6 +3917,9 @@ def parse_metro_facture(text: str) -> List[dict]:
             "unite": unit,
             "ligne_originale": f"{prod['code']} {prod['nom']}"
         })
+    
+    # ✅ APPEL MAGIQUE : Récupération des prix orphelins
+    produits = reconcile_orphan_prices(produits, text)
         
     return produits
 
