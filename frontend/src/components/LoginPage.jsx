@@ -191,7 +191,7 @@ const LoginPage = ({ onLoginSuccess }) => {
         </form>
 
         {/* Comptes de test - MASQUÉS (retirer ce commentaire pour réactiver) */}
-        {false && (
+        {true && (
         <div style={{marginTop: '32px', padding: '20px', background: '#f9fafb', borderRadius: '8px'}}>
           <h3 style={{
             fontSize: '16px',
