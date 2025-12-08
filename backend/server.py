@@ -5989,8 +5989,13 @@ async def upload_and_process_document(
             # Détecter s'il y a plusieurs factures dans le document
             separated_invoices = detect_multiple_invoices(texte_extrait)
             
-            if len(separated_invoices) == 1:
-                # Facture unique - traitement normal
+            # Si aucune facture valide n'est détectée, on force le mode "Unique" pour ne pas perdre le document
+            valid_invoices = [inv for inv in separated_invoices if inv['quality_score'] >= 0.4]
+            
+            if len(separated_invoices) == 1 or len(valid_invoices) == 0:
+                # Facture unique (ou fallback si découpage raté)
+                # On utilise le texte complet
+                print("⚠️ Fallback: Traitement en tant que facture unique")
                 facture_data = parse_facture_fournisseur(texte_extrait)
                 donnees_parsees = facture_data.dict()
                 
