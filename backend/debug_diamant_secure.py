@@ -26,11 +26,9 @@ def debug_diamant_secure():
                                   data={'document_type': 'facture_fournisseur'})
                 
                 print(f"Upload Status: {res.status_code}")
-                if res.status_code != 200:
-                    print(f"Erreur: {res.text}")
-                    continue
-                    
                 data = res.json()
+                print(f"JSON Response: {json.dumps(data, indent=2)[:500]}...") # Affiche le début du JSON
+                
                 # Gestion robuste de l'ID
                 doc_id = data.get('document_id') or data.get('id')
                 if not doc_id and 'document_ids' in data and len(data['document_ids']) > 0:
