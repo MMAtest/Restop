@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 
-const UserManagementPage = () => {
+const UserManagementPage = ({ currentUser }) => {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(false);
   const [showUserModal, setShowUserModal] = useState(false);
@@ -89,7 +89,7 @@ const UserManagementPage = () => {
     try {
       const method = editingUser ? 'PUT' : 'POST';
       const url = editingUser 
-        ? `${backendUrl}/api/admin/users/${editingUser.id}`
+        ? `${backendUrl}/api/admin/users/${editingUser.id}?requester_role=${currentUser?.role || 'super_admin'}`
         : `${backendUrl}/api/admin/users`;
 
       const submitData = editingUser 
@@ -148,7 +148,7 @@ const UserManagementPage = () => {
   const handleDeleteUser = async (userId, username) => {
     if (window.confirm(`Confirmer la suppression de l'utilisateur "${username}" ?`)) {
       try {
-        const response = await fetch(`${backendUrl}/api/admin/users/${userId}`, {
+        const response = await fetch(`${backendUrl}/api/admin/users/${userId}?requester_role=${currentUser?.role || 'super_admin'}`, {
           method: 'DELETE'
         });
 
@@ -349,13 +349,23 @@ const UserManagementPage = () => {
                         </td>
                         <td className="py-3 px-4">
                           <div className="flex space-x-2">
-                            <button
-                              onClick={() => handleEditUser(user)}
-                              className="text-blue-600 hover:text-blue-800 font-medium text-sm"
-                            >
-                              ✏️ Modifier
-                            </button>
-                            {user.role !== 'super_admin' && (
+                            {/* Logique d'affichage du bouton Modifier */}
+                            {/* Super Admin peut tout modifier */}
+                            {/* Patron peut modifier tout le monde SAUF Super Admin */}
+                            {(currentUser?.role === 'super_admin' || 
+                              (currentUser?.role === 'patron' && user.role !== 'super_admin')) && (
+                              <button
+                                onClick={() => handleEditUser(user)}
+                                className="text-blue-600 hover:text-blue-800 font-medium text-sm"
+                              >
+                                ✏️ Modifier
+                              </button>
+                            )}
+                            
+                            {/* Logique d'affichage du bouton Supprimer */}
+                            {/* Personne ne peut supprimer un Super Admin (sauf peut-être un autre super admin, mais on protège ici) */}
+                            {/* On ne peut pas se supprimer soi-même ici pour éviter les accidents */}
+                            {user.role !== 'super_admin' && user.id !== currentUser?.id && (
                               <button
                                 onClick={() => handleDeleteUser(user.id, user.username)}
                                 className="text-red-600 hover:text-red-800 font-medium text-sm"
