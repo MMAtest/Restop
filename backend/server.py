@@ -3480,6 +3480,8 @@ def detect_supplier_strategy(text: str) -> str:
         return "PREST_HYG"
     if "GFD" in text_upper or "LERDA" in text_upper:
         return "GFD_LERDA"
+    if "DIAMANT" in text_upper and "TERROIR" in text_upper:
+        return "DIAMANT_TERROIR"
         
     return "GENERIC"
 
