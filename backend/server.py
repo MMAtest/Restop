@@ -3797,62 +3797,104 @@ def parse_mammafiore_facture(text: str) -> List[dict]:
     produits = []
     lines = text.split('\n')
     
-    codes_list = []
-    descs_list = []
+    # Listes pour stocker les colonnes séparées
+    col_codes = []
+    col_descs = []
+    col_prices = []
+    col_quantities = []
     
-    # 1. Collecte des Codes (10 chiffres commençant par 10...)
-    for line in lines:
-        match_code = re.search(r'^(10\d{8,9})$', line.strip())
-        if match_code:
-            codes_list.append(match_code.group(1))
-            
-    # 2. Collecte des Descriptions
-    # Mammafiore descriptions sont souvent en MAJUSCULES, longues, sans "N° lot"
-    blacklist_desc = ["N° lot", "Date d'expiration", "Commentaires", "Description", "Page", "Total"]
+    # 1. COLLECTE DES DONNÉES PAR TYPES
     for line in lines:
         line = line.strip()
-        if len(line) > 5 and line.isupper() and not any(b.upper() in line for b in blacklist_desc):
-            # Vérifier que ce n'est pas juste un code ou un prix
-            if not re.match(r'^[\d\s\.,]+$', line) and not line.startswith("10000"):
-                descs_list.append(line)
-                
-    # 3. Reconstruction (Zip Code + Desc)
-    # On suppose que l'ordre est respecté.
-    # Si on a autant de codes que de descriptions, c'est gagné.
-    
-    limit = min(len(codes_list), len(descs_list))
-    
-    # Si mismatch, on privilégie les descriptions (plus utiles)
-    # Ou on essaie de mapper 1 pour 1
-    
-    used_descs = 0
-    for code in codes_list:
-        nom = "Produit Inconnu"
-        if used_descs < len(descs_list):
-            nom = descs_list[used_descs]
-            used_descs += 1
+        if not line: continue
+        
+        # A. Codes (10 chiffres commençant par 10...)
+        if re.match(r'^10\d{8,9}$', line):
+            col_codes.append(line)
+            continue
             
+        # B. Nombres (Prix / Quantités)
+        # On cherche des lignes qui ne contiennent QUE des chiffres/points/virgules
+        # Mammafiore a souvent des prix comme 3.97, 1.71 sur des lignes seules
+        if re.match(r'^[\d\s\.,]+$', line) and len(line) < 20:
+            # Nettoyer et extraire les nombres
+            try:
+                val_str = line.replace(',', '.')
+                # Si c'est un format type "1.00" ou "3.97"
+                if re.search(r'\d+\.\d{2}', val_str):
+                    val = float(val_str)
+                    # Heuristique simple : < 50 = Prix Unitaire ou Qté, > 50 = Total (souvent)
+                    # Ou on stocke tout et on triera après
+                    col_prices.append(val)
+                elif re.match(r'^\d+$', val_str):
+                    # Entier simple = Qté potentielle
+                    col_quantities.append(float(val_str))
+            except: pass
+            continue
+            
+        # C. Descriptions
+        # Majuscules, assez long, pas de mots clés système
+        blacklist = ["TOTAL", "PAGE", "DATE", "TVA", "MONTANT", "REMISE", "NET", "EUR", "SARL", "TEL", "EMAIL", "MIN DES", "AVENUE", "MARSEILLE", "FRANCE"]
+        if len(line) > 8 and not any(b in line.upper() for b in blacklist):
+            # Exclure les lignes qui ressemblent à des adresses ou infos légales
+            if not re.search(r'\d{5}', line): # Pas de code postal
+                col_descs.append(line)
+
+    # 2. RECONSTRUCTION (ZIP SÉQUENTIEL)
+    # On aligne Code[i] avec Desc[i] et Prix[i]
+    
+    count_codes = len(col_codes)
+    
+    # Sécurité : On ne peut pas matcher si les listes sont trop déséquilibrées
+    # Mais on tente le "Best Effort"
+    
+    for i in range(count_codes):
+        code = col_codes[i]
+        
+        # Trouver la description (Best Effort : index i)
+        nom = "Produit Inconnu"
+        if i < len(col_descs):
+            nom = col_descs[i]
+            
+        # Trouver le prix/qté
+        qty = 1.0
+        price = 0.0
+        
+        ratio = 0
+        if count_codes > 0:
+            ratio = len(col_prices) / count_codes
+            
+        base_idx = 0
+        if ratio >= 2.5: # Probablement Qté / Prix / Total
+            base_idx = int(i * ratio)
+            if base_idx + 1 < len(col_prices):
+                candidates = col_prices[base_idx : base_idx+3]
+                candidates.sort()
+                
+                if len(candidates) >= 2:
+                    qty = candidates[0] if candidates[0] < 50 else 1.0
+                    price = candidates[1]
+        elif ratio >= 1.5: # Probablement Prix / Total
+             base_idx = int(i * ratio)
+             if base_idx < len(col_prices):
+                 price = col_prices[base_idx] # On prend le premier qui vient
+        else:
+            # 1 chiffre par produit ?
+            if i < len(col_prices):
+                price = col_prices[i]
+
         produits.append({
             "nom": nom,
-            "quantite": 1.0, # Défaut
-            "prix_unitaire": 0.0, # Défaut
-            "total": 0.0,
+            "quantite": qty,
+            "prix_unitaire": price,
+            "total": qty * price,
             "unite": "pièce",
             "ligne_originale": f"{code} {nom}"
         })
         
-    # Si on n'a trouvé aucun code mais des descriptions (ex: Frais de sortie)
-    if not codes_list and descs_list:
-        for desc in descs_list:
-             produits.append({
-                "nom": desc,
-                "quantite": 1.0,
-                "prix_unitaire": 0.0,
-                "total": 0.0,
-                "unite": "pièce",
-                "ligne_originale": desc
-            })
-
+    # ✅ APPEL MAGIQUE : Récupération des prix orphelins (sécurité supplémentaire)
+    produits = reconcile_orphan_prices(produits, text)
+    
     return produits
 
 def parse_metro_facture(text: str) -> List[dict]:
