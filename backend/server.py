@@ -3690,6 +3690,9 @@ def parse_presthyg_facture(text: str) -> List[dict]:
                 "unite": "pièce",
                 "ligne_originale": line
             })
+    
+    # ✅ APPEL MAGIQUE : Récupération des prix orphelins
+    produits = reconcile_orphan_prices(produits, text)
             
     return produits
 
