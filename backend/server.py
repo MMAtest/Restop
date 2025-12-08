@@ -3470,6 +3470,70 @@ def detect_supplier_strategy(text: str) -> str:
         
     return "GENERIC"
 
+def is_noise_line(line: str) -> bool:
+    """
+    Détecte si une ligne est du bruit (headers, footers, infos légales, etc.)
+    et doit être ignorée lors du parsing des produits.
+    """
+    if not line or len(line.strip()) < 3:
+        return True
+    
+    line_upper = line.upper().strip()
+    
+    # Mots-clés de bruit communs
+    noise_keywords = [
+        "TOTAL", "SOUS-TOTAL", "SUBTOTAL", "TVA", "TTC", "HT",
+        "REMISE", "REDUCTION", "DISCOUNT", "SOLDE",
+        "FACTURE", "INVOICE", "NUMERO", "DATE", "HEURE",
+        "SARL", "SAS", "SA", "EURL", "SIRET", "SIREN", "APE",
+        "TELEPHONE", "TEL", "FAX", "EMAIL", "MAIL",
+        "ADRESSE", "RUE", "AVENUE", "BOULEVARD", "PLACE",
+        "CODE POSTAL", "VILLE", "CEDEX", "FRANCE",
+        "CONDITIONS", "VENTE", "PAIEMENT", "REGLEMENT",
+        "MERCI", "CONFIANCE", "CORDIALEMENT",
+        "PAGE", "SUITE", "FIN", "REPORT",
+        "NET A PAYER", "MONTANT", "SOMME",
+        "CAISSE", "ESPECE", "CARTE", "CHEQUE",
+        "COMMISSION", "FRAIS", "SERVICE", "POURBOIRE"
+    ]
+    
+    # Vérifier si la ligne contient des mots-clés de bruit
+    for keyword in noise_keywords:
+        if keyword in line_upper:
+            return True
+    
+    # Patterns de bruit spécifiques
+    noise_patterns = [
+        r'^\d{2}[/\-\.]\d{2}[/\-\.]\d{2,4}',  # Dates
+        r'^\d{2}:\d{2}',  # Heures
+        r'^\d{5}\s',  # Codes postaux
+        r'^\d{14}',  # SIRET/SIREN
+        r'^\+33\s',  # Numéros de téléphone français
+        r'^0[1-9]\s?\d{2}\s?\d{2}\s?\d{2}\s?\d{2}',  # Numéros français
+        r'@.*\.',  # Emails
+        r'www\.',  # URLs
+        r'http[s]?://',  # URLs
+        r'^\s*[-=_*]{3,}',  # Lignes de séparation
+        r'^\s*[|]{3,}',  # Lignes de séparation OCR
+        r'^\s*\d+\s*%',  # Pourcentages seuls
+        r'^\s*€\s*\d',  # Montants commençant par €
+    ]
+    
+    for pattern in noise_patterns:
+        if re.match(pattern, line, re.IGNORECASE):
+            return True
+    
+    # Lignes trop courtes ou trop longues
+    if len(line_upper) < 3 or len(line_upper) > 200:
+        return True
+    
+    # Lignes avec trop de caractères spéciaux
+    special_chars = sum(1 for c in line if not c.isalnum() and not c.isspace())
+    if special_chars > len(line) * 0.5:  # Plus de 50% de caractères spéciaux
+        return True
+    
+    return False
+
 def extract_implicit_quantity(nom: str, current_qty: float) -> tuple:
     """
     Analyse le nom du produit pour extraire poids/quantité implicite.
