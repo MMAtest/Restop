@@ -1958,14 +1958,22 @@ async def delete_user(user_id: str):
     return {"message": "User deleted successfully"}
 
 @api_router.put("/admin/users/{user_id}", response_model=UserResponse)
-async def update_user(user_id: str, user_update: UserUpdate):
-    """Update a user (Super Admin only)"""
+async def update_user(user_id: str, user_update: UserUpdate, requester_role: str = "super_admin"):
+    """Update a user (Patron or Super Admin)"""
     try:
-        # Vérifier que l'utilisateur existe
+        # Vérifier les permissions du demandeur
+        if requester_role not in ["super_admin", "patron"]:
+             raise HTTPException(status_code=403, detail="Permission refusée. Seuls Patron et Super Admin peuvent modifier des utilisateurs.")
+
+        # Vérifier que l'utilisateur cible existe
         existing_user = await db.users.find_one({"id": user_id})
         if not existing_user:
             raise HTTPException(status_code=404, detail="Utilisateur non trouvé")
         
+        # Protection Super Admin : Seul un super admin peut modifier un super admin
+        if existing_user["role"] == "super_admin" and requester_role != "super_admin":
+             raise HTTPException(status_code=403, detail="Seul un Super Admin peut modifier un autre Super Admin.")
+
         # Préparer les données de mise à jour (seulement les champs fournis)
         update_data = user_update.dict(exclude_unset=True)
         
@@ -1996,9 +2004,14 @@ async def update_user(user_id: str, user_update: UserUpdate):
                 raise HTTPException(status_code=400, detail="Cet email est déjà utilisé")
         
         # Valider le rôle
-        if update_data.get("role") and update_data["role"] not in ROLES:
-            raise HTTPException(status_code=400, detail=f"Rôle invalide. Rôles disponibles: {', '.join(ROLES.keys())}")
-        
+        if update_data.get("role"):
+            if update_data["role"] not in ROLES:
+                raise HTTPException(status_code=400, detail=f"Rôle invalide. Rôles disponibles: {', '.join(ROLES.keys())}")
+            
+            # Protection : Un patron ne peut pas se promouvoir super_admin ou promouvoir quelqu'un super_admin
+            if requester_role == "patron" and update_data["role"] == "super_admin":
+                 raise HTTPException(status_code=403, detail="Un Patron ne peut pas nommer de Super Admin.")
+
         # Effectuer la mise à jour
         result = await db.users.update_one(
             {"id": user_id},
