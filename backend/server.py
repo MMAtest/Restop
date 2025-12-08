@@ -8709,6 +8709,20 @@ async def process_mercuriale_to_real_data(document_id: str):
 
 
 # Include the router in the main app
+@app.on_event("startup")
+async def startup_db_client():
+    try:
+        # Vérifier si la base est vide (pas d'utilisateurs)
+        user_count = await db.users.count_documents({})
+        if user_count == 0:
+            print("🚀 Base de données vide détectée au démarrage. Initialisation des données de démonstration...")
+            await init_demo_missions_and_users()
+            print("✅ Données de démonstration initialisées automatiquement.")
+        else:
+            print(f"✅ Base de données déjà initialisée ({user_count} utilisateurs).")
+    except Exception as e:
+        print(f"⚠️ Erreur lors de l'initialisation automatique: {str(e)}")
+
 app.include_router(api_router)
 
 app.add_middleware(
