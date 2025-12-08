@@ -3737,6 +3737,9 @@ def parse_gfd_lerda_facture(text: str) -> List[dict]:
                 "unite": "kg",
                 "ligne_originale": line
             })
+    
+    # ✅ APPEL MAGIQUE : Récupération des prix orphelins
+    produits = reconcile_orphan_prices(produits, text)
             
     return produits
 
