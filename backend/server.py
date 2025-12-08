@@ -3525,6 +3525,78 @@ def extract_implicit_quantity(nom: str, current_qty: float) -> tuple:
         
     return final_qty, final_unit, clean_name
 
+def reconcile_orphan_prices(produits: List[dict], text: str) -> List[dict]:
+    """
+    Fonction universelle pour récupérer les prix 'orphelins' (situés plus loin dans le document)
+    et les assigner aux produits détectés qui n'ont pas de prix.
+    """
+    # 1. Collecter tous les candidats prix (Nombres à 2 décimales)
+    candidates = []
+    lines = text.split('\n')
+    for line in lines:
+        # Ignorer les dates
+        if re.search(r'\d{2}[\./]\d{2}[\./]\d{4}', line): continue
+        # Ignorer les SIRET/Tél
+        if len(line) > 20 and not re.search(r'[€EUR]', line): continue
+        
+        matches = re.findall(r'(\d+[\.,]\d{2})', line)
+        for m in matches:
+            try:
+                val = float(m.replace(',', '.'))
+                # Filtre de bon sens pour un prix alimentaire
+                if 0.1 < val < 10000:
+                    candidates.append(val)
+            except: pass
+            
+    # 2. Distribution séquentielle intelligente
+    # On cherche à mapper les produits sans prix avec les candidats disponibles
+    
+    candidate_idx = 0
+    
+    for prod in produits:
+        # Si le produit a déjà un total > 0, on passe
+        if prod["total"] > 0: 
+            continue
+            
+        # Sinon, on cherche dans les candidats
+        # On suppose que l'ordre des prix suit l'ordre des produits
+        # Mais il y a souvent des chiffres parasites (Qté, Poids, Remise) entre les deux
+        
+        # Heuristique: Un produit a souvent [Prix Unit] et [Total]
+        # On cherche 2 valeurs ou 1 valeur
+        
+        if candidate_idx < len(candidates):
+            # On prend le prochain candidat
+            val1 = candidates[candidate_idx]
+            
+            # Est-ce que c'est le Total ?
+            prod["total"] = val1
+            
+            # Si on a une quantité > 1, on peut déduire le prix unitaire
+            if prod["quantite"] > 0:
+                prod["prix_unitaire"] = round(val1 / prod["quantite"], 2)
+            else:
+                prod["prix_unitaire"] = val1
+                
+            candidate_idx += 1
+            
+            # Si le nombre suivant est plus grand, c'était peut-être (PrixUnit, Total)
+            if candidate_idx < len(candidates):
+                val2 = candidates[candidate_idx]
+                if val2 > val1 and abs(val2 / prod["quantite"] - val1) < 0.1:
+                    # Ah ! val1 était le prix unit, val2 est le total
+                    prod["prix_unitaire"] = val1
+                    prod["total"] = val2
+                    candidate_idx += 1
+                elif val2 > val1:
+                    # Ou val2 est le total et val1 était un poids/qté ?
+                    # On garde val2 comme total (plus sûr d'avoir le montant final)
+                    prod["total"] = val2
+                    prod["prix_unitaire"] = round(val2 / prod["quantite"], 2) if prod["quantite"] else val2
+                    candidate_idx += 1
+
+    return produits
+
 def parse_terreazur_facture(text: str) -> List[dict]:
     """Parser spécifique TERREAZUR (Stratégie Code Pomona Optimisée + Fallback)"""
     produits = []
