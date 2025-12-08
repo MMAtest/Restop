@@ -2547,7 +2547,7 @@ function App() {
         <div className="App">
       {/* Header Mobile */}
       <div className="header">
-        <h1>ResTop : La Table d&apos;Augustineapos;Augustine</h1>
+        <h1>ResTop : La Table d'Augustine</h1>
         {/* Boutons header mobile */}
         <div style={{display: 'flex', gap: '8px', alignItems: 'center'}}>
           {/* Menu Burger */}
