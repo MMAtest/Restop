@@ -3602,17 +3602,14 @@ def parse_terreazur_facture(text: str) -> List[dict]:
     produits = []
     lines = text.split('\n')
     
+    # ... (Extraction produits existante inchangée) ...
     # Format observé: "0/293598 HF menthe sac zip 200g ES"
-    # Structure: Préfixe(1-2 chars)/Code(6) Nom
     
     for line in lines:
         line = line.strip()
         if len(line) < 10: continue
         
-        # Regex améliorée pour le code Pomona
         match_code = re.search(r'(?:^|[\s\/])(\d{6})\s+(.+)', line)
-        
-        # Stratégie Secours : Fin de ligne typique TerreAzur (ES, PT, FR...)
         has_country_code = re.search(r'\s+[A-Z]{2}$', line)
         
         if match_code or has_country_code:
@@ -3621,7 +3618,6 @@ def parse_terreazur_facture(text: str) -> List[dict]:
             else:
                 reste = line 
             
-            # Extraction Prix
             prices = re.findall(r'(\d+[\.,]\d{2})', line)
             total = 0.0
             if prices:
@@ -3630,16 +3626,11 @@ def parse_terreazur_facture(text: str) -> List[dict]:
                     reste = reste.split(prices[-1])[0].strip()
                 except: pass
             
-            # Nettoyage codes pays
             nom_brut = re.sub(r'\s+[A-Z]{2}$', '', reste).strip()
-            
-            # Filtre anti-bruit
             if "CEDEX" in nom_brut or "MARSEILLE" in nom_brut: continue
             
-            # ✅ INTELLIGENCE : Extraction Quantité/Unité depuis le nom
             qty, unit, nom_final = extract_implicit_quantity(nom_brut, 1.0)
             
-            # Éviter doublons
             if not any(p["nom"] == nom_final for p in produits):
                 produits.append({
                     "nom": nom_final,
@@ -3649,6 +3640,9 @@ def parse_terreazur_facture(text: str) -> List[dict]:
                     "unite": unit,
                     "ligne_originale": line
                 })
+    
+    # ✅ APPEL MAGIQUE : Récupération des prix orphelins
+    produits = reconcile_orphan_prices(produits, text)
             
     return produits
 
