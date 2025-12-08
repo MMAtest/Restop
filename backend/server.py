@@ -4151,6 +4151,8 @@ def parse_facture_fournisseur(texte_ocr: str) -> FactureFournisseurData:
         produits = parse_presthyg_facture(texte_ocr)
     elif strategy == "GFD_LERDA":
         produits = parse_gfd_lerda_facture(texte_ocr)
+    elif strategy == "DIAMANT_TERROIR":
+        produits = parse_diamant_terroir_facture(texte_ocr)
         
     # Si le parser spécifique n'a rien trouvé, fallback sur le générique (sauf pour Mammafiore/Metro qui sont stricts)
     if not produits and strategy == "GENERIC":
