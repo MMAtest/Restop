@@ -3976,6 +3976,7 @@ def parse_metro_facture(text: str) -> List[dict]:
     for line in lines:
         line = line.strip()
         if not line: continue
+        if is_noise_line(line): continue # 🧹 NETTOYAGE
         
         # A. Détection Ligne Produit (Code 7 chiffres + Texte)
         # Ex: "0791335 PATE A TARTINERSPECULOOS 1.6K"
