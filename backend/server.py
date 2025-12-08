@@ -3742,11 +3742,6 @@ def parse_royaume_des_mers_facture(text: str) -> List[dict]:
     produits = []
     lines = text.split('\n')
     
-    # Format:
-    # Ligne 1: SEICHE DECCGL1/3 NOIR DLC-J CONDI
-    # Ligne 2: Lot: 25_008679 (30,08)
-    
-    # Mots clés Poisson
     fish_keywords = ["SEICHE", "SAUMON", "FILET", "DOS", "BAR", "DORADE", 
                     "HUITRE", "MOULE", "GAMBAS", "CREVETTE", "LOUP", "TURBOT", 
                     "CALAMAR", "POULPE", "PALOURDE", "COKTAIL", "FRITURE"]
@@ -3757,14 +3752,10 @@ def parse_royaume_des_mers_facture(text: str) -> List[dict]:
         line = line.strip()
         if len(line) < 5: continue
         
-        # A. Ligne Produit (Texte majuscule avec mot clé)
         is_product_line = any(k in line.upper() for k in fish_keywords) and not "LOT:" in line.upper()
         
         if is_product_line:
-            # On enregistre ce produit et on attend la ligne de poids
-            if current_product:
-                # On sauvegarde le précédent qui n'a peut-être pas eu de ligne poids
-                produits.append(current_product)
+            if current_product: produits.append(current_product)
             
             current_product = {
                 "nom": line,
@@ -3776,9 +3767,7 @@ def parse_royaume_des_mers_facture(text: str) -> List[dict]:
             }
             continue
             
-        # B. Ligne Lot/Poids (souvent juste en dessous)
         if current_product and ("LOT:" in line.upper() or "(" in line):
-            # Chercher le poids entre parenthèses: (30,08)
             weight_match = re.search(r'\(([\d,]+)\)', line)
             if weight_match:
                 try:
@@ -3787,13 +3776,13 @@ def parse_royaume_des_mers_facture(text: str) -> List[dict]:
                     current_product["ligne_originale"] += f" | {line}"
                 except: pass
             
-            # On valide ce produit maintenant qu'on a (peut-être) le poids
             produits.append(current_product)
             current_product = None
 
-    # Ne pas oublier le dernier produit en suspens
-    if current_product:
-        produits.append(current_product)
+    if current_product: produits.append(current_product)
+
+    # ✅ APPEL MAGIQUE : Récupération des prix orphelins
+    produits = reconcile_orphan_prices(produits, text)
 
     return produits
 
