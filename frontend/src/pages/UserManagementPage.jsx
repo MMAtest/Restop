@@ -202,7 +202,7 @@ const UserManagementPage = ({ currentUser }) => {
         <h1 className="text-3xl font-bold text-gray-800 mb-2">
           👑 Gestion des Utilisateurs
         </h1>
-        <p className="text-gray-600">Panneau d'administration pour la gestion des comptes utilisateurs et des rôles</p>
+        <p className="text-gray-600">Panneau d&apos;administration pour la gestion des comptes utilisateurs et des rôles</p>
       </div>
 
       {/* Stats Cards */}
@@ -434,7 +434,7 @@ const UserManagementPage = ({ currentUser }) => {
                 {/* Username */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Nom d'utilisateur *
+                    Nom d&apos;utilisateur *
                   </label>
                   <input
                     type="text"
@@ -553,7 +553,7 @@ const UserManagementPage = ({ currentUser }) => {
                     fontWeight: '600'
                   }}
                 >
-                  {editingUser ? 'Modifier' : 'Créer'} l'utilisateur
+                  {editingUser ? 'Modifier' : 'Créer'} l&apos;utilisateur
                 </button>
               </div>
             </form>
