@@ -3470,6 +3470,61 @@ def detect_supplier_strategy(text: str) -> str:
         
     return "GENERIC"
 
+def extract_implicit_quantity(nom: str, current_qty: float) -> tuple:
+    """
+    Analyse le nom du produit pour extraire poids/quantité implicite.
+    Ex: "Moule 10K" -> (10.0, "kg", "Moule")
+    Ex: "Carotte X8" -> (8.0, "pièce", "Carotte")
+    """
+    final_qty = current_qty
+    final_unit = "pièce" # Par défaut
+    clean_name = nom
+    
+    # 1. Détection KILOS (ex: 10K, 5KG, 2.5Kg)
+    # Regex: Nombre + (K ou KG) entouré de limites de mots ou fin de ligne
+    match_kg = re.search(r'\b(\d+[\.,]?\d*)\s*(?:K|KG|Kg|kg)\b', clean_name)
+    if match_kg:
+        try:
+            weight = float(match_kg.group(1).replace(',', '.'))
+            # On multiplie la quantité colis par le poids
+            final_qty = current_qty * weight
+            final_unit = "kg"
+            # On retire l'info du nom pour nettoyer
+            clean_name = clean_name.replace(match_kg.group(0), "").strip()
+            # Nettoyage extra (ex: "Moule  pac" -> "Moule pac")
+            clean_name = re.sub(r'\s+', ' ', clean_name)
+            return final_qty, final_unit, clean_name
+        except: pass
+
+    # 2. Détection GRAMMES (ex: 250g, 500GR)
+    match_g = re.search(r'\b(\d+)\s*(?:G|g|GR|gr)\b', clean_name)
+    if match_g:
+        try:
+            weight = float(match_g.group(1))
+            # On convertit en KG pour le stock ? Ou on laisse en G ?
+            # Pour la cuisine, souvent on préfère les KG. 250g = 0.25kg
+            # Mais gardons "g" pour la précision si c'est des petites quantités
+            final_qty = current_qty * weight
+            final_unit = "g"
+            clean_name = clean_name.replace(match_g.group(0), "").strip()
+            clean_name = re.sub(r'\s+', ' ', clean_name)
+            return final_qty, final_unit, clean_name
+        except: pass
+
+    # 3. Détection MULTIPLICATEUR (ex: X12, x 6, *8)
+    match_x = re.search(r'[\s\*](?:X|x)\s*(\d+)\b', clean_name)
+    if match_x:
+        try:
+            count = float(match_x.group(1))
+            final_qty = current_qty * count
+            final_unit = "pièce"
+            clean_name = clean_name.replace(match_x.group(0), "").strip()
+            clean_name = re.sub(r'\s+', ' ', clean_name)
+            return final_qty, final_unit, clean_name
+        except: pass
+        
+    return final_qty, final_unit, clean_name
+
 def parse_terreazur_facture(text: str) -> List[dict]:
     """Parser spécifique TERREAZUR (Stratégie Code Pomona Optimisée + Fallback)"""
     produits = []
@@ -3485,17 +3540,16 @@ def parse_terreazur_facture(text: str) -> List[dict]:
         # Regex améliorée pour le code Pomona
         match_code = re.search(r'(?:^|[\s\/])(\d{6})\s+(.+)', line)
         
-        # Stratégie Secours : Fin de ligne typique TerreAzur (ES, PT, FR, IT, MA, PL...)
-        # Ex: "Moule bouchot 5kg FR"
+        # Stratégie Secours : Fin de ligne typique TerreAzur (ES, PT, FR...)
         has_country_code = re.search(r'\s+[A-Z]{2}$', line)
         
         if match_code or has_country_code:
             if match_code:
                 reste = match_code.group(2).strip()
             else:
-                reste = line # On prend toute la ligne si pas de code
+                reste = line 
             
-            # Nettoyage du nom (retirer les codes de fin type "ES", "PT", et les prix)
+            # Extraction Prix
             prices = re.findall(r'(\d+[\.,]\d{2})', line)
             total = 0.0
             if prices:
@@ -3504,20 +3558,23 @@ def parse_terreazur_facture(text: str) -> List[dict]:
                     reste = reste.split(prices[-1])[0].strip()
                 except: pass
             
-            # Nettoyage spécifique TerreAzur (codes fin de ligne)
-            nom_final = re.sub(r'\s+[A-Z]{2}$', '', reste).strip()
+            # Nettoyage codes pays
+            nom_brut = re.sub(r'\s+[A-Z]{2}$', '', reste).strip()
             
-            # Filtre anti-bruit final (ne pas prendre les adresses)
-            if "CEDEX" in nom_final or "MARSEILLE" in nom_final: continue
+            # Filtre anti-bruit
+            if "CEDEX" in nom_brut or "MARSEILLE" in nom_brut: continue
+            
+            # ✅ INTELLIGENCE : Extraction Quantité/Unité depuis le nom
+            qty, unit, nom_final = extract_implicit_quantity(nom_brut, 1.0)
             
             # Éviter doublons
             if not any(p["nom"] == nom_final for p in produits):
                 produits.append({
                     "nom": nom_final,
-                    "quantite": 1.0,
+                    "quantite": qty,
                     "prix_unitaire": 0.0,
                     "total": total,
-                    "unite": "pièce/kg",
+                    "unite": unit,
                     "ligne_originale": line
                 })
             
