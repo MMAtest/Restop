@@ -3981,7 +3981,6 @@ def parse_metro_facture(text: str) -> List[dict]:
     
     # Listes tampons pour la reconstruction
     candidates_products = [] # Stores (Code, Nom, LigneOrigine)
-    candidates_prices = []   # Stores (Prix, LigneOrigine)
     
     # 1. Extraction des entités déconnectées
     for line in lines:
@@ -3989,56 +3988,79 @@ def parse_metro_facture(text: str) -> List[dict]:
         if not line: continue
         if is_noise_line(line): continue # 🧹 NETTOYAGE
         
-        # A. Détection Ligne Produit (Code 7 chiffres + Texte)
-        # Ex: "0791335 PATE A TARTINERSPECULOOS 1.6K"
-        prod_match = re.search(r'^(\d{7})\s+([A-Z\s\d\%\*\-\.\,]+)', line)
+        # A. Détection Ligne Produit (Stratégie Entonnoir)
+        
+        # Regex 1 : Code METRO ou EAN (6 à 14 chiffres) en début de ligne
+        # On capture tout ce qui ressemble à "1234567 LIBELLE PRODUIT..."
+        prod_match = re.search(r'^(\d{6,14})\s+([A-Z\s\d\%\*\-\.\,]+)', line)
+        
         if prod_match:
             code = prod_match.group(1)
             nom = prod_match.group(2).strip()
-            # Nettoyage du nom (parfois le prix/poids est collé à la fin)
-            # Si le nom finit par un nombre décimal, on le coupe?
-            # Ex: "CONCASSE 1, 1KG" -> "CONCASSE"
-            candidates_products.append({"code": code, "nom": nom})
-            continue
             
-        # B. Détection Ligne Prix Isolé
-        # Ex: "10, 450" ou "41,80 B"
-        # On cherche des lignes courtes qui ressemblent à des montants
-        if len(line) < 20:
-            # Nettoyer " B" ou " E" à la fin
-            clean_line = re.sub(r'\s+[A-Z]$', '', line).replace(' ', '').replace(',', '.')
-            try:
-                val = float(clean_line)
-                if val > 0:
-                    candidates_prices.append(val)
-            except: pass
+            # On tente d'extraire les chiffres de la ligne pour pré-remplir
+            # Metro format: ... Prix(3dec) ... Qté ... Total
+            
+            qty = 1.0
+            unit_price = 0.0
+            total = 0.0
+            
+            # Recherche de prix spécifiques METRO (3 décimales : 10,450)
+            price_match = re.search(r'(\d+,\s*\d{3})', line)
+            if price_match:
+                try:
+                    unit_price = float(price_match.group(1).replace(' ', '').replace(',', '.'))
+                except: pass
+            
+            # Recherche de quantité (entier isolé ou float simple)
+            # Souvent entre le prix unitaire et le total
+            # On utilise une heuristique simple: chercher tous les nombres
+            nums = re.findall(r'(\d+[\.,]\d+|\d+)', line)
+            clean_nums = []
+            for n in nums:
+                try:
+                    clean_nums.append(float(n.replace(',', '.')))
+                except: pass
+            
+            # Si on a trouvé un prix unitaire, on essaie de déduire le reste
+            if unit_price > 0 and len(clean_nums) >= 3:
+                # Chercher Total = Qté * Prix
+                for val in clean_nums:
+                    if val == unit_price: continue
+                    # Test si val est le total
+                    calc_qty = val / unit_price
+                    if abs(calc_qty - round(calc_qty)) < 0.05:
+                        qty = round(calc_qty)
+                        total = val
+                        break
+            
+            # ✅ INTELLIGENCE : Extraction Quantité/Unité depuis le nom (ex: 1.6K)
+            qty_implicit, unit, nom_final = extract_implicit_quantity(nom, qty)
+            
+            candidates_products.append({
+                "code": code, 
+                "nom": nom_final,
+                "quantite": qty_implicit,
+                "unite": unit,
+                "prix_unitaire": unit_price,
+                "total": total,
+                "ligne_originale": line
+            })
+            continue
 
-    # 2. Tentative de réconciliation (Puzzle)
-    # On essaie d'associer chaque produit à un prix trouvé plus bas
-    # C'est heuristique : on suppose que l'ordre est conservé
-    
-    # Metro a often: Prix Unitaire, puis Quantité, puis Total
-    # Si on a 3x plus de nombres que de produits, on peut tenter de mapper
-    
-    count_prods = len(candidates_products)
-    
-    for i, prod in enumerate(candidates_products):
-        nom_brut = prod["nom"]
-        
-        # ✅ INTELLIGENCE : Extraction Quantité/Unité depuis le nom
-        # Metro met souvent "1.6K" ou "1L" dans le nom
-        qty, unit, nom_final = extract_implicit_quantity(nom_brut, 1.0)
-        
+    # 2. Construction de la liste finale
+    for prod in candidates_products:
         produits.append({
-            "nom": nom_final,
-            "quantite": qty,
-            "prix_unitaire": 0.0, 
-            "total": 0.0,
-            "unite": unit,
-            "ligne_originale": f"{prod['code']} {prod['nom']}"
+            "nom": prod["nom"],
+            "quantite": prod["quantite"],
+            "prix_unitaire": prod["prix_unitaire"],
+            "total": prod["total"],
+            "unite": prod["unite"],
+            "ligne_originale": prod["ligne_originale"]
         })
     
     # ✅ APPEL MAGIQUE : Récupération des prix orphelins
+    # (Pour ceux qui n'ont pas été trouvés par la Regex 3 décimales)
     produits = reconcile_orphan_prices(produits, text)
         
     return produits
