@@ -3899,10 +3899,8 @@ def parse_mammafiore_facture(text: str) -> List[dict]:
             continue
             
         # C. Descriptions
-        # Majuscules, assez long, pas de mots clés système
-        blacklist = ["TOTAL", "PAGE", "DATE", "TVA", "MONTANT", "REMISE", "NET", "EUR", "SARL", "TEL", "EMAIL", "MIN DES", "AVENUE", "MARSEILLE", "FRANCE"]
-        if len(line) > 8 and not any(b in line.upper() for b in blacklist):
-            # Exclure les lignes qui ressemblent à des adresses ou infos légales
+        if len(line) > 8 and not is_noise_line(line): # 🧹 NETTOYAGE
+            # Mammafiore descriptions sont souvent en MAJUSCULES
             if not re.search(r'\d{5}', line): # Pas de code postal
                 col_descs.append(line)
 
