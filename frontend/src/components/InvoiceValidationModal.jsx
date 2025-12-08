@@ -22,26 +22,23 @@ const InvoiceValidationModal = ({ documentId, onClose, onSuccess, produitsList, 
         const data = response.data;
         setAnalysis(data);
         
-        // Logique Fournisseur Intelligent
+        // Logique Fournisseur
         if (data.supplier_id) {
-            // Fournisseur reconnu
             setSelectedSupplierId(data.supplier_id);
             setNewSupplierName(data.supplier_name);
         } else {
-            // Nouveau fournisseur
-            setSelectedSupplierId('new'); // Mode création par défaut
+            setSelectedSupplierId('new');
             setNewSupplierName(data.supplier_name || 'Nouveau Fournisseur');
         }
 
-        // Logique Produits Intelligente
+        // Logique Produits
         const initializedItems = data.items.map(item => ({
           ...item,
-          // Si matché -> ID, Sinon -> Vide (Mode Création)
           selected_product_id: item.status === 'matched' ? item.product_id : '', 
-          // Si Création -> Nom OCR par défaut, sinon Nom Base
           final_name: item.status === 'matched' ? item.product_name : item.ocr_name,
-          final_qty: item.ocr_qty,
-          final_unit: item.ocr_unit,
+          final_qty: item.ocr_qty || 1,
+          final_unit: item.ocr_unit || 'pièce',
+          final_price: item.ocr_price || 0, // Prix unitaire
           batch_number: '',
           dlc: ''
         }));
@@ -49,7 +46,7 @@ const InvoiceValidationModal = ({ documentId, onClose, onSuccess, produitsList, 
         setLoading(false);
       } catch (err) {
         console.error("Erreur analyse:", err);
-        setError("Impossible d'analyser la facture. Vérifiez que c'est bien une facture fournisseur.");
+        setError("Impossible d'analyser la facture.");
         setLoading(false);
       }
     };
@@ -63,14 +60,13 @@ const InvoiceValidationModal = ({ documentId, onClose, onSuccess, produitsList, 
     const newItems = [...items];
     newItems[index] = { ...newItems[index], [field]: value };
     
-    // Si on sélectionne un produit existant, on met à jour son nom final
+    // Auto-remplissage si on sélectionne un produit existant
     if (field === 'selected_product_id') {
         const prod = produitsList.find(p => p.id === value);
         if (prod) {
             newItems[index].final_name = prod.nom;
             newItems[index].final_unit = prod.unite;
         } else if (value === "") {
-            // Retour au mode création : on remet le nom OCR original
             newItems[index].final_name = newItems[index].ocr_name;
         }
     }
@@ -78,21 +74,39 @@ const InvoiceValidationModal = ({ documentId, onClose, onSuccess, produitsList, 
     setItems(newItems);
   };
 
+  // Fonction de suppression de ligne
+  const handleDeleteItem = (index) => {
+    const newItems = items.filter((_, i) => i !== index);
+    setItems(newItems);
+  };
+
+  // Fonction d'ajout de ligne manuelle
+  const handleAddItem = () => {
+    setItems([...items, {
+        ocr_name: "Nouvel article",
+        selected_product_id: "",
+        final_name: "",
+        final_qty: 1,
+        final_unit: "kg",
+        final_price: 0,
+        batch_number: "",
+        dlc: ""
+    }]);
+  };
+
   const handleValidate = async () => {
     if (!window.confirm("Confirmez-vous l'import de ces produits en stock ?")) return;
     
     setLoading(true);
     try {
-      // Préparer le fournisseur
       let finalSupplierId = selectedSupplierId;
       let finalSupplierName = newSupplierName;
       let createSupplier = false;
 
       if (selectedSupplierId === 'new') {
           createSupplier = true;
-          finalSupplierId = null; // Sera créé par le backend
+          finalSupplierId = null;
       } else {
-          // Récupérer le vrai nom si existant
           const supplier = fournisseursList.find(s => s.id === selectedSupplierId);
           if (supplier) finalSupplierName = supplier.nom;
       }
@@ -102,215 +116,255 @@ const InvoiceValidationModal = ({ documentId, onClose, onSuccess, produitsList, 
         supplier_id: finalSupplierId,
         supplier_name: finalSupplierName,
         create_supplier: createSupplier,
-        supplier_category: newSupplierCategory, // Nouveau champ à gérer côté backend si besoin
+        supplier_category: newSupplierCategory,
         items: items.map(item => ({
             ...item,
+            ocr_price: item.final_price, // On envoie le prix corrigé
             dlc: item.dlc || null,
             batch_number: item.batch_number || null
         }))
       };
       
       const response = await axios.post(`${API}/ocr/confirm-import`, payload);
-      alert(`✅ Import réussi !\n${response.data.stats.stock_entries} entrées de stock créées.\n${response.data.stats.batches_created} lots créés.`);
+      alert(`✅ Import réussi !\n${response.data.stats.stock_entries} entrées de stock créées.`);
       onSuccess();
       onClose();
     } catch (err) {
-      console.error("Erreur validation:", err);
-      alert("Erreur lors de la validation: " + (err.response?.data?.detail || err.message));
+      alert("Erreur: " + (err.response?.data?.detail || err.message));
       setLoading(false);
     }
   };
 
   if (loading) return (
     <div className="modal-overlay">
-      <div className="modal-content">
-        <div style={{textAlign: 'center', padding: '40px'}}>
-          <div style={{fontSize: '40px', marginBottom: '20px'}}>🤖</div>
-          <h3>Lecture intelligente en cours...</h3>
-          <p>Détection des produits et fournisseurs...</p>
-        </div>
+      <div className="modal-content" style={{padding: '40px', textAlign: 'center'}}>
+        <div style={{fontSize: '40px', marginBottom: '20px'}}>🤖</div>
+        <h3>Traitement en cours...</h3>
       </div>
     </div>
   );
 
   if (error) return (
     <div className="modal-overlay">
-      <div className="modal-content">
-        <div style={{textAlign: 'center', padding: '20px'}}>
-          <div style={{color: 'red', fontSize: '40px', marginBottom: '10px'}}>⚠️</div>
-          <h3>Erreur</h3>
-          <p>{error}</p>
-          <button className="button secondary" onClick={onClose} style={{marginTop: '20px'}}>Fermer</button>
-        </div>
+      <div className="modal-content" style={{padding: '20px', textAlign: 'center'}}>
+        <h3 style={{color: 'red'}}>Erreur</h3>
+        <p>{error}</p>
+        <button className="button secondary" onClick={onClose}>Fermer</button>
       </div>
     </div>
   );
 
   return (
     <div className="modal-overlay">
-      <div className="modal-content large" style={{maxWidth: '950px', width: '95%', maxHeight: '90vh', display: 'flex', flexDirection: 'column'}}>
+      <div className="modal-content large" style={{maxWidth: '98%', width: '1400px', height: '95vh', display: 'flex', flexDirection: 'column', padding: '0'}}>
         
-        {/* HEADER : GESTION DU FOURNISSEUR */}
-        <div className="modal-header" style={{borderBottom: '1px solid #eee', paddingBottom: '15px', marginBottom: '15px', flexShrink: 0}}>
-          <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start'}}>
-            <div style={{flex: 1}}>
-                <h3 style={{marginBottom: '10px'}}>📝 Validation Facture</h3>
-                
-                {/* Zone Fournisseur Intelligente */}
-                <div style={{background: '#f0f9ff', padding: '12px', borderRadius: '8px', border: '1px solid #bae6fd'}}>
-                    <div style={{display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap'}}>
-                        <div style={{fontWeight: 'bold', minWidth: '100px'}}>🏢 Fournisseur :</div>
-                        
-                        {/* Sélecteur de Fournisseur */}
-                        <select 
-                            value={selectedSupplierId} 
-                            onChange={(e) => setSelectedSupplierId(e.target.value)}
-                            style={{padding: '8px', borderRadius: '4px', border: '1px solid #ccc', minWidth: '200px', fontWeight: '500'}}
-                        >
-                            <option value="new">➕ Créer nouveau : {analysis.supplier_name}</option>
-                            <optgroup label="Fournisseurs existants">
-                                {fournisseursList.map(f => (
-                                    <option key={f.id} value={f.id}>{f.nom}</option>
-                                ))}
-                            </optgroup>
-                        </select>
-
-                        {/* Si Nouveau : Champs d'édition */}
-                        {selectedSupplierId === 'new' && (
-                            <>
-                                <input 
-                                    type="text" 
-                                    value={newSupplierName}
-                                    onChange={(e) => setNewSupplierName(e.target.value)}
-                                    placeholder="Nom du fournisseur"
-                                    style={{padding: '8px', borderRadius: '4px', border: '1px solid #f59e0b', flex: 1}}
-                                />
-                                <select
-                                    value={newSupplierCategory}
-                                    onChange={(e) => setNewSupplierCategory(e.target.value)}
-                                    style={{padding: '8px', borderRadius: '4px', border: '1px solid #ddd'}}
-                                >
-                                    <option value="frais">Frais</option>
-                                    <option value="surgelés">Surgelés</option>
-                                    <option value="épicerie">Épicerie</option>
-                                    <option value="boissons">Boissons</option>
-                                    <option value="autre">Autres</option>
-                                </select>
-                            </>
-                        )}
-                    </div>
-                    <div style={{fontSize: '13px', color: '#64748b', marginTop: '8px', marginLeft: '110px'}}>
-                        Date: {analysis.facture_date} • N°: {analysis.numero_facture}
-                    </div>
-                </div>
+        {/* HEADER FIXE */}
+        <div style={{padding: '20px', borderBottom: '1px solid #eee', background: '#fff'}}>
+          <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px'}}>
+            <h3 style={{margin: 0}}>📝 Validation Facture</h3>
+            <button onClick={onClose} style={{background: 'none', border: 'none', fontSize: '24px', cursor: 'pointer'}}>×</button>
+          </div>
+          
+          <div style={{display: 'flex', gap: '15px', alignItems: 'center', background: '#f8f9fa', padding: '15px', borderRadius: '8px'}}>
+            <div style={{fontWeight: 'bold'}}>🏢 Fournisseur :</div>
+            <select 
+                value={selectedSupplierId} 
+                onChange={(e) => setSelectedSupplierId(e.target.value)}
+                style={{padding: '8px', borderRadius: '4px', border: '1px solid #ccc', minWidth: '200px'}}
+            >
+                <option value="new">➕ Créer : {analysis.supplier_name}</option>
+                {fournisseursList.map(f => <option key={f.id} value={f.id}>{f.nom}</option>)}
+            </select>
+            
+            {selectedSupplierId === 'new' && (
+                <input 
+                    type="text" 
+                    value={newSupplierName}
+                    onChange={(e) => setNewSupplierName(e.target.value)}
+                    placeholder="Nom du fournisseur"
+                    style={{padding: '8px', border: '1px solid #f59e0b', borderRadius: '4px'}}
+                />
+            )}
+            
+            <div style={{marginLeft: 'auto', color: '#666'}}>
+                Date: <strong>{analysis.facture_date}</strong> • N°: <strong>{analysis.numero_facture}</strong>
             </div>
-            <button className="modal-close" onClick={onClose} style={{background: 'none', border: 'none', fontSize: '28px', cursor: 'pointer', marginLeft: '15px'}}>×</button>
           </div>
         </div>
 
-        {/* BODY : LISTE DES PRODUITS */}
-        <div className="modal-body" style={{overflowY: 'auto', flex: 1}}>
+        {/* TABLEAU SCROLLABLE */}
+        <div style={{flex: 1, overflowY: 'auto', padding: '20px'}}>
           <table style={{width: '100%', borderCollapse: 'collapse', fontSize: '13px'}}>
-            <thead style={{background: '#f8f9fa', position: 'sticky', top: 0, zIndex: 10}}>
+            <thead style={{background: '#f1f5f9', position: 'sticky', top: 0, zIndex: 10}}>
               <tr>
-                <th style={{padding: '12px', textAlign: 'left', borderBottom: '2px solid #e2e8f0'}}>Produit Lu (OCR)</th>
-                <th style={{padding: '12px', textAlign: 'left', borderBottom: '2px solid #e2e8f0', width: '30%'}}>Correspondance Stock</th>
-                <th style={{padding: '12px', textAlign: 'center', width: '70px', borderBottom: '2px solid #e2e8f0'}}>Qté</th>
-                <th style={{padding: '12px', textAlign: 'left', width: '130px', borderBottom: '2px solid #e2e8f0'}}>DLC 📅</th>
-                <th style={{padding: '12px', textAlign: 'left', width: '110px', borderBottom: '2px solid #e2e8f0'}}>Lot 📦</th>
-                <th style={{padding: '12px', textAlign: 'right', borderBottom: '2px solid #e2e8f0'}}>Prix</th>
+                <th style={{padding: '12px', textAlign: 'left', borderBottom: '2px solid #cbd5e1', width: '20%'}}>Produit (OCR) / Nom Final</th>
+                <th style={{padding: '12px', textAlign: 'left', borderBottom: '2px solid #cbd5e1', width: '20%'}}>Correspondance Stock</th>
+                <th style={{padding: '12px', textAlign: 'center', borderBottom: '2px solid #cbd5e1', width: '80px'}}>Qté</th>
+                <th style={{padding: '12px', textAlign: 'center', borderBottom: '2px solid #cbd5e1', width: '100px'}}>Unité</th>
+                <th style={{padding: '12px', textAlign: 'center', borderBottom: '2px solid #cbd5e1', width: '100px'}}>Prix U. (€)</th>
+                <th style={{padding: '12px', textAlign: 'center', borderBottom: '2px solid #cbd5e1', width: '100px'}}>Total (€)</th>
+                <th style={{padding: '12px', textAlign: 'left', borderBottom: '2px solid #cbd5e1'}}>DLC & Lot</th>
+                <th style={{padding: '12px', textAlign: 'center', borderBottom: '2px solid #cbd5e1', width: '50px'}}>Action</th>
               </tr>
             </thead>
             <tbody>
               {items.map((item, index) => (
-                <tr key={index} style={{borderBottom: '1px solid #f1f5f9', background: item.selected_product_id ? 'white' : '#fffbeb'}}>
-                  <td style={{padding: '12px'}}>
-                    <div style={{fontWeight: 'bold', color: '#1e293b'}}>{item.ocr_name}</div>
-                    <div style={{fontSize: '11px', color: '#64748b'}}>{item.ocr_unit}</div>
+                <tr key={index} style={{borderBottom: '1px solid #e2e8f0', background: item.selected_product_id ? '#fff' : '#fff7ed'}}>
+                  
+                  {/* COL 1 : NOM */}
+                  <td style={{padding: '10px'}}>
+                    <input 
+                        type="text" 
+                        value={item.final_name}
+                        onChange={(e) => handleItemChange(index, 'final_name', e.target.value)}
+                        style={{width: '100%', padding: '6px', border: '1px solid #cbd5e1', borderRadius: '4px', fontWeight: 'bold'}}
+                        placeholder="Nom du produit"
+                    />
+                    <div style={{fontSize: '11px', color: '#94a3b8', marginTop: '4px'}}>
+                        Lu: {item.ocr_name}
+                    </div>
                   </td>
-                  <td style={{padding: '12px'}}>
+
+                  {/* COL 2 : CORRESPONDANCE */}
+                  <td style={{padding: '10px'}}>
                     <select 
-                      style={{
-                        width: '100%', 
-                        padding: '8px', 
-                        borderRadius: '6px',
-                        border: item.selected_product_id ? '1px solid #cbd5e1' : '2px solid #f59e0b',
-                        backgroundColor: item.selected_product_id ? 'white' : '#fffbeb',
-                        fontWeight: item.selected_product_id ? 'normal' : 'bold',
-                        color: item.selected_product_id ? 'black' : '#d97706'
-                      }}
+                      style={{width: '100%', padding: '6px', borderRadius: '4px', border: '1px solid #cbd5e1'}}
                       value={item.selected_product_id}
                       onChange={(e) => handleItemChange(index, 'selected_product_id', e.target.value)}
                     >
-                      <option value="">➕ Créer : {item.ocr_name}</option>
-                      <optgroup label="Produits existants">
-                        {produitsList.map(p => (
-                            <option key={p.id} value={p.id}>
-                            {p.nom} ({p.unite})
-                            </option>
-                        ))}
-                      </optgroup>
+                      <option value="">➕ Créer nouveau</option>
+                      {produitsList.map(p => (
+                        <option key={p.id} value={p.id}>{p.nom}</option>
+                      ))}
                     </select>
-                    
-                    {/* Champ d'édition du nom si création */}
-                    {!item.selected_product_id && (
-                        <div style={{marginTop: '6px', display: 'flex', alignItems: 'center'}}>
-                            <span style={{marginRight: '5px'}}>✏️</span>
-                            <input 
-                                type="text"
-                                value={item.final_name}
-                                onChange={(e) => handleItemChange(index, 'final_name', e.target.value)}
-                                placeholder="Nom du produit final"
-                                style={{width: '100%', padding: '6px', fontSize: '12px', border: '1px solid #f59e0b', borderRadius: '4px'}}
-                            />
-                        </div>
-                    )}
                   </td>
-                  <td style={{padding: '12px'}}>
+
+                  {/* COL 3 : QTÉ */}
+                  <td style={{padding: '10px'}}>
                     <input 
                       type="number" 
-                      style={{width: '60px', padding: '6px', textAlign: 'center', borderRadius: '4px', border: '1px solid #cbd5e1'}}
+                      step="0.1"
+                      style={{width: '100%', padding: '6px', textAlign: 'center', border: '1px solid #cbd5e1', borderRadius: '4px'}}
                       value={item.final_qty}
                       onChange={(e) => handleItemChange(index, 'final_qty', parseFloat(e.target.value))}
                     />
                   </td>
-                  <td style={{padding: '12px'}}>
+
+                  {/* COL 4 : UNITÉ */}
+                  <td style={{padding: '10px'}}>
+                    <select
+                        style={{width: '100%', padding: '6px', border: '1px solid #cbd5e1', borderRadius: '4px'}}
+                        value={item.final_unit}
+                        onChange={(e) => handleItemChange(index, 'final_unit', e.target.value)}
+                    >
+                        <option value="pièce">Pièce</option>
+                        <option value="kg">Kg</option>
+                        <option value="g">Gramme</option>
+                        <option value="L">Litre</option>
+                        <option value="colis">Colis</option>
+                        <option value="botte">Botte</option>
+                    </select>
+                  </td>
+
+                  {/* COL 5 : PRIX UNITAIRE */}
+                  <td style={{padding: '10px'}}>
                     <input 
-                      type="date" 
-                      style={{width: '100%', padding: '6px', border: item.dlc ? '1px solid #10b981' : '1px solid #cbd5e1', borderRadius: '4px'}}
-                      value={item.dlc}
-                      onChange={(e) => handleItemChange(index, 'dlc', e.target.value)}
+                      type="number" 
+                      step="0.01"
+                      style={{width: '100%', padding: '6px', textAlign: 'right', border: '1px solid #cbd5e1', borderRadius: '4px'}}
+                      value={item.final_price}
+                      onChange={(e) => handleItemChange(index, 'final_price', parseFloat(e.target.value))}
                     />
                   </td>
-                  <td style={{padding: '12px'}}>
-                    <input 
-                      type="text" 
-                      placeholder="Auto"
-                      style={{width: '100%', padding: '6px', borderRadius: '4px', border: '1px solid #cbd5e1'}}
-                      value={item.batch_number}
-                      onChange={(e) => handleItemChange(index, 'batch_number', e.target.value)}
-                    />
+
+                  {/* COL 6 : TOTAL (Calculé) */}
+                  <td style={{padding: '10px', textAlign: 'right', fontWeight: 'bold', color: '#64748b'}}>
+                    {(item.final_qty * item.final_price).toFixed(2)} €
                   </td>
-                  <td style={{padding: '12px', textAlign: 'right', fontWeight: '500'}}>
-                    {item.ocr_price}€
+
+                  {/* COL 7 : DLC & LOT */}
+                  <td style={{padding: '10px'}}>
+                    <div style={{display: 'flex', gap: '5px', marginBottom: '5px'}}>
+                        <span style={{fontSize: '12px', width: '30px'}}>DLC:</span>
+                        <input 
+                            type="date" 
+                            style={{flex: 1, padding: '4px', border: '1px solid #cbd5e1', borderRadius: '4px'}}
+                            value={item.dlc}
+                            onChange={(e) => handleItemChange(index, 'dlc', e.target.value)}
+                        />
+                    </div>
+                    <div style={{display: 'flex', gap: '5px'}}>
+                        <span style={{fontSize: '12px', width: '30px'}}>Lot:</span>
+                        <input 
+                            type="text" 
+                            placeholder="N° Lot"
+                            style={{flex: 1, padding: '4px', border: '1px solid #cbd5e1', borderRadius: '4px'}}
+                            value={item.batch_number}
+                            onChange={(e) => handleItemChange(index, 'batch_number', e.target.value)}
+                        />
+                    </div>
+                  </td>
+
+                  {/* COL 8 : SUPPRESSION */}
+                  <td style={{padding: '10px', textAlign: 'center'}}>
+                    <button 
+                        onClick={() => handleDeleteItem(index)}
+                        style={{
+                            background: '#fee2e2', 
+                            color: '#dc2626', 
+                            border: 'none', 
+                            borderRadius: '4px', 
+                            width: '32px', 
+                            height: '32px', 
+                            cursor: 'pointer',
+                            display: 'flex', 
+                            alignItems: 'center', 
+                            justifyContent: 'center'
+                        }}
+                        title="Supprimer cette ligne"
+                    >
+                        🗑️
+                    </button>
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
+          
+          <button 
+            onClick={handleAddItem}
+            style={{
+                marginTop: '15px',
+                padding: '10px 20px',
+                background: '#e0f2fe',
+                color: '#0284c7',
+                border: '1px dashed #0284c7',
+                borderRadius: '6px',
+                cursor: 'pointer',
+                width: '100%',
+                fontWeight: 'bold'
+            }}
+          >
+            ➕ Ajouter une ligne manuellement
+          </button>
         </div>
 
-        <div className="modal-footer" style={{borderTop: '1px solid #eee', paddingTop: '15px', marginTop: '15px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexShrink: 0}}>
-          <div style={{fontSize: '13px', color: '#64748b'}}>
-            {items.length} produits à importer
+        {/* FOOTER FIXE */}
+        <div style={{padding: '20px', borderTop: '1px solid #eee', background: '#fff', display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
+          <div style={{fontSize: '16px'}}>
+            <strong>Total Facture : </strong>
+            <span style={{color: '#059669', fontSize: '18px'}}>
+                {items.reduce((acc, item) => acc + (item.final_qty * item.final_price), 0).toFixed(2)} €
+            </span>
           </div>
           <div style={{display: 'flex', gap: '10px'}}>
             <button className="button secondary" onClick={onClose}>Annuler</button>
-            <button className="button success" onClick={handleValidate} style={{padding: '10px 20px', fontSize: '15px'}}>
+            <button className="button success" onClick={handleValidate} style={{padding: '12px 24px', fontSize: '16px'}}>
                 ✅ Valider et Intégrer au Stock
             </button>
           </div>
         </div>
+
       </div>
     </div>
   );
