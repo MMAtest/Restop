@@ -3627,7 +3627,9 @@ def parse_terreazur_facture(text: str) -> List[dict]:
                 except: pass
             
             nom_brut = re.sub(r'\s+[A-Z]{2}$', '', reste).strip()
-            if "CEDEX" in nom_brut or "MARSEILLE" in nom_brut: continue
+            
+            # 🧹 NETTOYAGE DU BRUIT
+            if is_noise_line(nom_brut): continue
             
             qty, unit, nom_final = extract_implicit_quantity(nom_brut, 1.0)
             
@@ -3671,9 +3673,8 @@ def parse_presthyg_facture(text: str) -> List[dict]:
         has_numbers = len(nums) >= 1
         
         if (is_product or has_numbers) and len(line) > 15:
-            # Filtrer les adresses et totaux
-            if any(b in line_upper for b in ["RUE", "AVENUE", "BP", "CEDEX", "TOTAL", "TVA", "NET A PAYER"]):
-                continue
+            # 🧹 NETTOYAGE DU BRUIT
+            if is_noise_line(line): continue
                 
             # Extraction Prix
             total = 0.0
@@ -3683,7 +3684,7 @@ def parse_presthyg_facture(text: str) -> List[dict]:
                 except: pass
                 
             produits.append({
-                "nom": line, # On prend toute la ligne comme nom, l'utilisateur nettoiera
+                "nom": line, 
                 "quantite": 1.0,
                 "prix_unitaire": 0.0,
                 "total": total,
@@ -3719,6 +3720,7 @@ def parse_gfd_lerda_facture(text: str) -> List[dict]:
         if "UNION EUROPEENNE" in line_upper: continue # Origine, pas produit
         if "NE EN" in line_upper or "ELEVE EN" in line_upper: continue # Tracabilité
         if "TOTAL" in line_upper: continue
+        if is_noise_line(line): continue # 🧹 NETTOYAGE
         
         if is_meat or (has_weight and re.search(r'\d', line)):
             # Extraction Prix
