@@ -6655,7 +6655,7 @@ function App() {
 
         {/* USER MANAGEMENT */}
         <div id="users" className={`wireframe-section ${activeTab === "users" ? "active" : ""}`}>
-          <UserManagementPage />
+          <UserManagementPage currentUser={currentUser} />
         </div>
 
       </div>
