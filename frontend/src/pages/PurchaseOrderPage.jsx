@@ -31,7 +31,7 @@ const PurchaseOrderPage = ({ currentUser }) => {
     // Supprimer le padding du content-wrapper pour cette page uniquement
     const contentWrapper = document.querySelector('.content-wrapper');
     if (contentWrapper) {
-      contentWrapper.style.paddingTop = '0';
+      // contentWrapper.style.paddingTop = '0'; // Commenté pour laisser la marge naturelle
     }
     
     // Remettre le padding lors du démontage du composant
@@ -365,7 +365,7 @@ const PurchaseOrderPage = ({ currentUser }) => {
   };
 
   return (
-    <div className="min-h-screen" style={{ marginTop: '-16px', background: 'var(--color-background-dark)', color: 'var(--color-text-primary)' }}>
+    <div className="min-h-screen" style={{ background: 'var(--color-background-dark)', color: 'var(--color-text-primary)' }}>
       {/* Header */}
       <div className="mb-8 px-6 pt-2">
         <h1 className="text-3xl font-bold mb-2" style={{ color: 'var(--color-text-primary)' }}>

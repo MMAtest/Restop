@@ -219,10 +219,10 @@ body {
   max-width: 100vw;
 }
 
-/* Remove top padding for orders page */
+/* Remove top padding for orders page - FIXED: Removed negative margin to show title */
 .wireframe-section#orders {
   padding-top: 0 !important;
-  margin-top: -16px !important;
+  /* margin-top: -16px !important; RETIRÉ pour éviter de tronquer le titre */
 }
 
 /* ===== WIREFRAME SECTIONS ===== */
