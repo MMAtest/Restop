@@ -2794,7 +2794,7 @@ function App() {
                   <div className="subtitle">{filteredAnalytics.couvertsSoir} couverts</div>
                 </div>
                 {/* Nouveaux KPIs - Ticket moyen par couvert */}
-                <div className="kpi-card">
+                <div className="kpi-card" style={{textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center'}}>
                   <div className="icon">🍽️</div>
                   <div className="title">Ticket Moyen Global</div>
                   <div className="value">
@@ -2805,10 +2805,10 @@ function App() {
                   </div>
                   <div className="subtitle">par couvert</div>
                 </div>
-                <div className="kpi-card">
+                <div className="kpi-card" style={{textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center'}}>
                   <div className="icon">🕐</div>
                   <div className="title">Ticket Moyen par Service</div>
-                  <div className="value" style={{display: 'flex', flexDirection: 'column', gap: '4px'}}>
+                  <div className="value" style={{display: 'flex', flexDirection: 'column', gap: '4px', alignItems: 'center'}}>
                     <div style={{display: 'flex', alignItems: 'center', gap: '8px'}}>
                       <span>☀️</span>
                       <span>{filteredAnalytics.couvertsMidi > 0 ? (filteredAnalytics.caMidi / filteredAnalytics.couvertsMidi).toFixed(2) : '0.00'}€</span>
