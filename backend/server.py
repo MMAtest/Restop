@@ -8182,6 +8182,7 @@ class ImportConfirmationRequest(BaseModel):
     supplier_name: str
     create_supplier: bool = False
     items: List[FactureItemAnalysis]
+    supplier_category: str = "frais" # Default category
 
 @api_router.post("/ocr/analyze-facture/{document_id}", response_model=FactureAnalysisResult)
 async def analyze_facture_for_review(document_id: str):
@@ -8267,6 +8268,28 @@ async def confirm_import_facture(request: ImportConfirmationRequest):
     """
     Step 2 of Reconciliation: Apply validated data to system.
     Creates Products, Suppliers, Stock Movements, and BATCHES with DLC.
+            # ✅ MEMOIRE : Vérifier si on a une correction apprise pour ce produit
+            if result.supplier_id:
+                # Chercher dans la mémoire : (SupplierID + OCR Name) -> ProductID
+                learned = await db.ocr_product_mappings.find_one({
+                    "supplier_id": result.supplier_id,
+                    "ocr_raw_name": ocr_name
+                })
+                
+                if learned:
+                    # On applique ce qu'on a appris !
+                    mapped_product = await db.produits.find_one({"id": learned["final_product_id"]})
+                    if mapped_product:
+                        item_analysis.product_id = mapped_product["id"]
+                        item_analysis.product_name = mapped_product["nom"]
+                        item_analysis.selected_product_id = mapped_product["id"]
+                        item_analysis.confidence = 1.0 # Confiance absolue (c'est vous qui l'avez dit)
+                        item_analysis.status = "matched"
+                        
+                        # Si on a appris une correction de quantité (ex: 1 carton -> 10kg)
+                        if learned.get("qty_multiplier") and learned["qty_multiplier"] != 1.0:
+                            item_analysis.final_qty = item_analysis.ocr_qty * learned["qty_multiplier"]
+                            item_analysis.final_unit = mapped_product.get("unite", "kg")
     """
     try:
         # 1. Gérer le fournisseur
