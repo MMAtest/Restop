@@ -193,8 +193,8 @@ const InvoiceValidationModal = ({ documentId, onClose, onSuccess, produitsList, 
         </div>
 
         {/* TABLEAU SCROLLABLE */}
-        <div style={{flex: 1, overflowY: 'auto', padding: '20px'}}>
-          <table style={{width: '100%', borderCollapse: 'collapse', fontSize: '13px'}}>
+        <div style={{flex: 1, overflowY: 'auto', padding: '20px', overflowX: 'auto'}}>
+          <table style={{width: '100%', minWidth: '800px', borderCollapse: 'collapse', fontSize: '13px'}}>
             <thead style={{background: '#f1f5f9', position: 'sticky', top: 0, zIndex: 10}}>
               <tr>
                 <th style={{padding: '12px', textAlign: 'left', borderBottom: '2px solid #cbd5e1', width: '20%'}}>Produit (OCR) / Nom Final</th>
