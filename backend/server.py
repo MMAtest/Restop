@@ -3752,71 +3752,91 @@ def parse_terreazur_facture(text: str) -> List[dict]:
     return produits
 
 def parse_presthyg_facture(text: str) -> List[dict]:
-    """Parser spécifique PREST'HYG (Stratégie Structurelle & Prix)"""
+    """Parser spécifique PREST'HYG (Stratégie Zip Colonnes)"""
     produits = []
     lines = text.split('\n')
     
-    # Stratégie : PrestHyg a souvent une structure "Code ... Libellé ... Qté ... Prix"
-    # Ou juste "Libellé ... Prix"
-    # On abandonne la liste de mots-clés trop restrictive.
+    col_codes = []
+    col_descs = []
+    col_prices = []
+    col_quantities = []
     
+    # 1. SCAN GLOBAL
     for line in lines:
         line = line.strip()
-        if len(line) < 10: continue
-        if is_noise_line(line): continue
+        if not line: continue
         
-        # Pattern 1: Ligne qui finit par un prix (XX,XX)
-        # Ex: "Bobine Ouate ... 12,50"
-        match_price_end = re.search(r'(.+?)\s+(\d+[\.,]\d{2})\s*[€]?\s*$', line)
+        # A. Codes (8 chiffres: 64065007)
+        if re.match(r'^\d{8}$', line):
+            col_codes.append(line)
+            continue
+            
+        # B. Prix (XX,XX €)
+        price_match = re.search(r'(\d+[\.,]\d{2})\s*€', line)
+        if price_match:
+            try:
+                val = float(price_match.group(1).replace(',', '.'))
+                col_prices.append(val)
+            except: pass
+            continue
+            
+        # C. Quantités (Entiers isolés < 100)
+        if re.match(r'^\d{1,3}$', line):
+            try:
+                val = float(line)
+                col_quantities.append(val)
+            except: pass
+            continue
+            
+        # D. Descriptions (Majuscules, longs)
+        if len(line) > 10 and not is_noise_line(line) and not "REF." in line.upper():
+            col_descs.append(line)
+
+    # 2. ZIP SÉQUENTIEL
+    # PrestHyg est très structuré. Ordre: Code -> Qté -> Desc -> Prix
+    # Mais OCR peut mélanger. On se base sur les Codes.
+    
+    limit = len(col_codes)
+    
+    for i in range(limit):
+        code = col_codes[i]
         
-        # Pattern 2: Code au début
-        match_code_start = re.match(r'^\d{4,6}\s+(.+)', line)
+        # Desc
+        nom = "Produit Inconnu"
+        if i < len(col_descs):
+            nom = col_descs[i]
+            
+        # Qté
+        qty = 1.0
+        if i < len(col_quantities):
+            qty = col_quantities[i]
+            
+        # Prix
+        # PrestHyg met 2 prix par ligne (PU et Total). Donc on prend i*2 et i*2+1
+        price = 0.0
+        total = 0.0
         
-        if match_price_end or match_code_start:
-            # Extraction Données
-            nom = line
-            qty = 1.0
-            total = 0.0
+        if (i*2) < len(col_prices):
+            price = col_prices[i*2]
+        if (i*2+1) < len(col_prices):
+            total = col_prices[i*2+1]
             
-            # Essai d'extraction plus fine
-            # Chercher Qté et Total
-            nums = re.findall(r'(\d+[\.,]\d{2}|\d+)', line)
+        # Correction si décalage
+        if total == 0 and price > 0:
+            total = price * qty
             
-            # Convertir les nombres trouvés
-            clean_nums = []
-            for n in nums:
-                try:
-                    val = float(n.replace(',', '.'))
-                    clean_nums.append(val)
-                except: pass
-            
-            if clean_nums:
-                # Le dernier est souvent le total
-                total = clean_nums[-1]
-                # L'avant dernier est souvent le prix unitaire ou la quantité
-                if len(clean_nums) >= 2:
-                    val_prev = clean_nums[-2]
-                    # Si petit entier (< 50) -> Quantité
-                    if val_prev.is_integer() and val_prev < 100:
-                        qty = val_prev
-            
-            # Nettoyage du nom (retirer les chiffres de la fin)
-            nom = re.sub(r'[\d\s\.,€]+$', '', nom).strip()
-            
-            # Filtre final (éviter les lignes de totaux qui auraient passé le noise_filter)
-            if "NET" in nom.upper() or "TOTAL" in nom.upper(): continue
-            
-            produits.append({
-                "nom": nom,
-                "quantite": qty,
-                "prix_unitaire": 0.0,
-                "total": total,
-                "unite": "pièce",
-                "ligne_originale": line
-            })
-            
-    # Appel magique pour compléter les trous
-    produits = reconcile_orphan_prices(produits, text)
+        produits.append({
+            "nom": nom,
+            "quantite": qty,
+            "prix_unitaire": price,
+            "total": total,
+            "unite": "pièce/colis",
+            "ligne_originale": f"{code} {nom}"
+        })
+    
+    # Si pas de codes trouvés (mauvaise lecture), fallback sur Ramasse-Miettes
+    if not produits:
+        produits = reconcile_orphan_prices(produits, text)
             
     return produits
 
