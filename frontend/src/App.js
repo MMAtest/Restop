@@ -5352,7 +5352,7 @@ function App() {
                             <div className="item-actions">
                               <button 
                                 className="button small"
-                                onClick={() => handlePreviewDocument(doc)}
+                                onClick={() => handleSelectDocument(doc)}
                               >
                                 👁️ Aperçu
                               </button>
@@ -5781,7 +5781,7 @@ function App() {
                               <div className="item-actions">
                                 <button 
                                   className="button small"
-                                  onClick={() => handlePreviewDocument(doc)}
+                                  onClick={() => handleSelectDocument(doc)}
                                 >
                                   👁️ Aperçu
                                 </button>
@@ -6018,7 +6018,7 @@ function App() {
                               <div style={{display: 'flex', gap: '8px'}}>
                                 <button 
                                   className="button small"
-                                  onClick={() => handlePreviewDocument(doc)}
+                                  onClick={() => handleSelectDocument(doc)}
                                   style={{fontSize: '12px', padding: '4px 8px'}}
                                 >
                                   👁️ Aperçu
