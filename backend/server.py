@@ -3836,18 +3836,18 @@ def parse_presthyg_facture(text: str) -> List[dict]:
     return produits
 
 def parse_gfd_lerda_facture(text: str) -> List[dict]:
-    """Parser spécifique GFD LERDA (Stratégie Viande Stricte)"""
+    """Parser spécifique GFD LERDA (Stratégie Viande Stricte + Poids)"""
     produits = []
     lines = text.split('\n')
     
-    # Blacklist spécifique LERDA pour nettoyer le bruit (7 -> 4 produits)
+    # Blacklist spécifique LERDA
     lerda_blacklist = [
         "AGRÉMENT", "AGREMENT", "UE", "NÉ EN", "NE EN", "ELEVÉ", "ELEVE", 
         "ABATTU", "ORIGINE", "DÉCOUPÉ", "DECOUPE", "DLC", "DLUO", "LOT", 
         "POIDS", "COLIS", "TEMPERATURE", "CAMION", "REPRESENTANT"
     ]
     
-    # Mots clés Viande (pour repêcher si pas de prix)
+    # Mots clés Viande
     meat_keywords = ["AGNEAU", "BOEUF", "VEAU", "PORC", "POULET", "CANARD", 
                     "MAGRET", "ENTRECOTE", "FILET", "GIGOT", "BAVETTE", "FAUX", "ONGLET", "CARCASSE"]
     
@@ -3855,18 +3855,17 @@ def parse_gfd_lerda_facture(text: str) -> List[dict]:
         line_upper = line.strip().upper()
         if len(line) < 10: continue
         if is_noise_line(line): continue
-        
-        # 1. Filtre Anti-Bruit Spécifique
         if any(b in line_upper for b in lerda_blacklist): continue
         
-        # 2. Détection
-        # Soit un mot clé viande
+        # 1. Détection par mots clés Viande
         is_meat = any(k in line_upper for k in meat_keywords)
-        # Soit une ligne avec un prix explicite à la fin
-        has_price = re.search(r'\d+[\.,]\d{2}\s*$', line)
         
-        if is_meat or has_price:
-            # Extraction Prix
+        # 2. Détection par Structure (Poids + Prix)
+        # Ex: "BLABLA VIANDE ... 1.5 KG ... 15.00"
+        has_weight = "KG" in line_upper or " GR" in line_upper
+        has_price = re.search(r'\d+[\.,]\d{2}\s*$', line) # Prix à la fin
+        
+        if is_meat or (has_weight and has_price):
             prices = re.findall(r'(\d+[\.,]\d{2})', line)
             total = 0.0
             if prices:
@@ -3879,7 +3878,7 @@ def parse_gfd_lerda_facture(text: str) -> List[dict]:
                 "quantite": 1.0,
                 "prix_unitaire": 0.0,
                 "total": total,
-                "unite": "kg", # Lerda c'est du poids
+                "unite": "kg",
                 "ligne_originale": line
             })
     
