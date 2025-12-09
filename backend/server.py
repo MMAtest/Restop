@@ -3511,65 +3511,57 @@ def detect_supplier_strategy(text: str) -> str:
 
 def is_noise_line(line: str) -> bool:
     """
-    Détecte si une ligne est du bruit (headers, footers, infos légales, etc.)
-    et doit être ignorée lors du parsing des produits.
+    Filtre anti-bruit strict pour éliminer les lignes qui ne sont PAS des produits.
+    Retourne True si la ligne est du bruit.
     """
     if not line or len(line.strip()) < 3:
         return True
     
     line_upper = line.upper().strip()
     
-    # Mots-clés de bruit communs
-    noise_keywords = [
+    # 1. Mots-clés "Bruit Récurrent" (Basé sur vos factures)
+    strict_noise = [
+        "PARC D'ACTIVITÉS", "PARC D'ACTIVITES", "LA FORCE D'UN EXPERT",
+        "SITE LIVREUR", "LIVRÉ PAR", "LIVRE PAR", "CODE CLIENT",
+        "VOS RÉF", "VOS REF", "MODE DE RÈGLEMENT", "SAISI PAR",
+        "PRODUITS D'EXCEPTION", "TABLE D'AUGUSTINE", "PLACE DES AUGUSTINES",
+        "MARSEILLE", "SIGNES", "LE MUY", "PENNES MIRABEAU",
+        "CAPITAL SOCIAL", "R.C.S", "INTRACOMMUNAUTAIRE", "AGRÉMENT",
+        "HORAIRES CLIENT", "TRES IMPORTANT", "DEMENAGE",
+        "PAGE ", "SUITE", "FIN", "REPORT", "REPRESENTANT"
+    ]
+    
+    if any(k in line_upper for k in strict_noise): return True
+    
+    # 2. Mots-clés Administratifs & Totaux
+    admin_keys = [
         "TOTAL", "SOUS-TOTAL", "SUBTOTAL", "TVA", "TTC", "HT",
-        "REMISE", "REDUCTION", "DISCOUNT", "SOLDE",
+        "REMISE", "REDUCTION", "DISCOUNT", "SOLDE", "NET A PAYER",
         "FACTURE", "INVOICE", "NUMERO", "DATE", "HEURE",
-        "SARL", "SAS", "SA", "EURL", "SIRET", "SIREN", "APE",
-        "TELEPHONE", "TEL", "FAX", "EMAIL", "MAIL",
-        "ADRESSE", "RUE", "AVENUE", "BOULEVARD", "PLACE",
-        "CODE POSTAL", "VILLE", "CEDEX", "FRANCE",
+        "SARL", "SAS", "SA", "EURL", "SIRET", "SIREN", "APE", "NAF",
+        "IBAN", "BIC", "BANQUE", "COMPTE",
         "CONDITIONS", "VENTE", "PAIEMENT", "REGLEMENT",
-        "MERCI", "CONFIANCE", "CORDIALEMENT",
-        "PAGE", "SUITE", "FIN", "REPORT",
-        "NET A PAYER", "MONTANT", "SOMME",
-        "CAISSE", "ESPECE", "CARTE", "CHEQUE",
-        "COMMISSION", "FRAIS", "SERVICE", "POURBOIRE"
+        "QUANTITÉ", "DESIGNATION", "PRIX UNITAIRE", "QTÉ FACT"
     ]
+    if any(k in line_upper for k in admin_keys): return True
     
-    # Vérifier si la ligne contient des mots-clés de bruit
-    for keyword in noise_keywords:
-        if keyword in line_upper:
-            return True
+    # 3. Détection Téléphone / Email / Web (plus stricte)
+    # Tél, Tel:, Tél., 04.91..., 06..., +33...
+    if re.search(r'(T[EÉ]L|FAX|PORT)[:\.]?\s*0', line_upper): return True
+    if re.search(r'(?:0|\+33)\s*[1-9](?:[\s\.-]*\d{2}){4}', line): return True
+    if "@" in line or "WWW." in line_upper or "HTTP" in line_upper: return True
     
-    # Patterns de bruit spécifiques
-    noise_patterns = [
-        r'^\d{2}[/\-\.]\d{2}[/\-\.]\d{2,4}',  # Dates
-        r'^\d{2}:\d{2}',  # Heures
-        r'^\d{5}\s',  # Codes postaux
-        r'^\d{14}',  # SIRET/SIREN
-        r'^\+33\s',  # Numéros de téléphone français
-        r'^0[1-9]\s?\d{2}\s?\d{2}\s?\d{2}\s?\d{2}',  # Numéros français
-        r'@.*\.',  # Emails
-        r'www\.',  # URLs
-        r'http[s]?://',  # URLs
-        r'^\s*[-=_*]{3,}',  # Lignes de séparation
-        r'^\s*[|]{3,}',  # Lignes de séparation OCR
-        r'^\s*\d+\s*%',  # Pourcentages seuls
-        r'^\s*€\s*\d',  # Montants commençant par €
-    ]
+    # 4. Codes Postaux (5 chiffres isolés ou avec ville)
+    if re.search(r'\b13\d{3}\b', line): return True # Codes postaux Marseille/Bouches-du-Rhône
+    if re.search(r'\b83\d{3}\b', line): return True # Codes postaux Var (PrestHyg)
+    if re.search(r'\b\d{5}\b', line) and len(line) < 30: return True
     
-    for pattern in noise_patterns:
-        if re.match(pattern, line, re.IGNORECASE):
-            return True
+    # 5. Lignes trop courtes ou bizarres
+    if len(line_upper) < 4: return True
     
-    # Lignes trop courtes ou trop longues
-    if len(line_upper) < 3 or len(line_upper) > 200:
-        return True
-    
-    # Lignes avec trop de caractères spéciaux
-    special_chars = sum(1 for c in line if not c.isalnum() and not c.isspace())
-    if special_chars > len(line) * 0.5:  # Plus de 50% de caractères spéciaux
-        return True
+    # Lignes avec trop de caractères spéciaux (barres de tableau, étoiles)
+    special_chars = sum(1 for c in line if c in "|/_*=")
+    if special_chars > 3: return True
     
     return False
 
