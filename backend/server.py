@@ -1646,10 +1646,34 @@ def extract_text_from_pdf_google_vision(pdf_content: bytes) -> str:
 def extract_text_from_image_google_vision(image_content: bytes) -> str:
     """
     Extract text from image using Google Cloud Vision API
-    Superior accuracy compared to Tesseract for images
+    Optimized: Resizes heavy images before sending to API to avoid Timeouts
     """
     try:
         print("🚀 Google Vision API - Starting image text extraction")
+        
+        # --- OPTIMISATION : COMPRESSION AVANT ENVOI ---
+        try:
+            # Ouvrir l'image avec PIL
+            img = Image.open(io.BytesIO(image_content))
+            
+            # Vérifier la taille (Si > 1800px de large, c'est trop gros pour rien)
+            if img.width > 1800 or img.height > 1800:
+                print(f"⚠️ Image trop grande ({img.width}x{img.height}). Redimensionnement...")
+                img.thumbnail((1800, 1800), Image.Resampling.LANCZOS)
+                
+                # Convertir en JPEG compressé
+                output = io.BytesIO()
+                # Convertir RGBA en RGB si nécessaire (pour les PNG)
+                if img.mode in ('RGBA', 'P'):
+                    img = img.convert('RGB')
+                    
+                img.save(output, format='JPEG', quality=85)
+                image_content = output.getvalue()
+                print(f"✅ Image optimisée. Nouvelle taille: {len(image_content)} bytes")
+        except Exception as resize_error:
+            print(f"⚠️ Erreur optimisation image (ignorée): {str(resize_error)}")
+            # On continue avec l'image originale si l'optimisation échoue
+        # -----------------------------------------------
         
         # Initialize Google Vision client
         client = vision.ImageAnnotatorClient()
