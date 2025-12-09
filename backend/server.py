@@ -4311,66 +4311,75 @@ def parse_facture_fournisseur(texte_ocr: str) -> FactureFournisseurData:
     elif strategy == "DIAMANT_TERROIR":
         produits = parse_diamant_terroir_facture(texte_ocr)
         
-    # Si le parser spécifique n'a rien trouvé, fallback sur le générique (sauf pour Mammafiore/Metro qui sont stricts)
+    # Si le parser spécifique n'a rien trouvé (ou n'est pas implémenté), fallback sur le générique amélioré
     if not produits and strategy == "GENERIC":
-        # ... (Code générique existant) ...
-        produit_patterns = [
-            r'([A-ZÁÀÂÄÇÉÈÊËÏÎÔÙÛÜŸ][A-Za-zÀ-ÿ\s\d\*\-\(\)\.]{10,80})\s+(\d+[,.]?\d*)\s+(\d+[,.]?\d*)',
-            r'([A-ZÁÀÂÄÇÉÈÊËÏÎÔÙÛÜŸ\s]{3,40})\s+(\d{1,3})\s+(\d{1,3})\s+KG\s+(\d+[,.]?\d*)\s+(\d+[,.]?\d*)',
-            r'([A-Za-zÀ-ÿ\s\'\-]{3,40})\s+(\d+[,.]?\d*)\s+(\d+[,.]?\d*)\s+(\d+[,.]?\d*)',
-        ]
+        print("⚠️ Mode Générique Activé: Stratégie 'Filet Large'")
         
-        exclude_patterns = [
-            'SIRET', 'IBAN', 'CAPITAL', 'TÉL', 'TEL', 'FAX', 'TVA', 'RCS', 
-            'EMAIL', 'WWW', 'HTTP', 'S.A.S', 'SARL', 'EURL', 'CODE NAF', 'APE',
-            'INTRACOMMUNAUTAIRE', 'BIC', 'BANQUE', 'AGENCE', 'COMPTE', 'RIB',
-            'PAGE', 'TOTAL', 'SOUS-TOTAL', 'REMISE', 'ESCOMPTE', 'NET A PAYER',
-            'DATE', 'NUMERO', 'CLIENT', 'ADRESSE', 'LIVRAISON', 'COMMANDE',
-            'MONTANT', 'PRIX', 'QUANTITE', 'DESIGNATION', 'UNITAIRE'
-        ]
-
-        for line in texte_ocr.split('\n'):
+        lines = texte_ocr.split('\n')
+        
+        for line in lines:
             line = line.strip()
             if len(line) < 8: continue
             
-            line_upper = line.upper()
-            if any(excl in line_upper for excl in exclude_patterns): continue
-            if re.search(r'total|sous.total|tva|€\s*$', line.lower()): continue
+            # 1. NETTOYAGE STRICT
+            if is_noise_line(line): continue
+            
+            # 2. DÉTECTION LARGE
+            # On cherche ce qui ressemble à un produit :
+            # - Soit ça commence par un code chiffres
+            # - Soit c'est du texte en MAJUSCULES (très courant pour les produits)
+            # - Soit ça finit par un prix
+            
+            is_product_candidate = False
+            nom = line
+            qty = 1.0
+            total = 0.0
+            unit = "pièce"
+            
+            # Cas A : Ligne avec Prix à la fin (Le classique)
+            match_price = re.search(r'(.+?)\s+(\d+[\.,]\d{2})\s*[€]?\s*$', line)
+            if match_price:
+                try:
+                    # On vérifie que ce n'est pas une date ou un tel qui aurait passé le filtre
+                    val = float(match_price.group(2).replace(',', '.'))
+                    if 0.1 < val < 5000: # Prix réaliste
+                        is_product_candidate = True
+                        nom = match_price.group(1)
+                        total = val
+                except: pass
+            
+            # Cas B : Code au début (Ex: "123456 Tomates")
+            if not is_product_candidate and re.match(r'^\d{4,14}\s+[A-Z]', line):
+                is_product_candidate = True
                 
-            for pattern in produit_patterns:
-                match = re.search(pattern, line, re.IGNORECASE)
-                if match:
-                    groups = match.groups()
-                    if len(groups) >= 2:
-                        try:
-                            if groups[0].isdigit():
-                                quantite = float(groups[0])
-                                nom_produit = groups[1].strip()
-                                prix_unitaire = float(groups[2].replace(',', '.')) if len(groups) > 2 else 0
-                            else:
-                                nom_produit = groups[0].strip()
-                                if len(groups) >= 4 and groups[1].isdigit():
-                                    quantite = float(groups[1])
-                                    prix_unitaire = float(groups[2].replace(',', '.'))
-                                else:
-                                    quantite = 1.0
-                                    prix_unitaire = float(groups[1].replace(',', '.'))
-                            
-                            nom_produit = re.sub(r'[:\-_]+$', '', nom_produit).strip()
-                            
-                            if (len(nom_produit) > 2 and quantite > 0 and quantite < 9999 and prix_unitaire >= 0 and not nom_produit.isdigit()):
-                                produit = {
-                                    "nom": nom_produit,
-                                    "quantite": quantite,
-                                    "prix_unitaire": prix_unitaire,
-                                    "total": quantite * prix_unitaire,
-                                    "ligne_originale": line
-                                }
-                                if not any(p["nom"].lower() == nom_produit.lower() for p in produits):
-                                    produits.append(produit)
-                                break
-                        except (ValueError, IndexError):
-                            continue
+            # Cas C : Texte Majuscules sans chiffres parasites (Ex: "FILET DE BOEUF")
+            # On accepte si c'est long (>10 chars) et majoritairement lettres
+            if not is_product_candidate:
+                # Ratio lettres/longueur
+                letters = sum(c.isalpha() for c in line)
+                if letters / len(line) > 0.6 and line.isupper():
+                    is_product_candidate = True
+
+            if is_product_candidate:
+                # Nettoyage final du nom
+                nom = re.sub(r'^\d{4,14}\s+', '', nom) # Retirer code éventuel
+                nom = re.sub(r'\s+\d+[\.,]\d{2}.*$', '', nom) # Retirer prix éventuel
+                
+                # Extraction Qté implicite (10K, X6...)
+                qty, unit, nom = extract_implicit_quantity(nom, 1.0)
+                
+                # On ajoute (même si prix = 0, le reconciler passera après)
+                produits.append({
+                    "nom": nom.strip(),
+                    "quantite": qty,
+                    "prix_unitaire": 0.0,
+                    "total": total,
+                    "unite": unit,
+                    "ligne_originale": line
+                })
+
+        # Appel magique pour récupérer les prix qui n'étaient pas sur la ligne
+        produits = reconcile_orphan_prices(produits, texte_ocr)
 
     data.produits = produits
     
