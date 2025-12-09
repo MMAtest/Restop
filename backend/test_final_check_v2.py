@@ -1,0 +1,66 @@
+
+import requests
+import os
+import json
+
+# Les 5 dernières factures (Batch 5)
+files = [
+    {"name": "Check_Lerda_2.jpg", "url": "https://customer-assets.emergentagent.com/job_81ceab0b-36c5-44c6-b922-a4dd99271433/artifacts/mui6ltdp_PXL_20251208_144924356.jpg"},
+    {"name": "Check_TerreAzur_2.jpg", "url": "https://customer-assets.emergentagent.com/job_81ceab0b-36c5-44c6-b922-a4dd99271433/artifacts/c91u8q8o_PXL_20251208_144958302.jpg"},
+    {"name": "Check_Metro_2.jpg", "url": "https://customer-assets.emergentagent.com/job_81ceab0b-36c5-44c6-b922-a4dd99271433/artifacts/dp4x99mq_PXL_20251208_144936879.jpg"},
+    {"name": "Check_Metro_3.jpg", "url": "https://customer-assets.emergentagent.com/job_81ceab0b-36c5-44c6-b922-a4dd99271433/artifacts/4qzwmopf_PXL_20251208_144911291.jpg"},
+    {"name": "Check_Royaume_2.jpg", "url": "https://customer-assets.emergentagent.com/job_81ceab0b-36c5-44c6-b922-a4dd99271433/artifacts/ltds8rse_PXL_20251208_144857702.jpg"}
+]
+
+API_URL = "http://localhost:8001/api"
+
+def run_final_check_v2():
+    print("📋 TEST BATCH FINAL (5 FACTURES)")
+    print("================================")
+
+    for info in files:
+        print(f"\n🔍 Analyse : {info['name']}")
+        try:
+            # 1. Download
+            r = requests.get(info['url'])
+            path = f"/tmp/{info['name']}"
+            with open(path, 'wb') as f: f.write(r.content)
+                
+            # 2. Upload
+            with open(path, 'rb') as f:
+                res = requests.post(f"{API_URL}/ocr/upload-document", 
+                                  files={'file': (info['name'], f, 'image/jpeg')},
+                                  data={'document_type': 'facture_fournisseur'})
+                
+                if res.status_code != 200:
+                    print(f"   ❌ Erreur Upload: {res.status_code}")
+                    continue
+
+                data = res.json()
+                doc_id = data.get('document_id') or data.get('id')
+                if not doc_id and data.get('document_ids'):
+                    doc_id = data['document_ids'][0]
+                
+                if doc_id:
+                    # 3. Analyze
+                    res_ana = requests.post(f"{API_URL}/ocr/analyze-facture/{doc_id}")
+                    analysis = res_ana.json()
+                    
+                    print(f"   🏢 Détecté : {analysis.get('supplier_name')}")
+                    print(f"   📅 Date    : {analysis.get('facture_date')}")
+                    print(f"   📦 Produits: {len(analysis.get('items', []))} lignes")
+                    
+                    if len(analysis.get('items', [])) > 0:
+                        print("   📝 Détail (Top 5):")
+                        for item in analysis.get('items', [])[:5]:
+                            print(f"      - {item['ocr_name'][:40]}... | Qté: {item['ocr_qty']} | Prix: {item['ocr_price']}€")
+                    else:
+                        print("   ❌ AUCUN PRODUIT DÉTECTÉ")
+                else:
+                    print("   ❌ Échec Upload (Pas d'ID)")
+
+        except Exception as e:
+            print(f"   ❌ Erreur: {e}")
+
+if __name__ == "__main__":
+    run_final_check_v2()
