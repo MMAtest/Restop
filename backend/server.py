@@ -8399,6 +8399,30 @@ async def confirm_import_facture(request: ImportConfirmationRequest):
                     {"produit_id": product_id},
                     {"$set": {"quantite_actuelle": new_qty, "derniere_maj": datetime.utcnow()}}
                 )
+            # ✅ APPRENTISSAGE : On sauvegarde la correction pour la prochaine fois
+            # Si le nom OCR est différent du nom final, on apprend !
+            if item.ocr_name and product_id and supplier_id:
+                # Calcul du multiplicateur de quantité (si l'utilisateur a changé la quantité)
+                # Ex: OCR dit "1 carton", User dit "10 kg". Multiplier = 10.
+                qty_multiplier = 1.0
+                if item.ocr_qty > 0 and item.final_qty > 0:
+                    qty_multiplier = item.final_qty / item.ocr_qty
+                
+                await db.ocr_product_mappings.update_one(
+                    {
+                        "supplier_id": supplier_id,
+                        "ocr_raw_name": item.ocr_name
+                    },
+                    {
+                        "$set": {
+                            "final_product_id": product_id,
+                            "final_product_name": item.final_name,
+                            "qty_multiplier": qty_multiplier,
+                            "last_used": datetime.utcnow()
+                        }
+                    },
+                    upsert=True
+                )
 
         # Marquer document comme traité
         await db.documents_ocr.update_one(
