@@ -3837,7 +3837,7 @@ def parse_presthyg_facture(text: str) -> List[dict]:
     return produits
 
 def parse_gfd_lerda_facture(text: str) -> List[dict]:
-    """Parser spécifique GFD LERDA (Stratégie Viande Stricte + Poids)"""
+    """Parser spécifique GFD LERDA (Stratégie Viande Stricte + Poids + Codes)"""
     produits = []
     lines = text.split('\n')
     
@@ -3845,12 +3845,14 @@ def parse_gfd_lerda_facture(text: str) -> List[dict]:
     lerda_blacklist = [
         "AGRÉMENT", "AGREMENT", "UE", "NÉ EN", "NE EN", "ELEVÉ", "ELEVE", 
         "ABATTU", "ORIGINE", "DÉCOUPÉ", "DECOUPE", "DLC", "DLUO", "LOT", 
-        "POIDS", "COLIS", "TEMPERATURE", "CAMION", "REPRESENTANT"
+        "POIDS", "COLIS", "TEMPERATURE", "CAMION", "REPRESENTANT", "COMMANDE DU"
     ]
     
-    # Mots clés Viande
+    # Mots clés Viande (enrichis)
     meat_keywords = ["AGNEAU", "BOEUF", "VEAU", "PORC", "POULET", "CANARD", 
-                    "MAGRET", "ENTRECOTE", "FILET", "GIGOT", "BAVETTE", "FAUX", "ONGLET", "CARCASSE"]
+                    "MAGRET", "ENTRECOTE", "FILET", "GIGOT", "BAVETTE", "FAUX", 
+                    "ONGLET", "CARCASSE", "ANDOUILLETTE", "SAUCISSE", "MERGUEZ", 
+                    "BROCHETTE", "JARRET", "JAMBON", "GRAS", "BARDIERE"]
     
     for line in lines:
         line_upper = line.strip().upper()
@@ -3861,12 +3863,16 @@ def parse_gfd_lerda_facture(text: str) -> List[dict]:
         # 1. Détection par mots clés Viande
         is_meat = any(k in line_upper for k in meat_keywords)
         
-        # 2. Détection par Structure (Poids + Prix)
-        # Ex: "BLABLA VIANDE ... 1.5 KG ... 15.00"
+        # 2. Détection par Code Produit (6 chiffres au début)
+        # Ex: "301008 ANDOUILLETTE..."
+        is_code = re.match(r'^\d{6}\s', line)
+        
+        # 3. Détection par Structure (Poids + Prix)
         has_weight = "KG" in line_upper or " GR" in line_upper
         has_price = re.search(r'\d+[\.,]\d{2}\s*$', line) # Prix à la fin
         
-        if is_meat or (has_weight and has_price):
+        if is_meat or is_code or (has_weight and has_price):
+            # Extraction Prix
             prices = re.findall(r'(\d+[\.,]\d{2})', line)
             total = 0.0
             if prices:
@@ -3874,8 +3880,13 @@ def parse_gfd_lerda_facture(text: str) -> List[dict]:
                     total = float(prices[-1].replace(',', '.'))
                 except: pass
             
+            # Nettoyage nom (retirer code au début)
+            nom = line
+            if is_code:
+                nom = re.sub(r'^\d{6}\s+', '', nom)
+            
             produits.append({
-                "nom": line,
+                "nom": nom,
                 "quantite": 1.0,
                 "prix_unitaire": 0.0,
                 "total": total,
