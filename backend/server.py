@@ -4140,9 +4140,12 @@ def parse_metro_facture(text: str) -> List[dict]:
     return produits
 
 def parse_diamant_terroir_facture(text: str) -> List[dict]:
-    """Parser spécifique LE DIAMANT DU TERROIR (Produits Luxe / 4 décimales)"""
+    """Parser spécifique LE DIAMANT DU TERROIR (Produits Luxe / Truffes)"""
     produits = []
     lines = text.split('\n')
+    
+    # Mots-clés de secours
+    keywords = ["TRUFFE", "GNOCCHI", "HUILE", "CARPACCIO", "BRISURE", "PELURE", "CREME", "SAUCE", "OLIVE"]
     
     for line in lines:
         line = line.strip()
@@ -4155,7 +4158,10 @@ def parse_diamant_terroir_facture(text: str) -> List[dict]:
         # Stratégie 2: Quantité 4 décimales (spécifique Diamant: 0,5000)
         match_qty_4 = re.search(r'(\d+[\.,]\d{4})', line)
         
-        if match_code or match_qty_4:
+        # Stratégie 3: Mots-clés (Nouveau !)
+        has_keyword = any(k in line.upper() for k in keywords)
+        
+        if match_code or match_qty_4 or has_keyword:
             nom = line
             qty = 1.0
             price = 0.0
@@ -4167,30 +4173,32 @@ def parse_diamant_terroir_facture(text: str) -> List[dict]:
             if match_qty_4:
                 try:
                     qty = float(match_qty_4.group(1).replace(',', '.'))
-                    # Nettoyage du nom (retirer la qté)
                     nom = nom.replace(match_qty_4.group(1), "")
                 except: pass
             
             # Extraction Prix (2 décimales)
             prices = re.findall(r'(\d+[\.,]\d{2})', line)
             if prices:
-                # Attention à ne pas prendre la qté (si 2 décimales par erreur)
                 try:
+                    # Le dernier est souvent le total, l'avant-dernier le PU
                     p = float(prices[-1].replace(',', '.'))
+                    # Si le prix est énorme (> 500) et la quantité petite (<1), c'est cohérent pour de la truffe
                     if p != qty: price = p
                 except: pass
             
             # Nettoyage final nom
             nom = re.sub(r'[\d\.,]+$', '', nom).strip()
             
-            produits.append({
-                "nom": nom,
-                "quantite": qty,
-                "prix_unitaire": 0.0,
-                "total": price, # On assume que le gros chiffre est le total
-                "unite": "kg" if qty < 1 else "pièce",
-                "ligne_originale": line
-            })
+            # Éviter doublons
+            if not any(p["nom"] == nom for p in produits):
+                produits.append({
+                    "nom": nom,
+                    "quantite": qty,
+                    "prix_unitaire": 0.0,
+                    "total": price, # On assume que le gros chiffre est le total
+                    "unite": "kg" if qty < 1 else "pièce",
+                    "ligne_originale": line
+                })
             
     return produits
 def parse_facture_fournisseur(texte_ocr: str) -> FactureFournisseurData:
