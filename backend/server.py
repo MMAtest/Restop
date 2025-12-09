@@ -3752,80 +3752,105 @@ def parse_terreazur_facture(text: str) -> List[dict]:
     return produits
 
 def parse_presthyg_facture(text: str) -> List[dict]:
-    """Parser spécifique PREST'HYG (Stratégie Dictionnaire Hygiène)"""
+    """Parser spécifique PREST'HYG (Stratégie Structurelle & Prix)"""
     produits = []
     lines = text.split('\n')
     
-    # Dictionnaire large pour attraper tous les produits d'entretien
-    keywords = [
-        "SAVON", "EPONGE", "SAC", "POUBELLE", "ROULEAU", "PAPIER", "BOBINE", 
-        "DETERGENT", "LAVETTE", "GANTS", "LIQUIDE", "VAISSELLE", "SOL", 
-        "VITRE", "DEGRAISSANT", "DESINFECTANT", "CHIFFON", "BALAI", "BROSSE",
-        "ESSUIE", "MAIN", "MOUCHOIR", "SERVIETTE", "OUATE", "ALUMINIUM", "FILM"
-    ]
+    # Stratégie : PrestHyg a souvent une structure "Code ... Libellé ... Qté ... Prix"
+    # Ou juste "Libellé ... Prix"
+    # On abandonne la liste de mots-clés trop restrictive.
     
     for line in lines:
-        line_upper = line.upper()
+        line = line.strip()
+        if len(line) < 10: continue
+        if is_noise_line(line): continue
         
-        # On prend la ligne si elle contient un mot clé OU un format "Qté x Prix"
-        is_product = any(k in line_upper for k in keywords)
+        # Pattern 1: Ligne qui finit par un prix (XX,XX)
+        # Ex: "Bobine Ouate ... 12,50"
+        match_price_end = re.search(r'(.+?)\s+(\d+[\.,]\d{2})\s*[€]?\s*$', line)
         
-        # Ou format spécifique PrestHyg: "Code ... Désignation ... Qté ... Prix"
-        # On cherche une ligne avec au moins 2 chiffres séparés (Qté/Prix)
-        nums = re.findall(r'\d+[\.,]\d{2}', line)
-        has_numbers = len(nums) >= 1
+        # Pattern 2: Code au début
+        match_code_start = re.match(r'^\d{4,6}\s+(.+)', line)
         
-        if (is_product or has_numbers) and len(line) > 15:
-            # 🧹 NETTOYAGE DU BRUIT
-            if is_noise_line(line): continue
-                
-            # Extraction Prix
+        if match_price_end or match_code_start:
+            # Extraction Données
+            nom = line
+            qty = 1.0
             total = 0.0
-            if nums:
+            
+            # Essai d'extraction plus fine
+            # Chercher Qté et Total
+            nums = re.findall(r'(\d+[\.,]\d{2}|\d+)', line)
+            
+            # Convertir les nombres trouvés
+            clean_nums = []
+            for n in nums:
                 try:
-                    total = float(nums[-1].replace(',', '.'))
+                    val = float(n.replace(',', '.'))
+                    clean_nums.append(val)
                 except: pass
-                
+            
+            if clean_nums:
+                # Le dernier est souvent le total
+                total = clean_nums[-1]
+                # L'avant dernier est souvent le prix unitaire ou la quantité
+                if len(clean_nums) >= 2:
+                    val_prev = clean_nums[-2]
+                    # Si petit entier (< 50) -> Quantité
+                    if val_prev.is_integer() and val_prev < 100:
+                        qty = val_prev
+            
+            # Nettoyage du nom (retirer les chiffres de la fin)
+            nom = re.sub(r'[\d\s\.,€]+$', '', nom).strip()
+            
+            # Filtre final (éviter les lignes de totaux qui auraient passé le noise_filter)
+            if "NET" in nom.upper() or "TOTAL" in nom.upper(): continue
+            
             produits.append({
-                "nom": line, 
-                "quantite": 1.0,
+                "nom": nom,
+                "quantite": qty,
                 "prix_unitaire": 0.0,
                 "total": total,
                 "unite": "pièce",
                 "ligne_originale": line
             })
-    
-    # ✅ APPEL MAGIQUE : Récupération des prix orphelins
+            
+    # Appel magique pour compléter les trous
     produits = reconcile_orphan_prices(produits, text)
             
     return produits
 
 def parse_gfd_lerda_facture(text: str) -> List[dict]:
-    """Parser spécifique GFD LERDA (Stratégie Viande & Poids)"""
+    """Parser spécifique GFD LERDA (Stratégie Viande Stricte)"""
     produits = []
     lines = text.split('\n')
     
-    # Mots clés Viande
+    # Blacklist spécifique LERDA pour nettoyer le bruit (7 -> 4 produits)
+    lerda_blacklist = [
+        "AGRÉMENT", "AGREMENT", "UE", "NÉ EN", "NE EN", "ELEVÉ", "ELEVE", 
+        "ABATTU", "ORIGINE", "DÉCOUPÉ", "DECOUPE", "DLC", "DLUO", "LOT", 
+        "POIDS", "COLIS", "TEMPERATURE", "CAMION", "REPRESENTANT"
+    ]
+    
+    # Mots clés Viande (pour repêcher si pas de prix)
     meat_keywords = ["AGNEAU", "BOEUF", "VEAU", "PORC", "POULET", "CANARD", 
                     "MAGRET", "ENTRECOTE", "FILET", "GIGOT", "BAVETTE", "FAUX", "ONGLET", "CARCASSE"]
     
     for line in lines:
-        line_upper = line.upper()
+        line_upper = line.strip().upper()
         if len(line) < 10: continue
+        if is_noise_line(line): continue
         
-        # 1. Détection par mots clés Viande
+        # 1. Filtre Anti-Bruit Spécifique
+        if any(b in line_upper for b in lerda_blacklist): continue
+        
+        # 2. Détection
+        # Soit un mot clé viande
         is_meat = any(k in line_upper for k in meat_keywords)
+        # Soit une ligne avec un prix explicite à la fin
+        has_price = re.search(r'\d+[\.,]\d{2}\s*$', line)
         
-        # 2. Détection par Unité de Poids (Lerda vend au KG)
-        has_weight = "KG" in line_upper or "GR" in line_upper
-        
-        # Filtres
-        if "UNION EUROPEENNE" in line_upper: continue # Origine, pas produit
-        if "NE EN" in line_upper or "ELEVE EN" in line_upper: continue # Tracabilité
-        if "TOTAL" in line_upper: continue
-        if is_noise_line(line): continue # 🧹 NETTOYAGE
-        
-        if is_meat or (has_weight and re.search(r'\d', line)):
+        if is_meat or has_price:
             # Extraction Prix
             prices = re.findall(r'(\d+[\.,]\d{2})', line)
             total = 0.0
@@ -3839,11 +3864,10 @@ def parse_gfd_lerda_facture(text: str) -> List[dict]:
                 "quantite": 1.0,
                 "prix_unitaire": 0.0,
                 "total": total,
-                "unite": "kg",
+                "unite": "kg", # Lerda c'est du poids
                 "ligne_originale": line
             })
     
-    # ✅ APPEL MAGIQUE : Récupération des prix orphelins
     produits = reconcile_orphan_prices(produits, text)
             
     return produits
