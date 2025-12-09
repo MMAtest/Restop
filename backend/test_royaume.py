@@ -12,41 +12,42 @@ files = [
 API_URL = "http://localhost:8001/api"
 
 def check_royaume():
-    print("🚀 VÉRIFICATION ROYAUME DES MERS")
-    print("================================")
+    print("🚀 VÉRIFICATION ROYAUME DES MERS (FIX)")
+    print("======================================")
 
     for info in files:
         print(f"\n🔍 Analyse : {info['name']}")
         try:
+            # 1. Download
             r = requests.get(info['url'])
             path = f"/tmp/{info['name']}"
             with open(path, 'wb') as f: f.write(r.content)
                 
-            res = requests.post(f"{API_URL}/ocr/upload-document", 
-                              files={'file': (info['name'], f, 'image/jpeg')},
-                              data={'document_type': 'facture_fournisseur'})
-            
-            data = res.json()
-            doc_id = data.get('document_id') or data.get('id')
-            # Fallback multi-doc
-            if not doc_id and data.get('document_ids'):
-                doc_id = data['document_ids'][0]
-            
-            if doc_id:
-                res_ana = requests.post(f"{API_URL}/ocr/analyze-facture/{doc_id}")
-                analysis = res_ana.json()
+            # 2. Upload (Ouverture propre)
+            with open(path, 'rb') as f:
+                res = requests.post(f"{API_URL}/ocr/upload-document", 
+                                  files={'file': (info['name'], f, 'image/jpeg')},
+                                  data={'document_type': 'facture_fournisseur'})
                 
-                print(f"   🏢 Détecté : {analysis.get('supplier_name')}")
-                print(f"   📦 Produits: {len(analysis.get('items', []))} lignes")
+                data = res.json()
+                doc_id = data.get('document_id') or data.get('id')
+                if not doc_id and data.get('document_ids'):
+                    doc_id = data['document_ids'][0]
                 
-                if len(analysis.get('items', [])) > 0:
-                    for item in analysis.get('items', []):
-                        print(f"      - {item['ocr_name'][:40]}... | Qté: {item['ocr_qty']} | Prix U: {item['ocr_price']}€ | Total: {item['ocr_total']}€")
-                else:
-                    print("   ❌ VIDE")
-                    # Debug brut si vide
-                    if 'texte_extrait' in data:
-                        print(f"   Debug brut (extrait): {data['texte_extrait'][:300]}")
+                if doc_id:
+                    # 3. Analyze
+                    res_ana = requests.post(f"{API_URL}/ocr/analyze-facture/{doc_id}")
+                    analysis = res_ana.json()
+                    
+                    print(f"   🏢 Détecté : {analysis.get('supplier_name')}")
+                    
+                    if len(analysis.get('items', [])) > 0:
+                        for item in analysis.get('items', []):
+                            print(f"      - {item['ocr_name'][:40]}... | Qté: {item['ocr_qty']} | Prix: {item['ocr_price']}€ | Total: {item['ocr_total']}€")
+                    else:
+                        print("   ❌ VIDE")
+                        if 'texte_extrait' in data:
+                            print(f"   Debug brut: {data['texte_extrait'][:200]}...")
 
         except Exception as e:
             print(f"   ❌ Erreur: {e}")
