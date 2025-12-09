@@ -2351,15 +2351,6 @@ function App() {
     setPreviewDocFull(doc);
     setShowPreviewModal(true); // Ouvre la modale
   };
-        detailsDonnees += `💰 Total: ${donnees.total_ttc || donnees.total_ht || 'Non trouvé'}€\n`;
-        detailsDonnees += `📦 Produits: ${donnees.produits?.length || 0}\n`;
-      }
-      
-      alert(details + detailsDonnees);
-    } else {
-      alert(details + "❌ Aucune donnée extraite pour ce document.");
-    }
-  };
 
   const resetOcrModal = () => {
     setOcrFile(null);
