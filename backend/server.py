@@ -3845,14 +3845,28 @@ def parse_gfd_lerda_facture(text: str) -> List[dict]:
     lerda_blacklist = [
         "AGRÉMENT", "AGREMENT", "UE", "NÉ EN", "NE EN", "ELEVÉ", "ELEVE", 
         "ABATTU", "ORIGINE", "DÉCOUPÉ", "DECOUPE", "DLC", "DLUO", "LOT", 
-        "POIDS", "COLIS", "TEMPERATURE", "CAMION", "REPRESENTANT", "COMMANDE DU"
+        "POIDS", "COLIS", "TEMPERATURE", "CAMION", "REPRESENTANT", "COMMANDE DU",
+        "DATE", "CLIENT", "TOURNEE", "VOTRE", "NOTRE", "DOCUMENT", "PAGE"
     ]
     
-    # Mots clés Viande (enrichis)
-    meat_keywords = ["AGNEAU", "BOEUF", "VEAU", "PORC", "POULET", "CANARD", 
-                    "MAGRET", "ENTRECOTE", "FILET", "GIGOT", "BAVETTE", "FAUX", 
-                    "ONGLET", "CARCASSE", "ANDOUILLETTE", "SAUCISSE", "MERGUEZ", 
-                    "BROCHETTE", "JARRET", "JAMBON", "GRAS", "BARDIERE"]
+    # Mots clés Viande (Massivement enrichis)
+    meat_keywords = [
+        # Basiques
+        "AGNEAU", "BOEUF", "VEAU", "PORC", "POULET", "CANARD", "DIND", "LAPIN",
+        "VOLAILLE", "GIBIER", "CERF", "BICHE", "SANGLIER", "AUTRUCHE",
+        # Pièces
+        "MAGRET", "ENTRECOTE", "FILET", "GIGOT", "BAVETTE", "FAUX", "ONGLET", 
+        "CARCASSE", "JARRET", "JAMBON", "GRAS", "BARDIERE", "ROTI", "SAUTE", 
+        "PAVE", "COTE", "POITRINE", "EPAULE", "COLLIER", "OSSO", "ARAIGNEE", 
+        "TENDRON", "PLAT", "TRANCHE", "ESCALOPE", "STEAK", "RUMSTEACK",
+        # Charcuterie / Prep
+        "ANDOUILLETTE", "SAUCISSE", "MERGUEZ", "BROCHETTE", "TERRINE", "RILLETTE",
+        "CONFIT", "LARD", "BOUDIN", "CHORIZO", "PATE", "MOUSSE", "GALANTINE",
+        "CREPINETTE", "GODIVEAU", "CHIPOLATA", "DIOT",
+        # Abats
+        "TRIPES", "LANGUE", "ROGNON", "FOIE", "JOUE", "QUEUE", "PIED", "TETE", 
+        "RIS", "AMOULETTE", "COEUR", "GESIER", "ROGNON"
+    ]
     
     for line in lines:
         line_upper = line.strip().upper()
@@ -3860,18 +3874,19 @@ def parse_gfd_lerda_facture(text: str) -> List[dict]:
         if is_noise_line(line): continue
         if any(b in line_upper for b in lerda_blacklist): continue
         
-        # 1. Détection par mots clés Viande
-        is_meat = any(k in line_upper for k in meat_keywords)
-        
-        # 2. Détection par Code Produit (6 chiffres au début)
+        # 1. Détection par Code Produit (6 chiffres au début) - Priorité 1
         # Ex: "301008 ANDOUILLETTE..."
         is_code = re.match(r'^\d{6}\s', line)
         
-        # 3. Détection par Structure (Poids + Prix)
-        has_weight = "KG" in line_upper or " GR" in line_upper
-        has_price = re.search(r'\d+[\.,]\d{2}\s*$', line) # Prix à la fin
+        # 2. Détection par mots clés Viande - Priorité 2
+        is_meat = any(k in line_upper for k in meat_keywords)
         
-        if is_meat or is_code or (has_weight and has_price):
+        # 3. Détection par Structure (Texte Majuscule + Prix fin de ligne) - Priorité 3
+        # Ex: "PREPARATION VIANDE HACHEE ... 83.08"
+        has_price_end = re.search(r'\d+[\.,]\d{2}\s*$', line)
+        is_uppercase_desc = line.isupper() and len(line) > 20
+        
+        if is_code or is_meat or (is_uppercase_desc and has_price_end):
             # Extraction Prix
             prices = re.findall(r'(\d+[\.,]\d{2})', line)
             total = 0.0
@@ -3885,8 +3900,12 @@ def parse_gfd_lerda_facture(text: str) -> List[dict]:
             if is_code:
                 nom = re.sub(r'^\d{6}\s+', '', nom)
             
+            # Nettoyage prix à la fin du nom
+            if prices:
+                nom = nom.replace(prices[-1], '').strip()
+            
             produits.append({
-                "nom": nom,
+                "nom": nom.strip(),
                 "quantite": 1.0,
                 "prix_unitaire": 0.0,
                 "total": total,
