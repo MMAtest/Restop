@@ -8322,9 +8322,8 @@ async def confirm_import_facture(request: ImportConfirmationRequest):
             # Créer nouveau fournisseur
             new_supplier = Fournisseur(
                 nom=request.supplier_name,
-                categorie="frais"
+                categorie=request.supplier_category
             )
-                categorie=request.supplier_category,
             await db.fournisseurs.insert_one(new_supplier.dict())
             supplier_id = new_supplier.id
         
