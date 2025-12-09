@@ -1656,10 +1656,10 @@ def extract_text_from_image_google_vision(image_content: bytes) -> str:
             # Ouvrir l'image avec PIL
             img = Image.open(io.BytesIO(image_content))
             
-            # Vérifier la taille (Si > 1800px de large, c'est trop gros pour rien)
-            if img.width > 1800 or img.height > 1800:
+            # Vérifier la taille (Si > 3000px de large, c'est trop gros pour rien)
+            if img.width > 3000 or img.height > 3000:
                 print(f"⚠️ Image trop grande ({img.width}x{img.height}). Redimensionnement...")
-                img.thumbnail((1800, 1800), Image.Resampling.LANCZOS)
+                img.thumbnail((3000, 3000), Image.Resampling.LANCZOS)
                 
                 # Convertir en JPEG compressé
                 output = io.BytesIO()
