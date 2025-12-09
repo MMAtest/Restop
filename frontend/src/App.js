@@ -2348,36 +2348,9 @@ function App() {
   // Sélectionner document dans l&apos;historique
   const handleSelectDocument = (doc) => {
     setSelectedDocument(doc);
-    
-    // Afficher les détails du document sélectionné
-    const details = `📄 DOCUMENT SÉLECTIONNÉ:\n\n` +
-      `📁 Fichier: ${doc.nom_fichier}\n` +
-      `📅 Date: ${new Date(doc.date_upload).toLocaleDateString('fr-FR')}\n` +
-      `📝 Type: ${doc.type_document === 'z_report' ? 'Rapport Z' : 'Facture Fournisseur'}\n\n`;
-
-    if (doc.donnees_parsees && Object.keys(doc.donnees_parsees).length > 0) {
-      const donnees = doc.donnees_parsees;
-      let detailsDonnees = "📊 DONNÉES EXTRAITES:\n\n";
-      
-      if (doc.type_document === 'z_report') {
-        detailsDonnees += `📅 Date rapport: ${donnees.date || 'Non trouvée'}\n`;
-        detailsDonnees += `💰 CA Total: ${donnees.total_ca || 'Non trouvé'}€\n`;
-        detailsDonnees += `🍽️ Plats vendus: ${donnees.plats_vendus?.length || 0}\n\n`;
-        
-        if (donnees.plats_vendus && donnees.plats_vendus.length > 0) {
-          detailsDonnees += "🍽️ TOP 5 PLATS:\n";
-          donnees.plats_vendus.slice(0, 5).forEach((plat, i) => {
-            detailsDonnees += `${i + 1}. ${plat.quantite}x ${plat.nom}\n`;
-          });
-        }
-      } else {
-        detailsDonnees += `🏪 Fournisseur: ${donnees.fournisseur || 'Non trouvé'}\n`;
-        detailsDonnees += `📅 Date: ${donnees.date || 'Non trouvée'}\n`;
-    setPreviewDocFull(null);
-    setPreviewLoading(false);
-    setPreviewTab('overview');
-
-        detailsDonnees += `🔢 N° facture: ${donnees.numero_facture || 'Non trouvé'}\n`;
+    setPreviewDocFull(doc);
+    setShowPreviewModal(true); // Ouvre la modale
+  };
         detailsDonnees += `💰 Total: ${donnees.total_ttc || donnees.total_ht || 'Non trouvé'}€\n`;
         detailsDonnees += `📦 Produits: ${donnees.produits?.length || 0}\n`;
       }
