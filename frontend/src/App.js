@@ -5470,62 +5470,6 @@ function App() {
                       </p>
                     </div>
                     
-                    {/* Validation des données pour Factures */}
-                    {documentsOcr.filter(doc => doc.type_document === 'facture_fournisseur').length > 0 && (
-                      <div className="validation-section" style={{
-                        marginBottom: '20px',
-                        padding: '15px',
-                        background: 'var(--color-background-card-light)',
-                        borderRadius: '8px',
-                        border: '1px solid var(--color-border)'
-                      }}>
-                        <h4 style={{marginBottom: '10px', color: 'var(--color-text-primary)'}}>
-                          ✅ Validation des Données Extraites
-                        </h4>
-                        {(() => {
-                          const latestInvoice = documentsOcr
-                            .filter(doc => doc.type_document === 'facture_fournisseur')
-                            .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))[0];
-                          
-                          if (!latestInvoice?.donnees_parsees) return null;
-                          
-                          const data = latestInvoice.donnees_parsees;
-                          return (
-                            <div style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '10px'}}>
-                              <div className="validation-card">
-                                <label>🏢 Fournisseur:</label>
-                                <input type="text" defaultValue={data.fournisseur || ''} style={{width: '100%', padding: '4px'}} />
-                              </div>
-                              <div className="validation-card">
-                                <label>📅 Date facture:</label>
-                                <input type="date" defaultValue={data.date_facture || ''} style={{width: '100%', padding: '4px'}} />
-                              </div>
-                              <div className="validation-card">
-                                <label>📄 N° facture:</label>
-                                <input type="text" defaultValue={data.numero_facture || ''} style={{width: '100%', padding: '4px'}} />
-                              </div>
-                              <div className="validation-card">
-                                <label>💰 Total HT:</label>
-                                <input type="number" step="0.01" defaultValue={data.total_ht || ''} style={{width: '100%', padding: '4px'}} />
-                              </div>
-                              <div className="validation-card">
-                                <label>💰 Total TTC:</label>
-                                <input type="number" step="0.01" defaultValue={data.total_ttc || ''} style={{width: '100%', padding: '4px'}} />
-                              </div>
-                              {data.separation_info?.is_multi_invoice && (
-                                <div className="validation-card" style={{gridColumn: 'span 2', background: 'var(--color-success-green)', color: 'white', padding: '8px', borderRadius: '4px'}}>
-                                  🎯 Facture {data.separation_info.invoice_index}/{data.separation_info.total_invoices} - {data.separation_info.header_detected}
-                                </div>
-                              )}
-                              <button className="button small success" style={{gridColumn: 'span 2'}}>
-                                ✅ Valider les corrections
-                              </button>
-                            </div>
-                          );
-                        })()}
-                      </div>
-                    )}
-                    
                     {/* Filtre spécifique aux Factures */}
                     <div className="filter-section" style={{marginBottom: '20px'}}>
                       <div className="filter-info" style={{
