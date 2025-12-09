@@ -5595,7 +5595,7 @@ function App() {
                                 </div>
                               </div>
                               <div className="item-actions">
-                                <button className="button small" onClick={() => setSelectedDocument(doc)}>👁️ Aperçu</button>
+                                <button className="button small" onClick={() => handleSelectDocument(doc)}>👁️ Aperçu</button>
                                 <button 
                                   className="button small success" 
                                   onClick={() => {
