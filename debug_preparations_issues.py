@@ -7,7 +7,7 @@ import requests
 import json
 from datetime import datetime, timedelta
 
-BASE_URL = "https://cuisinepro.preview.emergentagent.com/api"
+BASE_URL = "https://receipt-scanner-64.preview.emergentagent.com/api"
 HEADERS = {"Content-Type": "application/json"}
 
 def test_execute_preparation_request_format():
