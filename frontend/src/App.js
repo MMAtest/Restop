@@ -5910,6 +5910,12 @@ function App() {
                     </div>
 
                     {/* Zone d'import classique (image/pdf) pour historique */}
+                    <div style={{
+                      padding: '24px',
+                      background: 'white',
+                      borderRadius: '8px',
+                      border: '1px solid #d1fae5',
+                      marginTop: '24px'
                     }}>
                       <h4 style={{color: '#059669', marginBottom: '16px', fontSize: '16px', fontWeight: 'bold'}}>
                         📤 Upload Mercuriale Fournisseur
