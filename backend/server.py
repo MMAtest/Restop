@@ -5618,6 +5618,9 @@ async def import_stocks(file: UploadFile = File(...)):
             "message": f"{imported_count} lignes importées avec succès",
             "errors": errors
         }
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Erreur lors de l'import: {str(e)}")
+
 @api_router.post("/import/global-excel")
 async def import_global_excel(file: UploadFile = File(...)):
     """
