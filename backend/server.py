@@ -3532,7 +3532,8 @@ def is_noise_line(line: str) -> bool:
         "VARSOVIE", "LIVRAISON N°", "DESIGNATION",
         "DEVISE EUR", "DEVISE", "ADRESSE DE FACTURATION", "REF. FOURN",
         "P.U. NET", "MONTANT H.T.", "DESCRIPTION", "COMMUNAUTE",
-        "REF. FOURN.", "CDE N°", "COMMENTAIRES", "MONTANT", "FORFAIT LIVRAISON"
+        "REF. FOURN.", "CDE N°", "COMMENTAIRES", "MONTANT", "FORFAIT LIVRAISON",
+        "BIO:", "CERTIFIÉ PAR", "CERTIFIE PAR", "POURCENTAGE", "TAUX"
     ]
     
     if any(k in line_upper for k in strict_noise): return True
