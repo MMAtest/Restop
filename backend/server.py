@@ -814,25 +814,39 @@ def calculate_similarity(str1: str, str2: str) -> float:
     
     return intersection / union if union > 0 else 0.0
 
+from rapidfuzz import fuzz, process
+
 async def match_product_by_name(product_name: str, min_confidence: float = 0.6) -> Optional[dict]:
-    """Match a product name from OCR with existing products in database"""
+    """Match a product name from OCR with existing products using Fuzzy Logic"""
     best_match = None
     best_score = 0.0
     
-    # Get all products
+    # Get all products (cache this in production)
     products = await db.produits.find().to_list(length=None)
     
-    for product in products:
-        score = calculate_similarity(product_name, product["nom"])
-        if score > best_score and score >= min_confidence:
-            best_score = score
-            best_match = {
-                "product_id": product["id"],
-                "product_name": product["nom"],
-                "confidence": score,
-                "category": product.get("categorie"),
-                "unit": product.get("unite", "kg")
-            }
+    if not products:
+        return None
+        
+    # Préparer la liste des noms pour RapidFuzz
+    product_names = [p["nom"] for p in products]
+    
+    # 1. Recherche du meilleur candidat
+    # score_cutoff=60 correspond à min_confidence 0.6
+    result = process.extractOne(product_name, product_names, scorer=fuzz.token_sort_ratio, score_cutoff=min_confidence*100)
+    
+    if result:
+        matched_name, score, index = result
+        normalized_score = score / 100.0
+        
+        product = products[index]
+        
+        best_match = {
+            "product_id": product["id"],
+            "product_name": product["nom"],
+            "confidence": normalized_score,
+            "category": product.get("categorie"),
+            "unit": product.get("unite", "kg")
+        }
     
     return best_match
 
