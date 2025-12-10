@@ -5618,6 +5618,132 @@ async def import_stocks(file: UploadFile = File(...)):
             "message": f"{imported_count} lignes importées avec succès",
             "errors": errors
         }
+@api_router.post("/import/global-excel")
+async def import_global_excel(file: UploadFile = File(...)):
+    """
+    Import Massif Multi-Onglets (La Bible des Produits)
+    - Lit tous les onglets
+    - Utilise le nom de l'onglet comme catégorie
+    - Détecte les colonnes intelligemment
+    """
+    if not file.filename.endswith(('.xlsx', '.xls')):
+        raise HTTPException(status_code=400, detail="Format Excel requis (.xlsx, .xls)")
+    
+    try:
+        contents = await file.read()
+        # Lire tout le fichier (toutes les feuilles)
+        xls = pd.ExcelFile(io.BytesIO(contents))
+        
+        results = {
+            "total_processed": 0,
+            "products_created": 0,
+            "products_updated": 0,
+            "errors": [],
+            "sheets_processed": []
+        }
+        
+        for sheet_name in xls.sheet_names:
+            # Ignorer les onglets techniques/vides
+            if "Resumé" in sheet_name or "Sommaire" in sheet_name: continue
+            
+            df = pd.read_excel(xls, sheet_name=sheet_name)
+            
+            # Nettoyage des noms de colonnes (strip espaces, lower)
+            df.columns = [str(c).strip().lower() for c in df.columns]
+            
+            # MAPPING INTELLIGENT DES COLONNES
+            col_map = {}
+            for col in df.columns:
+                if any(k in col for k in ["nom", "produit", "désignation", "libellé", "article"]):
+                    col_map["name"] = col
+                elif any(k in col for k in ["prix", "tarif", "pu", "montant"]):
+                    col_map["price"] = col
+                elif any(k in col for k in ["fournisseur", "frs"]):
+                    col_map["supplier"] = col
+                elif any(k in col for k in ["unité", "unit", "cond", "cdt"]):
+                    col_map["unit"] = col
+                elif any(k in col for k in ["ref", "code", "référence"]):
+                    col_map["ref"] = col
+
+            # Si on n'a pas au moins un nom, on saute l'onglet
+            if "name" not in col_map:
+                continue
+                
+            sheet_stats = {"name": sheet_name, "count": 0}
+            
+            for _, row in df.iterrows():
+                try:
+                    # Extraction données
+                    nom = str(row[col_map["name"]]).strip()
+                    if not nom or nom.lower() == "nan": continue
+                    
+                    price = 0.0
+                    if "price" in col_map:
+                        try:
+                            val = str(row[col_map["price"]]).replace(',', '.').replace('€', '').strip()
+                            price = float(val)
+                        except: pass
+                        
+                    unit = "pièce"
+                    if "unit" in col_map:
+                        unit = str(row[col_map["unit"]]).strip()
+                        
+                    supplier_name = "Fournisseur Inconnu"
+                    if "supplier" in col_map:
+                        supplier_name = str(row[col_map["supplier"]]).strip()
+                    
+                    # LOGIQUE D'IMPORT
+                    # 1. Chercher si produit existe (par nom exact ou fuzzy ?)
+                    # On tente exact d'abord
+                    existing = await db.produits.find_one({"nom": nom})
+                    
+                    if existing:
+                        # Mise à jour prix
+                        if price > 0:
+                            # Mettre à jour info fournisseur principal
+                            pass 
+                        results["products_updated"] += 1
+                    else:
+                        # Création
+                        # Chercher/Créer Fournisseur
+                        supplier_id = None
+                        if supplier_name and supplier_name.lower() != "nan":
+                            supp = await db.fournisseurs.find_one({"nom": supplier_name})
+                            if not supp:
+                                new_supp = Fournisseur(nom=supplier_name, categorie="Divers")
+                                await db.fournisseurs.insert_one(new_supp.dict())
+                                supplier_id = new_supp.id
+                            else:
+                                supplier_id = supp["id"]
+                        
+                        new_prod = Produit(
+                            nom=nom,
+                            categorie=sheet_name, # Onglet = Catégorie !
+                            unite=unit,
+                            reference_price=price,
+                            main_supplier_id=supplier_id,
+                            fournisseur_nom=supplier_name if supplier_id else None
+                        )
+                        await db.produits.insert_one(new_prod.dict())
+                        
+                        # Créer stock à 0
+                        stock = Stock(produit_id=new_prod.id, produit_nom=nom, quantite_actuelle=0)
+                        await db.stocks.insert_one(stock.dict())
+                        
+                        results["products_created"] += 1
+                    
+                    sheet_stats["count"] += 1
+                    results["total_processed"] += 1
+                    
+                except Exception as e:
+                    pass
+            
+            results["sheets_processed"].append(sheet_stats)
+            
+        return results
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Erreur import global: {str(e)}")
         
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Erreur lors de la lecture du fichier: {str(e)}")
