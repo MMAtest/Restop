@@ -3500,6 +3500,8 @@ def detect_supplier_strategy(text: str) -> str:
         return "TERREAZUR"
     if "ROYAUME" in text_upper and "MERS" in text_upper:
         return "ROYAUME_DES_MERS"
+    if "RM" in text_upper and "MAREE" in text_upper:
+        return "ROYAUME_DES_MERS"
     if "PREST" in text_upper and "HYG" in text_upper:
         return "PREST_HYG"
     if "GFD" in text_upper or "LERDA" in text_upper:
