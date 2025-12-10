@@ -5859,6 +5859,58 @@ function App() {
                       border: '2px solid #10b981',
                       marginBottom: '20px'
                     }}>
+                      <div style={{textAlign: 'center', marginBottom: '20px'}}>
+                        <h3 style={{fontSize: '18px', color: '#059669', marginBottom: '10px'}}>
+                          📥 Import Multi-Onglets (Catalogue Complet)
+                        </h3>
+                        <p style={{fontSize: '14px', color: '#666', marginBottom: '15px'}}>
+                          Importez un fichier Excel (.xlsx) contenant plusieurs onglets (catégories).
+                          Chaque onglet sera traité comme une catégorie distincte.
+                        </p>
+                        
+                        <label className="button primary" style={{cursor: 'pointer', fontSize: '16px', padding: '12px 24px'}}>
+                            📁 Sélectionner le fichier Excel Complet
+                            <input 
+                                type="file" 
+                                accept=".xlsx,.xls" 
+                                style={{display: 'none'}} 
+                                onChange={async (e) => {
+                                    const file = e.target.files[0];
+                                    if (!file) return;
+                                    
+                                    if (!window.confirm("Êtes-vous sûr de vouloir importer ce catalogue ?\nCela va créer/mettre à jour des produits pour chaque onglet.")) return;
+                                    
+                                    const formData = new FormData();
+                                    formData.append('file', file);
+                                    
+                                    try {
+                                        setLoading(true);
+                                        const res = await axios.post(`${API}/import/global-excel`, formData, {
+                                            headers: { 'Content-Type': 'multipart/form-data' }
+                                        });
+                                        
+                                        const sheetDetails = res.data.sheets_processed.map(s => `• ${s.name}: ${s.count} produits`).join('\n');
+                                        
+                                        alert(`✅ Import terminé avec succès !\n\n` +
+                                              `📦 Produits créés : ${res.data.products_created}\n` +
+                                              `✏️ Produits mis à jour : ${res.data.products_updated}\n\n` +
+                                              `Onglets traités :\n${sheetDetails}`);
+                                              
+                                        fetchStocks();
+                                        fetchProduits();
+                                    } catch (err) {
+                                        alert("Erreur import : " + (err.response?.data?.detail || err.message));
+                                    } finally {
+                                        setLoading(false);
+                                    }
+                                }}
+                            />
+                        </label>
+                      </div>
+                    </div>
+
+                    {/* Zone d'import classique (image/pdf) pour historique */}
+                    }}>
                       <h4 style={{color: '#059669', marginBottom: '16px', fontSize: '16px', fontWeight: 'bold'}}>
                         📤 Upload Mercuriale Fournisseur
                       </h4>
