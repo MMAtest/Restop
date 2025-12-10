@@ -4237,6 +4237,39 @@ function App() {
                 {currentUser?.role !== 'employe_cuisine' && (
                   <div style={{display: 'flex', gap: '10px', marginBottom: '20px', flexWrap: 'wrap'}}>
                     <button className="button" onClick={() => setShowProduitModal(true)}>➕ Nouveau Produit</button>
+                    
+                    {/* Bouton Import Global */}
+                    <label className="button secondary" style={{cursor: 'pointer'}}>
+                        📥 Importer Catalogue
+                        <input 
+                            type="file" 
+                            accept=".xlsx,.xls" 
+                            style={{display: 'none'}} 
+                            onChange={async (e) => {
+                                const file = e.target.files[0];
+                                if (!file) return;
+                                
+                                if (!window.confirm("Êtes-vous sûr de vouloir importer ce catalogue ?\nCela peut prendre du temps et créer de nombreux produits.")) return;
+                                
+                                const formData = new FormData();
+                                formData.append('file', file);
+                                
+                                try {
+                                    setLoading(true);
+                                    const res = await axios.post(`${API}/import/global-excel`, formData, {
+                                        headers: { 'Content-Type': 'multipart/form-data' }
+                                    });
+                                    alert(`✅ Import terminé !\n\nProduits créés : ${res.data.products_created}\nProduits mis à jour : ${res.data.products_updated}\nOnglets traités : ${res.data.sheets_processed.map(s => s.name).join(', ')}`);
+                                    fetchStocks();
+                                    fetchProduits();
+                                } catch (err) {
+                                    alert("Erreur import : " + (err.response?.data?.detail || err.message));
+                                } finally {
+                                    setLoading(false);
+                                }
+                            }}
+                        />
+                    </label>
                   </div>
                 )}
 
