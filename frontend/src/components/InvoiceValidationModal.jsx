@@ -156,21 +156,42 @@ const InvoiceValidationModal = ({ documentId, onClose, onSuccess, produitsList, 
 
   return (
     <div className="modal-overlay">
-      <div className="modal-content large" style={{maxWidth: '98%', width: '1400px', height: '95vh', display: 'flex', flexDirection: 'column', padding: '0'}}>
+      <div className="modal-content large" style={{
+        maxWidth: '98%', 
+        width: window.innerWidth > 768 ? '1400px' : '100%', 
+        height: '95vh', 
+        display: 'flex', 
+        flexDirection: 'column', 
+        padding: '0',
+        margin: window.innerWidth <= 768 ? '10px' : 'auto'
+      }}>
         
         {/* HEADER FIXE */}
-        <div style={{padding: '20px', borderBottom: '1px solid #eee', background: '#fff'}}>
-          <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px'}}>
-            <h3 style={{margin: 0}}>📝 Validation Facture</h3>
+        <div style={{padding: window.innerWidth <= 768 ? '12px' : '20px', borderBottom: '1px solid #eee', background: '#fff'}}>
+          <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px'}}>
+            <h3 style={{margin: 0, fontSize: window.innerWidth <= 768 ? '16px' : '20px'}}>📝 Validation Facture</h3>
             <button onClick={onClose} style={{background: 'none', border: 'none', fontSize: '24px', cursor: 'pointer'}}>×</button>
           </div>
           
-          <div style={{display: 'flex', gap: '15px', alignItems: 'center', background: '#f8f9fa', padding: '15px', borderRadius: '8px'}}>
-            <div style={{fontWeight: 'bold'}}>🏢 Fournisseur :</div>
+          <div style={{
+            display: 'flex', 
+            flexDirection: window.innerWidth <= 768 ? 'column' : 'row',
+            gap: '10px', 
+            background: '#f8f9fa', 
+            padding: window.innerWidth <= 768 ? '10px' : '15px', 
+            borderRadius: '8px'
+          }}>
+            <div style={{fontWeight: 'bold', fontSize: window.innerWidth <= 768 ? '13px' : '14px'}}>🏢 Fournisseur :</div>
             <select 
                 value={selectedSupplierId} 
                 onChange={(e) => setSelectedSupplierId(e.target.value)}
-                style={{padding: '8px', borderRadius: '4px', border: '1px solid #ccc', minWidth: '200px'}}
+                style={{
+                  padding: '8px', 
+                  borderRadius: '4px', 
+                  border: '1px solid #ccc', 
+                  width: window.innerWidth <= 768 ? '100%' : '200px',
+                  fontSize: window.innerWidth <= 768 ? '13px' : '14px'
+                }}
             >
                 <option value="new">➕ Créer : {analysis.supplier_name}</option>
                 {fournisseursList.map(f => <option key={f.id} value={f.id}>{f.nom}</option>)}
@@ -182,19 +203,27 @@ const InvoiceValidationModal = ({ documentId, onClose, onSuccess, produitsList, 
                     value={newSupplierName}
                     onChange={(e) => setNewSupplierName(e.target.value)}
                     placeholder="Nom du fournisseur"
-                    style={{padding: '8px', border: '1px solid #f59e0b', borderRadius: '4px'}}
+                    style={{
+                      padding: '8px', 
+                      border: '1px solid #f59e0b', 
+                      borderRadius: '4px',
+                      width: window.innerWidth <= 768 ? '100%' : 'auto',
+                      fontSize: window.innerWidth <= 768 ? '13px' : '14px'
+                    }}
                 />
             )}
             
-            <div style={{marginLeft: 'auto', color: '#666'}}>
+            <div style={{color: '#666', fontSize: window.innerWidth <= 768 ? '12px' : '14px'}}>
                 Date: <strong>{analysis.facture_date}</strong> • N°: <strong>{analysis.numero_facture}</strong>
             </div>
           </div>
         </div>
 
-        {/* TABLEAU SCROLLABLE */}
-        <div style={{flex: 1, overflowY: 'auto', padding: '20px', overflowX: 'auto'}}>
-          <table style={{width: '100%', minWidth: '800px', borderCollapse: 'collapse', fontSize: '13px'}}>
+        {/* CONTENU SCROLLABLE */}
+        <div style={{flex: 1, overflowY: 'auto', padding: window.innerWidth <= 768 ? '10px' : '20px'}}>
+          {window.innerWidth <= 768 ? (
+            // VERSION MOBILE : CARTES
+            <div style={{display: 'flex', flexDirection: 'column', gap: '12px'}}>
             <thead style={{background: '#f1f5f9', position: 'sticky', top: 0, zIndex: 10}}>
               <tr>
                 <th style={{padding: '12px', textAlign: 'left', borderBottom: '2px solid #cbd5e1', width: '20%'}}>Produit (OCR) / Nom Final</th>
