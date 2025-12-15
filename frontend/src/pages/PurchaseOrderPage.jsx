@@ -367,7 +367,7 @@ const PurchaseOrderPage = ({ currentUser }) => {
   return (
     <div className="min-h-screen" style={{ background: 'var(--color-background-dark)', color: 'var(--color-text-primary)' }}>
       {/* Header */}
-      <div className="mb-8 px-6 pt-2">
+      <div className="mb-8 px-6" style={{ paddingTop: window.innerWidth <= 768 ? '20px' : '8px' }}>
         <h1 className="text-3xl font-bold mb-2" style={{ color: 'var(--color-text-primary)' }}>
           🛒 Gestion des Commandes
         </h1>
