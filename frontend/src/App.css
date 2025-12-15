@@ -506,6 +506,60 @@ body {
   }
 }
 
+/* ===== PAGINATION ===== */
+.pagination-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 20px;
+  padding: 15px;
+  background: var(--color-background-card-light);
+  border-radius: 8px;
+  gap: 10px;
+}
+
+.pagination-info {
+  font-size: 14px;
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.pagination-buttons {
+  display: flex;
+  gap: 5px;
+  flex-shrink: 0;
+}
+
+@media (max-width: 768px) {
+  .pagination-container {
+    flex-direction: column;
+    gap: 12px;
+    padding: 12px;
+  }
+  
+  .pagination-info {
+    width: 100%;
+    text-align: center;
+    font-size: 12px;
+  }
+  
+  .pagination-buttons {
+    width: 100%;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+  
+  .pagination-buttons button {
+    flex: 1;
+    min-width: 80px;
+    max-width: calc(50% - 2.5px);
+    font-size: 12px !important;
+    padding: 6px 8px !important;
+  }
+}
+
 /* ===== BUTTONS ===== */
 .button {
   background: var(--color-primary-blue);
