@@ -325,9 +325,37 @@ const InvoiceValidationModal = ({ documentId, onClose, onSuccess, produitsList, 
 
   if (loading) return (
     <div className="modal-overlay">
-      <div className="modal-content" style={{padding: '40px', textAlign: 'center'}}>
+      <div className="modal-content" style={{padding: '40px', textAlign: 'center', maxWidth: '400px'}}>
         <div style={{fontSize: '40px', marginBottom: '20px'}}>🤖</div>
-        <h3>Traitement en cours...</h3>
+        <h3 style={{marginBottom: '15px'}}>Traitement en cours...</h3>
+        {showProgressBar && (
+          <>
+            <div style={{
+              width: '100%',
+              height: '8px',
+              background: '#e0e0e0',
+              borderRadius: '4px',
+              overflow: 'hidden',
+              marginBottom: '10px'
+            }}>
+              <div style={{
+                width: '100%',
+                height: '100%',
+                background: 'linear-gradient(90deg, #10b981, #059669)',
+                animation: 'progress 1.5s ease-in-out infinite'
+              }}></div>
+            </div>
+            <p style={{fontSize: '14px', color: '#666'}}>
+              Analyse intelligente des produits en cours...
+            </p>
+            <style>{`
+              @keyframes progress {
+                0% { transform: translateX(-100%); }
+                100% { transform: translateX(100%); }
+              }
+            `}</style>
+          </>
+        )}
       </div>
     </div>
   );
