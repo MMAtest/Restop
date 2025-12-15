@@ -225,16 +225,30 @@ const InvoiceValidationModal = ({ documentId, onClose, onSuccess, produitsList, 
         }
 
         // Logique Produits
-        const initializedItems = data.items.map(item => ({
-          ...item,
-          selected_product_id: item.status === 'matched' ? item.product_id : '', 
-          final_name: item.status === 'matched' ? item.product_name : item.ocr_name,
-          final_qty: item.ocr_qty || 1,
-          final_unit: item.ocr_unit || 'pièce',
-          final_price: item.ocr_price || 0,
-          batch_number: '',
-          dlc: ''
-        }));
+        const initializedItems = data.items.map(item => {
+          const productName = item.status === 'matched' ? item.product_name : item.ocr_name;
+          const dlc = item.dlc || '';
+          
+          // Générer automatiquement un numéro de lot si une DLC est détectée
+          let batchNumber = item.batch_number || '';
+          if (dlc && !batchNumber) {
+            const dlcDate = dlc.replace(/-/g, '');
+            const productCode = productName.substring(0, 3).toUpperCase().replace(/[^A-Z0-9]/g, 'X');
+            const randomSuffix = Math.floor(Math.random() * 100).toString().padStart(2, '0');
+            batchNumber = `LOT-${dlcDate}-${productCode}${randomSuffix}`;
+          }
+          
+          return {
+            ...item,
+            selected_product_id: item.status === 'matched' ? item.product_id : '', 
+            final_name: productName,
+            final_qty: item.ocr_qty || 1,
+            final_unit: item.ocr_unit || 'pièce',
+            final_price: item.ocr_price || 0,
+            batch_number: batchNumber,
+            dlc: dlc
+          };
+        });
         setItems(initializedItems);
         setShowProgressBar(false);
         setLoading(false);
