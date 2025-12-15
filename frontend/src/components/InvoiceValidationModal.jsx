@@ -197,6 +197,7 @@ const InvoiceValidationModal = ({ documentId, onClose, onSuccess, produitsList, 
   const [error, setError] = useState(null);
   const [items, setItems] = useState([]);
   const isMobile = useIsMobile();
+  const [showProgressBar, setShowProgressBar] = useState(false);
   
   // Gestion du fournisseur
   const [selectedSupplierId, setSelectedSupplierId] = useState('');
