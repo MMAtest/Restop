@@ -252,6 +252,17 @@ const InvoiceValidationModal = ({ documentId, onClose, onSuccess, produitsList, 
     const updatedItems = [...items];
     updatedItems[index][field] = value;
     
+    // Si on change la DLC, générer automatiquement un numéro de lot
+    if (field === 'dlc' && value) {
+      // Format du lot : LOT-YYYYMMDD-XXX (XXX = 3 premiers caractères du nom du produit)
+      const dlcDate = value.replace(/-/g, ''); // Format YYYYMMDD
+      const productName = updatedItems[index].final_name || 'PRD';
+      const productCode = productName.substring(0, 3).toUpperCase().replace(/[^A-Z0-9]/g, 'X');
+      const randomSuffix = Math.floor(Math.random() * 100).toString().padStart(2, '0');
+      
+      updatedItems[index].batch_number = `LOT-${dlcDate}-${productCode}${randomSuffix}`;
+    }
+    
     if (field === 'selected_product_id' && value) {
         const product = produitsList.find(p => p.id === value);
         if (product) {
