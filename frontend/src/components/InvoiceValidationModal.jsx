@@ -207,6 +207,11 @@ const InvoiceValidationModal = ({ documentId, onClose, onSuccess, produitsList, 
   // Charger l'analyse au montage
   useEffect(() => {
     const fetchAnalysis = async () => {
+      // Timer pour afficher la barre de progression si ça prend plus de 2s
+      const progressTimer = setTimeout(() => {
+        setShowProgressBar(true);
+      }, 2000);
+
       try {
         const response = await axios.post(`${API}/ocr/analyze-facture/${documentId}`);
         const data = response.data;
@@ -233,9 +238,13 @@ const InvoiceValidationModal = ({ documentId, onClose, onSuccess, produitsList, 
           dlc: ''
         }));
         setItems(initializedItems);
+        clearTimeout(progressTimer);
+        setShowProgressBar(false);
         setLoading(false);
       } catch (err) {
         console.error("Erreur analyse:", err);
+        clearTimeout(progressTimer);
+        setShowProgressBar(false);
         setError("Impossible d'analyser la facture.");
         setLoading(false);
       }
