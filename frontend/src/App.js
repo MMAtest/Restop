@@ -5620,21 +5620,13 @@ function App() {
                           
                           {/* Contrôles de pagination pour factures */}
                           {totalPages > 1 && (
-                            <div style={{
-                              display: 'flex', 
-                              justifyContent: 'space-between', 
-                              alignItems: 'center',
-                              marginTop: '20px',
-                              padding: '15px',
-                              background: 'var(--color-background-card-light)',
-                              borderRadius: '8px'
-                            }}>
-                              <div style={{fontSize: '14px', color: 'var(--color-text-secondary)'}}>
+                            <div className="pagination-container">
+                              <div className="pagination-info">
                                 Page {ocrCurrentPage} sur {totalPages} • 
                                 {startIndex + 1}-{Math.min(endIndex, filteredDocs.length)} sur {filteredDocs.length} factures
                               </div>
                               
-                              <div style={{display: 'flex', gap: '5px'}}>
+                              <div className="pagination-buttons">
                                 <button 
                                   className="button small" 
                                   onClick={() => setOcrCurrentPage(1)}
@@ -5655,7 +5647,7 @@ function App() {
                                     cursor: ocrCurrentPage === 1 ? 'not-allowed' : 'pointer'
                                   }}
                                 >
-                                  ⬅️ Précédent
+                                  ⬅️ Préc.
                                 </button>
                                 <button 
                                   className="button small" 
@@ -5666,7 +5658,7 @@ function App() {
                                     cursor: ocrCurrentPage === totalPages ? 'not-allowed' : 'pointer'
                                   }}
                                 >
-                                  Suivant ➡️
+                                  Suiv. ➡️
                                 </button>
                                 <button 
                                   className="button small" 
@@ -5678,6 +5670,10 @@ function App() {
                                   }}
                                 >
                                   Fin ⏭️
+                                </button>
+                              </div>
+                            </div>
+                          )}
                                 </button>
                               </div>
                             </div>
