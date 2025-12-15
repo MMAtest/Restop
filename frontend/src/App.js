@@ -2118,8 +2118,50 @@ function App() {
     event.target.value = '';
   };
 
+  // Fonction pour compresser une image
+  const compressImage = (file, maxWidth = 1920, quality = 0.8) => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          let width = img.width;
+          let height = img.height;
+
+          // Redimensionner si l'image est trop grande
+          if (width > maxWidth) {
+            height = (height * maxWidth) / width;
+            width = maxWidth;
+          }
+
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, width, height);
+
+          canvas.toBlob(
+            (blob) => {
+              const compressedFile = new File([blob], file.name, {
+                type: 'image/jpeg',
+                lastModified: Date.now(),
+              });
+              resolve(compressedFile);
+            },
+            'image/jpeg',
+            quality
+          );
+        };
+        img.onerror = reject;
+        img.src = e.target.result;
+      };
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  };
+
   // Fonctions pour OCR
-  const handleOcrFileSelect = (event) => {
+  const handleOcrFileSelect = async (event) => {
     const file = event.target.files[0];
     if (file) {
       // Vérifier si c'est une image ou un PDF
@@ -2128,7 +2170,26 @@ function App() {
         return;
       }
       
-      setOcrFile(file);
+      let finalFile = file;
+      
+      // Compresser les images (pas les PDF)
+      if (file.type.startsWith('image/')) {
+        try {
+          const originalSize = (file.size / 1024 / 1024).toFixed(2);
+          console.log(`📸 Image originale: ${originalSize} MB`);
+          
+          finalFile = await compressImage(file);
+          
+          const compressedSize = (finalFile.size / 1024 / 1024).toFixed(2);
+          console.log(`✅ Image compressée: ${compressedSize} MB (réduction: ${((1 - finalFile.size / file.size) * 100).toFixed(0)}%)`);
+        } catch (error) {
+          console.error('Erreur compression:', error);
+          // En cas d'erreur, utiliser le fichier original
+          finalFile = file;
+        }
+      }
+      
+      setOcrFile(finalFile);
       
       // Créer un aperçu selon le type de fichier
       if (file.type === 'application/pdf') {
@@ -2140,7 +2201,7 @@ function App() {
         reader.onload = (e) => {
           setOcrPreview(e.target.result);
         };
-        reader.readAsDataURL(file);
+        reader.readAsDataURL(finalFile);
       }
     }
   };
