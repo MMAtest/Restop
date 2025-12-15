@@ -403,7 +403,14 @@ const InvoiceValidationModal = ({ documentId, onClose, onSuccess, produitsList, 
             // VERSION MOBILE : CARTES
             <div style={{display: 'flex', flexDirection: 'column', gap: '12px'}}>
               {items.map((item, index) => (
-                <MobileItemCard key={index} item={item} index={index} />
+                <MobileItemCard 
+                  key={index} 
+                  item={item} 
+                  index={index}
+                  handleItemChange={handleItemChange}
+                  handleDeleteItem={handleDeleteItem}
+                  produitsList={produitsList}
+                />
               ))}
             </div>
           ) : (
