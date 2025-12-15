@@ -2257,11 +2257,14 @@ function App() {
       formData.append('file', ocrFile);
       formData.append('document_type', documentType);
 
+      const fileSize = (ocrFile.size / 1024 / 1024).toFixed(2);
+      console.log(`📤 Upload en cours: ${fileSize} MB`);
+
       const response = await axios.post(`${API}/ocr/upload-document`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data'
         },
-        timeout: 60000 // 60 secondes timeout pour OCR (augmenté pour factures multiples)
+        timeout: 90000 // 90 secondes timeout pour OCR (augmenté)
       });
 
       setOcrResult(response.data);
