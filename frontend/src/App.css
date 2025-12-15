@@ -477,13 +477,17 @@ body {
   
   .item-actions {
     flex: 1 1 100%;
+    width: 100%;
     margin-left: 0;
-    justify-content: flex-end;
+    justify-content: space-between;
+    gap: 8px;
   }
   
   .item-actions button {
     flex: 1;
-    max-width: 48%;
+    min-width: 0;
+    padding: 8px 12px !important;
+    font-size: 13px !important;
   }
 }
 
