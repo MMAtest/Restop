@@ -549,8 +549,45 @@ const InvoiceValidationModal = ({ documentId, onClose, onSuccess, onRefresh, pro
                 </>
             )}
             
-            <div style={{color: '#666', fontSize: isMobile ? '12px' : '14px'}}>
-                Date: <strong>{analysis.facture_date}</strong> • N°: <strong>{analysis.numero_facture}</strong>
+            <div style={{
+              display: 'flex',
+              gap: '10px',
+              flexDirection: isMobile ? 'column' : 'row',
+              alignItems: isMobile ? 'stretch' : 'center',
+              width: isMobile ? '100%' : 'auto'
+            }}>
+              <div style={{display: 'flex', alignItems: 'center', gap: '5px'}}>
+                <span style={{fontSize: isMobile ? '11px' : '13px', color: '#666'}}>📅</span>
+                <input 
+                  type="date"
+                  value={editableDate}
+                  onChange={(e) => setEditableDate(e.target.value)}
+                  style={{
+                    padding: '6px',
+                    border: '1px solid #cbd5e1',
+                    borderRadius: '4px',
+                    fontSize: isMobile ? '12px' : '14px',
+                    width: isMobile ? '100%' : '140px'
+                  }}
+                />
+              </div>
+              
+              <div style={{display: 'flex', alignItems: 'center', gap: '5px'}}>
+                <span style={{fontSize: isMobile ? '11px' : '13px', color: '#666'}}>N°</span>
+                <input 
+                  type="text"
+                  value={editableNumero}
+                  onChange={(e) => setEditableNumero(e.target.value)}
+                  placeholder="Numéro facture"
+                  style={{
+                    padding: '6px',
+                    border: '1px solid #cbd5e1',
+                    borderRadius: '4px',
+                    fontSize: isMobile ? '12px' : '14px',
+                    width: isMobile ? '100%' : '120px'
+                  }}
+                />
+              </div>
             </div>
           </div>
         </div>
