@@ -33,7 +33,7 @@ from emergentintegrations.llm.chat import LlmChat, UserMessage, FileContentWithM
 import asyncio
 
 # Parsers optimisés
-from parsers_optimized import parse_product_line_smart, optimize_parser_results
+from parsers_optimized import parse_product_line_smart, optimize_parser_results, detect_product_category, detect_supplier_category
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env', override=False)
