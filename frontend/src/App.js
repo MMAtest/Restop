@@ -5550,20 +5550,28 @@ function App() {
                       </p>
                     </div>
                     
-                    {/* Filtre spécifique aux Factures */}
-                    <div className="filter-section" style={{marginBottom: '20px'}}>
-                      <div className="filter-info" style={{
-                        fontSize: '14px', 
-                        color: 'var(--color-text-secondary)'
+                    {/* SECTION 1 : FACTURES À VALIDER */}
+                    <div style={{marginBottom: '30px'}}>
+                      <h4 style={{
+                        color: '#f59e0b',
+                        fontSize: '16px',
+                        fontWeight: 'bold',
+                        marginBottom: '15px',
+                        padding: '10px',
+                        background: 'linear-gradient(135deg, #fef3c7, #fde68a)',
+                        borderRadius: '6px',
+                        borderLeft: '4px solid #f59e0b'
                       }}>
-                        {documentsOcr.filter(doc => doc.type_document === 'facture_fournisseur').length} facture(s) traitée(s)
-                      </div>
-                    </div>
+                        ⏳ Factures À Valider ({documentsOcr.filter(doc => doc.type_document === 'facture_fournisseur' && doc.statut !== 'importe').length})
+                      </h4>
                     
                     {/* Liste des factures avec pagination */}
                     {(() => {
-                      // Filtrer uniquement les factures
-                      const filteredDocs = documentsOcr.filter(doc => doc.type_document === 'facture_fournisseur');
+                      // Filtrer uniquement les factures NON IMPORTÉES
+                      const filteredDocs = documentsOcr.filter(doc => 
+                        doc.type_document === 'facture_fournisseur' && 
+                        doc.statut !== 'importe'
+                      );
                       
                       // Calculer la pagination
                       const totalPages = Math.ceil(filteredDocs.length / ocrDocumentsPerPage);
