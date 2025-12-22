@@ -540,6 +540,65 @@ const InvoiceValidationModal = ({ documentId, onClose, onSuccess, produitsList, 
           </div>
         </div>
 
+        {/* SUGGESTION JOKER IA */}
+        {showAiSuggestion && (
+          <div style={{
+            padding: isMobile ? '10px' : '15px',
+            background: 'linear-gradient(135deg, #fef3c7, #fde68a)',
+            borderBottom: '1px solid #fbbf24',
+            display: 'flex',
+            flexDirection: isMobile ? 'column' : 'row',
+            alignItems: 'center',
+            gap: '10px'
+          }}>
+            <div style={{flex: 1, fontSize: isMobile ? '12px' : '14px'}}>
+              <strong>🤖 Amélioration IA disponible</strong> • Beaucoup de produits non reconnus. L'analyse IA peut améliorer la précision jusqu'à 90%.
+            </div>
+            <button
+              onClick={handleReanalyzeWithAI}
+              style={{
+                background: '#10b981',
+                color: 'white',
+                border: 'none',
+                padding: isMobile ? '8px 16px' : '10px 20px',
+                borderRadius: '6px',
+                cursor: 'pointer',
+                fontWeight: 'bold',
+                fontSize: isMobile ? '12px' : '14px',
+                whiteSpace: 'nowrap'
+              }}
+            >
+              🚀 Améliorer avec IA (~0.003€)
+            </button>
+            <button
+              onClick={() => setShowAiSuggestion(false)}
+              style={{
+                background: 'transparent',
+                border: 'none',
+                fontSize: '20px',
+                cursor: 'pointer',
+                padding: '5px'
+              }}
+            >
+              ✕
+            </button>
+          </div>
+        )}
+
+        {/* BADGE IA POWERED */}
+        {aiPowered && (
+          <div style={{
+            padding: '8px',
+            background: 'linear-gradient(135deg, #10b981, #059669)',
+            color: 'white',
+            textAlign: 'center',
+            fontSize: isMobile ? '11px' : '13px',
+            fontWeight: 'bold'
+          }}>
+            ✨ Analysé avec Gemini 2.0 Flash • Précision améliorée
+          </div>
+        )}
+
         {/* CONTENU SCROLLABLE */}
         <div style={{flex: 1, overflowY: 'auto', padding: isMobile ? '10px' : '20px', overflowX: isMobile ? 'visible' : 'auto'}}>
           {isMobile ? (
