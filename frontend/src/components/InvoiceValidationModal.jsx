@@ -263,6 +263,18 @@ const InvoiceValidationModal = ({ documentId, onClose, onSuccess, produitsList, 
           setShowAiSuggestion(true);
           console.log(`⚠️ Taux de correspondance faible (${(matchRate * 100).toFixed(0)}%). Joker IA suggéré.`);
         }
+        
+        setShowProgressBar(false);
+        setLoading(false);
+      } catch (err) {
+        console.error("Erreur analyse:", err);
+        setShowProgressBar(false);
+        setError("Impossible d'analyser la facture.");
+        setLoading(false);
+      }
+    };
+    fetchAnalysis();
+  }, [documentId]);
 
   const handleReanalyzeWithAI = async () => {
     setLoading(true);
