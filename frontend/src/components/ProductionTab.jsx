@@ -813,6 +813,7 @@ const ProductionTab = (props) => {
                         {filteredRecettes.length} plat(s) trouvé(s)
                       </div>
                     )}
+                    </div>
                   </div>
                 )}
 
