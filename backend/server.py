@@ -8707,6 +8707,40 @@ async def analyze_facture_with_ai_joker(document_id: str):
         
         print(f"✅ Gemini Joker : {len(result.items)} produits analysés (confiance: {result.confiance_globale})")
         
+        # 6. SAUVEGARDER les résultats Gemini dans le document pour persistance
+        updated_donnees = {
+            "fournisseur": gemini_result.get("fournisseur"),
+            "date": gemini_result.get("date"),
+            "numero_facture": gemini_result.get("numero_facture"),
+            "total_ttc": gemini_result.get("total_ttc"),
+            "produits": [
+                {
+                    "nom": p.get("nom"),
+                    "quantite": p.get("quantite"),
+                    "unite": p.get("unite"),
+                    "prix_unitaire": p.get("prix_unitaire"),
+                    "prix_total": p.get("prix_total"),
+                    "dlc": p.get("dlc")
+                }
+                for p in gemini_result.get("produits", [])
+            ],
+            "ai_powered": True,
+            "confiance": gemini_result.get("confiance")
+        }
+        
+        # Mettre à jour le document avec les nouvelles données
+        await db.documents_ocr.update_one(
+            {"id": document_id},
+            {
+                "$set": {
+                    "donnees_parsees": updated_donnees,
+                    "statut": "traite"
+                }
+            }
+        )
+        
+        print(f"💾 Document {document_id} mis à jour avec résultats Gemini")
+        
         return result
         
     except Exception as e:
