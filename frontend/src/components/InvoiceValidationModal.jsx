@@ -227,6 +227,10 @@ const InvoiceValidationModal = ({ documentId, onClose, onSuccess, onRefresh, pro
             setSelectedSupplierId('new');
             setNewSupplierName(data.supplier_name || 'Nouveau Fournisseur');
         }
+        
+        // Initialiser date et numéro éditables
+        setEditableDate(data.facture_date || '');
+        setEditableNumero(data.numero_facture || '');
 
         // Logique Produits
         const initializedItems = data.items.map(item => {
