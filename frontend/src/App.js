@@ -5805,12 +5805,17 @@ function App() {
                           {currentDocs.map((doc, index) => (
                             <div key={index} className="item-row">
                               <div className="item-info">
-                                <div className="item-name">{doc.nom_fichier}</div>
+                                <div className="item-name">
+                                  🧾 Facture de {doc.donnees_parsees?.fournisseur || 'Fournisseur inconnu'}
+                                </div>
                                 <div className="item-details">
-                                  🧾 Facture Fournisseur - {new Date(doc.date_upload).toLocaleDateString('fr-FR')}
-                                  {doc.donnees_extraites?.fournisseur && (
-                                    <span style={{marginLeft: '10px', color: 'var(--color-primary-blue)'}}>
-                                      • {doc.donnees_extraites.fournisseur}
+                                  {doc.donnees_parsees?.total_ttc ? `${doc.donnees_parsees.total_ttc}€ TTC` : 'Montant non identifié'} • 
+                                  {doc.date_upload ? new Date(doc.date_upload).toLocaleDateString('fr-FR') : 
+                                   doc.donnees_parsees?.date ? doc.donnees_parsees.date : 
+                                   'Date inconnue'}
+                                  {doc.donnees_parsees?.numero_facture && (
+                                    <span style={{marginLeft: '10px', color: 'var(--color-text-muted)', fontSize: '12px'}}>
+                                      N° {doc.donnees_parsees.numero_facture}
                                     </span>
                                   )}
                                 </div>
