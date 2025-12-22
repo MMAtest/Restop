@@ -327,19 +327,6 @@ const InvoiceValidationModal = ({ documentId, onClose, onSuccess, produitsList, 
     }
   };
 
-        
-        setShowProgressBar(false);
-        setLoading(false);
-      } catch (err) {
-        console.error("Erreur analyse:", err);
-        setShowProgressBar(false);
-        setError("Impossible d'analyser la facture.");
-        setLoading(false);
-      }
-    };
-    fetchAnalysis();
-  }, [documentId]);
-
   const handleItemChange = (index, field, value) => {
     const updatedItems = [...items];
     updatedItems[index][field] = value;
