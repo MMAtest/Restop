@@ -3566,7 +3566,9 @@ def is_noise_line(line: str) -> bool:
         "SARL", "SAS", "SA", "EURL", "SIRET", "SIREN", "APE", "NAF",
         "IBAN", "BIC", "BANQUE", "COMPTE",
         "CONDITIONS", "VENTE", "PAIEMENT", "REGLEMENT",
-        "QUANTITÉ", "DESIGNATION", "PRIX UNITAIRE", "QTÉ FACT"
+        "QUANTITÉ", "DESIGNATION", "PRIX UNITAIRE", "QTÉ FACT",
+        "QTÉ", "P.U", "PU HT", "TOTAL HT", "ARTICLES LIVRÉS",
+        "INFORMATIONS DE LIVRAISON", "BON DE LIVRAISON"
     ]
     if any(k in line_upper for k in admin_keys): return True
     
