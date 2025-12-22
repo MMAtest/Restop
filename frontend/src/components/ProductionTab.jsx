@@ -813,7 +813,6 @@ const ProductionTab = (props) => {
                       </div>
                     )}
                   </div>
-                </div>
                 )}
 
                 {/* Vue par catégorie ou liste des recettes */}
