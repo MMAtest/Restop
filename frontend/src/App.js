@@ -5820,10 +5820,15 @@ function App() {
                                   👁️ Aperçu
                                 </button>
                                 <button 
-                                  className="button small success"
-                                  onClick={() => alert('Fonctionnalité de traitement des factures en cours de développement')}
+                                  className="button small"
+                                  disabled
+                                  style={{
+                                    background: '#e5e7eb',
+                                    color: '#9ca3af',
+                                    cursor: 'not-allowed'
+                                  }}
                                 >
-                                  📦 Intégrer Stock
+                                  ✅ Intégrée
                                 </button>
                               </div>
                             </div>
