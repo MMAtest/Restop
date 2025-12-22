@@ -5758,20 +5758,28 @@ function App() {
                       </div>
                     )}
                     
-                    {/* Filtre spécifique aux Factures */}
-                    <div className="filter-section" style={{marginBottom: '20px'}}>
-                      <div className="filter-info" style={{
-                        fontSize: '14px', 
-                        color: 'var(--color-text-secondary)'
+                    {/* SECTION 2 : FACTURES VALIDÉES (HISTORIQUE) */}
+                    <div style={{marginTop: '30px'}}>
+                      <h4 style={{
+                        color: '#10b981',
+                        fontSize: '16px',
+                        fontWeight: 'bold',
+                        marginBottom: '15px',
+                        padding: '10px',
+                        background: 'linear-gradient(135deg, #d1fae5, #a7f3d0)',
+                        borderRadius: '6px',
+                        borderLeft: '4px solid #10b981'
                       }}>
-                        {documentsOcr.filter(doc => doc.type_document === 'facture_fournisseur').length} facture(s) traitée(s)
-                      </div>
-                    </div>
+                        ✅ Factures Validées - Historique ({documentsOcr.filter(doc => doc.type_document === 'facture_fournisseur' && doc.statut === 'importe').length})
+                      </h4>
 
-                    {/* Liste des factures avec pagination */}
+                    {/* Liste des factures VALIDÉES avec pagination */}
                     {(() => {
-                      // Filtrer seulement les factures
-                      const filteredDocs = documentsOcr.filter(doc => doc.type_document === 'facture_fournisseur');
+                      // Filtrer seulement les factures IMPORTÉES
+                      const filteredDocs = documentsOcr.filter(doc => 
+                        doc.type_document === 'facture_fournisseur' && 
+                        doc.statut === 'importe'
+                      );
                       
                       // Calculer la pagination
                       const totalPages = Math.ceil(filteredDocs.length / ocrDocumentsPerPage);
