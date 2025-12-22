@@ -362,36 +362,3 @@ def detect_supplier_category(supplier_name: str, products_names: List[str] = Non
             return cat_mapping.get(main_cat, "frais")
     
     return "frais"  # Défaut
-
-        
-        # Si manque prix unitaire mais on a total : calculer
-        if (not prix_u or prix_u == 0) and prix_t and qty:
-            prix_u = round(prix_t / qty, 2)
-        
-        # Si manque total mais on a unitaire : calculer
-        if (not prix_t or prix_t == 0) and prix_u and qty:
-            prix_t = round(prix_u * qty, 2)
-        
-        # Normaliser les unités
-        unit = prod.get("unite", "pièce").lower()
-        unit_map = {
-            "k": "kg",
-            "kilo": "kg",
-            "piece": "pièce",
-            "pc": "pièce",
-            "bunch": "botte",
-            "bouquet": "botte",
-            "l": "L",
-            "litre": "L",
-        }
-        unit = unit_map.get(unit, unit)
-        
-        optimized.append({
-            **prod,
-            "quantite": qty,
-            "unite": unit,
-            "prix_unitaire": prix_u,
-            "prix_total": prix_t
-        })
-    
-    return optimized
