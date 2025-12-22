@@ -258,10 +258,11 @@ const InvoiceValidationModal = ({ documentId, onClose, onSuccess, produitsList, 
         const matchedItems = initializedItems.filter(item => item.status === 'matched').length;
         const matchRate = totalItems > 0 ? matchedItems / totalItems : 0;
         
-        // Proposer Joker IA si moins de 70% de correspondances
-        if (matchRate < 0.7 && totalItems > 0 && !data.ai_powered) {
+        // Proposer Joker IA si moins de 80% de correspondances OU nouveau fournisseur
+        const isNewSupplier = data.is_new_supplier;
+        if ((matchRate < 0.8 || isNewSupplier) && totalItems > 0 && !data.ai_powered) {
           setShowAiSuggestion(true);
-          console.log(`⚠️ Taux de correspondance faible (${(matchRate * 100).toFixed(0)}%). Joker IA suggéré.`);
+          console.log(`⚠️ Taux de correspondance: ${(matchRate * 100).toFixed(0)}%. Nouveau fournisseur: ${isNewSupplier}. Joker IA suggéré.`);
         }
         
         setShowProgressBar(false);
