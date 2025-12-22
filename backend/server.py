@@ -4254,6 +4254,95 @@ def parse_diamant_terroir_facture(text: str) -> List[dict]:
                 })
             
     return produits
+
+
+async def analyze_facture_with_gemini(image_path: str) -> dict:
+    """
+    Analyse une facture avec Gemini 2.0 Flash (Joker IA)
+    Retourne une structure JSON détaillée
+    """
+    try:
+        emergent_key = os.environ.get('EMERGENT_LLM_KEY')
+        if not emergent_key:
+            raise ValueError("EMERGENT_LLM_KEY non configurée")
+        
+        # Créer une session unique
+        session_id = f"gemini-ocr-{uuid.uuid4()}"
+        
+        # Initialiser le chat Gemini
+        chat = LlmChat(
+            api_key=emergent_key,
+            session_id=session_id,
+            system_message="Tu es un expert en analyse de factures restaurant. Tu extrais des données structurées de factures françaises."
+        ).with_model("gemini", "gemini-2.5-flash")
+        
+        # Préparer le fichier image
+        image_file = FileContentWithMimeType(
+            file_path=image_path,
+            mime_type="image/jpeg"
+        )
+        
+        # Prompt structuré pour extraction
+        prompt = """Analyse cette facture restaurant et extrait UNIQUEMENT un JSON valide (pas de texte avant ou après) :
+
+{
+  "fournisseur": "nom exact du fournisseur",
+  "date": "YYYY-MM-DD",
+  "numero_facture": "numéro ou référence",
+  "produits": [
+    {
+      "nom": "nom du produit",
+      "quantite": 2.5,
+      "unite": "kg|L|pièce|colis|g|botte",
+      "prix_unitaire": 12.50,
+      "prix_total": 31.25,
+      "dlc": "YYYY-MM-DD" ou null
+    }
+  ],
+  "total_ttc": 150.00,
+  "confiance": 0.95
+}
+
+RÈGLES IMPORTANTES :
+- Si "2K tomates" → quantite: 2, unite: "kg"
+- Si "500g saumon" → quantite: 500, unite: "g"
+- Si prix sur ligne séparée, l'associer au produit juste au-dessus
+- Ignore les lignes administratives (SIRET, adresse, TVA, totaux)
+- Pour chaque produit, extrais la quantité ET le prix unitaire
+- Retourne SEULEMENT le JSON, rien d'autre
+"""
+        
+        # Envoyer le message avec l'image
+        user_message = UserMessage(
+            text=prompt,
+            file_contents=[image_file]
+        )
+        
+        response = await chat.send_message(user_message)
+        
+        # Parser la réponse JSON
+        # Nettoyer la réponse (enlever les ```json si présents)
+        cleaned_response = response.strip()
+        if cleaned_response.startswith('```'):
+            # Extraire le JSON entre les backticks
+            json_match = re.search(r'```(?:json)?\s*(\{.*\})\s*```', cleaned_response, re.DOTALL)
+            if json_match:
+                cleaned_response = json_match.group(1)
+            else:
+                # Enlever juste les backticks
+                cleaned_response = cleaned_response.replace('```json', '').replace('```', '').strip()
+        
+        result = json.loads(cleaned_response)
+        
+        print(f"✅ Gemini OCR : {len(result.get('produits', []))} produits détectés, confiance {result.get('confiance', 0)}")
+        
+        return result
+        
+    except Exception as e:
+        print(f"❌ Erreur Gemini OCR : {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Erreur analyse Gemini : {str(e)}")
+
+
 def parse_facture_fournisseur(texte_ocr: str) -> FactureFournisseurData:
     """Parser les données d'une facture fournisseur avec stratégie Multi-Fournisseurs"""
     data = FactureFournisseurData()
