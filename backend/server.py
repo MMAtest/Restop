@@ -8648,15 +8648,15 @@ async def analyze_facture_with_ai_joker(document_id: str):
         if not document:
             raise HTTPException(status_code=404, detail="Document OCR non trouvé")
         
-        # 2. Récupérer le chemin de l'image
-        file_path = document.get("file_path")
-        if not file_path or not os.path.exists(file_path):
-            raise HTTPException(status_code=400, detail="Fichier image non disponible")
+        # 2. Récupérer l'image en base64
+        image_base64 = document.get("image_base64")
+        if not image_base64:
+            raise HTTPException(status_code=400, detail="Image base64 non disponible")
         
         print(f"🤖 Activation Joker IA (Gemini 2.0 Flash) pour document {document_id}")
         
-        # 3. Analyser avec Gemini
-        gemini_result = await analyze_facture_with_gemini(file_path)
+        # 3. Analyser avec Gemini (utiliser base64)
+        gemini_result = await analyze_facture_with_gemini(image_base64, is_base64=True)
         
         # 4. Convertir en format FactureAnalysisResult
         result = FactureAnalysisResult(
