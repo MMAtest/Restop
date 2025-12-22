@@ -4258,10 +4258,14 @@ def parse_diamant_terroir_facture(text: str) -> List[dict]:
     return produits
 
 
-async def analyze_facture_with_gemini(image_path: str) -> dict:
+async def analyze_facture_with_gemini(image_data: str, is_base64: bool = True) -> dict:
     """
     Analyse une facture avec Gemini 2.0 Flash (Joker IA)
     Retourne une structure JSON détaillée
+    
+    Args:
+        image_data: Soit un chemin de fichier, soit une string base64 (avec ou sans data URI prefix)
+        is_base64: True si image_data est en base64, False si c'est un chemin fichier
     """
     try:
         emergent_key = os.environ.get('EMERGENT_LLM_KEY')
@@ -4278,11 +4282,24 @@ async def analyze_facture_with_gemini(image_path: str) -> dict:
             system_message="Tu es un expert en analyse de factures restaurant. Tu extrais des données structurées de factures françaises."
         ).with_model("gemini", "gemini-2.5-flash")
         
-        # Préparer le fichier image
-        image_file = FileContentWithMimeType(
-            file_path=image_path,
-            mime_type="image/jpeg"
-        )
+        # Préparer l'image selon le format
+        if is_base64:
+            # Nettoyer le base64 (enlever le prefix data:image/... si présent)
+            if image_data.startswith('data:'):
+                # Extraire juste le base64
+                image_data = image_data.split(',')[1] if ',' in image_data else image_data
+            
+            # Utiliser ImageContent pour base64
+            from emergentintegrations.llm.chat import ImageContent
+            image_content = ImageContent(image_base64=image_data)
+            file_contents = [image_content]
+        else:
+            # Utiliser FileContentWithMimeType pour chemin fichier
+            image_file = FileContentWithMimeType(
+                file_path=image_data,
+                mime_type="image/jpeg"
+            )
+            file_contents = [image_file]
         
         # Prompt structuré pour extraction
         prompt = """Analyse cette facture restaurant et extrait UNIQUEMENT un JSON valide (pas de texte avant ou après) :
@@ -4306,18 +4323,20 @@ async def analyze_facture_with_gemini(image_path: str) -> dict:
 }
 
 RÈGLES IMPORTANTES :
-- Si "2K tomates" → quantite: 2, unite: "kg"
+- Si "2K tomates" → quantite: 2, unite: "kg"  
 - Si "500g saumon" → quantite: 500, unite: "g"
 - Si prix sur ligne séparée, l'associer au produit juste au-dessus
+- Ignore COMPLÈTEMENT les lignes de header (DESIGNATION, QTÉ, P.U HT, TOTAL HT)
 - Ignore les lignes administratives (SIRET, adresse, TVA, totaux)
 - Pour chaque produit, extrais la quantité ET le prix unitaire
+- Les unités possibles : kg, g, L, pièce, colis, botte, bunch
 - Retourne SEULEMENT le JSON, rien d'autre
 """
         
         # Envoyer le message avec l'image
         user_message = UserMessage(
             text=prompt,
-            file_contents=[image_file]
+            file_contents=file_contents
         )
         
         response = await chat.send_message(user_message)
