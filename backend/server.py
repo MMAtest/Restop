@@ -8524,6 +8524,8 @@ class FactureAnalysisResult(BaseModel):
     facture_date: str = ""
     numero_facture: str = ""
     items: List[FactureItemAnalysis]
+    ai_powered: bool = False  # Nouveau champ pour indiquer si analysé par Gemini
+    confiance_globale: float = 0.0  # Score de confiance global
 
 class ImportConfirmationRequest(BaseModel):
     document_id: str
