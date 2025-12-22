@@ -252,6 +252,18 @@ const InvoiceValidationModal = ({ documentId, onClose, onSuccess, produitsList, 
           };
         });
         setItems(initializedItems);
+        
+        // Calculer le score de qualité et proposer Joker IA si nécessaire
+        const totalItems = initializedItems.length;
+        const matchedItems = initializedItems.filter(item => item.status === 'matched').length;
+        const matchRate = totalItems > 0 ? matchedItems / totalItems : 0;
+        
+        // Proposer Joker IA si moins de 70% de correspondances
+        if (matchRate < 0.7 && totalItems > 0 && !data.ai_powered) {
+          setShowAiSuggestion(true);
+          console.log(`⚠️ Taux de correspondance faible (${(matchRate * 100).toFixed(0)}%). Joker IA suggéré.`);
+        }
+        
         setShowProgressBar(false);
         setLoading(false);
       } catch (err) {
