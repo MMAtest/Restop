@@ -8612,6 +8612,85 @@ async def analyze_facture_for_review(document_id: str):
         print(f"❌ Erreur analyze facture: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Erreur d'analyse: {str(e)}")
 
+
+@api_router.post("/ocr/analyze-facture-ai/{document_id}", response_model=FactureAnalysisResult)
+async def analyze_facture_with_ai_joker(document_id: str):
+    """
+    🤖 JOKER IA : Analyse avancée avec Gemini 2.0 Flash
+    Utilisé pour améliorer la précision sur factures complexes ou nouveaux fournisseurs
+    """
+    try:
+        # 1. Récupérer le document
+        document = await db.documents_ocr.find_one({"id": document_id})
+        if not document:
+            raise HTTPException(status_code=404, detail="Document OCR non trouvé")
+        
+        # 2. Récupérer le chemin de l'image
+        file_path = document.get("file_path")
+        if not file_path or not os.path.exists(file_path):
+            raise HTTPException(status_code=400, detail="Fichier image non disponible")
+        
+        print(f"🤖 Activation Joker IA (Gemini 2.0 Flash) pour document {document_id}")
+        
+        # 3. Analyser avec Gemini
+        gemini_result = await analyze_facture_with_gemini(file_path)
+        
+        # 4. Convertir en format FactureAnalysisResult
+        result = FactureAnalysisResult(
+            document_id=document_id,
+            supplier_name=gemini_result.get("fournisseur", "Fournisseur inconnu"),
+            facture_date=gemini_result.get("date", datetime.utcnow().strftime("%Y-%m-%d")),
+            numero_facture=gemini_result.get("numero_facture", "N/A"),
+            items=[],
+            ai_powered=True,  # Indicateur que c'est analysé par IA
+            confiance_globale=gemini_result.get("confiance", 0.9)
+        )
+        
+        # Vérifier si le fournisseur existe
+        supplier_match = await match_supplier_by_name(result.supplier_name)
+        if supplier_match and supplier_match["confidence"] >= 0.6:
+            result.supplier_id = supplier_match["supplier_id"]
+            result.supplier_name = supplier_match["supplier_name"]
+            result.is_new_supplier = False
+        else:
+            result.is_new_supplier = True
+        
+        # 5. Analyser chaque produit
+        for prod in gemini_result.get("produits", []):
+            item_analysis = FactureItemAnalysis(
+                ocr_name=prod.get("nom", ""),
+                ocr_qty=prod.get("quantite", 0),
+                ocr_unit=prod.get("unite", "kg"),
+                ocr_price=prod.get("prix_unitaire", 0),
+                ocr_total=prod.get("prix_total", 0),
+                final_qty=prod.get("quantite", 0),
+                final_unit=prod.get("unite", "kg"),
+                final_name=prod.get("nom", ""),
+                dlc=prod.get("dlc", "")
+            )
+            
+            # Tentative de matching avec produits existants
+            product_match = await match_product_by_name(prod.get("nom", ""))
+            
+            if product_match and product_match["confidence"] >= 0.7:
+                item_analysis.product_id = product_match["product_id"]
+                item_analysis.product_name = product_match["product_name"]
+                item_analysis.confidence = product_match["confidence"]
+                item_analysis.status = "matched"
+            else:
+                item_analysis.status = "new"
+            
+            result.items.append(item_analysis)
+        
+        print(f"✅ Gemini Joker : {len(result.items)} produits analysés (confiance: {result.confiance_globale})")
+        
+        return result
+        
+    except Exception as e:
+        print(f"❌ Erreur Joker IA : {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Erreur analyse IA : {str(e)}")
+
+
 @api_router.post("/ocr/confirm-import", response_model=dict)
 async def confirm_import_facture(request: ImportConfirmationRequest):
     """
