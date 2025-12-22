@@ -5562,7 +5562,7 @@ function App() {
                         borderRadius: '6px',
                         borderLeft: '4px solid #f59e0b'
                       }}>
-                        ⏳ Factures À Valider ({documentsOcr.filter(doc => doc.type_document === 'facture_fournisseur' && doc.statut !== 'importe').length})
+                        ⏳ Factures À Valider ({documentsOcr.filter(doc => doc.type_document === 'facture_fournisseur' && doc.statut !== 'integre').length})
                       </h4>
                     
                     {/* Liste des factures avec pagination */}
