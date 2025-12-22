@@ -5615,7 +5615,9 @@ function App() {
                                 <div className="item-details">
                                   {doc.donnees_parsees?.fournisseur || 'Fournisseur non identifié'} • 
                                   {doc.donnees_parsees?.total_ttc ? ` ${doc.donnees_parsees.total_ttc}€ TTC` : ' Montant non identifié'} • 
-                                  {new Date(doc.created_at).toLocaleDateString('fr-FR')}
+                                  {doc.date_upload ? new Date(doc.date_upload).toLocaleDateString('fr-FR') : 
+                                   doc.donnees_parsees?.date ? doc.donnees_parsees.date : 
+                                   'Date inconnue'}
                                 </div>
                               </div>
                               <div className="item-actions">
