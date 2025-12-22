@@ -551,7 +551,7 @@ const InvoiceValidationModal = ({ documentId, onClose, onSuccess, produitsList, 
             gap: '10px'
           }}>
             <div style={{flex: 1, fontSize: isMobile ? '12px' : '14px'}}>
-              <strong>🤖 Amélioration IA disponible</strong> • Beaucoup de produits non reconnus. L'analyse IA peut améliorer la précision jusqu'à 90%.
+              <strong>🤖 Amélioration IA disponible</strong> • Beaucoup de produits non reconnus. L&apos;analyse IA peut améliorer la précision jusqu&apos;à 90%.
             </div>
             <button
               onClick={handleReanalyzeWithAI}
