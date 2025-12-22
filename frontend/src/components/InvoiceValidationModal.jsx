@@ -551,47 +551,75 @@ const InvoiceValidationModal = ({ documentId, onClose, onSuccess, onRefresh, pro
                     💡 Nouveau fournisseur : Le système mémorisera vos corrections pour les prochaines factures
                   </div>
                 </>
+            {selectedSupplierId === 'new' && (
+                <>
+                  <input 
+                      type="text" 
+                      value={newSupplierName}
+                      onChange={(e) => setNewSupplierName(e.target.value)}
+                      placeholder="Nom du fournisseur"
+                      style={{
+                        padding: '8px', 
+                        border: '1px solid #f59e0b', 
+                        borderRadius: '4px',
+                        width: isMobile ? '100%' : 'auto',
+                        fontSize: isMobile ? '13px' : '14px'
+                      }}
+                  />
+                  <div style={{
+                    fontSize: '11px',
+                    color: '#059669',
+                    fontStyle: 'italic',
+                    width: isMobile ? '100%' : 'auto'
+                  }}>
+                    💡 Nouveau fournisseur : Le système mémorisera vos corrections pour les prochaines factures
+                  </div>
+                </>
             )}
+          </div>
+          
+          {/* Ligne séparée pour Date et Numéro (éditables) */}
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: isMobile ? '1fr 1fr' : '200px 200px',
+            gap: '10px',
+            marginTop: '10px'
+          }}>
+            <div>
+              <label style={{display: 'block', fontSize: '11px', color: '#64748b', marginBottom: '4px'}}>
+                📅 Date de la facture
+              </label>
+              <input 
+                type="date"
+                value={editableDate}
+                onChange={(e) => setEditableDate(e.target.value)}
+                style={{
+                  width: '100%',
+                  padding: '8px',
+                  border: '1px solid #cbd5e1',
+                  borderRadius: '4px',
+                  fontSize: isMobile ? '13px' : '14px'
+                }}
+              />
+            </div>
             
-            <div style={{
-              display: 'flex',
-              gap: '10px',
-              flexDirection: isMobile ? 'column' : 'row',
-              alignItems: isMobile ? 'stretch' : 'center',
-              width: isMobile ? '100%' : 'auto'
-            }}>
-              <div style={{display: 'flex', alignItems: 'center', gap: '5px'}}>
-                <span style={{fontSize: isMobile ? '11px' : '13px', color: '#666'}}>📅</span>
-                <input 
-                  type="date"
-                  value={editableDate}
-                  onChange={(e) => setEditableDate(e.target.value)}
-                  style={{
-                    padding: '6px',
-                    border: '1px solid #cbd5e1',
-                    borderRadius: '4px',
-                    fontSize: isMobile ? '12px' : '14px',
-                    width: isMobile ? '100%' : '140px'
-                  }}
-                />
-              </div>
-              
-              <div style={{display: 'flex', alignItems: 'center', gap: '5px'}}>
-                <span style={{fontSize: isMobile ? '11px' : '13px', color: '#666'}}>N°</span>
-                <input 
-                  type="text"
-                  value={editableNumero}
-                  onChange={(e) => setEditableNumero(e.target.value)}
-                  placeholder="Numéro facture"
-                  style={{
-                    padding: '6px',
-                    border: '1px solid #cbd5e1',
-                    borderRadius: '4px',
-                    fontSize: isMobile ? '12px' : '14px',
-                    width: isMobile ? '100%' : '120px'
-                  }}
-                />
-              </div>
+            <div>
+              <label style={{display: 'block', fontSize: '11px', color: '#64748b', marginBottom: '4px'}}>
+                📋 Numéro de facture
+              </label>
+              <input 
+                type="text"
+                value={editableNumero}
+                onChange={(e) => setEditableNumero(e.target.value)}
+                placeholder="Numéro facture"
+                style={{
+                  width: '100%',
+                  padding: '8px',
+                  border: '1px solid #cbd5e1',
+                  borderRadius: '4px',
+                  fontSize: isMobile ? '13px' : '14px'
+                }}
+              />
             </div>
           </div>
         </div>
