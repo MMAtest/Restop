@@ -5771,7 +5771,7 @@ function App() {
                         borderRadius: '6px',
                         borderLeft: '4px solid #10b981'
                       }}>
-                        ✅ Factures Validées - Historique ({documentsOcr.filter(doc => doc.type_document === 'facture_fournisseur' && doc.statut === 'importe').length})
+                        ✅ Factures Validées - Historique ({documentsOcr.filter(doc => doc.type_document === 'facture_fournisseur' && doc.statut === 'integre').length})
                       </h4>
 
                     {/* Liste des factures VALIDÉES avec pagination */}
