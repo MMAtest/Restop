@@ -8809,9 +8809,13 @@ async def confirm_import_facture(request: ImportConfirmationRequest):
             
             # Création produit si nécessaire (Status 'new' ou 'matched' mais user a choisi 'Créer nouveau')
             if not product_id:
+                # Détection automatique de la catégorie basée sur le nom
+                product_name = item.final_name or item.ocr_name
+                auto_category = detect_product_category(product_name)
+                
                 new_product = Produit(
-                    nom=item.final_name or item.ocr_name,
-                    categorie="Autres",
+                    nom=product_name,
+                    categorie=auto_category,  # ✅ Catégorie auto-détectée !
                     unite=item.final_unit or "kg",
                     reference_price=item.ocr_price,
                     main_supplier_id=supplier_id,
@@ -8821,6 +8825,8 @@ async def confirm_import_facture(request: ImportConfirmationRequest):
                 await db.produits.insert_one(new_product.dict())
                 product_id = new_product.id
                 import_stats["products_created"] += 1
+                
+                print(f"🎯 Nouveau produit créé: {product_name} → Catégorie auto: {auto_category}")
                 
                 # Créer stock initial
                 await db.stocks.insert_one(Stock(
