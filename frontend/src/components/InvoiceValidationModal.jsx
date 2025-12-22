@@ -328,6 +328,11 @@ const InvoiceValidationModal = ({ documentId, onClose, onSuccess, onRefresh, pro
       setShowProgressBar(false);
       setLoading(false);
       
+      // Rafraîchir la liste des documents pour afficher le montant mis à jour
+      if (onRefresh) {
+        onRefresh();
+      }
+      
       // Afficher un message de succès
       const matchedCount = initializedItems.filter(i => i.status === 'matched').length;
       alert(`🤖 Analyse IA terminée !\n\n✅ ${matchedCount}/${initializedItems.length} produits automatiquement reconnus\n💰 Coût estimé : ~0.003€`);
