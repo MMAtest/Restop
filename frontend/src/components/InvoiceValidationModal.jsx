@@ -738,22 +738,45 @@ const InvoiceValidationModal = ({ documentId, onClose, onSuccess, produitsList, 
             </table>
           )}
           
-          <button 
-            onClick={handleAddItem}
-            style={{
-                marginTop: '15px',
-                padding: '10px 20px',
-                background: '#e0f2fe',
-                color: '#0284c7',
-                border: '1px dashed #0284c7',
-                borderRadius: '6px',
-                cursor: 'pointer',
-                width: '100%',
-                fontWeight: 'bold'
-            }}
-          >
-            ➕ Ajouter une ligne manuellement
-          </button>
+          {/* Boutons d'action */}
+          <div style={{display: 'flex', gap: '10px', marginTop: '15px', flexDirection: isMobile ? 'column' : 'row'}}>
+            <button 
+              onClick={handleAddItem}
+              style={{
+                  flex: 1,
+                  padding: '10px 20px',
+                  background: '#e0f2fe',
+                  color: '#0284c7',
+                  border: '1px dashed #0284c7',
+                  borderRadius: '6px',
+                  cursor: 'pointer',
+                  fontWeight: 'bold',
+                  fontSize: isMobile ? '13px' : '14px'
+              }}
+            >
+              ➕ Ajouter une ligne
+            </button>
+            
+            {!aiPowered && (
+              <button 
+                onClick={handleReanalyzeWithAI}
+                style={{
+                    flex: 1,
+                    padding: '10px 20px',
+                    background: 'linear-gradient(135deg, #10b981, #059669)',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '6px',
+                    cursor: 'pointer',
+                    fontWeight: 'bold',
+                    fontSize: isMobile ? '13px' : '14px',
+                    boxShadow: '0 2px 8px rgba(16, 185, 129, 0.3)'
+                }}
+              >
+                🤖 Améliorer avec Gemini IA
+              </button>
+            )}
+          </div>
         </div>
 
         {/* FOOTER FIXE */}
