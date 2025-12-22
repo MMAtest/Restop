@@ -363,11 +363,6 @@ def detect_supplier_category(supplier_name: str, products_names: List[str] = Non
     
     return "frais"  # Défaut
 
-            qty = 1.0
-        
-        # Validation prix
-        prix_u = prod.get("prix_unitaire", 0)
-        prix_t = prod.get("prix_total", 0)
         
         # Si manque prix unitaire mais on a total : calculer
         if (not prix_u or prix_u == 0) and prix_t and qty:
