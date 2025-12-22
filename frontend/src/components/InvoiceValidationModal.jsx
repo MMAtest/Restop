@@ -263,6 +263,70 @@ const InvoiceValidationModal = ({ documentId, onClose, onSuccess, produitsList, 
           setShowAiSuggestion(true);
           console.log(`⚠️ Taux de correspondance faible (${(matchRate * 100).toFixed(0)}%). Joker IA suggéré.`);
         }
+
+  const handleReanalyzeWithAI = async () => {
+    setLoading(true);
+    setShowProgressBar(true);
+    setShowAiSuggestion(false);
+    
+    try {
+      const response = await axios.post(`${API}/ocr/analyze-facture-ai/${documentId}`);
+      const data = response.data;
+      
+      setAnalysis(data);
+      setAiPowered(true);
+      
+      // Logique Fournisseur
+      if (data.supplier_id) {
+          setSelectedSupplierId(data.supplier_id);
+          setNewSupplierName(data.supplier_name);
+      } else {
+          setSelectedSupplierId('new');
+          setNewSupplierName(data.supplier_name || 'Nouveau Fournisseur');
+      }
+
+      // Logique Produits avec DLC auto-générée par Gemini
+      const initializedItems = data.items.map(item => {
+        const productName = item.status === 'matched' ? item.product_name : item.ocr_name;
+        const dlc = item.dlc || '';
+        
+        // Générer lot si DLC présente
+        let batchNumber = item.batch_number || '';
+        if (dlc && !batchNumber) {
+          const dlcDate = dlc.replace(/-/g, '');
+          const productCode = productName.substring(0, 3).toUpperCase().replace(/[^A-Z0-9]/g, 'X');
+          const randomSuffix = Math.floor(Math.random() * 100).toString().padStart(2, '0');
+          batchNumber = `LOT-${dlcDate}-${productCode}${randomSuffix}`;
+        }
+        
+        return {
+          ...item,
+          selected_product_id: item.status === 'matched' ? item.product_id : '', 
+          final_name: productName,
+          final_qty: item.ocr_qty || 1,
+          final_unit: item.ocr_unit || 'pièce',
+          final_price: item.ocr_price || 0,
+          batch_number: batchNumber,
+          dlc: dlc
+        };
+      });
+      
+      setItems(initializedItems);
+      setShowProgressBar(false);
+      setLoading(false);
+      
+      // Afficher un message de succès
+      const matchedCount = initializedItems.filter(i => i.status === 'matched').length;
+      alert(`🤖 Analyse IA terminée !\n\n✅ ${matchedCount}/${initializedItems.length} produits automatiquement reconnus\n💰 Coût estimé : ~0.003€`);
+      
+    } catch (err) {
+      console.error("Erreur Joker IA:", err);
+      setShowProgressBar(false);
+      setLoading(false);
+      alert("Erreur lors de l'analyse IA : " + (err.response?.data?.detail || err.message));
+    }
+  };
+
         
         setShowProgressBar(false);
         setLoading(false);
