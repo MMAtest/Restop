@@ -154,6 +154,7 @@ const ProductionTab = (props) => {
                     </label>
                     <select 
                       className="filter-select"
+                      value={selectedCategoryFilter || ''}
                       onChange={(e) => {
                         if (activeProductionTab === 'produits') {
                           filterProduitsByCategory(e.target.value);
