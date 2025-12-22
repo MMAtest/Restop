@@ -168,7 +168,43 @@ def optimize_parser_results(produits: List[dict]) -> List[dict]:
         # Validation quantité
         qty = prod.get("quantite", 0)
         if qty == 0 or qty is None:
-
+            qty = 1.0
+        
+        # Validation prix
+        prix_u = prod.get("prix_unitaire", 0)
+        prix_t = prod.get("prix_total", 0)
+        
+        # Si manque prix unitaire mais on a total : calculer
+        if (not prix_u or prix_u == 0) and prix_t and qty:
+            prix_u = round(prix_t / qty, 2)
+        
+        # Si manque total mais on a unitaire : calculer
+        if (not prix_t or prix_t == 0) and prix_u and qty:
+            prix_t = round(prix_u * qty, 2)
+        
+        # Normaliser les unités
+        unit = prod.get("unite", "pièce").lower()
+        unit_map = {
+            "k": "kg",
+            "kilo": "kg",
+            "piece": "pièce",
+            "pc": "pièce",
+            "bunch": "botte",
+            "bouquet": "botte",
+            "l": "L",
+            "litre": "L",
+        }
+        unit = unit_map.get(unit, unit)
+        
+        optimized.append({
+            **prod,
+            "quantite": qty,
+            "unite": unit,
+            "prix_unitaire": prix_u,
+            "prix_total": prix_t
+        })
+    
+    return optimized
 
 def detect_product_category(product_name: str) -> str:
     """
