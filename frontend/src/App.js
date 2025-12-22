@@ -5567,10 +5567,10 @@ function App() {
                     
                     {/* Liste des factures avec pagination */}
                     {(() => {
-                      // Filtrer uniquement les factures NON IMPORTÉES
+                      // Filtrer uniquement les factures NON INTÉGRÉES
                       const filteredDocs = documentsOcr.filter(doc => 
                         doc.type_document === 'facture_fournisseur' && 
-                        doc.statut !== 'importe'
+                        doc.statut !== 'integre'
                       );
                       
                       // Calculer la pagination
