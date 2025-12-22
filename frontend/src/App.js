@@ -5782,6 +5782,8 @@ function App() {
                         doc.statut === 'integre'
                       );
                       
+                      console.log(`📊 Factures validées (statut=integre): ${filteredDocs.length}`, filteredDocs.map(d => d.nom_fichier));
+                      
                       // Calculer la pagination
                       const totalPages = Math.ceil(filteredDocs.length / ocrDocumentsPerPage);
                       const startIndex = (ocrCurrentPage - 1) * ocrDocumentsPerPage;
