@@ -5674,10 +5674,6 @@ function App() {
                               </div>
                             </div>
                           )}
-                                </button>
-                              </div>
-                            </div>
-                          )}
                         </>
                       );
                     })()}
