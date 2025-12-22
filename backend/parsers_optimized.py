@@ -168,6 +168,165 @@ def optimize_parser_results(produits: List[dict]) -> List[dict]:
         # Validation quantité
         qty = prod.get("quantite", 0)
         if qty == 0 or qty is None:
+
+
+def detect_product_category(product_name: str) -> str:
+    """
+    Détecte automatiquement la catégorie d'un produit basé sur son nom
+    Retourne la catégorie la plus probable
+    """
+    if not product_name:
+        return "Autres"
+    
+    name_lower = product_name.lower()
+    
+    # Légumes
+    legumes_keywords = [
+        'tomate', 'salade', 'laitue', 'carotte', 'courgette', 'aubergine', 
+        'poivron', 'concombre', 'oignon', 'ail', 'échalote', 'poireau',
+        'épinard', 'chou', 'brocoli', 'chou-fleur', 'haricot', 'petit pois',
+        'pomme de terre', 'patate', 'navet', 'radis', 'betterave', 'céleri',
+        'asperge', 'artichaut', 'fenouil', 'endive', 'mâche', 'roquette',
+        'mesclun', 'cresson', 'pourpier', 'légume', 'légumes'
+    ]
+    
+    # Viandes
+    viandes_keywords = [
+        'bœuf', 'boeuf', 'veau', 'porc', 'agneau', 'mouton',
+        'poulet', 'volaille', 'canard', 'dinde', 'caille', 'pigeon',
+        'lapin', 'gibier', 'sanglier', 'cerf', 'chevreuil',
+        'côte', 'filet', 'bavette', 'entrecôte', 'jarret', 'épaule',
+        'magret', 'cuisse', 'blanc', 'escalope', 'viande', 'charcuterie',
+        'jambon', 'saucisse', 'boudin', 'pâté', 'terrine', 'foie gras'
+    ]
+    
+    # Poissons & Fruits de mer
+    poissons_keywords = [
+        'saumon', 'thon', 'dorade', 'daurade', 'bar', 'loup', 'sole',
+        'turbot', 'cabillaud', 'morue', 'lieu', 'merlu', 'colin',
+        'truite', 'brochet', 'sandre', 'carpe', 'rouget', 'saint-pierre',
+        'saint-jacques', 'coquille', 'moule', 'huître', 'huitre',
+        'crevette', 'gambas', 'langoustine', 'homard', 'langouste',
+        'crabe', 'tourteau', 'araignée', 'bulot', 'bigorneau',
+        'calamar', 'seiche', 'poulpe', 'supion', 'encornet',
+        'poisson', 'marée', 'fruits de mer'
+    ]
+    
+    # Crêmerie
+    cremerie_keywords = [
+        'fromage', 'brie', 'camembert', 'roquefort', 'comté', 'gruyère',
+        'parmesan', 'mozzarella', 'chèvre', 'brebis', 'bleu',
+        'beurre', 'crème', 'lait', 'yaourt', 'yogurt', 'faisselle',
+        'ricotta', 'mascarpone', 'crémeux', 'laitier', 'lactique'
+    ]
+    
+    # Épices & Condiments
+    epices_keywords = [
+        'sel', 'poivre', 'piment', 'paprika', 'curry', 'curcuma',
+        'safran', 'cannelle', 'muscade', 'gingembre', 'vanille',
+        'thym', 'romarin', 'basilic', 'persil', 'ciboulette', 'coriandre',
+        'menthe', 'aneth', 'estragon', 'laurier', 'origan', 'sarriette',
+        'herbe', 'épice', 'condiment', 'aromate',
+        'huile', 'vinaigre', 'moutarde', 'sauce', 'mayonnaise'
+    ]
+    
+    # Fruits
+    fruits_keywords = [
+        'pomme', 'poire', 'orange', 'citron', 'mandarine', 'pamplemousse',
+        'banane', 'fraise', 'framboise', 'myrtille', 'cassis', 'groseille',
+        'cerise', 'abricot', 'pêche', 'prune', 'raisin', 'melon', 'pastèque',
+        'kiwi', 'ananas', 'mangue', 'fruit', 'fruits', 'agrume',
+        'figue', 'datte', 'noix', 'noisette', 'amande', 'pistache'
+    ]
+    
+    # Épicerie
+    epicerie_keywords = [
+        'farine', 'sucre', 'chocolat', 'cacao', 'confiture', 'miel',
+        'levure', 'poudre à lever', 'gélatine', 'agar',
+        'conserve', 'bocal', 'boîte', 'sec', 'séché'
+    ]
+    
+    # Céréales & Féculents
+    cereales_keywords = [
+        'riz', 'pâte', 'pâtes', 'spaghetti', 'tagliatelle', 'linguine',
+        'blé', 'quinoa', 'boulgour', 'semoule', 'couscous',
+        'lentille', 'pois chiche', 'haricot sec', 'fève',
+        'pain', 'baguette', 'céréale', 'féculent'
+    ]
+    
+    # Boissons
+    boissons_keywords = [
+        'eau', 'jus', 'soda', 'coca', 'limonade',
+        'vin', 'bière', 'champagne', 'apéritif', 'digestif',
+        'café', 'thé', 'tisane', 'infusion',
+        'sirop', 'boisson', 'liqueur'
+    ]
+    
+    # Vérifier chaque catégorie
+    categories = [
+        (legumes_keywords, "Légumes"),
+        (viandes_keywords, "Viandes"),
+        (poissons_keywords, "Poissons"),
+        (cremerie_keywords, "Crêmerie"),
+        (epices_keywords, "Épices"),
+        (fruits_keywords, "Fruits"),
+        (epicerie_keywords, "Épicerie"),
+        (cereales_keywords, "Céréales"),
+        (boissons_keywords, "Boissons")
+    ]
+    
+    for keywords, category in categories:
+        if any(keyword in name_lower for keyword in keywords):
+            return category
+    
+    return "Autres"
+
+def detect_supplier_category(supplier_name: str, products_names: List[str] = None) -> str:
+    """
+    Détecte la catégorie d'un fournisseur basé sur son nom et les produits
+    """
+    if not supplier_name:
+        return "frais"
+    
+    name_lower = supplier_name.lower()
+    
+    # Catégories spécifiques par mots-clés dans le nom
+    if any(kw in name_lower for kw in ['primeur', 'légume', 'fruit', 'maraîcher']):
+        return "primeur"
+    if any(kw in name_lower for kw in ['boucherie', 'viande', 'boucher']):
+        return "boucherie"
+    if any(kw in name_lower for kw in ['poissonnerie', 'marée', 'mer', 'océan', 'pêcherie']):
+        return "maree"
+    if any(kw in name_lower for kw in ['fromage', 'crémerie', 'laiterie', 'fromagerie']):
+        return "fromagerie"
+    if any(kw in name_lower for kw in ['épicerie', 'épicier', 'supermarché', 'metro']):
+        return "epicerie"
+    if any(kw in name_lower for kw in ['surgelé', 'congélateur', 'frozen']):
+        return "surgeles"
+    
+    # Si on a une liste de produits, détecter par majorité
+    if products_names and len(products_names) > 0:
+        categories_count = {}
+        for prod_name in products_names:
+            cat = detect_product_category(prod_name)
+            categories_count[cat] = categories_count.get(cat, 0) + 1
+        
+        # Mapper catégorie produit → catégorie fournisseur
+        cat_mapping = {
+            "Légumes": "primeur",
+            "Fruits": "primeur",
+            "Viandes": "boucherie",
+            "Poissons": "maree",
+            "Crêmerie": "fromagerie"
+        }
+        
+        # Trouver la catégorie majoritaire
+        if categories_count:
+            main_cat = max(categories_count, key=categories_count.get)
+            return cat_mapping.get(main_cat, "frais")
+    
+    return "frais"  # Défaut
+
             qty = 1.0
         
         # Validation prix
