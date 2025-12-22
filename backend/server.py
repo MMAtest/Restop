@@ -4515,6 +4515,9 @@ def parse_facture_fournisseur(texte_ocr: str) -> FactureFournisseurData:
         # Appel magique pour récupérer les prix qui n'étaient pas sur la ligne
         produits = reconcile_orphan_prices(produits, texte_ocr)
 
+    # OPTIMISATION FINALE : Nettoyer et valider tous les résultats
+    produits = optimize_parser_results(produits)
+    
     data.produits = produits
     
     # 4. EXTRACTION TOTAUX (Commun)
