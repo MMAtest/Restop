@@ -191,7 +191,7 @@ const MobileItemCard = ({ item, index, handleItemChange, handleDeleteItem, produ
   </div>
 );
 
-const InvoiceValidationModal = ({ documentId, onClose, onSuccess, produitsList, fournisseursList }) => {
+const InvoiceValidationModal = ({ documentId, onClose, onSuccess, onRefresh, produitsList, fournisseursList }) => {
   const [loading, setLoading] = useState(true);
   const [analysis, setAnalysis] = useState(null);
   const [error, setError] = useState(null);
