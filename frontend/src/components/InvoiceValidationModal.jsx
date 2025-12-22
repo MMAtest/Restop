@@ -205,6 +205,8 @@ const InvoiceValidationModal = ({ documentId, onClose, onSuccess, onRefresh, pro
   const [selectedSupplierId, setSelectedSupplierId] = useState('');
   const [newSupplierName, setNewSupplierName] = useState('');
   const [newSupplierCategory, setNewSupplierCategory] = useState('frais');
+  const [editableDate, setEditableDate] = useState('');
+  const [editableNumero, setEditableNumero] = useState('');
 
   // Charger l'analyse au montage
   useEffect(() => {
