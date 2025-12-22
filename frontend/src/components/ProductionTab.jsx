@@ -1139,6 +1139,7 @@ const ProductionTab = (props) => {
               </div>
             )}
           </div>
+        </div>
 
     </>
   );
