@@ -481,15 +481,19 @@ const InvoiceValidationModal = ({ documentId, onClose, onSuccess, onRefresh, pro
   );
 
   return (
-    <div className="modal-overlay">
+    <div className="modal-overlay" style={{
+      padding: isMobile ? '0' : '20px'
+    }}>
       <div className="modal-content large" style={{
-        maxWidth: '98%', 
-        width: isMobile ? '100%' : '1400px', 
-        height: '95vh', 
-        display: 'flex', 
-        flexDirection: 'column', 
+        maxWidth: isMobile ? '100%' : '1400px',
+        width: '100%',
+        height: isMobile ? '100vh' : '95vh',
+        display: 'flex',
+        flexDirection: 'column',
         padding: '0',
-        margin: isMobile ? '10px' : 'auto'
+        margin: '0',
+        borderRadius: isMobile ? '0' : '12px',
+        maxHeight: isMobile ? '100vh' : '95vh'
       }}>
         
         {/* HEADER FIXE */}
