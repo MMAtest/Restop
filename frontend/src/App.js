@@ -8188,6 +8188,9 @@ function App() {
             fetchDashboardStats();
             fetchFournisseurs(); // Rafraîchir la liste des fournisseurs
           }}
+          onRefresh={() => {
+            fetchDocumentsOcr(); // Rafraîchir après analyse Gemini
+          }}
         />
       )}
 
