@@ -8786,13 +8786,22 @@ async def confirm_import_facture(request: ImportConfirmationRequest):
         # 1. Gérer le fournisseur
         supplier_id = request.supplier_id
         if request.create_supplier and not supplier_id:
+            # Détecter la catégorie basée sur le nom et les produits
+            product_names = [item.final_name or item.ocr_name for item in request.items]
+            auto_category = detect_supplier_category(request.supplier_name, product_names)
+            
+            # Utiliser la catégorie fournie ou la détection auto
+            supplier_category = request.supplier_category if request.supplier_category != 'frais' else auto_category
+            
             # Créer nouveau fournisseur
             new_supplier = Fournisseur(
                 nom=request.supplier_name,
-                categorie=request.supplier_category
+                categorie=supplier_category  # ✅ Catégorie intelligente !
             )
             await db.fournisseurs.insert_one(new_supplier.dict())
             supplier_id = new_supplier.id
+            
+            print(f"🏢 Nouveau fournisseur créé: {request.supplier_name} → Catégorie: {supplier_category}")
         
         import_stats = {
             "products_created": 0,
