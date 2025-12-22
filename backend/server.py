@@ -28,6 +28,10 @@ import re
 from google.cloud import vision
 from pdf2image import convert_from_bytes
 
+# Emergent Integrations pour Gemini
+from emergentintegrations.llm.chat import LlmChat, UserMessage, FileContentWithMimeType
+import asyncio
+
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env', override=False)
 
