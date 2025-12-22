@@ -846,7 +846,7 @@ const ProductionTab = (props) => {
                     Aucune recette dans cette catégorie.
                   </div>
                 )}
-                {(selectedCategoryFilter ? filteredRecettes : recettes).map((recette, index) => {
+                {filteredRecettes.map((recette, index) => {
                   // Fonction pour obtenir l'icône selon la catégorie de production
                   const getProductionCategoryIcon = (categorie) => {
                     if (!categorie) return '⚠️'; // Icône d'alerte si pas de catégorie
