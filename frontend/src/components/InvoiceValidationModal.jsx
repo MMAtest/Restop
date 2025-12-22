@@ -551,30 +551,6 @@ const InvoiceValidationModal = ({ documentId, onClose, onSuccess, onRefresh, pro
                     💡 Nouveau fournisseur : Le système mémorisera vos corrections pour les prochaines factures
                   </div>
                 </>
-            {selectedSupplierId === 'new' && (
-                <>
-                  <input 
-                      type="text" 
-                      value={newSupplierName}
-                      onChange={(e) => setNewSupplierName(e.target.value)}
-                      placeholder="Nom du fournisseur"
-                      style={{
-                        padding: '8px', 
-                        border: '1px solid #f59e0b', 
-                        borderRadius: '4px',
-                        width: isMobile ? '100%' : 'auto',
-                        fontSize: isMobile ? '13px' : '14px'
-                      }}
-                  />
-                  <div style={{
-                    fontSize: '11px',
-                    color: '#059669',
-                    fontStyle: 'italic',
-                    width: isMobile ? '100%' : 'auto'
-                  }}>
-                    💡 Nouveau fournisseur : Le système mémorisera vos corrections pour les prochaines factures
-                  </div>
-                </>
             )}
           </div>
           
