@@ -5255,25 +5255,19 @@ function App() {
                 <div className="section-title">📱 Module OCR</div>
                 
                 {/* Navigation entre Tickets Z et Factures - Tickets Z masqué pour employé cuisine */}
-                <div style={{
+                <div className="ocr-tabs-container" style={{
                   display: 'flex',
                   gap: '10px',
-                  marginBottom: '20px',
-                  flexWrap: window.innerWidth <= 768 ? 'nowrap' : 'wrap',
-                  overflowX: window.innerWidth <= 768 ? 'auto' : 'visible'
+                  marginBottom: '20px'
                 }}>
                   {/* Tickets Z - MASQUÉ pour employé cuisine */}
                   {canAccessOcrTicketsZ() && (
                     <button 
-                      className="button" 
+                      className="button ocr-tab-button" 
                       onClick={() => setActiveOcrTab('tickets-z')}
                       style={{
                         background: activeOcrTab === 'tickets-z' ? '#f59e0b' : 'var(--color-background-card-light)',
-                        color: activeOcrTab === 'tickets-z' ? 'white' : 'var(--color-text-secondary)',
-                        flex: window.innerWidth <= 768 ? '1' : 'none',
-                        whiteSpace: 'nowrap',
-                        fontSize: window.innerWidth <= 768 ? '13px' : '14px',
-                        padding: window.innerWidth <= 768 ? '10px 12px' : '10px 20px'
+                        color: activeOcrTab === 'tickets-z' ? 'white' : 'var(--color-text-secondary)'
                       }}
                     >
                       📊 Tickets Z
@@ -5281,30 +5275,22 @@ function App() {
                   )}
                   
                   <button 
-                    className="button" 
+                    className="button ocr-tab-button" 
                     onClick={() => setActiveOcrTab('factures')}
                     style={{
                       background: activeOcrTab === 'factures' ? '#f59e0b' : 'var(--color-background-card-light)',
-                      color: activeOcrTab === 'factures' ? 'white' : 'var(--color-text-secondary)',
-                      flex: window.innerWidth <= 768 ? '1' : 'none',
-                      whiteSpace: 'nowrap',
-                      fontSize: window.innerWidth <= 768 ? '13px' : '14px',
-                      padding: window.innerWidth <= 768 ? '10px 12px' : '10px 20px'
+                      color: activeOcrTab === 'factures' ? 'white' : 'var(--color-text-secondary)'
                     }}
                   >
                     🧾 Factures
                   </button>
                   
                   <button 
-                    className="button" 
+                    className="button ocr-tab-button" 
                     onClick={() => setActiveOcrTab('mercuriales')}
                     style={{
                       background: activeOcrTab === 'mercuriales' ? '#f59e0b' : 'var(--color-background-card-light)',
-                      color: activeOcrTab === 'mercuriales' ? 'white' : 'var(--color-text-secondary)',
-                      flex: window.innerWidth <= 768 ? '1' : 'none',
-                      whiteSpace: 'nowrap',
-                      fontSize: window.innerWidth <= 768 ? '13px' : '14px',
-                      padding: window.innerWidth <= 768 ? '10px 12px' : '10px 20px'
+                      color: activeOcrTab === 'mercuriales' ? 'white' : 'var(--color-text-secondary)'
                     }}
                   >
                     📋 Mercuriales
