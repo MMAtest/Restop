@@ -578,6 +578,10 @@ body {
     font-size: 13px !important;
     padding: 10px 12px !important;
   }
+  
+  .orders-page-header {
+    padding-top: 20px !important;
+  }
 }
 
 /* ===== BUTTONS ===== */
