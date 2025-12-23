@@ -532,6 +532,21 @@ body {
   flex-shrink: 0;
 }
 
+/* Onglets OCR */
+.ocr-tabs-container {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+}
+
+.ocr-tab-button {
+  flex: 1;
+  white-space: nowrap;
+  min-width: fit-content;
+}
+
 @media (max-width: 768px) {
   .pagination-container {
     flex-direction: column;
@@ -557,6 +572,11 @@ body {
     max-width: calc(50% - 2.5px);
     font-size: 12px !important;
     padding: 6px 8px !important;
+  }
+  
+  .ocr-tab-button {
+    font-size: 13px !important;
+    padding: 10px 12px !important;
   }
 }
 
