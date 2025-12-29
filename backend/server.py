@@ -4291,9 +4291,9 @@ async def analyze_facture_with_gemini(image_data: str, is_base64: bool = True) -
         is_base64: True si image_data est en base64, False si c'est un chemin fichier
     """
     try:
-        emergent_key = os.environ.get('EMERGENT_LLM_KEY')
+        emergent_key = EMERGENT_LLM_KEY  # Utiliser la clé chargée au démarrage
         if not emergent_key:
-            raise ValueError("EMERGENT_LLM_KEY non configurée")
+            raise ValueError("EMERGENT_LLM_KEY non configurée - Vérifiez backend/.env ou les variables d'environnement")
         
         # Créer une session unique
         session_id = f"gemini-ocr-{uuid.uuid4()}"
