@@ -8578,10 +8578,10 @@ class FactureItemAnalysis(BaseModel):
 class FactureAnalysisResult(BaseModel):
     document_id: str
     supplier_id: Optional[str] = None
-    supplier_name: str
+    supplier_name: str = ""
     is_new_supplier: bool = False
-    facture_date: str = ""
-    numero_facture: str = ""
+    facture_date: Optional[str] = ""
+    numero_facture: Optional[str] = ""
     items: List[FactureItemAnalysis]
     ai_powered: bool = False  # Nouveau champ pour indiquer si analysé par Gemini
     confiance_globale: float = 0.0  # Score de confiance global
