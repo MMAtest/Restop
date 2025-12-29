@@ -92,6 +92,16 @@ db = client[db_name]
 # Create the main app without a prefix
 app = FastAPI()
 
+# Health check endpoint for Kubernetes
+@app.get("/health")
+async def health_check():
+    """Endpoint de santé pour Kubernetes health checks"""
+    return {
+        "status": "healthy",
+        "service": "backend",
+        "timestamp": datetime.utcnow().isoformat()
+    }
+
 # Create a router with the /api prefix
 
 # ✅ Rapports Z Model
