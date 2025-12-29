@@ -5370,6 +5370,28 @@ function App() {
                               <button className="button small success" style={{gridColumn: 'span 2'}}>
                                 ✅ Valider les corrections
                               </button>
+                              <button 
+                                className="button small"
+                                onClick={async () => {
+                                  try {
+                                    setLoading(true);
+                                    const response = await axios.post(`${API}/ocr/analyze-ticket-z-ai/${latestZReport.id}`);
+                                    alert(`🤖 Analyse IA Ticket Z terminée !\n\n✅ ${response.data.data.productions.length} productions détectées\n💰 Coût : ~0.003€`);
+                                    fetchDocumentsOcr();
+                                    setLoading(false);
+                                  } catch (err) {
+                                    alert("Erreur IA : " + (err.response?.data?.detail || err.message));
+                                    setLoading(false);
+                                  }
+                                }}
+                                style={{
+                                  gridColumn: 'span 2',
+                                  background: 'linear-gradient(135deg, #10b981, #059669)',
+                                  color: 'white'
+                                }}
+                              >
+                                🤖 Améliorer avec Gemini IA
+                              </button>
                             </div>
                           );
                         })()}
