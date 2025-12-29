@@ -88,16 +88,16 @@ const MobileItemCard = ({ item, index, handleItemChange, handleDeleteItem, produ
       </select>
     </div>
 
-    {/* Ligne des 3 champs : Qté, Unité, Prix - Optimisé mobile */}
-    <div style={{display: 'grid', gridTemplateColumns: '80px 1fr 100px', gap: '6px', marginBottom: '10px'}}>
+    {/* Ligne des 3 champs : Qté, Unité, Prix - Largeurs optimisées */}
+    <div style={{display: 'grid', gridTemplateColumns: '70px 90px 1fr', gap: '6px', marginBottom: '10px'}}>
       <div>
-        <label style={{display: 'block', fontSize: '10px', color: '#64748b', marginBottom: '3px', fontWeight: '600'}}>Qté</label>
+        <label style={{display: 'block', fontSize: '10px', color: '#64748b', marginBottom: '2px', fontWeight: '600'}}>Qté</label>
         <input 
           type="number" 
           step="0.1"
           style={{
             width: '100%',
-            padding: '6px 4px',
+            padding: '6px 2px',
             textAlign: 'center',
             border: '1px solid #cbd5e1',
             borderRadius: '4px',
@@ -109,14 +109,14 @@ const MobileItemCard = ({ item, index, handleItemChange, handleDeleteItem, produ
       </div>
 
       <div>
-        <label style={{display: 'block', fontSize: '10px', color: '#64748b', marginBottom: '3px', fontWeight: '600'}}>Unité</label>
+        <label style={{display: 'block', fontSize: '10px', color: '#64748b', marginBottom: '2px', fontWeight: '600'}}>Unité</label>
         <select
           style={{
             width: '100%',
-            padding: '6px 4px',
+            padding: '6px 2px',
             border: '1px solid #cbd5e1',
             borderRadius: '4px',
-            fontSize: '12px'
+            fontSize: '11px'
           }}
           value={item.final_unit}
           onChange={(e) => handleItemChange(index, 'final_unit', e.target.value)}
@@ -131,7 +131,7 @@ const MobileItemCard = ({ item, index, handleItemChange, handleDeleteItem, produ
       </div>
 
       <div>
-        <label style={{display: 'block', fontSize: '10px', color: '#64748b', marginBottom: '3px', fontWeight: '600'}}>Prix €</label>
+        <label style={{display: 'block', fontSize: '10px', color: '#64748b', marginBottom: '2px', fontWeight: '600'}}>Prix €</label>
         <input 
           type="number" 
           step="0.01"
