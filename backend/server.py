@@ -38,6 +38,26 @@ from parsers_optimized import parse_product_line_smart, optimize_parser_results,
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env', override=False)
 
+# Charger la clé Emergent de manière robuste (production + preview)
+def get_emergent_key():
+    """Charge EMERGENT_LLM_KEY depuis l'environnement ou .env"""
+    key = os.environ.get('EMERGENT_LLM_KEY')
+    if not key:
+        # Fallback : lire directement depuis .env si variable pas injectée
+        env_path = ROOT_DIR / '.env'
+        if env_path.exists():
+            with open(env_path, 'r') as f:
+                for line in f:
+                    if line.startswith('EMERGENT_LLM_KEY='):
+                        key = line.split('=', 1)[1].strip()
+                        # Supprimer guillemets si présents
+                        key = key.strip('"').strip("'")
+                        break
+    return key
+
+EMERGENT_LLM_KEY = get_emergent_key()
+print(f"🔑 EMERGENT_LLM_KEY : {'✅ Chargée' if EMERGENT_LLM_KEY else '❌ MANQUANTE'}")
+
 # MongoDB connection
 
 # ✅ Version 3 - Enhanced RBAC System
