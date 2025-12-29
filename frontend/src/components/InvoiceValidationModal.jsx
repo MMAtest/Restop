@@ -88,20 +88,20 @@ const MobileItemCard = ({ item, index, handleItemChange, handleDeleteItem, produ
       </select>
     </div>
 
-    {/* Ligne des 3 champs : Qté, Unité, Prix */}
-    <div style={{display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '8px', marginBottom: '10px'}}>
+    {/* Ligne des 3 champs : Qté, Unité, Prix - Optimisé mobile */}
+    <div style={{display: 'grid', gridTemplateColumns: '80px 1fr 100px', gap: '6px', marginBottom: '10px'}}>
       <div>
-        <label style={{display: 'block', fontSize: '11px', color: '#64748b', marginBottom: '4px'}}>Qté</label>
+        <label style={{display: 'block', fontSize: '10px', color: '#64748b', marginBottom: '3px', fontWeight: '600'}}>Qté</label>
         <input 
           type="number" 
           step="0.1"
           style={{
             width: '100%',
-            padding: '8px',
+            padding: '6px 4px',
             textAlign: 'center',
             border: '1px solid #cbd5e1',
-            borderRadius: '6px',
-            fontSize: '14px'
+            borderRadius: '4px',
+            fontSize: '13px'
           }}
           value={item.final_qty}
           onChange={(e) => handleItemChange(index, 'final_qty', parseFloat(e.target.value))}
@@ -109,39 +109,39 @@ const MobileItemCard = ({ item, index, handleItemChange, handleDeleteItem, produ
       </div>
 
       <div>
-        <label style={{display: 'block', fontSize: '11px', color: '#64748b', marginBottom: '4px'}}>Unité</label>
+        <label style={{display: 'block', fontSize: '10px', color: '#64748b', marginBottom: '3px', fontWeight: '600'}}>Unité</label>
         <select
           style={{
             width: '100%',
-            padding: '8px',
+            padding: '6px 4px',
             border: '1px solid #cbd5e1',
-            borderRadius: '6px',
-            fontSize: '14px'
+            borderRadius: '4px',
+            fontSize: '12px'
           }}
           value={item.final_unit}
           onChange={(e) => handleItemChange(index, 'final_unit', e.target.value)}
         >
-          <option value="pièce">Pièce</option>
+          <option value="pièce">Pce</option>
           <option value="kg">Kg</option>
-          <option value="g">Gramme</option>
-          <option value="L">Litre</option>
+          <option value="g">g</option>
+          <option value="L">L</option>
           <option value="colis">Colis</option>
           <option value="botte">Botte</option>
         </select>
       </div>
 
       <div>
-        <label style={{display: 'block', fontSize: '11px', color: '#64748b', marginBottom: '4px'}}>Prix U. (€)</label>
+        <label style={{display: 'block', fontSize: '10px', color: '#64748b', marginBottom: '3px', fontWeight: '600'}}>Prix €</label>
         <input 
           type="number" 
           step="0.01"
           style={{
             width: '100%',
-            padding: '8px',
+            padding: '6px 4px',
             textAlign: 'right',
             border: '1px solid #cbd5e1',
-            borderRadius: '6px',
-            fontSize: '14px'
+            borderRadius: '4px',
+            fontSize: '13px'
           }}
           value={item.final_price}
           onChange={(e) => handleItemChange(index, 'final_price', parseFloat(e.target.value))}
