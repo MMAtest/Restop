@@ -2575,7 +2575,10 @@ function App() {
         <div className="App">
       {/* Header Mobile */}
       <div className="header">
-        <h1>ResTop : La Table d'Augustine</h1>
+        <div style={{display: 'flex', alignItems: 'center', gap: '12px', flex: 1, justifyContent: 'center'}}>
+          <img src="/logo-restop.jpg" alt="ResTop" style={{height: '32px', width: 'auto'}} />
+          <h1>La Table d'Augustine</h1>
+        </div>
         {/* Boutons header mobile */}
         <div style={{display: 'flex', gap: '8px', alignItems: 'center'}}>
           {/* Menu Burger */}
