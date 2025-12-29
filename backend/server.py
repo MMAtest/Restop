@@ -40,23 +40,35 @@ load_dotenv(ROOT_DIR / '.env', override=False)
 
 # Charger la clé Emergent de manière robuste (production + preview)
 def get_emergent_key():
-    """Charge EMERGENT_LLM_KEY depuis l'environnement ou .env"""
+    """Charge EMERGENT_LLM_KEY depuis l'environnement, .env, ou config_keys.py"""
     key = os.environ.get('EMERGENT_LLM_KEY')
-    if not key:
-        # Fallback : lire directement depuis .env si variable pas injectée
-        env_path = ROOT_DIR / '.env'
-        if env_path.exists():
-            with open(env_path, 'r') as f:
-                for line in f:
-                    if line.startswith('EMERGENT_LLM_KEY='):
-                        key = line.split('=', 1)[1].strip()
-                        # Supprimer guillemets si présents
-                        key = key.strip('"').strip("'")
-                        break
-    return key
+    if key:
+        return key
+    
+    # Fallback 1 : lire directement depuis .env
+    env_path = ROOT_DIR / '.env'
+    if env_path.exists():
+        with open(env_path, 'r') as f:
+            for line in f:
+                if line.startswith('EMERGENT_LLM_KEY='):
+                    key = line.split('=', 1)[1].strip()
+                    # Supprimer guillemets si présents
+                    key = key.strip('"').strip("'")
+                    if key:
+                        return key
+    
+    # Fallback 2 : charger depuis config_keys.py (production)
+    try:
+        from config_keys import EMERGENT_LLM_KEY as key_from_config
+        if key_from_config:
+            return key_from_config
+    except ImportError:
+        pass
+    
+    return None
 
 EMERGENT_LLM_KEY = get_emergent_key()
-print(f"🔑 EMERGENT_LLM_KEY : {'✅ Chargée' if EMERGENT_LLM_KEY else '❌ MANQUANTE'}")
+print(f"🔑 EMERGENT_LLM_KEY : {'✅ Chargée (' + (EMERGENT_LLM_KEY[:15] + '...' if EMERGENT_LLM_KEY else '') + ')' if EMERGENT_LLM_KEY else '❌ MANQUANTE'}")
 
 # MongoDB connection
 
