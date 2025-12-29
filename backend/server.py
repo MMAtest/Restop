@@ -8786,6 +8786,136 @@ async def analyze_facture_with_ai_joker(document_id: str):
         raise HTTPException(status_code=500, detail=f"Erreur analyse IA : {str(e)}")
 
 
+async def analyze_ticket_z_with_gemini(image_base64: str) -> dict:
+    """
+    Analyse un Ticket Z avec Gemini 2.0 Flash
+    Retourne les données de vente structurées
+    """
+    try:
+        emergent_key = EMERGENT_LLM_KEY
+        if not emergent_key:
+            raise ValueError("EMERGENT_LLM_KEY non configurée")
+        
+        session_id = f"gemini-ticket-z-{uuid.uuid4()}"
+        
+        chat = LlmChat(
+            api_key=emergent_key,
+            session_id=session_id,
+            system_message="Tu es un expert en analyse de tickets de caisse restaurant (Tickets Z)."
+        ).with_model("gemini", "gemini-2.5-flash")
+        
+        # Nettoyer base64
+        if image_base64.startswith('data:'):
+            image_base64 = image_base64.split(',')[1]
+        
+        image_content = ImageContent(image_base64=image_base64)
+        
+        prompt = """Analyse ce Ticket Z de restaurant et extrait UNIQUEMENT un JSON valide :
+
+{
+  "date": "YYYY-MM-DD",
+  "numero_ticket": "numéro ou référence",
+  "service": "midi|soir|journee",
+  "couverts_total": 45,
+  "total_ht": 1250.00,
+  "total_ttc": 1375.00,
+  "productions_vendues": [
+    {
+      "nom": "Salade Niçoise",
+      "categorie": "Entrée|Plat|Dessert|Bar",
+      "quantite_vendue": 12,
+      "prix_vente": 14.50,
+      "total": 174.00
+    }
+  ],
+  "confiance": 0.92
+}
+
+RÈGLES :
+- Extrais TOUTES les productions/plats vendus
+- Identifie la catégorie (Entrée, Plat, Dessert, Bar)
+- Calcule les totaux si nécessaires
+- Ignore les lignes de totaux généraux, TVA, moyens de paiement
+- Retourne SEULEMENT le JSON, rien d'autre
+"""
+        
+        message = UserMessage(text=prompt, file_contents=[image_content])
+        response = await chat.send_message(message)
+        
+        # Parser JSON
+        cleaned = response.strip()
+        if cleaned.startswith('```'):
+            json_match = re.search(r'```(?:json)?\s*(\{.*\})\s*```', cleaned, re.DOTALL)
+            if json_match:
+                cleaned = json_match.group(1)
+            else:
+                cleaned = cleaned.replace('```json', '').replace('```', '').strip()
+        
+        result = json.loads(cleaned)
+        print(f"✅ Gemini Ticket Z : {len(result.get('productions_vendues', []))} productions détectées")
+        
+        return result
+        
+    except Exception as e:
+        print(f"❌ Erreur Gemini Ticket Z : {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Erreur analyse Gemini : {str(e)}")
+
+@api_router.post("/ocr/analyze-ticket-z-ai/{document_id}")
+async def analyze_ticket_z_with_ai(document_id: str):
+    """
+    🤖 JOKER IA pour Tickets Z : Analyse avancée avec Gemini
+    """
+    try:
+        document = await db.documents_ocr.find_one({"id": document_id})
+        if not document:
+            raise HTTPException(status_code=404, detail="Document non trouvé")
+        
+        if document["type_document"] != "z_report":
+            raise HTTPException(status_code=400, detail="Ce document n'est pas un Ticket Z")
+        
+        image_base64 = document.get("image_base64")
+        if not image_base64:
+            raise HTTPException(status_code=400, detail="Image non disponible")
+        
+        print(f"🤖 Joker IA Ticket Z : document {document_id}")
+        
+        # Analyser avec Gemini
+        gemini_result = await analyze_ticket_z_with_gemini(image_base64)
+        
+        # Sauvegarder les résultats dans MongoDB
+        updated_donnees = {
+            "date": gemini_result.get("date"),
+            "numero_ticket": gemini_result.get("numero_ticket"),
+            "service": gemini_result.get("service", "journee"),
+            "couverts": gemini_result.get("couverts_total"),
+            "total_ht": gemini_result.get("total_ht"),
+            "total_ttc": gemini_result.get("total_ttc"),
+            "productions": gemini_result.get("productions_vendues", []),
+            "ai_powered": True,
+            "confiance": gemini_result.get("confiance", 0.9)
+        }
+        
+        await db.documents_ocr.update_one(
+            {"id": document_id},
+            {"$set": {"donnees_parsees": updated_donnees, "statut": "traite"}}
+        )
+        
+        print(f"✅ Ticket Z analysé : {len(updated_donnees['productions'])} productions, confiance {updated_donnees['confiance']}")
+        
+        return {
+            "success": True,
+            "document_id": document_id,
+            "data": updated_donnees,
+            "message": f"{len(updated_donnees['productions'])} productions détectées avec IA"
+        }
+        
+    except Exception as e:
+        print(f"❌ Erreur Joker Ticket Z : {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Erreur : {str(e)}")
+
+
+
+
 @api_router.post("/ocr/confirm-import", response_model=dict)
 async def confirm_import_facture(request: ImportConfirmationRequest):
     """
