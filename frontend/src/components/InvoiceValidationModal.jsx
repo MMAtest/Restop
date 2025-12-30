@@ -439,7 +439,7 @@ const InvoiceValidationModal = ({ documentId, onClose, onSuccess, onRefresh, pro
   };
 
   if (loading) return (
-    <div className="modal-overlay">
+    <div className="modal-overlay" style={{zIndex: 99999}}>
       <div className="modal-content" style={{padding: '40px', textAlign: 'center', maxWidth: '450px'}}>
         <ProgressBar 
           duration={10000}
