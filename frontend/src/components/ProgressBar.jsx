@@ -115,9 +115,11 @@ const ProgressBar = ({ duration = 3000, message = "Traitement en cours..." }) =>
         color: '#666',
         marginTop: '8px'
       }}>
-        {progress < 30 ? "Connexion à Gemini..." :
+        {progress < 20 ? "Initialisation..." :
+         progress < 40 ? "Connexion à Gemini..." :
          progress < 60 ? "Analyse de l'image..." :
-         progress < 85 ? "Extraction des données..." :
+         progress < 75 ? "Extraction des produits..." :
+         progress < 85 ? "Détection des quantités et prix..." :
          "Finalisation..."}
       </p>
     </div>
