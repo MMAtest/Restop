@@ -8771,7 +8771,7 @@ function App() {
 
       {/* Modal de Progression Upload OCR */}
       {processingOcr && (
-        <div className="modal-overlay">
+        <div className="modal-overlay" style={{zIndex: 99999}}>
           <div className="modal-content" style={{padding: '40px', textAlign: 'center', maxWidth: '450px'}}>
             <ProgressBar 
               duration={5000}
