@@ -4,13 +4,15 @@ const ProgressBar = ({ duration = 3000, message = "Traitement en cours..." }) =>
   const [progress, setProgress] = useState(0);
 
   useEffect(() => {
-    // Simulation de progression réaliste
+    // Simulation de progression réaliste et équilibrée
     const intervals = [
       { time: 0, progress: 0 },
-      { time: duration * 0.2, progress: 30 },
-      { time: duration * 0.5, progress: 60 },
-      { time: duration * 0.8, progress: 85 },
-      { time: duration * 0.95, progress: 95 }
+      { time: duration * 0.15, progress: 20 },      // 15% du temps → 20%
+      { time: duration * 0.35, progress: 40 },      // 35% du temps → 40%
+      { time: duration * 0.55, progress: 60 },      // 55% du temps → 60%
+      { time: duration * 0.75, progress: 75 },      // 75% du temps → 75%
+      { time: duration * 0.90, progress: 85 },      // 90% du temps → 85%
+      { time: duration * 0.98, progress: 92 }       // 98% du temps → 92%
     ];
 
     let currentInterval = 0;
