@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import ProgressBar from './ProgressBar';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
