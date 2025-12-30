@@ -33,7 +33,7 @@ const ProgressBar = ({ duration = 3000, message = "Traitement en cours..." }) =>
         const next = intervals[currentInterval + 1];
         const segmentProgress = (elapsed - curr.time) / (next.time - curr.time);
         const newProgress = curr.progress + (next.progress - curr.progress) * segmentProgress;
-        setProgress(Math.min(95, Math.round(newProgress)));
+        setProgress(Math.min(92, Math.round(newProgress)));
       }
 
       if (elapsed >= duration) {
