@@ -17,6 +17,7 @@ import LoginPage from "./components/LoginPage";
 import RoleBasedDashboard from "./components/RoleBasedDashboard";
 import ProductionTab from "./components/ProductionTab";
 import InvoiceValidationModal from "./components/InvoiceValidationModal";
+import ProgressBar from "./components/ProgressBar";
 
 import { getCategoryColor, getCategoryIcon } from "./utils/categoryHelpers";
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
