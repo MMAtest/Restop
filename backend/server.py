@@ -6073,6 +6073,11 @@ async def get_dashboard_stats():
     })
     
     return {
+        "produits_count": total_produits,
+        "fournisseurs_count": total_fournisseurs,
+        "stock_alerts_count": stocks_faibles,
+        "recent_stock_updates": stocks_recents,
+        # Alias pour compatibilité
         "total_produits": total_produits,
         "total_fournisseurs": total_fournisseurs,
         "stocks_faibles": stocks_faibles,
