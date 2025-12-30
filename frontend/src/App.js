@@ -2577,7 +2577,19 @@ function App() {
       {/* Header Mobile */}
       <div className="header">
         <div style={{display: 'flex', alignItems: 'center', gap: '12px', flex: 1, justifyContent: 'center'}}>
-          <img src="/logo-restop.jpg" alt="ResTop" style={{height: '32px', width: 'auto'}} />
+          <img 
+            src="/logo-restop.jpg" 
+            alt="ResTop" 
+            style={{
+              height: '48px', 
+              width: 'auto',
+              objectFit: 'contain',
+              filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.1))',
+              background: 'white',
+              padding: '4px',
+              borderRadius: '8px'
+            }} 
+          />
           <h1>La Table d'Augustine</h1>
         </div>
         {/* Boutons header mobile */}
