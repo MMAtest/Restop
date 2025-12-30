@@ -8756,6 +8756,20 @@ function App() {
         </div>
       )}
 
+
+      {/* Modal de Progression Upload OCR */}
+      {processingOcr && (
+        <div className="modal-overlay">
+          <div className="modal-content" style={{padding: '40px', textAlign: 'center', maxWidth: '450px'}}>
+            <ProgressBar 
+              duration={5000}
+              message="Traitement du document..."
+            />
+          </div>
+        </div>
+      )}
+
+
       {/* Modal d'Aperçu des Documents OCR */}
       {/* Modal Aperçu Document */}
       {showPreviewModal && previewDocFull && (
