@@ -383,7 +383,9 @@ function App() {
   const [selectedMercurialeProducts, setSelectedMercurialeProducts] = useState([]);
   const [mercurialeSelectedSupplier, setMercurialeSelectedSupplier] = useState('');
   const [fournisseurForm, setFournisseurForm] = useState({
-    nom: "", contact: "", email: "", telephone: "", adresse: "", couleur: "#3B82F6", logo: "", categorie: "frais", deliveryCost: 0, extraCost: 0,
+    nom: "", contact: "", email: "", telephone: "", adresse: "", couleur: "#3B82F6", logo: "", 
+    categorie: "frais", categories: ["frais"], // ✅ Added categories list
+    deliveryCost: 0, extraCost: 0,
     delivery_rules: {
       order_days: [],
       order_deadline_hour: 11,
