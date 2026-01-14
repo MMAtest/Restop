@@ -1140,6 +1140,11 @@ function App() {
       // Séparer les données du fournisseur des coûts
       const { deliveryCost, extraCost, ...fournisseurData } = fournisseurForm;
       
+      // Assurer que categories est bien rempli (fallback sur categorie unique si vide)
+      if (!fournisseurData.categories || fournisseurData.categories.length === 0) {
+        fournisseurData.categories = [fournisseurData.categorie || "frais"];
+      }
+      
       let supplierId;
       if (editingItem) {
         await axios.put(`${API}/fournisseurs/${editingItem.id}`, fournisseurData);
@@ -1175,13 +1180,26 @@ function App() {
       }
 
       setShowFournisseurModal(false);
-      setFournisseurForm({ nom: "", contact: "", email: "", telephone: "", adresse: "", couleur: "#3B82F6", logo: "", categorie: "frais", deliveryCost: 0, extraCost: 0 });
+      setFournisseurForm({ 
+        nom: "", contact: "", email: "", telephone: "", adresse: "", 
+        couleur: "#3B82F6", logo: "", 
+        categorie: "frais", categories: ["frais"], // Reset categories
+        deliveryCost: 0, extraCost: 0,
+        delivery_rules: { // Reset delivery rules
+          order_days: [],
+          order_deadline_hour: 11,
+          delivery_days: [],
+          delivery_delay_days: 1,
+          delivery_time: "12:00",
+          special_rules: ""
+        }
+      });
       setEditingItem(null);
       fetchFournisseurs();
       fetchDashboardStats();
     } catch (error) {
       console.error("Erreur lors de la sauvegarde du fournisseur:", error);
-      alert("Erreur lors de la sauvegarde");
+      alert("Erreur lors de la sauvegarde : " + (error.response?.data?.detail || error.message));
     }
     setLoading(false);
   };
