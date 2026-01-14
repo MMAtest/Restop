@@ -7526,22 +7526,29 @@ function App() {
                       </small>
                     </div>
 
-                    {/* Heure limite */}
+                    {/* Heure limite - Sélecteur Mobile First */}
                     <div className="form-group" style={{marginTop: '12px'}}>
                       <label className="form-label" style={{fontSize: '13px'}}>⏰ Heure limite de commande</label>
-                      <input
-                        type="number"
-                        min="0"
-                        max="23"
+                      <select
                         value={fournisseurForm.delivery_rules?.order_deadline_hour || 11}
                         onChange={(e) => setFournisseurForm({
                           ...fournisseurForm,
                           delivery_rules: { ...fournisseurForm.delivery_rules, order_deadline_hour: parseInt(e.target.value) }
                         })}
-                        className="form-input"
-                        style={{width: '100px'}}
-                      />
-                      <span style={{marginLeft: '8px', color: '#64748b'}}>heures</span>
+                        className="form-select"
+                        style={{
+                          width: '100%', 
+                          padding: '10px',
+                          fontSize: '16px', // Better for mobile touch
+                          height: '44px'
+                        }}
+                      >
+                        {Array.from({length: 24}, (_, i) => (
+                          <option key={i} value={i}>
+                            {i.toString().padStart(2, '0')}:00 {i < 12 ? '(Matin)' : '(Après-midi)'}
+                          </option>
+                        ))}
+                      </select>
                     </div>
 
                     {/* Jours de livraison */}
