@@ -2,7 +2,7 @@
 
 ## Environment Information
 
-**Preview URL** (Works): `https://receipt-scanner-64.preview.emergentagent.com`
+**Preview URL** (Works): `https://ocr-manager.preview.emergentagent.com`
 **Production URL** (Error): `https://digigroupe.com`
 
 **API Key Used**: `sk-emergent-fA3AdBcC44aFb58664`
@@ -17,7 +17,7 @@
 
 **Preview Environment**:
 ```
-URL: https://receipt-scanner-64.preview.emergentagent.com
+URL: https://ocr-manager.preview.emergentagent.com
 Login: patron_test
 Password: password123
 ```
@@ -260,10 +260,10 @@ git log --oneline -5
 
 ```bash
 # Get a document ID
-curl -s https://receipt-scanner-64.preview.emergentagent.com/api/ocr/documents | jq '.[] | select(.type_document=="facture_fournisseur") | .id' | head -1
+curl -s https://ocr-manager.preview.emergentagent.com/api/ocr/documents | jq '.[] | select(.type_document=="facture_fournisseur") | .id' | head -1
 
 # Test the Gemini endpoint (replace DOCUMENT_ID)
-curl -X POST "https://receipt-scanner-64.preview.emergentagent.com/api/ocr/analyze-facture-ai/DOCUMENT_ID"
+curl -X POST "https://ocr-manager.preview.emergentagent.com/api/ocr/analyze-facture-ai/DOCUMENT_ID"
 ```
 
 ---

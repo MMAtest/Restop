@@ -8,7 +8,7 @@ Tester le nouveau système "Joker IA" avec la facture **SAS THE PRIMEUR**
 ## 📋 Étapes de Test
 
 ### 1. Connexion à l'Application
-- URL : `https://receipt-scanner-64.preview.emergentagent.com`
+- URL : `https://ocr-manager.preview.emergentagent.com`
 - Identifiants : `patron_test` / `password123`
 
 ### 2. Navigation vers OCR
@@ -92,14 +92,14 @@ Si vous voulez tester l'endpoint Gemini directement sans passer par l'interface 
 
 ```bash
 # 1. Uploader la facture
-curl -X POST "https://receipt-scanner-64.preview.emergentagent.com/api/ocr/upload-document" \
+curl -X POST "https://ocr-manager.preview.emergentagent.com/api/ocr/upload-document" \
   -F "file=@IMG-20251222-WA0001.jpg" \
   -F "document_type=facture_fournisseur"
 
 # Récupérer le document_id de la réponse
 
 # 2. Analyser avec Gemini (remplacer DOCUMENT_ID)
-curl -X POST "https://receipt-scanner-64.preview.emergentagent.com/api/ocr/analyze-facture-ai/DOCUMENT_ID"
+curl -X POST "https://ocr-manager.preview.emergentagent.com/api/ocr/analyze-facture-ai/DOCUMENT_ID"
 
 # 3. Observer le résultat JSON
 ```

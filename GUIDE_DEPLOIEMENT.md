@@ -52,7 +52,7 @@ emergentintegrations --extra-index-url https://d33sy5i8bnduwe.cloudfront.net/sim
 
 **Actuellement configuré** :
 ```
-REACT_APP_BACKEND_URL=https://receipt-scanner-64.preview.emergentagent.com
+REACT_APP_BACKEND_URL=https://ocr-manager.preview.emergentagent.com
 ```
 
 **Pour production** :
@@ -121,7 +121,7 @@ extra-index-url = https://d33sy5i8bnduwe.cloudfront.net/simple/
 ## 🎯 Différence Preview vs. Production
 
 **Preview (Cet environnement agent)** :
-- URL : `https://receipt-scanner-64.preview.emergentagent.com`
+- URL : `https://ocr-manager.preview.emergentagent.com`
 - Base de données : MongoDB local (ephemeral)
 - Variables .env : Fichier local
 - ✅ **Tout fonctionne**

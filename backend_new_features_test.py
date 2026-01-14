@@ -13,7 +13,7 @@ import time
 from datetime import datetime
 
 # Configuration
-BASE_URL = "https://receipt-scanner-64.preview.emergentagent.com/api"
+BASE_URL = "https://ocr-manager.preview.emergentagent.com/api"
 HEADERS = {"Content-Type": "application/json"}
 
 class NewFeaturesTestSuite:
