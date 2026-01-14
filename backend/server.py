@@ -206,7 +206,8 @@ class Fournisseur(BaseModel):
     adresse: Optional[str] = None
     couleur: Optional[str] = "#3B82F6"  # Couleur par défaut (bleu)
     logo: Optional[str] = None  # URL ou emoji pour le logo
-    categorie: Optional[str] = "frais"  # Catégorie par défaut
+    categorie: Optional[str] = "frais"  # Deprecated: use categories instead
+    categories: List[str] = ["frais"]  # ✅ Support multiple categories
     delivery_rules: Optional[DeliveryRules] = None  # Règles de livraison
     created_at: datetime = Field(default_factory=datetime.utcnow)
 
@@ -218,7 +219,8 @@ class FournisseurCreate(BaseModel):
     adresse: Optional[str] = None
     couleur: Optional[str] = "#3B82F6"  # Couleur par défaut (bleu)
     logo: Optional[str] = None  # URL ou emoji pour le logo
-    categorie: Optional[str] = "frais"  # Catégorie par défaut
+    categorie: Optional[str] = "frais"  # Deprecated
+    categories: List[str] = ["frais"]  # ✅ Support multiple categories
     delivery_rules: Optional[DeliveryRules] = None  # Règles de livraison
 
 # ✅ Order Management Models
