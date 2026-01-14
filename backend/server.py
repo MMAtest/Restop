@@ -40,31 +40,54 @@ load_dotenv(ROOT_DIR / '.env', override=False)
 
 # Charger la clé Emergent de manière robuste (production + preview)
 def get_emergent_key():
-    """Charge EMERGENT_LLM_KEY depuis l'environnement, .env, ou config_keys.py"""
-    key = os.environ.get('EMERGENT_LLM_KEY')
-    if key:
-        return key
+    """Charge EMERGENT_LLM_KEY depuis config_keys.py (PRIORITAIRE) ou l'environnement"""
     
-    # Fallback 1 : lire directement depuis .env
-    env_path = ROOT_DIR / '.env'
-    if env_path.exists():
-        with open(env_path, 'r') as f:
-            for line in f:
-                if line.startswith('EMERGENT_LLM_KEY='):
-                    key = line.split('=', 1)[1].strip()
-                    # Supprimer guillemets si présents
-                    key = key.strip('"').strip("'")
-                    if key:
-                        return key
-    
-    # Fallback 2 : charger depuis config_keys.py (production)
+    # 1. Tenter de charger depuis config_keys.py (Production & Local)
+    # C'est la méthode la plus fiable pour éviter les variables d'environnement obsolètes
+    config_key = None
     try:
         from config_keys import EMERGENT_LLM_KEY as key_from_config
-        if key_from_config:
-            return key_from_config
+        if key_from_config and isinstance(key_from_config, str) and key_from_config.startswith("sk-emergent-"):
+            config_key = key_from_config.strip().strip('"').strip("'")
+            print(f"🔑 [DEBUG] Clé trouvée dans config_keys.py: {config_key[:15]}...")
     except ImportError:
-        pass
+        print("⚠️ [DEBUG] config_keys.py non trouvé ou erreur d'import")
+    except Exception as e:
+        print(f"⚠️ [DEBUG] Erreur lecture config_keys.py: {str(e)}")
+
+    # 2. Tenter de charger depuis les variables d'environnement (Fallback)
+    env_key = os.environ.get('EMERGENT_LLM_KEY')
+    if env_key:
+        env_key = env_key.strip().strip('"').strip("'")
+        print(f"🔑 [DEBUG] Clé trouvée dans ENV: {env_key[:15]}...")
     
+    # 3. Comparaison et Décision
+    if config_key:
+        if env_key and env_key != config_key:
+            print("⚠️ [WARNING] La clé ENV diffère de la clé config_keys.py ! Priorité donnée à config_keys.py.")
+        
+        print("✅ Utilisation de la clé définie dans config_keys.py (Force Update)")
+        return config_key
+    
+    if env_key:
+        print("✅ Utilisation de la clé définie dans les variables d'environnement")
+        return env_key
+    
+    # 4. Dernier recours : fichier .env
+    env_path = ROOT_DIR / '.env'
+    if env_path.exists():
+        try:
+            with open(env_path, 'r') as f:
+                for line in f:
+                    if line.startswith('EMERGENT_LLM_KEY='):
+                        key = line.split('=', 1)[1].strip().strip('"').strip("'")
+                        if key:
+                            print(f"🔑 [DEBUG] Clé trouvée dans .env file: {key[:15]}...")
+                            return key
+        except Exception as e:
+            print(f"❌ Erreur lecture .env: {str(e)}")
+    
+    print("❌ AUCUNE CLÉ TROUVÉE !")
     return None
 
 EMERGENT_LLM_KEY = get_emergent_key()
