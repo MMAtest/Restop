@@ -1652,7 +1652,11 @@ function App() {
 
   // Fonction de suppression
   const handleDelete = async (id, type) => {
+    // Premier avertissement
     if (!window.confirm("Êtes-vous sûr de vouloir supprimer cet élément ?")) return;
+    
+    // Deuxième avertissement de sécurité (Double vérification)
+    if (!window.confirm("⚠️ ATTENTION : Cette action est IRRÉVERSIBLE !\n\nL'élément sera définitivement effacé de la base de données (pas d'archivage).\n\nConfirmer la suppression DÉFINITIVE ?")) return;
 
     try {
       if (type === "produit") {
@@ -1670,9 +1674,10 @@ function App() {
         fetchPreparations();
       }
       fetchDashboardStats();
+      alert("✅ Élément supprimé définitivement.");
     } catch (error) {
       console.error(`Erreur lors de la suppression du ${type}:`, error);
-      alert("Erreur lors de la suppression");
+      alert("Erreur lors de la suppression : " + (error.response?.data?.detail || error.message));
     }
   };
 
