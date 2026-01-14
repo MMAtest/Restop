@@ -7385,20 +7385,55 @@ function App() {
                 </small>
               </div>
               
-              {/* Nouveau champ catégorie */}
+              {/* Nouveau champ catégories multiples */}
               <div className="form-group">
-                <label className="form-label">Catégorie</label>
-                <select
-                  className="form-select"
-                  value={fournisseurForm.categorie}
-                  onChange={(e) => setFournisseurForm({...fournisseurForm, categorie: e.target.value})}
-                >
-                  {CATEGORIES_FOURNISSEURS.map((cat) => (
-                    <option key={cat.value} value={cat.value}>
-                      {cat.label}
-                    </option>
-                  ))}
-                </select>
+                <label className="form-label">Catégories (Sélection multiple)</label>
+                <div style={{display: 'flex', flexWrap: 'wrap', gap: '8px', padding: '4px'}}>
+                  {CATEGORIES_FOURNISSEURS.map((cat) => {
+                    const isSelected = (fournisseurForm.categories || [fournisseurForm.categorie]).includes(cat.value);
+                    return (
+                      <button
+                        key={cat.value}
+                        type="button"
+                        onClick={() => {
+                          const currentCats = fournisseurForm.categories || [fournisseurForm.categorie || 'frais'];
+                          let newCats;
+                          
+                          if (isSelected) {
+                            newCats = currentCats.filter(c => c !== cat.value);
+                            if (newCats.length === 0) newCats = ['frais']; // Minimum 1 catégorie
+                          } else {
+                            newCats = [...currentCats, cat.value];
+                          }
+                          
+                          setFournisseurForm({
+                            ...fournisseurForm, 
+                            categories: newCats,
+                            categorie: newCats[0] // Sync legacy field
+                          });
+                        }}
+                        style={{
+                          padding: '8px 12px',
+                          borderRadius: '20px',
+                          border: isSelected ? '2px solid #3B82F6' : '1px solid #e2e8f0',
+                          backgroundColor: isSelected ? '#eff6ff' : 'white',
+                          color: isSelected ? '#1e40af' : '#64748b',
+                          fontSize: '13px',
+                          fontWeight: isSelected ? '600' : '400',
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '6px',
+                          transition: 'all 0.2s'
+                        }}
+                      >
+                        <span style={{fontSize: '16px'}}>{cat.icon}</span>
+                        <span>{cat.label}</span>
+                        {isSelected && <span>✓</span>}
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
               
               {/* Nouveaux champs pour les coûts */}
