@@ -150,6 +150,17 @@ const ProductionTab = (props) => {
                 {/* Filtre par catégorie - Section Produits */}
                 {!showCategoriesView && (
                   <div className="filter-section" style={{marginBottom: '20px'}}>
+                    {/* Barre de recherche Produits */}
+                    <div style={{marginBottom: '10px'}}>
+                      <input
+                        type="text"
+                        placeholder="🔍 Rechercher un produit..."
+                        value={productSearch}
+                        onChange={(e) => setProductSearch(e.target.value)}
+                        className="form-input"
+                        style={{width: '100%'}}
+                      />
+                    </div>
                     <div className="filter-group">
                       <label className="filter-label">🏷️ Filtrer par catégorie d'ingrédients :</label>
                       <select 
