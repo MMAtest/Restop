@@ -519,7 +519,18 @@ const ProductionTab = (props) => {
                   </div>
                 ) : (
                   <>
-                {fournisseurs.map((fournisseur, index) => (
+                  {/* Barre de recherche Fournisseurs */}
+                  <div style={{marginBottom: '15px'}}>
+                    <input
+                      type="text"
+                      placeholder="🔍 Rechercher un fournisseur..."
+                      value={supplierSearch}
+                      onChange={(e) => setSupplierSearch(e.target.value)}
+                      className="form-input"
+                      style={{width: '100%'}}
+                    />
+                  </div>
+                {fournisseurs.filter(f => f.nom.toLowerCase().includes(supplierSearch.toLowerCase())).map((fournisseur, index) => (
                   <div key={index} className="item-row">
                     <div className="item-info">
                       <div className="item-name" style={{display: 'flex', alignItems: 'center', gap: '8px'}}>
