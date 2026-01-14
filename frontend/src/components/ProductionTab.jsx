@@ -20,6 +20,12 @@ const getProductionCategoryIcon = (category) => {
 };
 
 const ProductionTab = (props) => {
+  // Search states
+  const [productSearch, setProductSearch] = React.useState("");
+  const [supplierSearch, setSupplierSearch] = React.useState("");
+  const [preparationSearch, setPreparationSearch] = React.useState("");
+  const [recipeSearch, setRecipeSearch] = React.useState("");
+
   // Placeholder for props destructuring
   const NOW = Date.now();
   const { activeTab, activeProductionTab, setActiveProductionTab, preparations, currentUser, fetchArchives, setShowProduitModal, showCategoriesView, setShowCategoriesView, fetchProduitsParCategories, setProduitsParCategories, categoriesExpanded, setCategoriesExpanded, canEditItems, handleEdit, canArchiveItems, archiveItem, handleDelete, selectedCategoryFilter, filteredProduits, filteredRecettes, produits, fournisseurs, produitsParCategories, setShowFournisseurModal, showFournisseursCategoriesView, setShowFournisseursCategoriesView, restoreItem, deleteArchivePermanently, fetchHistoriqueProduction, historiqueProduction, showRecetteModal, setShowRecetteModal, handleExportRecettes, showRecettesCategoriesView, setShowRecettesCategoriesView, filterRecettesByCategory, categoriesProduction, loading, handleCalculerCouts, showPreparationModal, setShowPreparationModal, handleAutoGeneratePreparations, showPreparationsCategoriesView, setShowPreparationsCategoriesView, preparationForm, handlePreparationSubmit, resetPreparationForm, calculatePerte, calculatePortions, formesDecoupe, stocksPreparations, mouvementsPreparations, showMovementPreparationModal, setShowMovementPreparationModal, movementPreparationForm, preparationsParCategories, categoriesPreparationsExpanded, handleMovementPreparation, archivedItems, selectedArchiveType, setSelectedArchiveType, filterProduitsByCategory, canCreateItems, recettes, setEditingItem, setPreparationForm, setMovementPreparationForm, setCategoriesPreparationsExpanded } = props;
