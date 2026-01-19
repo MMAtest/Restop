@@ -666,6 +666,17 @@ const ProductionTab = (props) => {
                   </div>
                 ) : (
                   <div style={{display: 'grid', gap: '12px'}}>
+                    {/* Barre de recherche Préparations */}
+                    <div style={{marginBottom: '10px'}}>
+                      <input
+                        type="text"
+                        placeholder="🔍 Rechercher une préparation..."
+                        value={preparationSearch}
+                        onChange={(e) => setPreparationSearch(e.target.value)}
+                        className="form-input"
+                        style={{width: '100%'}}
+                      />
+                    </div>
                     {preparations.length === 0 ? (
                       <div style={{textAlign: 'center', padding: '40px', color: 'var(--color-text-secondary)'}}>
                         <div style={{fontSize: '48px', marginBottom: '16px'}}>🔪</div>
