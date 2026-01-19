@@ -684,7 +684,7 @@ const ProductionTab = (props) => {
                         <div>Créez votre première préparation pour commencer</div>
                       </div>
                     ) : (
-                    preparations.map((prep) => {
+                    preparations.filter(p => p.nom.toLowerCase().includes(preparationSearch.toLowerCase())).map((prep) => {
                       const dlcDate = prep.dlc ? new Date(prep.dlc) : null;
                       const isDlcSoon = dlcDate && dlcDate < new Date(NOW + 3 * 24 * 60 * 60 * 1000);
                       const isDlcExpired = dlcDate && dlcDate < new Date();
