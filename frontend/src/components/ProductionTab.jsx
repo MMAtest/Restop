@@ -772,6 +772,17 @@ const ProductionTab = (props) => {
                 {/* Filtre par catégorie - uniquement en vue liste */}
                 {!showRecettesCategoriesView && (
                   <div className="filter-section" style={{marginBottom: '20px'}}>
+                    {/* Barre de recherche Recettes */}
+                    <div style={{marginBottom: '10px'}}>
+                      <input
+                        type="text"
+                        placeholder="🔍 Rechercher une production..."
+                        value={recipeSearch}
+                        onChange={(e) => setRecipeSearch(e.target.value)}
+                        className="form-input"
+                        style={{width: '100%'}}
+                      />
+                    </div>
                     <div className="filter-group">
                       <label className="filter-label">🏷️ Filtrer par catégorie :</label>
                       <select 
