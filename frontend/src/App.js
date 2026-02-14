@@ -1561,13 +1561,41 @@ function App() {
 
   const addIngredient = () => {
     if (ingredientForm.produit_id && ingredientForm.quantite) {
-      const produit = produits.find(p => p.id === ingredientForm.produit_id);
-      if (produit) {
+      // Chercher dans les produits ou préparations
+      let item = produits.find(p => p.id === ingredientForm.produit_id);
+      let type = 'produit';
+      let cout_unitaire = 0;
+      let unite_defaut = '';
+
+      if (item) {
+         cout_unitaire = item.prix_achat || item.reference_price || 0;
+         unite_defaut = item.unite;
+      } else {
+         // Chercher dans les préparations
+         item = preparations.find(p => p.id === ingredientForm.produit_id);
+         if (item) {
+            type = 'preparation';
+            unite_defaut = item.unite_preparee;
+            // Calculer le coût de la préparation
+            const parentProduct = produits.find(p => p.id === item.produit_id);
+            if (parentProduct && item.quantite_preparee > 0) {
+                const parentPrice = parentProduct.prix_achat || parentProduct.reference_price || 0;
+                cout_unitaire = (item.quantite_produit_brut * parentPrice) / item.quantite_preparee;
+            }
+         }
+      }
+
+      if (item) {
+        const quantite = parseFloat(ingredientForm.quantite);
         const newIngredient = {
-          produit_id: ingredientForm.produit_id,
-          produit_nom: produit.nom,
-          quantite: parseFloat(ingredientForm.quantite),
-          unite: ingredientForm.unite || produit.unite
+          produit_id: item.id, // Legacy compatibility
+          ingredient_id: item.id,
+          ingredient_type: type,
+          produit_nom: item.nom,
+          quantite: quantite,
+          unite: ingredientForm.unite || unite_defaut,
+          cout_unitaire: cout_unitaire,
+          cout_total: quantite * cout_unitaire
         };
         
         setRecetteForm(prev => ({
