@@ -8630,7 +8630,7 @@ function App() {
                 />
               </div>
               <div className="form-group">
-                <label className="form-label">Prix de vente (€)</label>
+                <label className="form-label">Prix de vente (par portion) (€)</label>
                 <input
                   type="number"
                   step="0.01"
