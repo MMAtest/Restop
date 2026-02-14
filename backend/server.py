@@ -6084,6 +6084,7 @@ async def export_recettes():
 async def get_dashboard_stats():
     total_produits = await db.produits.count_documents({})
     total_fournisseurs = await db.fournisseurs.count_documents({})
+    total_recettes = await db.recettes.count_documents({}) # ✅ Add count check
     
     # Stocks faibles (quantité actuelle <= quantité minimum)
     stocks_faibles = await db.stocks.count_documents({
