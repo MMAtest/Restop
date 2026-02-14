@@ -8660,11 +8660,23 @@ function App() {
                 
                 {/* Liste des ingrédients actuels */}
                 <div style={{marginBottom: '15px'}}>
+                  {recetteForm.ingredients.length === 0 && (
+                    <div style={{fontSize: '13px', color: '#9ca3af', fontStyle: 'italic', padding: '8px'}}>
+                      Aucun ingrédient ajouté
+                    </div>
+                  )}
                   {recetteForm.ingredients.map((ingredient, index) => (
                     <div key={index} style={{display: 'flex', alignItems: 'center', marginBottom: '8px', padding: '8px', background: '#f8f7f4', borderRadius: '5px'}}>
-                      <span style={{flex: 1}}>
-                        {ingredient.produit_nom} - {ingredient.quantite} {ingredient.unite}
-                      </span>
+                      <div style={{flex: 1}}>
+                        <div style={{fontWeight: '500'}}>
+                          {ingredient.ingredient_type === 'preparation' ? '🔪 ' : '📦 '}
+                          {ingredient.produit_nom}
+                        </div>
+                        <div style={{fontSize: '12px', color: '#6b7280'}}>
+                          {ingredient.quantite} {ingredient.unite} 
+                          {ingredient.cout_total > 0 && ` • Coût: ${ingredient.cout_total.toFixed(2)}€`}
+                        </div>
+                      </div>
                       <button
                         type="button"
                         className="button"
@@ -8675,6 +8687,26 @@ function App() {
                       </button>
                     </div>
                   ))}
+                  
+                  {/* Résumé des Coûts en temps réel */}
+                  {recetteForm.ingredients.length > 0 && (
+                    <div style={{marginTop: '12px', padding: '12px', background: '#f0fdf4', borderRadius: '6px', border: '1px solid #bbf7d0'}}>
+                      <div style={{display: 'flex', justifyContent: 'space-between', marginBottom: '4px'}}>
+                        <span style={{fontSize: '13px', color: '#166534'}}>Coût matière total :</span>
+                        <span style={{fontWeight: 'bold', color: '#166534'}}>
+                          {recetteForm.ingredients.reduce((sum, i) => sum + (i.cout_total || 0), 0).toFixed(2)} €
+                        </span>
+                      </div>
+                      {recetteForm.portions > 0 && (
+                        <div style={{display: 'flex', justifyContent: 'space-between', borderTop: '1px solid #dcfce7', paddingTop: '4px'}}>
+                          <span style={{fontSize: '13px', color: '#15803d', fontWeight: '600'}}>Coût par portion :</span>
+                          <span style={{fontWeight: 'bold', color: '#15803d'}}>
+                            {(recetteForm.ingredients.reduce((sum, i) => sum + (i.cout_total || 0), 0) / recetteForm.portions).toFixed(2)} €
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
 
                 {/* Formulaire d'ajout d'ingrédient */}
@@ -8683,14 +8715,34 @@ function App() {
                     <select
                       className="form-select"
                       value={ingredientForm.produit_id}
-                      onChange={(e) => setIngredientForm({...ingredientForm, produit_id: e.target.value})}
+                      onChange={(e) => {
+                        const id = e.target.value;
+                        // Trouver l'item pour auto-remplir l'unité
+                        const item = produits.find(p => p.id === id) || preparations.find(p => p.id === id);
+                        const unit = item ? (item.unite || item.unite_preparee) : "";
+                        
+                        setIngredientForm({
+                          ...ingredientForm, 
+                          produit_id: id,
+                          unite: unit // Auto-fill unit
+                        });
+                      }}
                     >
-                      <option value="">Sélectionnez un produit</option>
-                      {produits.map((produit) => (
-                        <option key={produit.id} value={produit.id}>
-                          {produit.nom}
-                        </option>
-                      ))}
+                      <option value="">Sélectionnez un ingrédient</option>
+                      <optgroup label="📦 Produits Bruts">
+                        {produits.map((produit) => (
+                          <option key={produit.id} value={produit.id}>
+                            {produit.nom} ({produit.unite})
+                          </option>
+                        ))}
+                      </optgroup>
+                      <optgroup label="🔪 Préparations">
+                        {preparations.map((prep) => (
+                          <option key={prep.id} value={prep.id}>
+                            {prep.nom} ({prep.unite_preparee})
+                          </option>
+                        ))}
+                      </optgroup>
                     </select>
                   </div>
                   <div style={{width: '100px'}}>
@@ -8698,12 +8750,12 @@ function App() {
                       type="number"
                       step="0.01"
                       className="form-input"
-                      placeholder="Quantité"
+                      placeholder="Qté"
                       value={ingredientForm.quantite}
                       onChange={(e) => setIngredientForm({...ingredientForm, quantite: e.target.value})}
                     />
                   </div>
-                  <div style={{width: '120px'}}>
+                  <div style={{width: '100px'}}>
                     <select
                       className="form-select"
                       value={ingredientForm.unite}
