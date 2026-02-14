@@ -1622,6 +1622,7 @@ function App() {
         couleur: item.couleur || "#3B82F6",
         logo: item.logo || "",
         categorie: item.categorie || "frais",
+        categories: item.categories || [item.categorie || "frais"], // ✅ Fix: Load existing categories
         deliveryCost: 0,
         extraCost: 0,
         delivery_rules: item.delivery_rules || {
