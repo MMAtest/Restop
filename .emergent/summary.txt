@@ -1,0 +1,152 @@
+<analysis>**original_problem_statement**:
+L'utilisateur a initialement demandé la construction d'une application de gestion de restaurant (React/FastAPI/MongoDB). Au cours de cette session, les demandes se sont concentrées sur la correction des données réelles du dashboard, l'ajout de fonctionnalités de gestion avancées (suppression définitive avec double vérification, sélection multi-catégories pour les fournisseurs), le calcul en temps réel du coût par portion lors de la création de recettes, et la correction de plusieurs bugs d'affichage (listes vides, items archivés toujours présents en stock) et de déconnexion intempestive. 
+PRODUCT REQUIREMENTS: 
+1. Dashboard avec données réelles (plus de démo).
+2. Fournisseurs : support multi-catégories, barre de recherche, suppression définitive.
+3. Stocks/Productions : suppression définitive, calcul du coût par portion basé sur les ingrédients, disparition des stocks des éléments archivés.
+4. UI/UX : sélecteur d'heure mobile-first, correction des bugs d'affichage des listes de production.
+5. Sécurité : Limiter l'usage de la clé Gemini pour éviter les surcoûts.
+
+**User's preferred language**: French (**INSTRUCTION FOR NEXT AGENT**: You MUST respond to the user in French ONLY).
+
+**what currently exists?** 
+Une application full-stack fonctionnelle avec un système de traitement OCR (incluant Gemini 2.0 Flash comme Joker IA), un dashboard de pilotage (données en temps réel), une gestion avancée des stocks, fournisseurs et recettes. Les fonctionnalités de suppression définitive, de recherche dans les onglets, de calcul de coût par portion, et de sécurisation des clés API (limite de requêtes) ont été implémentées avec succès.
+
+**Last working item**:
+    - Last item agent was working: Répondre aux questions de l'utilisateur concernant la sécurisation de la clé Gemini (pour éviter la surfacturation en cas de vol) et le processus de déploiement/synchronisation avec GitHub via la plateforme Emergent. L'agent a ajouté une limite d'utilisation côté backend pour Gemini et a fourni les explications via le Support Agent.
+    - Status: NONE (Informational queries completed)
+    - Agent Testing Done: Y
+    - Which testing method agent to use?: NA
+    - User Testing Done: Y
+
+**All Pending/In progress Issue list**:
+  - Issue 1: Vérification en production du Joker IA (Erreur 500/400) (P0)
+     - Attempted fixes: Les fallbacks de la variable  ont été mis en place lors de la session précédente. L'utilisateur devait redéployer pour tester en conditions réelles.
+     - Next debug checklist: Demander à l'utilisateur s'il a bien effectué un Deploy et tester l'upload + Joker IA sur la version en ligne.
+     - Why fix this issue and what will be achieved with the fix?: C'est la fonctionnalité Whaou du produit. 
+     - Status: USER VERIFICATION PENDING
+     - Is recurring issue? Y
+     - Should Test frontend/backend/both after fix?: backend
+     - Blocked on other issue: NA
+  
+  - Issue 2: Fonctionnalité d'import de catalogue Excel non testée (P2)
+     - Attempted fixes: Le code est prêt mais aucun fichier n'a été fourni.
+     - Next debug checklist: Demander à l'utilisateur de fournir son fichier Excel d'exemple.
+     - Why fix this issue and what will be achieved with the fix?: Permettre l'onboarding facile de données.
+     - Status: BLOCKED
+     - Is recurring issue? N
+     - Should Test frontend/backend/both after fix?: backend
+     - Blocked on other issue: Attente du fichier de l'utilisateur.
+
+**In progress Task List**:
+  - Task 1: Optimisation des 7 parsers OCR restants (P1)
+     - Where to resume: L'optimisation a été appliquée au parser  (via ). Il faut l'étendre aux autres parsers (METRO, Mammafiore, etc.).
+     - What will be achieved with this?: Réduire les erreurs OCR de base et le recours payant au Joker IA.
+     - Status: IN PROGRESS
+     - Should Test frontend/backend/both after fix?: backend
+     - Blocked on something: NA
+
+**Upcoming and Future Tasks**
+    Upcoming Tasks:
+    - P1: Implémenter l'Intelligence Métier (suggestion automatique de DLC et alertes d'inflation de prix).
+    Future Tasks:
+    - P2: Afficher une bannière d'aide pour l'installation de la PWA sur les appareils Safari iOS.
+
+**Completed work in this session**
+- Connecté le Dashboard aux données réelles de la DB ().
+- Corrigé le filtre des factures validées ( au lieu de ).
+- Implémenté la sélection multi-catégories pour les fournisseurs.
+- Implémenté la suppression définitive (DELETE) avec modale de double vérification pour Fournisseurs, Produits, Préparations et Productions.
+- Ajouté des barres de recherche fonctionnelles dans tous les onglets de Production.
+- Corrigé le sélecteur d'heure limite de commande pour qu'il soit Mobile-First (input type=time).
+- Calcul et affichage en temps réel du Coût par portion lors de la création d'une recette (basé sur les ingrédients ajoutés).
+- Corrigé un bug d'affichage critique où la liste des productions nécessitait un clic sur un filtre pour s'afficher au démarrage.
+- Corrigé un bug de déconnexion (erreur réseau/401) après une inactivité en ajoutant un intercepteur Axios propre.
+- Corrigé un bug logique : l'archivage d'un produit/préparation le retire désormais correctement des onglets de stocks actifs (mise à 0 ou filtrage).
+- Ajouté une limitation (rate-limit/sécurité) pour les appels à Gemini OCR.
+
+**Earlier issues found/mentioned but not fixed**
+   - Issue 1: Refactorisation de 
+   - Debug checklist: Le fichier  dépasse les 9000 lignes, le rendant lourd à maintenir.
+   - Why to solve this issue and what will be achieved with this?: Améliorer la maintenabilité et éviter les bugs de collision d'états (comme le bug de la liste de production corrigé).
+   - Should Test frontend/backend/both after fix: frontend
+   - Is recurring issue? N
+
+**Known issue recurrence from previous fork**
+  - Issue recurrence in previous fork: Gestion des variables d'environnement en production (EMERGENT_LLM_KEY).
+  - Recurrence count: 3
+  - Status: USER VERIFICATION PENDING
+  - Note: L'utilisateur a été informé du comportement du déploiement.
+
+**Code Architecture**
+/app/
+├── backend/
+│   ├── server.py               # Fichier principal monolithique
+│   ├── parsers_optimized.py    # Optimisation des parsers OCR
+│   └── config_keys.py          # Fallbacks de la clé API
+└── frontend/
+    └── src/
+        ├── App.js              # ÉNORME fichier contenant presque toute la logique UI/États
+        └── components/         # Composants modulaires (ProductionTab, RoleBasedDashboard, etc.)
+
+**Key Technical Concepts**
+- Backend: FastAPI, MongoDB (Motor).
+- Frontend: React, Axios (avec intercepteurs pour la gestion de session).
+- LLM Integration:  avec  pour Gemini 2.0 Flash OCR.
+
+**key DB schema**
+  - : 
+  -  (productions): 
+  -  & : Contiennent les quantités liées à ce qui est actif (non archivé).
+
+**changes in tech stack**
+  - Aucun changement.
+
+**All files of reference**
+  - : Modifié pour la suppression définitive, le rate-limit Gemini, et la correction de la logique d'archivage (impact sur les stocks).
+  - : Modifié pour les modales de suppression, le calcul des coûts de recette, la correction du bug d'affichage de la liste, l'intercepteur Axios pour les timeouts.
+  - : Modifié pour inclure les barres de recherche par onglet.
+  - : Nettoyé des données factices.
+
+**Areas that need refactoring**: 
+ est beaucoup trop volumineux et gère trop d'états locaux complexes. La création de fichiers Context ou la séparation par Page est fortement recommandée pour la suite du projet.
+
+**key api endpoints**
+- 
+- , , , 
+-  (mise à jour pour accepter une liste de catégories)
+-  (modifié pour impacter la disponibilité en stock)
+
+**Critical Info for New Agent**
+- **Langue** : L'utilisateur s'exprime en français, tu dois impérativement lui répondre en français.
+- **État d'esprit** : L'utilisateur a eu peur de perdre ses données à cause d'un bug d'affichage React. Sois rassurant et effectue des tests rigoureux avant de lui dire qu'une fonctionnalité est prête.
+- **Variables d'environnement** : Ne touche plus à la logique de la clé Gemini (), elle est sécurisée et le comportement de facturation/déploiement a été expliqué à l'utilisateur.
+- **Workflow de test** : Chaque modification sur les modèles (comme  ou ) impacte de nombreux  dans le frontend. Fais très attention aux boucles de rendu infini ou aux listes qui ne se chargent pas au démarrage dans .
+
+**documents and test reports created in this job** 
+Aucun nouveau document majeur créé.
+
+**Last 10 User Messages and any pending HUMAN messages** 
+1. *User*: Demande si l'archivage peut retirer correctement les items du stock correspondant. *Status*: COMPLETED.
+2. *User*: Demande comment sécuriser la clé Gemini pour éviter une énorme facture en cas de vol. *Status*: COMPLETED (Limites ajoutées + Explications fournies).
+3. *User*: Pose des questions sur le déploiement depuis GitHub et la synchronisation du code si modifié en externe. *Status*: COMPLETED (Informations sur le workflow Emergent fournies).
+
+**Project Health Check:**
+- Broken: Non, l'application est stable en dev. En attente de validation prod pour Gemini.
+- Mocked: Non. Les données de démo ont été retirées du dashboard.
+
+**3rd Party Integrations**
+- Google Vision API (OCR de base).
+- Gemini 2.0 Flash (Joker IA) — uses Emergent LLM Key.
+
+**Testing status**
+  - Testing agent used after significant changes: NO (Modifications mineures d'UI et de logique, testées via log/UI).
+  - Troubleshoot agent used after agent stuck in loop: NO
+  - Test files created: []
+  - Known regressions: None
+
+**Credentials to test flow:**
+patron@example.com / password
+
+**What agent forgot to execute**
+- L'agent précédent n'a pas finalisé l'optimisation des 7 autres parsers OCR (seul le GENERIC a été fait), qui était une tâche (P1) en cours. Il faudra reprendre cela une fois l'utilisateur satisfait de l'état actuel de l'interface.</analysis>

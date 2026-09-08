@@ -1,0 +1,80 @@
+{
+  "theme": "light",
+  "archetype": "Archetype 1: Organic & Earthy + Archetype 4: Swiss Clarity",
+  "brand_name": "ResTop - La Table d'Augustine",
+  "design_philosophy": "A digital tool that feels like a premium French kitchen: warm, organic, but ruthlessly organized. Minimalist data presentation combined with tactile, earthy surfaces.",
+  "typography": {
+    "headings": "Manrope",
+    "body": "Work Sans",
+    "accent_brand": "Cormorant Garamond",
+    "scale_rules": {
+      "h1": "text-2xl sm:text-3xl tracking-tight font-bold text-stone-900",
+      "h2": "text-xl sm:text-2xl tracking-tight font-semibold text-stone-900",
+      "h3": "text-lg font-semibold text-stone-900",
+      "kpi_value": "text-3xl font-black tracking-tighter text-stone-900",
+      "body": "text-sm sm:text-base text-stone-600",
+      "labels": "text-[10px] sm:text-xs uppercase tracking-[0.1em] font-bold text-stone-500"
+    }
+  },
+  "colors": {
+    "background_base": "#FAFAF8",
+    "background_card": "#FFFFFF",
+    "primary": "#2C4A3B",
+    "primary_light": "#3E6B55",
+    "accent_gold": "#D4AF37",
+    "accent_terracotta": "#C85A32",
+    "success": "#2C4A3B",
+    "warning": "#E89F4C",
+    "danger": "#C85A32",
+    "text_primary": "#1C1C19",
+    "text_secondary": "#5C5C58",
+    "text_muted": "#8C8C88",
+    "border": "#E5E5E0"
+  },
+  "layout_and_spacing": {
+    "container": "p-4 sm:p-6 w-full overflow-x-hidden pb-24",
+    "bento_grid": "grid grid-cols-2 gap-4",
+    "card": "bg-white border border-stone-200 rounded-2xl p-4 sm:p-5 shadow-sm",
+    "bottom_nav": "fixed bottom-0 left-0 right-0 h-16 bg-white/90 backdrop-blur-xl border-t border-stone-200 flex justify-around items-center z-50",
+    "tabs_container": "flex gap-2 overflow-x-auto no-scrollbar pb-2"
+  },
+  "components": {
+    "welcome_banner": "Relative container, h-36 rounded-2xl overflow-hidden mb-6. Image background with bg-black/40 gradient overlay to ensure text contrast. Use Cormorant Garamond for the restaurant name.",
+    "kpi_card": "Card with subtle border, no heavy shadows. Value text large and tracking-tighter. Use pill badges for positive/negative trends (e.g., bg-green-100 text-green-800).",
+    "period_selector": "Pill-shaped segmented control. bg-stone-100 p-1 rounded-full flex. Active item has bg-white, shadow-sm, rounded-full.",
+    "product_list": "Flat rows with 1px bottom border. Image thumbnail + title + stock badge. Clean optical alignment.",
+    "bottom_nav_item": "Flex col, items-center, gap-1. Active state: text-primary color (#2C4A3B), icon filled. Inactive: text-stone-400."
+  },
+  "micro_interactions": {
+    "buttons": "active:scale-95 transition-transform duration-200",
+    "tabs": "relative, active indicator smooth background transition",
+    "cards": "active:bg-stone-50 transition-colors"
+  },
+  "media": {
+    "welcome_banner_images": [
+      {
+        "url": "https://images.pexels.com/photos/32399761/pexels-photo-32399761.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+        "description": "Luxurious dining room in a French restaurant, used for the dashboard welcome header background."
+      },
+      {
+        "url": "https://images.pexels.com/photos/34429585/pexels-photo-34429585.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+        "description": "Vibrant cutting board scene with fresh ingredients, used as a header for the Production tab."
+      }
+    ]
+  },
+  "icons_library": "lucide-react",
+  "technical_rules": [
+    "Mobile-first: Ensure strict mobile responsiveness. No horizontal scroll/overflow.",
+    "All interactive elements MUST include data-testid.",
+    "Replace existing custom App.css variables with Tailwind configuration in tailwind.config.js.",
+    "Ensure generous padding-bottom on the main content wrapper so the fixed bottom nav doesn't hide content."
+  ],
+  "instructions_to_main_agent": [
+    "1. Update tailwind.config.js to include the custom color palette (primary: #2C4A3B, base: #FAFAF8, etc.) and custom font families (Manrope, Work Sans, Cormorant Garamond).",
+    "2. Completely refactor the Dashboard/Home to use the bento_grid pattern. Create a rich Welcome Banner using the provided image URL.",
+    "3. Build a Bottom Navigation bar pinned to the bottom using backdrop-blur glassmorphism. It should cover Home, Stock, Production, and Orders.",
+    "4. For Stock and Production pages, use clean list rows (product cards) with clear visual hierarchy for critical stock levels (use the accent_terracotta color for alerts).",
+    "5. Implement a horizontal scrollable tab list for Production categories without visible scrollbars.",
+    "6. Remove old legacy CSS from App.css and rely entirely on Tailwind CSS."
+  ]
+}

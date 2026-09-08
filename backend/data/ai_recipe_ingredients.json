@@ -1,0 +1,1843 @@
+[
+  {
+    "nom": "Huîtres n°2 (par 6)",
+    "ingredients": [
+      {
+        "produit_nom": "Huîtres n°2",
+        "quantite": 6.0,
+        "unite": "piece"
+      }
+    ],
+    "cout_matiere": 4.8,
+    "coefficient_reel": 0.3
+  },
+  {
+    "nom": "Huîtres n°2 (par 12)",
+    "ingredients": [
+      {
+        "produit_nom": "Huîtres n°2",
+        "quantite": 12.0,
+        "unite": "piece"
+      },
+      {
+        "produit_nom": "Citron jaune",
+        "quantite": 0.5,
+        "unite": "piece"
+      },
+      {
+        "produit_nom": "Échalotes",
+        "quantite": 0.02,
+        "unite": "kg"
+      },
+      {
+        "produit_nom": "Vinaigre de cidre",
+        "quantite": 0.01,
+        "unite": "L"
+      },
+      {
+        "produit_nom": "Poivre noir moulu",
+        "quantite": 0.001,
+        "unite": "kg"
+      },
+      {
+        "produit_nom": "Pain grillé pour fruits de mer",
+        "quantite": 2.0,
+        "unite": "piece"
+      },
+      {
+        "produit_nom": "Beurre sans marque",
+        "quantite": 0.02,
+        "unite": "kg"
+      }
+    ],
+    "cout_matiere": 10.46,
+    "coefficient_reel": 0.349
+  },
+  {
+    "nom": "Huîtres n°3 (par 6)",
+    "ingredients": [
+      {
+        "produit_nom": "Huîtres n°3",
+        "quantite": 6.0,
+        "unite": "piece"
+      },
+      {
+        "produit_nom": "Citron jaune",
+        "quantite": 1.0,
+        "unite": "piece"
+      },
+      {
+        "produit_nom": "Échalotes",
+        "quantite": 0.02,
+        "unite": "kg"
+      },
+      {
+        "produit_nom": "Vinaigre de cidre",
+        "quantite": 0.01,
+        "unite": "L"
+      },
+      {
+        "produit_nom": "Pain toasté",
+        "quantite": 2.0,
+        "unite": "piece"
+      },
+      {
+        "produit_nom": "Beurre sans marque",
+        "quantite": 0.01,
+        "unite": "kg"
+      },
+      {
+        "produit_nom": "Fleur de sel",
+        "quantite": 0.001,
+        "unite": "kg"
+      },
+      {
+        "produit_nom": "Poivre noir moulu",
+        "quantite": 0.0005,
+        "unite": "kg"
+      }
+    ],
+    "cout_matiere": 3.81,
+    "coefficient_reel": 0.254
+  },
+  {
+    "nom": "Huîtres n°3 (par 12)",
+    "ingredients": [
+      {
+        "produit_nom": "Huîtres n°3",
+        "quantite": 12.0,
+        "unite": "piece"
+      },
+      {
+        "produit_nom": "Citron jaune frais",
+        "quantite": 0.05,
+        "unite": "kg"
+      },
+      {
+        "produit_nom": "Échalotes",
+        "quantite": 0.02,
+        "unite": "kg"
+      },
+      {
+        "produit_nom": "Vinaigre de cidre",
+        "quantite": 0.01,
+        "unite": "L"
+      },
+      {
+        "produit_nom": "Poivre noir moulu",
+        "quantite": 0.001,
+        "unite": "kg"
+      },
+      {
+        "produit_nom": "Pain grillé pour fruits de mer",
+        "quantite": 2.0,
+        "unite": "piece"
+      },
+      {
+        "produit_nom": "Beurre",
+        "quantite": 0.01,
+        "unite": "kg"
+      }
+    ],
+    "cout_matiere": 8.15,
+    "coefficient_reel": 0.291
+  },
+  {
+    "nom": "Moules (par 12)",
+    "ingredients": [
+      {
+        "produit_nom": "Moules",
+        "quantite": 0.25,
+        "unite": "kg"
+      },
+      {
+        "produit_nom": "Oignons",
+        "quantite": 0.03,
+        "unite": "kg"
+      },
+      {
+        "produit_nom": "Ail",
+        "quantite": 0.005,
+        "unite": "kg"
+      },
+      {
+        "produit_nom": "Beurre",
+        "quantite": 0.01,
+        "unite": "kg"
+      },
+      {
+        "produit_nom": "Cubi vin blanc",
+        "quantite": 0.05,
+        "unite": "L"
+      },
+      {
+        "produit_nom": "Persil",
+        "quantite": 5.0,
+        "unite": "g"
+      },
+      {
+        "produit_nom": "Sel",
+        "quantite": 2.0,
+        "unite": "g"
+      },
+      {
+        "produit_nom": "Poivre",
+        "quantite": 1.0,
+        "unite": "g"
+      }
+    ],
+    "cout_matiere": 7.07,
+    "coefficient_reel": 0.707
+  },
+  {
+    "nom": "Bulots (par 12)",
+    "ingredients": [
+      {
+        "produit_nom": "Bulots cuits",
+        "quantite": 0.3,
+        "unite": "kg"
+      },
+      {
+        "produit_nom": "Mayonnaise maison",
+        "quantite": 0.04,
+        "unite": "L"
+      },
+      {
+        "produit_nom": "Pain grillé pour fruits de mer",
+        "quantite": 1.0,
+        "unite": "piece"
+      }
+    ],
+    "cout_matiere": 6.1,
+    "coefficient_reel": 0.762
+  },
+  {
+    "nom": "Oursin (à l'unité)",
+    "ingredients": [
+      {
+        "produit_nom": "Oursin frais",
+        "quantite": 1.0,
+        "unite": "piece"
+      }
+    ],
+    "cout_matiere": 1.5,
+    "coefficient_reel": 0.333
+  },
+  {
+    "nom": "Oursins (portion)",
+    "ingredients": [
+      {
+        "produit_nom": "Oursin frais",
+        "quantite": 1.0,
+        "unite": "piece"
+      }
+    ],
+    "cout_matiere": 1.5,
+    "coefficient_reel": 0.048
+  },
+  {
+    "nom": "Tourteau",
+    "ingredients": [
+      {
+        "produit_nom": "Tourteau souq vide",
+        "quantite": 0.25,
+        "unite": "kg"
+      },
+      {
+        "produit_nom": "Mayonnaise",
+        "quantite": 0.03,
+        "unite": "kg"
+      },
+      {
+        "produit_nom": "Persil",
+        "quantite": 0.015,
+        "unite": "kg"
+      },
+      {
+        "produit_nom": "Huile d'olive",
+        "quantite": 0.01,
+        "unite": "L"
+      },
+      {
+        "produit_nom": "Citron jaune",
+        "quantite": 0.25,
+        "unite": "piece"
+      },
+      {
+        "produit_nom": "Sel",
+        "quantite": 0.002,
+        "unite": "kg"
+      },
+      {
+        "produit_nom": "Poivre",
+        "quantite": 0.0005,
+        "unite": "kg"
+      }
+    ],
+    "cout_matiere": 4.07,
+    "coefficient_reel": 0.271
+  },
+  {
+    "nom": "Crevettes tièdes",
+    "ingredients": [
+      {
+        "produit_nom": "Gambas crues",
+        "quantite": 0.18,
+        "unite": "kg"
+      },
+      {
+        "produit_nom": "Huile d'olive",
+        "quantite": 0.02,
+        "unite": "L"
+      },
+      {
+        "produit_nom": "Beurre noisette préparation",
+        "quantite": 0.012,
+        "unite": "kg"
+      },
+      {
+        "produit_nom": "Ail frais",
+        "quantite": 0.005,
+        "unite": "kg"
+      },
+      {
+        "produit_nom": "Persil plat frais",
+        "quantite": 0.005,
+        "unite": "kg"
+      },
+      {
+        "produit_nom": "Citron jaune frais",
+        "quantite": 0.03,
+        "unite": "kg"
+      },
+      {
+        "produit_nom": "Échalotes",
+        "quantite": 0.01,
+        "unite": "kg"
+      },
+      {
+        "produit_nom": "Sel",
+        "quantite": 0.002,
+        "unite": "kg"
+      },
+      {
+        "produit_nom": "Poivre noir moulu",
+        "quantite": 0.001,
+        "unite": "kg"
+      },
+      {
+        "produit_nom": "Salade verte",
+        "quantite": 0.03,
+        "unite": "kg"
+      },
+      {
+        "produit_nom": "Tomates cerises",
+        "quantite": 0.05,
+        "unite": "kg"
+      },
+      {
+        "produit_nom": "Herbes de Provence",
+        "quantite": 0.001,
+        "unite": "kg"
+      }
+    ],
+    "cout_matiere": 5.5,
+    "coefficient_reel": 0.306
+  },
+  {
+    "nom": "Crevettes (par 6)",
+    "ingredients": [
+      {
+        "produit_nom": "Ail",
+        "quantite": 0.005,
+        "unite": "kg"
+      },
+      {
+        "produit_nom": "Persil",
+        "quantite": 0.1,
+        "unite": "botte"
+      },
+      {
+        "produit_nom": "Huile d'olive",
+        "quantite": 0.015,
+        "unite": "L"
+      },
+      {
+        "produit_nom": "Sel",
+        "quantite": 0.002,
+        "unite": "kg"
+      },
+      {
+        "produit_nom": "Poivre",
+        "quantite": 0.001,
+        "unite": "kg"
+      }
+    ],
+    "cout_matiere": 0.0,
+    "coefficient_reel": null
+  },
+  {
+    "nom": "Crevettes (par 12)",
+    "ingredients": [
+      {
+        "produit_nom": "Crevettes roses cuites",
+        "quantite": 0.2,
+        "unite": "kg"
+      },
+      {
+        "produit_nom": "Mayonnaise",
+        "quantite": 0.04,
+        "unite": "kg"
+      },
+      {
+        "produit_nom": "Citron jaune frais",
+        "quantite": 0.02,
+        "unite": "kg"
+      },
+      {
+        "produit_nom": "Salade verte",
+        "quantite": 0.03,
+        "unite": "kg"
+      },
+      {
+        "produit_nom": "Persil plat frais",
+        "quantite": 0.002,
+        "unite": "kg"
+      }
+    ],
+    "cout_matiere": 4.98,
+    "coefficient_reel": 0.332
+  },
+  {
+    "nom": "Gambas",
+    "ingredients": [
+      {
+        "produit_nom": "Noix de st jacques 20/40",
+        "quantite": 0.18,
+        "unite": "kg"
+      },
+      {
+        "produit_nom": "Persillade",
+        "quantite": 0.015,
+        "unite": "kg"
+      },
+      {
+        "produit_nom": "Huile d'olive",
+        "quantite": 0.02,
+        "unite": "L"
+      },
+      {
+        "produit_nom": "Sel Fin",
+        "quantite": 0.002,
+        "unite": "kg"
+      },
+      {
+        "produit_nom": "Poivre noir moulu",
+        "quantite": 0.001,
+        "unite": "kg"
+      },
+      {
+        "produit_nom": "Linguine",
+        "quantite": 0.12,
+        "unite": "kg"
+      },
+      {
+        "produit_nom": "Parmesan Rapé",
+        "quantite": 0.02,
+        "unite": "kg"
+      }
+    ],
+    "cout_matiere": 3.62,
+    "coefficient_reel": 0.08
+  },
+  {
+    "nom": "Homard bleu (entrée)",
+    "ingredients": [
+      {
+        "produit_nom": "Homard bleu vivant",
+        "quantite": 0.5,
+        "unite": "kg"
+      },
+      {
+        "produit_nom": "Beurre",
+        "quantite": 0.02,
+        "unite": "kg"
+      },
+      {
+        "produit_nom": "Citron jaune frais",
+        "quantite": 0.05,
+        "unite": "kg"
+      },
+      {
+        "produit_nom": "Huile d'olive",
+        "quantite": 0.01,
+        "unite": "L"
+      },
+      {
+        "produit_nom": "Sel",
+        "quantite": 0.002,
+        "unite": "kg"
+      },
+      {
+        "produit_nom": "Poivre noir moulu",
+        "quantite": 0.001,
+        "unite": "kg"
+      },
+      {
+        "produit_nom": "Émulsion homard",
+        "quantite": 0.05,
+        "unite": "L"
+      },
+      {
+        "produit_nom": "Persil plat frais",
+        "quantite": 0.005,
+        "unite": "kg"
+      },
+      {
+        "produit_nom": "Microveg affila cress",
+        "quantite": 0.01,
+        "unite": "piece"
+      }
+    ],
+    "cout_matiere": 32.8,
+    "coefficient_reel": 1.367
+  },
+  {
+    "nom": "Homard bleu (plat)",
+    "ingredients": [
+      {
+        "produit_nom": "Homard bleu vivant",
+        "quantite": 0.5,
+        "unite": "kg"
+      },
+      {
+        "produit_nom": "Beurre",
+        "quantite": 0.05,
+        "unite": "kg"
+      },
+      {
+        "produit_nom": "Citron jaune",
+        "quantite": 0.5,
+        "unite": "piece"
+      },
+      {
+        "produit_nom": "Ail frais",
+        "quantite": 0.005,
+        "unite": "kg"
+      },
+      {
+        "produit_nom": "Persil plat frais",
+        "quantite": 0.01,
+        "unite": "kg"
+      },
+      {
+        "produit_nom": "Sel Fin",
+        "quantite": 0.002,
+        "unite": "kg"
+      },
+      {
+        "produit_nom": "Poivre noir moulu",
+        "quantite": 0.001,
+        "unite": "kg"
+      },
+      {
+        "produit_nom": "Huile d'olive",
+        "quantite": 0.01,
+        "unite": "L"
+      },
+      {
+        "produit_nom": "Riz arborio",
+        "quantite": 0.08,
+        "unite": "kg"
+      },
+      {
+        "produit_nom": "Oignons",
+        "quantite": 0.02,
+        "unite": "kg"
+      },
+      {
+        "produit_nom": "Cubi vin blanc",
+        "quantite": 0.05,
+        "unite": "L"
+      },
+      {
+        "produit_nom": "Mange-tout (haricots verts plats)",
+        "quantite": 0.1,
+        "unite": "kg"
+      }
+    ],
+    "cout_matiere": 34.08,
+    "coefficient_reel": 0.516
+  },
+  {
+    "nom": "Sole meunière",
+    "ingredients": [
+      {
+        "produit_nom": "Soles 400/600",
+        "quantite": 0.45,
+        "unite": "kg"
+      },
+      {
+        "produit_nom": "Farine T55",
+        "quantite": 0.02,
+        "unite": "kg"
+      },
+      {
+        "produit_nom": "Beurre",
+        "quantite": 0.08,
+        "unite": "kg"
+      },
+      {
+        "produit_nom": "Citron jaune frais",
+        "quantite": 0.5,
+        "unite": "piece"
+      },
+      {
+        "produit_nom": "Persil plat frais",
+        "quantite": 0.015,
+        "unite": "kg"
+      },
+      {
+        "produit_nom": "Sel",
+        "quantite": 0.002,
+        "unite": "kg"
+      },
+      {
+        "produit_nom": "Poivre",
+        "quantite": 0.001,
+        "unite": "kg"
+      }
+    ],
+    "cout_matiere": 14.21,
+    "coefficient_reel": 0.374
+  },
+  {
+    "nom": "Risotto Saint-Jacques",
+    "ingredients": [
+      {
+        "produit_nom": "Riz arborio",
+        "quantite": 0.1,
+        "unite": "kg"
+      },
+      {
+        "produit_nom": "Noix de st jacques 20/40",
+        "quantite": 0.12,
+        "unite": "kg"
+      },
+      {
+        "produit_nom": "Échalotes",
+        "quantite": 0.03,
+        "unite": "kg"
+      },
+      {
+        "produit_nom": "Cubi vin blanc",
+        "quantite": 0.05,
+        "unite": "L"
+      },
+      {
+        "produit_nom": "Fumet de Homard",
+        "quantite": 0.05,
+        "unite": "g"
+      },
+      {
+        "produit_nom": "Parmesan Rapé",
+        "quantite": 0.04,
+        "unite": "kg"
+      },
+      {
+        "produit_nom": "Beurre",
+        "quantite": 0.02,
+        "unite": "kg"
+      },
+      {
+        "produit_nom": "Huile d'olive",
+        "quantite": 0.01,
+        "unite": "L"
+      },
+      {
+        "produit_nom": "Persil plat frais",
+        "quantite": 0.005,
+        "unite": "kg"
+      },
+      {
+        "produit_nom": "Sel Fin",
+        "quantite": 0.002,
+        "unite": "kg"
+      },
+      {
+        "produit_nom": "Poivre noir moulu",
+        "quantite": 0.001,
+        "unite": "kg"
+      },
+      {
+        "produit_nom": "Truffe noire fraîche",
+        "quantite": 0.005,
+        "unite": "kg"
+      }
+    ],
+    "cout_matiere": 9.75,
+    "coefficient_reel": 0.257
+  },
+  {
+    "nom": "Saint-Jacques poêlées",
+    "ingredients": [
+      {
+        "produit_nom": "Noix de st jacques 20/40",
+        "quantite": 0.12,
+        "unite": "kg"
+      },
+      {
+        "produit_nom": "Beurre",
+        "quantite": 0.02,
+        "unite": "kg"
+      },
+      {
+        "produit_nom": "Sel Fin",
+        "quantite": 0.001,
+        "unite": "kg"
+      },
+      {
+        "produit_nom": "Poivre noir moulu",
+        "quantite": 0.0005,
+        "unite": "kg"
+      },
+      {
+        "produit_nom": "AIL PELE",
+        "quantite": 0.005,
+        "unite": "kg"
+      },
+      {
+        "produit_nom": "Persil plat frais",
+        "quantite": 0.005,
+        "unite": "kg"
+      },
+      {
+        "produit_nom": "Citron jaune frais",
+        "quantite": 0.007,
+        "unite": "kg"
+      }
+    ],
+    "cout_matiere": 2.4,
+    "coefficient_reel": 0.073
+  },
+  {
+    "nom": "Raviole de poisson",
+    "ingredients": [
+      {
+        "produit_nom": "Pâte à raviole",
+        "quantite": 0.07,
+        "unite": "kg"
+      },
+      {
+        "produit_nom": "Daurade 4/600",
+        "quantite": 0.08,
+        "unite": "kg"
+      },
+      {
+        "produit_nom": "RICOTTA VACHE MC",
+        "quantite": 0.03,
+        "unite": "kg"
+      },
+      {
+        "produit_nom": "OEUF ",
+        "quantite": 0.01,
+        "unite": "kg"
+      },
+      {
+        "produit_nom": "Persil plat frais",
+        "quantite": 0.005,
+        "unite": "kg"
+      },
+      {
+        "produit_nom": "Sel",
+        "quantite": 0.001,
+        "unite": "kg"
+      },
+      {
+        "produit_nom": "Poivre",
+        "quantite": 0.001,
+        "unite": "kg"
+      },
+      {
+        "produit_nom": "Beurre",
+        "quantite": 0.02,
+        "unite": "kg"
+      },
+      {
+        "produit_nom": "Fumet de Homard",
+        "quantite": 0.05,
+        "unite": "kg"
+      },
+      {
+        "produit_nom": "Citron jaune frais",
+        "quantite": 0.01,
+        "unite": "kg"
+      },
+      {
+        "produit_nom": "Échalotes",
+        "quantite": 0.01,
+        "unite": "kg"
+      },
+      {
+        "produit_nom": "Basilic frais",
+        "quantite": 0.002,
+        "unite": "kg"
+      }
+    ],
+    "cout_matiere": 2.85,
+    "coefficient_reel": 0.089
+  },
+  {
+    "nom": "Plateau dégustation",
+    "ingredients": [
+      {
+        "produit_nom": "Noix de st jacques 20/40",
+        "quantite": 0.06,
+        "unite": "kg"
+      },
+      {
+        "produit_nom": "Thon Sashimi",
+        "quantite": 0.06,
+        "unite": "kg"
+      },
+      {
+        "produit_nom": "Chair de crabe",
+        "quantite": 0.04,
+        "unite": "kg"
+      },
+      {
+        "produit_nom": "Huîtres n°3",
+        "quantite": 2.0,
+        "unite": "piece"
+      },
+      {
+        "produit_nom": "Tomates datterino",
+        "quantite": 0.03,
+        "unite": "kg"
+      },
+      {
+        "produit_nom": "Basilic frais",
+        "quantite": 0.005,
+        "unite": "kg"
+      },
+      {
+        "produit_nom": "Citron jaune frais",
+        "quantite": 0.05,
+        "unite": "kg"
+      },
+      {
+        "produit_nom": "Huile d'olive",
+        "quantite": 0.01,
+        "unite": "L"
+      },
+      {
+        "produit_nom": "Fleur de sel",
+        "quantite": 0.001,
+        "unite": "kg"
+      },
+      {
+        "produit_nom": "Poivre noir moulu",
+        "quantite": 0.0005,
+        "unite": "kg"
+      },
+      {
+        "produit_nom": "Pain grillé pour fruits de mer",
+        "quantite": 1.0,
+        "unite": "piece"
+      }
+    ],
+    "cout_matiere": 4.9,
+    "coefficient_reel": 0.144
+  },
+  {
+    "nom": "Filet de boeuf",
+    "ingredients": [
+      {
+        "produit_nom": "Filet de boeuf",
+        "quantite": 0.18,
+        "unite": "kg"
+      },
+      {
+        "produit_nom": "Pommes de terre",
+        "quantite": 0.2,
+        "unite": "kg"
+      },
+      {
+        "produit_nom": "Champignons de Paris",
+        "quantite": 0.05,
+        "unite": "kg"
+      },
+      {
+        "produit_nom": "Jus de viande",
+        "quantite": 0.05,
+        "unite": "L"
+      },
+      {
+        "produit_nom": "Beurre",
+        "quantite": 0.02,
+        "unite": "kg"
+      },
+      {
+        "produit_nom": "Ail",
+        "quantite": 0.005,
+        "unite": "kg"
+      },
+      {
+        "produit_nom": "THYM",
+        "quantite": 0.01,
+        "unite": "botte"
+      },
+      {
+        "produit_nom": "Huile d'olive",
+        "quantite": 0.01,
+        "unite": "L"
+      },
+      {
+        "produit_nom": "Sel",
+        "quantite": 0.002,
+        "unite": "kg"
+      },
+      {
+        "produit_nom": "Poivre",
+        "quantite": 0.001,
+        "unite": "kg"
+      }
+    ],
+    "cout_matiere": 0.35,
+    "coefficient_reel": 0.009
+  },
+  {
+    "nom": "Magret de canard",
+    "ingredients": [
+      {
+        "produit_nom": "Magret de canard",
+        "quantite": 0.2,
+        "unite": "kg"
+      },
+      {
+        "produit_nom": "Pommes de terre",
+        "quantite": 0.18,
+        "unite": "kg"
+      },
+      {
+        "produit_nom": "Courgettes",
+        "quantite": 0.05,
+        "unite": "kg"
+      },
+      {
+        "produit_nom": "Poivrons",
+        "quantite": 0.05,
+        "unite": "kg"
+      },
+      {
+        "produit_nom": "Oignons",
+        "quantite": 0.03,
+        "unite": "kg"
+      },
+      {
+        "produit_nom": "Tomates cerises",
+        "quantite": 0.03,
+        "unite": "kg"
+      },
+      {
+        "produit_nom": "Ail",
+        "quantite": 0.005,
+        "unite": "kg"
+      },
+      {
+        "produit_nom": "Huile d'olive",
+        "quantite": 0.01,
+        "unite": "L"
+      },
+      {
+        "produit_nom": "Sel",
+        "quantite": 0.002,
+        "unite": "kg"
+      },
+      {
+        "produit_nom": "Poivre",
+        "quantite": 0.0005,
+        "unite": "kg"
+      },
+      {
+        "produit_nom": "THYM",
+        "quantite": 0.1,
+        "unite": "botte"
+      },
+      {
+        "produit_nom": "Romarin",
+        "quantite": 0.1,
+        "unite": "botte"
+      },
+      {
+        "produit_nom": "Jus de canard",
+        "quantite": 0.06,
+        "unite": "g"
+      }
+    ],
+    "cout_matiere": 4.33,
+    "coefficient_reel": 0.114
+  },
+  {
+    "nom": "Foie gras poêlé",
+    "ingredients": [
+      {
+        "produit_nom": "Foie gras frais",
+        "quantite": 0.07,
+        "unite": "kg"
+      },
+      {
+        "produit_nom": "Sel Fin",
+        "quantite": 0.001,
+        "unite": "kg"
+      },
+      {
+        "produit_nom": "Poivre noir moulu",
+        "quantite": 0.0005,
+        "unite": "kg"
+      },
+      {
+        "produit_nom": "Jus de canard",
+        "quantite": 0.03,
+        "unite": "kg"
+      },
+      {
+        "produit_nom": "Beurre",
+        "quantite": 0.005,
+        "unite": "kg"
+      },
+      {
+        "produit_nom": "Pain toasté",
+        "quantite": 1.0,
+        "unite": "piece"
+      }
+    ],
+    "cout_matiere": 5.23,
+    "coefficient_reel": 0.149
+  },
+  {
+    "nom": "Pithiviers",
+    "ingredients": [
+      {
+        "produit_nom": "Pâte feuilletée",
+        "quantite": 0.25,
+        "unite": "kg"
+      },
+      {
+        "produit_nom": "Magret de canard",
+        "quantite": 0.2,
+        "unite": "kg"
+      },
+      {
+        "produit_nom": "Lobe de foie gras deveiné",
+        "quantite": 0.06,
+        "unite": "kg"
+      },
+      {
+        "produit_nom": "Truffe noire fraîche",
+        "quantite": 0.012,
+        "unite": "kg"
+      },
+      {
+        "produit_nom": "Duxelles de champignons",
+        "quantite": 0.08,
+        "unite": "kg"
+      },
+      {
+        "produit_nom": "Jus de viande",
+        "quantite": 0.05,
+        "unite": "L"
+      },
+      {
+        "produit_nom": "Oeufs entiers",
+        "quantite": 1.0,
+        "unite": "piece"
+      },
+      {
+        "produit_nom": "Beurre",
+        "quantite": 0.02,
+        "unite": "kg"
+      },
+      {
+        "produit_nom": "Oignons",
+        "quantite": 0.03,
+        "unite": "kg"
+      },
+      {
+        "produit_nom": "Ail",
+        "quantite": 0.005,
+        "unite": "kg"
+      },
+      {
+        "produit_nom": "Persil",
+        "quantite": 0.1,
+        "unite": "botte"
+      },
+      {
+        "produit_nom": "Sel",
+        "quantite": 0.002,
+        "unite": "kg"
+      },
+      {
+        "produit_nom": "Poivre noir moulu",
+        "quantite": 0.001,
+        "unite": "kg"
+      }
+    ],
+    "cout_matiere": 24.08,
+    "coefficient_reel": 0.349
+  },
+  {
+    "nom": "Chapon volaille",
+    "ingredients": [
+      {
+        "produit_nom": "Chapon entier",
+        "quantite": 0.4,
+        "unite": "kg"
+      },
+      {
+        "produit_nom": "Lobe de foie gras deveiné",
+        "quantite": 0.05,
+        "unite": "kg"
+      },
+      {
+        "produit_nom": "Marrons",
+        "quantite": 0.1,
+        "unite": "kg"
+      },
+      {
+        "produit_nom": "Pommes de terre",
+        "quantite": 0.15,
+        "unite": "kg"
+      },
+      {
+        "produit_nom": "Jus de viande",
+        "quantite": 0.1,
+        "unite": "L"
+      },
+      {
+        "produit_nom": "Beurre",
+        "quantite": 0.02,
+        "unite": "kg"
+      },
+      {
+        "produit_nom": "Huile d'olive",
+        "quantite": 0.01,
+        "unite": "L"
+      },
+      {
+        "produit_nom": "Échalotes",
+        "quantite": 0.02,
+        "unite": "kg"
+      },
+      {
+        "produit_nom": "Ail frais",
+        "quantite": 0.005,
+        "unite": "kg"
+      },
+      {
+        "produit_nom": "THYM",
+        "quantite": 0.05,
+        "unite": "pièce"
+      },
+      {
+        "produit_nom": "Romarin",
+        "quantite": 0.05,
+        "unite": "pièce"
+      },
+      {
+        "produit_nom": "Cubi vin blanc",
+        "quantite": 0.05,
+        "unite": "L"
+      },
+      {
+        "produit_nom": "Sel Fin",
+        "quantite": 0.003,
+        "unite": "kg"
+      },
+      {
+        "produit_nom": "Poivre noir moulu",
+        "quantite": 0.001,
+        "unite": "kg"
+      },
+      {
+        "produit_nom": "Persil plat frais",
+        "quantite": 0.002,
+        "unite": "kg"
+      }
+    ],
+    "cout_matiere": 10.51,
+    "coefficient_reel": 0.152
+  },
+  {
+    "nom": "Assiette de beurre",
+    "ingredients": [
+      {
+        "produit_nom": "Beurre",
+        "quantite": 0.15,
+        "unite": "kg"
+      }
+    ],
+    "cout_matiere": 0.0,
+    "coefficient_reel": null
+  },
+  {
+    "nom": "Escargots",
+    "ingredients": [
+      {
+        "produit_nom": "Escargot de Bourgogne",
+        "quantite": 0.06,
+        "unite": "pièce"
+      },
+      {
+        "produit_nom": "Beurre persillé pour escargots",
+        "quantite": 0.1,
+        "unite": "kg"
+      }
+    ],
+    "cout_matiere": 2.21,
+    "coefficient_reel": 0.1
+  },
+  {
+    "nom": "Saumon gravlax",
+    "ingredients": [
+      {
+        "produit_nom": "Saumon fumé",
+        "quantite": 0.12,
+        "unite": "kg"
+      },
+      {
+        "produit_nom": "Sel Fin",
+        "quantite": 0.002,
+        "unite": "kg"
+      },
+      {
+        "produit_nom": "Sucre en poudre",
+        "quantite": 0.001,
+        "unite": "kg"
+      },
+      {
+        "produit_nom": "Aneth frais",
+        "quantite": 0.005,
+        "unite": "kg"
+      },
+      {
+        "produit_nom": "Poivre noir moulu",
+        "quantite": 0.0005,
+        "unite": "kg"
+      },
+      {
+        "produit_nom": "Citron jaune",
+        "quantite": 0.5,
+        "unite": "piece"
+      }
+    ],
+    "cout_matiere": 4.7,
+    "coefficient_reel": 0.196
+  },
+  {
+    "nom": "Mange-tout",
+    "ingredients": [
+      {
+        "produit_nom": "Mange-tout (haricots verts plats)",
+        "quantite": 0.15,
+        "unite": "kg"
+      },
+      {
+        "produit_nom": "Noix de st jacques 20/40",
+        "quantite": 0.1,
+        "unite": "kg"
+      },
+      {
+        "produit_nom": "Ail",
+        "quantite": 0.005,
+        "unite": "kg"
+      },
+      {
+        "produit_nom": "Persil plat frais",
+        "quantite": 0.005,
+        "unite": "kg"
+      },
+      {
+        "produit_nom": "Huile d'olive",
+        "quantite": 0.015,
+        "unite": "L"
+      },
+      {
+        "produit_nom": "Sel Fin",
+        "quantite": 0.002,
+        "unite": "kg"
+      },
+      {
+        "produit_nom": "Poivre noir moulu",
+        "quantite": 0.001,
+        "unite": "kg"
+      }
+    ],
+    "cout_matiere": 3.2,
+    "coefficient_reel": 0.152
+  },
+  {
+    "nom": "Gnocchi à la truffe",
+    "ingredients": [
+      {
+        "produit_nom": "Gnocchi",
+        "quantite": 0.18,
+        "unite": "kg"
+      },
+      {
+        "produit_nom": "Truffe noire fraîche",
+        "quantite": 0.008,
+        "unite": "kg"
+      },
+      {
+        "produit_nom": "Beurre",
+        "quantite": 0.025,
+        "unite": "kg"
+      },
+      {
+        "produit_nom": "Crème fraîche",
+        "quantite": 0.06,
+        "unite": "L"
+      },
+      {
+        "produit_nom": "Parmesan",
+        "quantite": 0.025,
+        "unite": "kg"
+      },
+      {
+        "produit_nom": "Sel",
+        "quantite": 0.002,
+        "unite": "kg"
+      },
+      {
+        "produit_nom": "Poivre",
+        "quantite": 0.0005,
+        "unite": "kg"
+      }
+    ],
+    "cout_matiere": 7.6,
+    "coefficient_reel": 0.292
+  },
+  {
+    "nom": "Gnocchi nature",
+    "ingredients": [
+      {
+        "produit_nom": "Gnocchi",
+        "quantite": 0.18,
+        "unite": "kg"
+      },
+      {
+        "produit_nom": "Beurre",
+        "quantite": 0.025,
+        "unite": "kg"
+      },
+      {
+        "produit_nom": "Parmesan",
+        "quantite": 0.025,
+        "unite": "kg"
+      },
+      {
+        "produit_nom": "Sel",
+        "quantite": 0.002,
+        "unite": "kg"
+      },
+      {
+        "produit_nom": "Poivre",
+        "quantite": 0.001,
+        "unite": "kg"
+      },
+      {
+        "produit_nom": "Basilic frais",
+        "quantite": 0.05,
+        "unite": "botte"
+      }
+    ],
+    "cout_matiere": 0.0,
+    "coefficient_reel": null
+  },
+  {
+    "nom": "Ravioli aux cèpes",
+    "ingredients": [
+      {
+        "produit_nom": "Farine",
+        "quantite": 0.1,
+        "unite": "kg"
+      },
+      {
+        "produit_nom": "Oeufs entiers",
+        "quantite": 1.0,
+        "unite": "piece"
+      },
+      {
+        "produit_nom": "Sel",
+        "quantite": 0.002,
+        "unite": "kg"
+      },
+      {
+        "produit_nom": "Cèpes frais",
+        "quantite": 0.15,
+        "unite": "kg"
+      },
+      {
+        "produit_nom": "Ricotta",
+        "quantite": 0.05,
+        "unite": "kg"
+      },
+      {
+        "produit_nom": "Parmesan Rapé",
+        "quantite": 0.02,
+        "unite": "kg"
+      },
+      {
+        "produit_nom": "Échalotes",
+        "quantite": 0.02,
+        "unite": "kg"
+      },
+      {
+        "produit_nom": "Ail frais",
+        "quantite": 0.005,
+        "unite": "kg"
+      },
+      {
+        "produit_nom": "Beurre",
+        "quantite": 0.03,
+        "unite": "kg"
+      },
+      {
+        "produit_nom": "Persil plat frais",
+        "quantite": 0.01,
+        "unite": "kg"
+      },
+      {
+        "produit_nom": "Poivre noir moulu",
+        "quantite": 0.0005,
+        "unite": "kg"
+      },
+      {
+        "produit_nom": "Truffe fraîche",
+        "quantite": 0.005,
+        "unite": "kg"
+      },
+      {
+        "produit_nom": "Huile d'olive",
+        "quantite": 0.01,
+        "unite": "L"
+      }
+    ],
+    "cout_matiere": 4.74,
+    "coefficient_reel": 0.19
+  },
+  {
+    "nom": "Assiette de fromages",
+    "ingredients": [
+      {
+        "produit_nom": "Comté AOP",
+        "quantite": 0.04,
+        "unite": "kg"
+      },
+      {
+        "produit_nom": "Roquefort",
+        "quantite": 0.04,
+        "unite": "kg"
+      },
+      {
+        "produit_nom": "Chèvre frais",
+        "quantite": 0.04,
+        "unite": "kg"
+      },
+      {
+        "produit_nom": "Baguette",
+        "quantite": 0.1,
+        "unite": "piece"
+      },
+      {
+        "produit_nom": "Miel",
+        "quantite": 0.02,
+        "unite": "kg"
+      },
+      {
+        "produit_nom": "ABRICOT MOELLEUX",
+        "quantite": 0.02,
+        "unite": "kg"
+      }
+    ],
+    "cout_matiere": 2.2,
+    "coefficient_reel": 0.147
+  },
+  {
+    "nom": "Mont d'Or",
+    "ingredients": [
+      {
+        "produit_nom": "Mont d'Or AOP",
+        "quantite": 1.0,
+        "unite": "piece"
+      }
+    ],
+    "cout_matiere": 22.0,
+    "coefficient_reel": 0.759
+  },
+  {
+    "nom": "Stracciatella (fromage)",
+    "ingredients": [
+      {
+        "produit_nom": "Stracciatella des Pouilles",
+        "quantite": 0.15,
+        "unite": "kg"
+      }
+    ],
+    "cout_matiere": 0.0,
+    "coefficient_reel": null
+  },
+  {
+    "nom": "Pastèque fêta",
+    "ingredients": [
+      {
+        "produit_nom": "Pastèque",
+        "quantite": 0.18,
+        "unite": "kg"
+      },
+      {
+        "produit_nom": "Feta AOP Bloc",
+        "quantite": 0.07,
+        "unite": "kg"
+      },
+      {
+        "produit_nom": "Menthe fraîche",
+        "quantite": 0.005,
+        "unite": "kg"
+      },
+      {
+        "produit_nom": "Huile d'olive",
+        "quantite": 0.015,
+        "unite": "L"
+      },
+      {
+        "produit_nom": "Vinaigre balsamique",
+        "quantite": 0.008,
+        "unite": "L"
+      },
+      {
+        "produit_nom": "Sel",
+        "quantite": 0.001,
+        "unite": "kg"
+      },
+      {
+        "produit_nom": "Poivre",
+        "quantite": 0.0005,
+        "unite": "kg"
+      }
+    ],
+    "cout_matiere": 1.43,
+    "coefficient_reel": 0.102
+  },
+  {
+    "nom": "Poêlée de champignons",
+    "ingredients": [
+      {
+        "produit_nom": "Champignons de Paris",
+        "quantite": 0.18,
+        "unite": "kg"
+      },
+      {
+        "produit_nom": "Beurre",
+        "quantite": 0.015,
+        "unite": "kg"
+      },
+      {
+        "produit_nom": "Ail",
+        "quantite": 0.005,
+        "unite": "kg"
+      },
+      {
+        "produit_nom": "Persil plat frais",
+        "quantite": 0.005,
+        "unite": "kg"
+      },
+      {
+        "produit_nom": "Sel",
+        "quantite": 0.002,
+        "unite": "kg"
+      },
+      {
+        "produit_nom": "Poivre",
+        "quantite": 0.001,
+        "unite": "kg"
+      }
+    ],
+    "cout_matiere": 1.35,
+    "coefficient_reel": 0.123
+  },
+  {
+    "nom": "Garniture gnocchi",
+    "ingredients": [
+      {
+        "produit_nom": "Gnocchi",
+        "quantite": 0.15,
+        "unite": "kg"
+      },
+      {
+        "produit_nom": "Tomates datterino",
+        "quantite": 0.1,
+        "unite": "kg"
+      },
+      {
+        "produit_nom": "AIL PELE",
+        "quantite": 0.005,
+        "unite": "kg"
+      },
+      {
+        "produit_nom": "Basilic frais",
+        "quantite": 0.005,
+        "unite": "kg"
+      },
+      {
+        "produit_nom": "Huile d'olive",
+        "quantite": 0.015,
+        "unite": "L"
+      },
+      {
+        "produit_nom": "Parmesan Rapé",
+        "quantite": 0.02,
+        "unite": "kg"
+      },
+      {
+        "produit_nom": "Buratta",
+        "quantite": 1.0,
+        "unite": "piece"
+      },
+      {
+        "produit_nom": "Sel Fin",
+        "quantite": 0.002,
+        "unite": "kg"
+      },
+      {
+        "produit_nom": "Poivre noir moulu",
+        "quantite": 0.001,
+        "unite": "kg"
+      }
+    ],
+    "cout_matiere": 0.22,
+    "coefficient_reel": 0.028
+  },
+  {
+    "nom": "Profiteroles",
+    "ingredients": [
+      {
+        "produit_nom": "Farine T55",
+        "quantite": 0.03,
+        "unite": "kg"
+      },
+      {
+        "produit_nom": "Beurre",
+        "quantite": 0.02,
+        "unite": "kg"
+      },
+      {
+        "produit_nom": "Sel",
+        "quantite": 0.001,
+        "unite": "kg"
+      },
+      {
+        "produit_nom": "Oeufs entiers",
+        "quantite": 1.0,
+        "unite": "piece"
+      },
+      {
+        "produit_nom": "Glace vanille",
+        "quantite": 0.1,
+        "unite": "L"
+      },
+      {
+        "produit_nom": "Noir 64%",
+        "quantite": 0.03,
+        "unite": "kg"
+      },
+      {
+        "produit_nom": "Crème fraîche",
+        "quantite": 0.02,
+        "unite": "L"
+      },
+      {
+        "produit_nom": "Sucre",
+        "quantite": 0.005,
+        "unite": "kg"
+      },
+      {
+        "produit_nom": "Crème chantilly",
+        "quantite": 0.03,
+        "unite": "L"
+      }
+    ],
+    "cout_matiere": 2.05,
+    "coefficient_reel": 0.158
+  },
+  {
+    "nom": "Omelette norvégienne",
+    "ingredients": [
+      {
+        "produit_nom": "Farine",
+        "quantite": 0.02,
+        "unite": "kg"
+      },
+      {
+        "produit_nom": "Sucre",
+        "quantite": 0.02,
+        "unite": "kg"
+      },
+      {
+        "produit_nom": "Oeufs entiers",
+        "quantite": 1.0,
+        "unite": "piece"
+      },
+      {
+        "produit_nom": "Glace vanille",
+        "quantite": 0.15,
+        "unite": "L"
+      },
+      {
+        "produit_nom": "Meringue",
+        "quantite": 0.05,
+        "unite": "kg"
+      },
+      {
+        "produit_nom": "Grand Marnier",
+        "quantite": 0.02,
+        "unite": "L"
+      }
+    ],
+    "cout_matiere": 1.99,
+    "coefficient_reel": 0.133
+  },
+  {
+    "nom": "Promenons-nous dans les bois",
+    "ingredients": [
+      {
+        "produit_nom": "Pâte de marron",
+        "quantite": 0.08,
+        "unite": "kg"
+      },
+      {
+        "produit_nom": "Crème liquide 35%",
+        "quantite": 0.05,
+        "unite": "L"
+      },
+      {
+        "produit_nom": "Sucre en poudre",
+        "quantite": 0.01,
+        "unite": "kg"
+      },
+      {
+        "produit_nom": "Gélatine OR",
+        "quantite": 0.0005,
+        "unite": "kg"
+      },
+      {
+        "produit_nom": "Vanille liquide",
+        "quantite": 0.001,
+        "unite": "kg"
+      },
+      {
+        "produit_nom": "Truffe noire fraîche",
+        "quantite": 0.002,
+        "unite": "kg"
+      },
+      {
+        "produit_nom": "Fruits rouges",
+        "quantite": 0.03,
+        "unite": "kg"
+      },
+      {
+        "produit_nom": "Grand Marnier",
+        "quantite": 0.005,
+        "unite": "L"
+      },
+      {
+        "produit_nom": "Speculoos concassé",
+        "quantite": 0.02,
+        "unite": "kg"
+      },
+      {
+        "produit_nom": "Crème chantilly",
+        "quantite": 0.03,
+        "unite": "L"
+      },
+      {
+        "produit_nom": "Menthe fraîche",
+        "quantite": 0.001,
+        "unite": "kg"
+      },
+      {
+        "produit_nom": "CANNELLE MOULUE",
+        "quantite": 0.1,
+        "unite": "g"
+      }
+    ],
+    "cout_matiere": 3.75,
+    "coefficient_reel": 0.25
+  },
+  {
+    "nom": "Sundae",
+    "ingredients": [
+      {
+        "produit_nom": "Glace vanille",
+        "quantite": 0.075,
+        "unite": "L"
+      },
+      {
+        "produit_nom": "Glace chocolat",
+        "quantite": 0.075,
+        "unite": "L"
+      },
+      {
+        "produit_nom": "Coulis chocolat chaud",
+        "quantite": 0.03,
+        "unite": "L"
+      },
+      {
+        "produit_nom": "Caramel beurre salé",
+        "quantite": 0.03,
+        "unite": "L"
+      },
+      {
+        "produit_nom": "Crème chantilly",
+        "quantite": 0.07,
+        "unite": "L"
+      },
+      {
+        "produit_nom": "Fruits rouges",
+        "quantite": 0.03,
+        "unite": "kg"
+      },
+      {
+        "produit_nom": "Spéculoos",
+        "quantite": 0.02,
+        "unite": "kg"
+      },
+      {
+        "produit_nom": "Meringue",
+        "quantite": 1.0,
+        "unite": "piece"
+      }
+    ],
+    "cout_matiere": 3.62,
+    "coefficient_reel": 1.207
+  },
+  {
+    "nom": "Glace yaourt spéculos",
+    "ingredients": [
+      {
+        "produit_nom": "Glace yaourt",
+        "quantite": 0.12,
+        "unite": "kg"
+      },
+      {
+        "produit_nom": "Spéculoos",
+        "quantite": 0.03,
+        "unite": "kg"
+      }
+    ],
+    "cout_matiere": 0.45,
+    "coefficient_reel": 0.035
+  }
+]
