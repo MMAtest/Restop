@@ -23,6 +23,17 @@ import { getCategoryColor, getCategoryIcon } from "./utils/categoryHelpers";
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
 
+// RESTOP_SESSION_BOOTSTRAP
+try {
+  const storedSession = JSON.parse(localStorage.getItem('user_session') || 'null');
+  if (storedSession?.session_id) {
+    axios.defaults.headers.common.Authorization = 'Bearer ' + storedSession.session_id;
+  }
+} catch (_) {
+  localStorage.removeItem('user_session');
+}
+
+
 // Constantes pour les catégories de fournisseurs
 const CATEGORIES_FOURNISSEURS = [
   { value: "frais", label: "🥬 Frais", icon: "🥬" },
@@ -650,6 +661,7 @@ function App() {
 
   // ✅ Fonctions d&apos;authentification
   const handleLoginSuccess = (user, session_id) => {
+    axios.defaults.headers.common.Authorization = 'Bearer ' + session_id;
     setCurrentUser(user);
     setSessionId(session_id);
     setIsAuthenticated(true);
@@ -693,6 +705,7 @@ function App() {
       }
       
       localStorage.removeItem('user_session');
+      delete axios.defaults.headers.common.Authorization;
       setIsAuthenticated(false);
       setCurrentUser(null);
       setSessionId(null);
