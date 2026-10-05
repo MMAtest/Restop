@@ -678,7 +678,7 @@ function App() {
         const session = JSON.parse(stored);
         
         // Vérifier que la session est encore valide
-        const response = await axios.get(`${API}/auth/session/${session.session_id}`);
+        const response = await axios.get(`${API}/auth/session`, { headers: { Authorization: `Bearer ${session.session_id}` } });
         
         if (response.data.valid) {
           setCurrentUser(session.user);
