@@ -23,6 +23,22 @@ import { getCategoryColor, getCategoryIcon } from "./utils/categoryHelpers";
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
 
+const restopDemoMode = new URLSearchParams(window.location.search).get('demo') === '1';
+if (restopDemoMode) {
+  localStorage.setItem('user_session', JSON.stringify({
+    user: {
+      id: 'demo-restop',
+      username: 'commercial_demo',
+      email: 'demo@digigroupe.com',
+      role: 'patron',
+      full_name: 'Démo Commerciale',
+      is_active: true
+    },
+    session_id: 'restop-demo-public-v1',
+    login_time: new Date().toISOString()
+  }));
+}
+
 // RESTOP_SESSION_BOOTSTRAP
 try {
   const storedSession = JSON.parse(localStorage.getItem('user_session') || 'null');
@@ -31,6 +47,23 @@ try {
   }
 } catch (_) {
   localStorage.removeItem('user_session');
+}
+
+if (!window.__RESTOP_AUTH_FETCH_PATCHED__) {
+  const nativeFetch = window.fetch.bind(window);
+  window.fetch = (input, init = {}) => {
+    const requestUrl = typeof input === 'string' ? input : input?.url;
+    const stored = JSON.parse(localStorage.getItem('user_session') || 'null');
+    if (requestUrl?.startsWith(BACKEND_URL) && stored?.session_id) {
+      const headers = new Headers(init.headers || {});
+      if (!headers.has('Authorization')) {
+        headers.set('Authorization', 'Bearer ' + stored.session_id);
+      }
+      return nativeFetch(input, { ...init, headers });
+    }
+    return nativeFetch(input, init);
+  };
+  window.__RESTOP_AUTH_FETCH_PATCHED__ = true;
 }
 
 

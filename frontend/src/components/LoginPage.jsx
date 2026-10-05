@@ -27,6 +27,26 @@ const LoginPage = ({ onLoginSuccess }) => {
 
   const update = (key) => (e) => setForm((prev) => ({ ...prev, [key]: e.target.value }));
 
+  const handleDemo = async () => {
+    setLoading(true);
+    setError('');
+    try {
+      const response = await axios.post(API + '/api/auth/demo');
+      const sessionId = response.data.session_id;
+      axios.defaults.headers.common.Authorization = 'Bearer ' + sessionId;
+      localStorage.setItem('user_session', JSON.stringify({
+        user: response.data.user,
+        session_id: sessionId,
+        login_time: new Date().toISOString()
+      }));
+      onLoginSuccess(response.data.user, sessionId);
+    } catch (e) {
+      setError(e.response?.data?.detail || 'La démo est momentanément indisponible');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -133,6 +153,27 @@ const LoginPage = ({ onLoginSuccess }) => {
         <button type="button" onClick={() => { setMode(mode === 'login' ? 'register' : 'login'); setError(''); }} style={{ width: '100%', marginTop: 12, padding: '10px', border: 0, background: 'transparent', color: '#1D4241', cursor: 'pointer', fontSize: 13 }}>
           {mode === 'login' ? 'Première connexion ? Créer un compte' : 'Déjà un compte ? Se connecter'}
         </button>
+
+        {mode === 'login' && (
+          <button
+            type="button"
+            onClick={handleDemo}
+            disabled={loading}
+            style={{
+              width: '100%',
+              marginTop: 10,
+              padding: '12px 14px',
+              border: '1px solid #1D4241',
+              borderRadius: 10,
+              background: '#fff',
+              color: '#1D4241',
+              cursor: loading ? 'wait' : 'pointer',
+              fontSize: 14
+            }}
+          >
+            Accéder à la démo commerciale
+          </button>
+        )}
       </div>
     </div>
   );
