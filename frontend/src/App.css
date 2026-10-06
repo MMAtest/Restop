@@ -1054,8 +1054,9 @@ body {
 
 
 
-/* Cibler spécifiquement les badges en bas de page */
-body > div:last-child,
-body > div[style*="z-index"]:last-child {
+/* Masquer uniquement d’éventuels résidus de branding tiers, jamais le root React. */
+a[href*="emergent"],
+iframe[src*="emergent"],
+[data-emergent-badge] {
   display: none !important;
 }
