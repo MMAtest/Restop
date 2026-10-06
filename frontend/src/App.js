@@ -7,7 +7,7 @@ import Overview from './components/restop/Overview';
 import OperationalAnalytics from './components/restop/OperationalAnalytics';
 import { recipeCapacity } from './utils/planning';
 import { aggregateReports } from './utils/analytics';
-import { asList, number, categories, units, recipe, groupedProducts } from './utils/contracts';
+import { cutForms, cutFormCode, asList, number, categories, units, recipe, groupedProducts } from './utils/contracts';
 import { readSession, clearSession } from './utils/session';
 import './styles/workspace.css';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
@@ -551,7 +551,7 @@ function App() {
   const fetchFormesDecoupe = async () => {
     try {
       const response = await axios.get(`${API}/formes-decoupe`);
-      setFormesDecoupe({predefined:asList(response.data,'predefined'),custom:asList(response.data,'custom')});
+      setFormesDecoupe(cutForms(response.data));
     } catch (error) {
       console.error("Erreur lors du chargement des formes de découpe:", error);
     }
@@ -1680,7 +1680,7 @@ function App() {
       setPreparationForm({
         nom: item.nom,
         produit_id: item.produit_id,
-        forme_decoupe: item.forme_decoupe,
+        forme_decoupe: cutFormCode(item.forme_decoupe),
         forme_decoupe_custom: item.forme_decoupe_custom || "",
         quantite_produit_brut: String(item.quantite_produit_brut ?? ""),
         unite_produit_brut: item.unite_produit_brut,
@@ -7826,7 +7826,7 @@ function App() {
                   onChange={(e) => setRecetteForm({...recetteForm, coefficient_prevu: e.target.value})}
                   placeholder="Ex: 35 pour 35%"
                 />
-                <small className="form-hint">Coefficient prévu = (Coût Matière / Prix de Vente) × 100</small>
+                <small className="form-hint">Coefficient prévu = Prix de vente / Coût matière par portion</small>
               </div>
 
               {/* Gestion des ingrédients */}
@@ -7911,7 +7911,7 @@ function App() {
                           </option>
                         ))}
                       </optgroup>
-                      <optgroup label="Préparations">
+                      <optgroup label="Préparations (indisponibles pour le moment)" disabled>
                         {preparations.map((prep) => (
                           <option key={prep.id} value={prep.id}>
                             {prep.nom} ({prep.unite_preparee})

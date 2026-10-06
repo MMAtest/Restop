@@ -14,7 +14,7 @@ La revue porte sur le frontend effectivement compilé et l’API Deno Supabase e
 - Création après édition : réinitialisation de l’identité et du formulaire pour éviter une mise à jour involontaire.
 - Missions masquées par une différence de contrat tableau/objet : normalisation des missions attribuées et créées.
 - Alertes de stocks critiques masquées : prise en charge du tableau retourné par l’API.
-- Détails des lots, produits regroupés, unités et découpes : routes et contrats ajoutés.
+- Détails des lots, produits regroupés, unités et découpes : routes et contrats ajoutés. Libellés et identifiants de découpe normalisés ; formes Sauce et Frites conservées lors de l’édition.
 - Calculs de coûts, marges et prévisionnel fondés sur des valeurs fixes : remplacement par les stocks, recettes et ventes disponibles. Les données insuffisantes sont indiquées. La marge matière n’est pas présentée comme un bénéfice net ou un ROI.
 - Commandes automatiques utilisant des fournisseurs et produits fictifs : calcul réel, conversion des unités compatibles, agrégation des ingrédients partagés avant déduction du stock, regroupement par fournisseur réel.
 - Changement de fournisseur : panier vidé et réponses tardives ignorées. Modification du choix des recettes : suggestions invalidées.
@@ -36,7 +36,7 @@ La revue porte sur le frontend effectivement compilé et l’API Deno Supabase e
 
 ## Vérification
 
-- `cd frontend && npm test -- --watchAll=false --runInBand` : **15 tests réussis**.
+- `cd frontend && npm test -- --watchAll=false --runInBand` : **16 tests réussis**.
 - `cd frontend && npm run lint` : aucune erreur sur le code actif pour les identifiants inconnus, clés dupliquées et chaînes optionnelles dangereuses.
 - `cd frontend && npm run build` : compilation de production réussie.
 - `node backend/deployed/tests/routes.cjs` : **10 contrôles de routes et de droits réussis** sur le vrai fichier serveur avec client de base simulé.
@@ -47,6 +47,6 @@ Les tests SQL ne laissent pas de commandes, de comptes ou de modifications de st
 
 ## Limites fonctionnelles explicites
 
-Le moteur OCR externe et l’envoi d’emails fournisseurs nécessitent encore une configuration de service. Les écrans avancés hérités qui ne disposent pas d’une route serveur ne doivent pas annoncer un succès : l’API renvoie une indisponibilité explicite. Les ingrédients de recette issus de préparations sont refusés tant que leur persistance n’est pas prise en charge par le schéma actuel. La capacité de chaque recette est calculée séparément ; le calcul de commande, lui, additionne les ingrédients communs.
+Le moteur OCR externe et l’envoi d’emails fournisseurs nécessitent encore une configuration de service. Les écrans avancés hérités qui ne disposent pas d’une route serveur ne doivent pas annoncer un succès : l’API renvoie une indisponibilité explicite. Les ingrédients de recette issus de préparations sont désactivés dans le sélecteur et refusés tant que leur persistance n’est pas prise en charge par le schéma actuel. La capacité de chaque recette est calculée séparément ; le calcul de commande, lui, additionne les ingrédients communs.
 
 Ces vérifications établissent les correctifs ci-dessus. Elles ne constituent pas une garantie d’absence absolue de bugs sur toutes les données et intégrations possibles. L’ancienne chaîne Create React App reste un chantier de maintenance distinct.

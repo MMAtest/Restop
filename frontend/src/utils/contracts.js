@@ -21,3 +21,11 @@ export function groupedProducts(value,products=[]) {
  const groups={};for(const p of asList(products)){const key=p.categorie || 'Non classé';if(!groups[key])groups[key]={products:[],count:0};groups[key].products.push(p);groups[key].count++;}
  return {categories:groups,total_categories:Object.keys(groups).length,total_products:products.length};
 }
+
+export const cutFormCode = value => String(value || '').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().trim();
+export function cutForms(value) {
+ const normalize = rows => rows.map(row => typeof row === 'string' ? {id:cutFormCode(row),nom:row,description:''} : row).filter(row=>row && row.id && row.nom);
+ const predefined = normalize(asList(value,'predefined'));
+ for(const row of [{id:'sauce',nom:'Sauce',description:'Transformé en sauce'},{id:'frites',nom:'Frites',description:'Taillé en bâtonnets'}]) if(!predefined.some(f=>f.id===row.id))predefined.push(row);
+ return {predefined,custom:normalize(asList(value,'custom'))};
+}

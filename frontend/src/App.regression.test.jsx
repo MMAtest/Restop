@@ -42,6 +42,7 @@ test('nullable preparation fields do not break editing',async()=>{
  contracts['/preparations'][0].perte=null;
  await click('Production');await click('Préparations (3)');
  await click('✏️');expect(errors).toEqual([]);
+ expect([...host.querySelectorAll('.modal-overlay option')].some(o=>o.textContent.includes('Sauce'))).toBe(true);
 });
 test('creating after cancelling an edit does not retain the old recipe identity',async()=>{
  await click('Production');await click('Productions');await click('Éditer');await click('Annuler');await click('Nouvelle Production');
