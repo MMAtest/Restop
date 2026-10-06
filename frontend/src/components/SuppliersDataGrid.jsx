@@ -99,16 +99,16 @@ const SuppliersDataGrid = ({ suppliers = [], loading, onSupplierSelect, onSuppli
     const hasAddress = data.adresse || data.ville;
     
     let status = 'complet';
-    let statusText = '✅ Complet';
+    let statusText = 'Complet';
     let statusColor = 'bg-green-100 text-green-800';
     
     if (!hasContact && !hasAddress) {
       status = 'incomplet';
-      statusText = '❌ Incomplet';
+      statusText = 'Incomplet';
       statusColor = 'bg-red-100 text-red-800';
     } else if (!hasContact || !hasAddress) {
       status = 'partiel';
-      statusText = '⚠️ Partiel';
+      statusText = 'Partiel';
       statusColor = 'bg-yellow-100 text-yellow-800';
     }
 

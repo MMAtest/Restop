@@ -82,7 +82,7 @@ const MobileItemCard = ({ item, index, handleItemChange, handleDeleteItem, produ
         value={item.selected_product_id}
         onChange={(e) => handleItemChange(index, 'selected_product_id', e.target.value)}
       >
-        <option value="">➕ Créer nouveau</option>
+        <option value="">Créer nouveau</option>
         {produitsList.map(p => (
           <option key={p.id} value={p.id}>{p.nom}</option>
         ))}
@@ -269,7 +269,7 @@ const InvoiceValidationModal = ({ documentId, onClose, onSuccess, onRefresh, pro
         const isNewSupplier = data.is_new_supplier;
         if ((matchRate < 0.8 || isNewSupplier) && totalItems > 0 && !data.ai_powered) {
           setShowAiSuggestion(true);
-          console.log(`⚠️ Taux de correspondance: ${(matchRate * 100).toFixed(0)}%. Nouveau fournisseur: ${isNewSupplier}. Joker IA suggéré.`);
+          console.log(`Taux de correspondance: ${(matchRate * 100).toFixed(0)}%. Nouveau fournisseur: ${isNewSupplier}. Joker IA suggéré.`);
         }
         
         setShowProgressBar(false);
@@ -346,7 +346,7 @@ const InvoiceValidationModal = ({ documentId, onClose, onSuccess, onRefresh, pro
       
       // Afficher un message de succès
       const matchedCount = initializedItems.filter(i => i.status === 'matched').length;
-      alert(`🤖 Analyse IA terminée !\n\n✅ ${matchedCount}/${initializedItems.length} produits automatiquement reconnus\n💰 Coût estimé : ~0.003€`);
+      alert(`Analyse IA terminée !\n\n✅ ${matchedCount}/${initializedItems.length} produits automatiquement reconnus\nCoût estimé : ~0.003€`);
       
     } catch (err) {
       console.error("Erreur Joker IA:", err);
@@ -429,7 +429,7 @@ const InvoiceValidationModal = ({ documentId, onClose, onSuccess, onRefresh, pro
       };
       
       const response = await axios.post(`${API}/ocr/confirm-import`, payload);
-      alert(`✅ Import réussi !\n${response.data.stats.stock_entries} entrées de stock créées.`);
+      alert(`Import réussi !\n${response.data.stats.stock_entries} entrées de stock créées.`);
       onSuccess();
       onClose();
     } catch (err) {
@@ -478,7 +478,7 @@ const InvoiceValidationModal = ({ documentId, onClose, onSuccess, onRefresh, pro
         {/* HEADER FIXE */}
         <div style={{padding: isMobile ? '12px' : '20px', borderBottom: '1px solid #eee', background: '#fff'}}>
           <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px'}}>
-            <h3 style={{margin: 0, fontSize: isMobile ? '16px' : '20px'}}>📝 Validation Facture</h3>
+            <h3 style={{margin: 0, fontSize: isMobile ? '16px' : '20px'}}>Validation Facture</h3>
             <button onClick={onClose} style={{background: 'none', border: 'none', fontSize: '24px', cursor: 'pointer'}}>×</button>
           </div>
           
@@ -490,7 +490,7 @@ const InvoiceValidationModal = ({ documentId, onClose, onSuccess, onRefresh, pro
             padding: isMobile ? '10px' : '15px', 
             borderRadius: '8px'
           }}>
-            <div style={{fontWeight: 'bold', fontSize: isMobile ? '13px' : '14px'}}>🏢 Fournisseur :</div>
+            <div style={{fontWeight: 'bold', fontSize: isMobile ? '13px' : '14px'}}>Fournisseur :</div>
             <select 
                 value={selectedSupplierId} 
                 onChange={(e) => setSelectedSupplierId(e.target.value)}
@@ -502,7 +502,7 @@ const InvoiceValidationModal = ({ documentId, onClose, onSuccess, onRefresh, pro
                   fontSize: isMobile ? '13px' : '14px'
                 }}
             >
-                <option value="new">➕ Créer : {analysis.supplier_name}</option>
+                <option value="new">Créer : {analysis.supplier_name}</option>
                 {fournisseursList.map(f => <option key={f.id} value={f.id}>{f.nom}</option>)}
             </select>
             
@@ -527,7 +527,7 @@ const InvoiceValidationModal = ({ documentId, onClose, onSuccess, onRefresh, pro
                     fontStyle: 'italic',
                     width: isMobile ? '100%' : 'auto'
                   }}>
-                    💡 Nouveau fournisseur : Le système mémorisera vos corrections pour les prochaines factures
+                    Nouveau fournisseur : Le système mémorisera vos corrections pour les prochaines factures
                   </div>
                 </>
             )}
@@ -542,7 +542,7 @@ const InvoiceValidationModal = ({ documentId, onClose, onSuccess, onRefresh, pro
           }}>
             <div>
               <label style={{display: 'block', fontSize: '11px', color: '#64748b', marginBottom: '4px'}}>
-                📅 Date de la facture
+                Date de la facture
               </label>
               <input 
                 type="date"
@@ -560,7 +560,7 @@ const InvoiceValidationModal = ({ documentId, onClose, onSuccess, onRefresh, pro
             
             <div>
               <label style={{display: 'block', fontSize: '11px', color: '#64748b', marginBottom: '4px'}}>
-                📋 Numéro de facture
+                Numéro de facture
               </label>
               <input 
                 type="text"
@@ -591,7 +591,7 @@ const InvoiceValidationModal = ({ documentId, onClose, onSuccess, onRefresh, pro
             gap: '10px'
           }}>
             <div style={{flex: 1, fontSize: isMobile ? '12px' : '14px'}}>
-              <strong>🤖 Amélioration IA disponible</strong> • Beaucoup de produits non reconnus. L&apos;analyse IA peut améliorer la précision jusqu&apos;à 90%.
+              <strong>Amélioration IA disponible</strong> • Beaucoup de produits non reconnus. L&apos;analyse IA peut améliorer la précision jusqu&apos;à 90%.
             </div>
             <button
               onClick={handleReanalyzeWithAI}
@@ -607,7 +607,7 @@ const InvoiceValidationModal = ({ documentId, onClose, onSuccess, onRefresh, pro
                 whiteSpace: 'nowrap'
               }}
             >
-              🚀 Améliorer avec IA (~0.003€)
+              Améliorer avec IA (~0.003€)
             </button>
             <button
               onClick={() => setShowAiSuggestion(false)}
@@ -634,7 +634,7 @@ const InvoiceValidationModal = ({ documentId, onClose, onSuccess, onRefresh, pro
             fontSize: isMobile ? '11px' : '13px',
             fontWeight: 'bold'
           }}>
-            ✨ Analysé avec Gemini 2.0 Flash • Précision améliorée
+            Analysé avec Gemini 2.0 Flash • Précision améliorée
           </div>
         )}
 
@@ -690,7 +690,7 @@ const InvoiceValidationModal = ({ documentId, onClose, onSuccess, onRefresh, pro
                         value={item.selected_product_id}
                         onChange={(e) => handleItemChange(index, 'selected_product_id', e.target.value)}
                       >
-                        <option value="">➕ Créer nouveau</option>
+                        <option value="">Créer nouveau</option>
                         {produitsList.map(p => (
                           <option key={p.id} value={p.id}>{p.nom}</option>
                         ))}
@@ -794,7 +794,7 @@ const InvoiceValidationModal = ({ documentId, onClose, onSuccess, onRefresh, pro
                   fontSize: isMobile ? '13px' : '14px'
               }}
             >
-              ➕ Ajouter une ligne
+              Ajouter une ligne
             </button>
             
             {!aiPowered && (
@@ -813,7 +813,7 @@ const InvoiceValidationModal = ({ documentId, onClose, onSuccess, onRefresh, pro
                     boxShadow: '0 2px 8px rgba(16, 185, 129, 0.3)'
                 }}
               >
-                🤖 Améliorer avec Gemini IA
+                Améliorer avec Gemini IA
               </button>
             )}
           </div>
@@ -839,7 +839,7 @@ const InvoiceValidationModal = ({ documentId, onClose, onSuccess, onRefresh, pro
           <div style={{display: 'flex', gap: '10px', flexDirection: isMobile ? 'column' : 'row'}}>
             <button className="button secondary" onClick={onClose} style={{padding: '12px 24px'}}>Annuler</button>
             <button className="button success" onClick={handleValidate} style={{padding: '12px 24px', fontSize: '16px'}}>
-                ✅ Valider et Intégrer au Stock
+                Valider et Intégrer au Stock
             </button>
           </div>
         </div>

@@ -120,7 +120,7 @@ const DataGridsPage = () => {
       {/* Header */}
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-800 mb-2">
-          📊 Grilles de Données Professionnelles
+          Grilles de Données Professionnelles
         </h1>
         <p className="text-gray-600">
           Gestion avancée avec tri, filtrage, pagination et actions rapides
@@ -172,9 +172,9 @@ const DataGridsPage = () => {
           <div className="flex items-center justify-between">
             <div>
               <h3 className="font-semibold text-blue-900">
-                {selectedItem.type === 'product' && '🥕 Produit sélectionné'}
-                {selectedItem.type === 'supplier' && '🏢 Fournisseur sélectionné'}
-                {selectedItem.type === 'recipe' && '📋 Recette sélectionnée'}
+                {selectedItem.type === 'product' && 'Produit sélectionné'}
+                {selectedItem.type === 'supplier' && 'Fournisseur sélectionné'}
+                {selectedItem.type === 'recipe' && 'Recette sélectionnée'}
               </h3>
               <p className="text-blue-700">{selectedItem.data.nom}</p>
               {selectedItem.data.description && (

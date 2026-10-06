@@ -14,7 +14,7 @@ const RoleBasedDashboard = ({ user, sessionId, onNavigateToPage, onCreateMission
     }
   }, [user]);
 
-  // ✅ Écouter l'événement de rafraîchissement depuis le parent
+  // Écouter l'événement de rafraîchissement depuis le parent
   useEffect(() => {
     const handleRefreshMissions = () => {
       fetchMissionsAndNotifications();
@@ -53,11 +53,11 @@ const RoleBasedDashboard = ({ user, sessionId, onNavigateToPage, onCreateMission
         employee_notes: notes
       });
       
-      alert('✅ Mission marquée comme terminée !\nElle est maintenant en attente de validation.');
+      alert('Mission marquée comme terminée !\nElle est maintenant en attente de validation.');
       fetchMissionsAndNotifications();
     } catch (error) {
       console.error('Erreur:', error);
-      alert('❌ Erreur lors de la mise à jour');
+      alert('Erreur lors de la mise à jour');
     }
   };
 
@@ -68,21 +68,21 @@ const RoleBasedDashboard = ({ user, sessionId, onNavigateToPage, onCreateMission
         validation_notes: notes
       });
       
-      alert('✅ Mission validée avec succès !');
+      alert('Mission validée avec succès !');
       fetchMissionsAndNotifications();
     } catch (error) {
       console.error('Erreur:', error);
-      alert('❌ Erreur lors de la validation');
+      alert('Erreur lors de la validation');
     }
   };
 
   const getStatusBadge = (status) => {
     const statusMap = {
-      'en_cours': { text: '🔄 En cours', color: '#2563eb', bg: '#dbeafe' },
-      'terminee_attente': { text: '⏳ En attente validation', color: '#d97706', bg: '#fef3c7' },
-      'validee': { text: '✅ Validée', color: '#059669', bg: '#dcfce7' },
-      'en_retard': { text: '🚨 En retard', color: '#dc2626', bg: '#fee2e2' },
-      'annulee': { text: '❌ Annulée', color: '#6b7280', bg: '#f3f4f6' }
+      'en_cours': { text: 'En cours', color: '#2563eb', bg: '#dbeafe' },
+      'terminee_attente': { text: 'En attente validation', color: '#d97706', bg: '#fef3c7' },
+      'validee': { text: 'Validée', color: '#059669', bg: '#dcfce7' },
+      'en_retard': { text: 'En retard', color: '#dc2626', bg: '#fee2e2' },
+      'annulee': { text: 'Annulée', color: '#6b7280', bg: '#f3f4f6' }
     };
     
     const style = statusMap[status] || statusMap['en_cours'];
@@ -102,10 +102,10 @@ const RoleBasedDashboard = ({ user, sessionId, onNavigateToPage, onCreateMission
 
   const getPriorityBadge = (priority) => {
     const priorityMap = {
-      'urgente': { text: '🚨 URGENT', color: '#dc2626', bg: '#fee2e2' },
-      'haute': { text: '⚡ Haute', color: '#ea580c', bg: '#fed7aa' },
-      'normale': { text: '📝 Normale', color: '#059669', bg: '#dcfce7' },
-      'basse': { text: '🔵 Basse', color: '#2563eb', bg: '#dbeafe' }
+      'urgente': { text: 'URGENT', color: '#dc2626', bg: '#fee2e2' },
+      'haute': { text: 'Haute', color: '#ea580c', bg: '#fed7aa' },
+      'normale': { text: 'Normale', color: '#059669', bg: '#dcfce7' },
+      'basse': { text: 'Basse', color: '#2563eb', bg: '#dbeafe' }
     };
     
     const style = priorityMap[priority] || priorityMap['normale'];
@@ -122,7 +122,7 @@ const RoleBasedDashboard = ({ user, sessionId, onNavigateToPage, onCreateMission
       </span>
     );
   };
-  // ✅ Filtrer missions selon la période sélectionnée
+  // Filtrer missions selon la période sélectionnée
   const filterMissionsByDateRange = (missionsList, dateRange) => {
     if (!dateRange || !missionsList) return missionsList;
     
@@ -179,7 +179,7 @@ const RoleBasedDashboard = ({ user, sessionId, onNavigateToPage, onCreateMission
   if (loading) {
     return (
       <div style={{textAlign: 'center', padding: '20px'}}>
-        <div>🔄 Chargement des missions...</div>
+        <div>Chargement des missions...</div>
       </div>
     );
   }
@@ -211,19 +211,19 @@ const RoleBasedDashboard = ({ user, sessionId, onNavigateToPage, onCreateMission
           
           <div style={{fontSize: '14px', opacity: 0.9}}>
             {user.role === 'super_admin' && 
-              `🌟 Excellente journée ! Gérez votre équipe et supervisez les opérations de La Table d'Augustine.`
+              `Excellente journée ! Gérez votre équipe et supervisez les opérations de La Table d'Augustine.`
             }
             {user.role === 'chef_cuisine' && 
-              `🔥 Prêt pour un nouveau service ! Coordonnez votre équipe et assurez-vous que tout est parfait.`
+              `Prêt pour un nouveau service ! Coordonnez votre équipe et assurez-vous que tout est parfait.`
             }
             {user.role === 'caissier' && 
-              `💪 À vous de jouer ! Gérez les stocks et supervisez les livraisons pour un service impeccable.`
+              `À vous de jouer ! Gérez les stocks et supervisez les livraisons pour un service impeccable.`
             }
             {user.role === 'barman' && 
-              `🎯 C'est parti ! Préparez le bar et assurez-vous que tout soit prêt pour accueillir nos clients.`
+              `C'est parti ! Préparez le bar et assurez-vous que tout soit prêt pour accueillir nos clients.`
             }
             {user.role === 'employe_cuisine' && 
-              `⭐ Nouvelle journée, nouvelles missions ! Accomplissez vos tâches avec soin pour une cuisine parfaite.`
+              `Nouvelle journée, nouvelles missions ! Accomplissez vos tâches avec soin pour une cuisine parfaite.`
             }
           </div>
           
@@ -248,7 +248,7 @@ const RoleBasedDashboard = ({ user, sessionId, onNavigateToPage, onCreateMission
           border: '2px solid #ea580c'
         }}>
           <div style={{fontSize: '16px', fontWeight: 'bold', color: '#c2410c', marginBottom: '12px'}}>
-            🎯 Tâches à Effectuer Aujourd'hui ({missionsEnCours.length})
+            Tâches à Effectuer Aujourd'hui ({missionsEnCours.length})
           </div>
           
           <div style={{display: 'grid', gap: '12px'}}>
@@ -301,7 +301,7 @@ const RoleBasedDashboard = ({ user, sessionId, onNavigateToPage, onCreateMission
                       if (notes && notes.trim()) {
                         markMissionCompleted(mission.id, notes);
                       } else if (notes === '') {
-                        alert('❌ Une note est obligatoire pour marquer la tâche comme terminée.');
+                        alert('Une note est obligatoire pour marquer la tâche comme terminée.');
                       }
                     }}
                     style={{
@@ -315,7 +315,7 @@ const RoleBasedDashboard = ({ user, sessionId, onNavigateToPage, onCreateMission
                       fontWeight: '600'
                     }}
                   >
-                    ✅ Terminé
+                    Terminé
                   </button>
                 </div>
               </div>
@@ -334,7 +334,7 @@ const RoleBasedDashboard = ({ user, sessionId, onNavigateToPage, onCreateMission
           border: '2px solid #10b981'
         }}>
           <div style={{fontSize: '16px', fontWeight: 'bold', color: '#065f46', marginBottom: '12px'}}>
-            📊 Mes Tâches Récentes ({missions.assigned_to_me?.filter(m => m.status === 'terminee_attente' || m.status === 'validee').length || 0})
+            Mes Tâches Récentes ({missions.assigned_to_me?.filter(m => m.status === 'terminee_attente' || m.status === 'validee').length || 0})
           </div>
           
           <div style={{display: 'grid', gap: '10px'}}>
@@ -383,7 +383,7 @@ const RoleBasedDashboard = ({ user, sessionId, onNavigateToPage, onCreateMission
           border: '2px solid #d97706'
         }}>
           <div style={{fontSize: '16px', fontWeight: 'bold', color: '#92400e', marginBottom: '12px'}}>
-            ⏳ Missions à Valider ({missionsAValider.length})
+            Missions à Valider ({missionsAValider.length})
           </div>
           
           <div style={{display: 'grid', gap: '12px'}}>
@@ -420,7 +420,7 @@ const RoleBasedDashboard = ({ user, sessionId, onNavigateToPage, onCreateMission
                     cursor: 'pointer'
                   }}
                 >
-                  ✅ Valider
+                  Valider
                 </button>
               </div>
             ))}
@@ -462,7 +462,7 @@ const RoleBasedDashboard = ({ user, sessionId, onNavigateToPage, onCreateMission
               marginBottom: '20px'
             }}
           >
-            ➕ Créer une Nouvelle Mission
+            Créer une Nouvelle Mission
           </button>
 
           {/* Listes des missions avec filtre chronologique */}
@@ -482,14 +482,14 @@ const RoleBasedDashboard = ({ user, sessionId, onNavigateToPage, onCreateMission
                   background: '#f3f4f6',
                   borderRadius: '6px'
                 }}>
-                  📅 Missions - {filteredData.dateLabel}
+                  Missions - {filteredData.dateLabel}
                 </div>
 
                 {/* Liste 1 : Missions créées du jour/période */}
                 {filteredData.createdToday.length > 0 && (
                   <div style={{marginBottom: '20px'}}>
                     <div style={{fontSize: '14px', fontWeight: '600', color: '#1f2937', marginBottom: '10px'}}>
-                      📋 Missions Créées ({filteredData.createdToday.length})
+                      Missions Créées ({filteredData.createdToday.length})
                     </div>
                     <div style={{display: 'grid', gap: '8px'}}>
                       {filteredData.createdToday.map(mission => (
@@ -504,7 +504,7 @@ const RoleBasedDashboard = ({ user, sessionId, onNavigateToPage, onCreateMission
                             {mission.title}
                           </div>
                           <div style={{color: '#0369a1', fontSize: '12px'}}>
-                            👤 Assignée à : {mission.assigned_to_name} • {getStatusBadge(mission.status)}
+                            Assignée à : {mission.assigned_to_name} • {getStatusBadge(mission.status)}
                           </div>
                         </div>
                       ))}
@@ -516,7 +516,7 @@ const RoleBasedDashboard = ({ user, sessionId, onNavigateToPage, onCreateMission
                 {filteredData.toValidateToday.length > 0 && (
                   <div style={{marginBottom: '10px'}}>
                     <div style={{fontSize: '14px', fontWeight: '600', color: '#1f2937', marginBottom: '10px'}}>
-                      ⏳ Missions à Valider ({filteredData.toValidateToday.length})
+                      Missions à Valider ({filteredData.toValidateToday.length})
                     </div>
                     <div style={{display: 'grid', gap: '8px'}}>
                       {filteredData.toValidateToday.map(mission => (
@@ -539,7 +539,7 @@ const RoleBasedDashboard = ({ user, sessionId, onNavigateToPage, onCreateMission
                             </div>
                             {mission.completed_by_employee_date && (
                               <div style={{color: '#78716c', fontSize: '11px'}}>
-                                ✅ Terminé le {new Date(mission.completed_by_employee_date).toLocaleDateString('fr-FR')} à {new Date(mission.completed_by_employee_date).toLocaleTimeString('fr-FR', {hour: '2-digit', minute: '2-digit'})}
+                                Terminé le {new Date(mission.completed_by_employee_date).toLocaleDateString('fr-FR')} à {new Date(mission.completed_by_employee_date).toLocaleTimeString('fr-FR', {hour: '2-digit', minute: '2-digit'})}
                               </div>
                             )}
                             {mission.employee_notes && (
@@ -560,7 +560,7 @@ const RoleBasedDashboard = ({ user, sessionId, onNavigateToPage, onCreateMission
                               cursor: 'pointer'
                             }}
                           >
-                            ✅ Valider
+                            Valider
                           </button>
                         </div>
                       ))}

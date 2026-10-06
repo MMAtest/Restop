@@ -28,7 +28,7 @@ const Pagination = ({
             cursor: currentPage === 1 ? 'not-allowed' : 'pointer'
           }}
         >
-          ⏮️ Début
+          Début
         </button>
         <button 
           className="button small" 
@@ -39,7 +39,7 @@ const Pagination = ({
             cursor: currentPage === 1 ? 'not-allowed' : 'pointer'
           }}
         >
-          ⬅️ Préc.
+          Préc.
         </button>
         <button 
           className="button small" 

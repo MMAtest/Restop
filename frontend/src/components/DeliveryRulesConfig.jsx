@@ -74,7 +74,7 @@ const DeliveryRulesConfig = ({ supplier, onSave, onCancel }) => {
 
       {/* Exemples prédéfinis */}
       <div className="mb-6 p-4 bg-blue-50 rounded-lg">
-        <p className="text-sm font-medium text-blue-800 mb-2">📋 Modèles prédéfinis</p>
+        <p className="text-sm font-medium text-blue-800 mb-2">Modèles prédéfinis</p>
         <div className="flex gap-2 flex-wrap">
           <button
             onClick={() => applyPreset('metro')}
@@ -100,7 +100,7 @@ const DeliveryRulesConfig = ({ supplier, onSave, onCancel }) => {
       {/* Jours de prise de commande */}
       <div className="mb-6">
         <label className="block font-medium mb-2">
-          📅 Jours de prise de commande
+          Jours de prise de commande
           <span className="text-sm text-gray-500 ml-2">(laisser vide = tous les jours)</span>
         </label>
         <div className="flex gap-2 flex-wrap">
@@ -123,7 +123,7 @@ const DeliveryRulesConfig = ({ supplier, onSave, onCancel }) => {
       {/* Heure limite */}
       <div className="mb-6">
         <label className="block font-medium mb-2">
-          ⏰ Heure limite de commande
+          Heure limite de commande
         </label>
         <input
           type="number"
@@ -139,7 +139,7 @@ const DeliveryRulesConfig = ({ supplier, onSave, onCancel }) => {
       {/* Jours de livraison */}
       <div className="mb-6">
         <label className="block font-medium mb-2">
-          🚚 Jours de livraison spécifiques
+          Jours de livraison spécifiques
           <span className="text-sm text-gray-500 ml-2">(laisser vide pour utiliser le délai)</span>
         </label>
         <div className="flex gap-2 flex-wrap">
@@ -162,7 +162,7 @@ const DeliveryRulesConfig = ({ supplier, onSave, onCancel }) => {
       {/* Délai de livraison */}
       <div className="mb-6">
         <label className="block font-medium mb-2">
-          📦 Délai de livraison (jours)
+          Délai de livraison (jours)
         </label>
         <input
           type="number"
@@ -178,7 +178,7 @@ const DeliveryRulesConfig = ({ supplier, onSave, onCancel }) => {
       {/* Heure de livraison */}
       <div className="mb-6">
         <label className="block font-medium mb-2">
-          🕐 Heure de livraison
+          Heure de livraison
         </label>
         <input
           type="time"
@@ -191,7 +191,7 @@ const DeliveryRulesConfig = ({ supplier, onSave, onCancel }) => {
       {/* Règles spéciales */}
       <div className="mb-6">
         <label className="block font-medium mb-2">
-          📝 Règles spéciales (optionnel)
+          Règles spéciales (optionnel)
         </label>
         <textarea
           value={rules.special_rules || ''}

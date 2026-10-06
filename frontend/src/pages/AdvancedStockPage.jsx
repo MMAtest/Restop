@@ -122,7 +122,7 @@ const AdvancedStockPage = () => {
       {/* Header */}
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-800 mb-2">
-          🔧 Gestion Avancée des Stocks
+          Gestion Avancée des Stocks
         </h1>
         <p className="text-gray-600">Ajustements avancés et suivi des lots avec dates d'expiration</p>
       </div>
@@ -211,7 +211,7 @@ const AdvancedStockPage = () => {
                               ? 'bg-blue-100 text-blue-800' 
                               : 'bg-green-100 text-green-800'
                           }`}>
-                            {adjustment.adjustment_type === 'ingredient' ? '🥕 Ingrédient' : '🍽️ Plat Préparé'}
+                            {adjustment.adjustment_type === 'ingredient' ? 'Ingrédient' : 'Plat Préparé'}
                           </span>
                         </td>
                         <td className="py-3 px-4 font-medium">{adjustment.target_name}</td>
@@ -349,7 +349,7 @@ const AdvancedStockPage = () => {
                         onChange={(e) => handleAdjustmentTypeChange(e.target.value)}
                         className="mr-2"
                       />
-                      🥕 Ajuster un Ingrédient
+                      Ajuster un Ingrédient
                     </label>
                     <label className="flex items-center">
                       <input
@@ -360,7 +360,7 @@ const AdvancedStockPage = () => {
                         onChange={(e) => handleAdjustmentTypeChange(e.target.value)}
                         className="mr-2"
                       />
-                      🍽️ Ajuster un Plat Préparé
+                      Ajuster un Plat Préparé
                     </label>
                   </div>
                 </div>

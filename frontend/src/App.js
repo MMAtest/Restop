@@ -1,6 +1,11 @@
 import React, { useState, useEffect } from "react";
 import "./App.css";
 import axios from "axios";
+import { useNavigate } from 'react-router-dom';
+import AppNavigation from './components/restop/AppNavigation';
+import Overview from './components/restop/Overview';
+import { aggregateReports } from './utils/analytics';
+import './styles/workspace.css';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
 import { Pie } from 'react-chartjs-2';
 
@@ -23,7 +28,7 @@ import { getCategoryColor, getCategoryIcon } from "./utils/categoryHelpers";
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
 
-const restopDemoMode = new URLSearchParams(window.location.search).get('demo') === '1';
+const restopDemoMode = false;
 
 const EMPTY_ANALYTICS = {
   caTotal: 0,
@@ -80,21 +85,6 @@ function normalizeAnalyticsData(data, demoMode = false) {
   };
 }
 
-if (restopDemoMode) {
-  localStorage.setItem('user_session', JSON.stringify({
-    user: {
-      id: 'demo-restop',
-      username: 'commercial_demo',
-      email: 'demo@digigroupe.com',
-      role: 'patron',
-      full_name: 'Démo Commerciale',
-      is_active: true
-    },
-    session_id: 'restop-demo-public-v1',
-    login_time: new Date().toISOString()
-  }));
-}
-
 // RESTOP_SESSION_BOOTSTRAP
 try {
   const storedSession = JSON.parse(localStorage.getItem('user_session') || 'null');
@@ -125,15 +115,15 @@ if (!window.__RESTOP_AUTH_FETCH_PATCHED__) {
 
 // Constantes pour les catégories de fournisseurs
 const CATEGORIES_FOURNISSEURS = [
-  { value: "frais", label: "🥬 Frais", icon: "🥬" },
-  { value: "surgelés", label: "🧊 Surgelés", icon: "🧊" },
-  { value: "primeur", label: "🍎 Primeur", icon: "🍎" },
-  { value: "marée", label: "🐟 Marée", icon: "🐟" },
-  { value: "boucherie", label: "🥩 Boucherie", icon: "🥩" },
-  { value: "fromagerie", label: "🧀 Fromagerie", icon: "🧀" },
-  { value: "extra", label: "✨ Extra", icon: "✨" },
-  { value: "hygiène", label: "🧽 Hygiène", icon: "🧽" },
-  { value: "bar", label: "🍺 Bar", icon: "🍺" }
+  { value: "frais", label: "Frais", icon: "🥬" },
+  { value: "surgelés", label: "Surgelés", icon: "🧊" },
+  { value: "primeur", label: "Primeur", icon: "🍎" },
+  { value: "marée", label: "Marée", icon: "🐟" },
+  { value: "boucherie", label: "Boucherie", icon: "🥩" },
+  { value: "fromagerie", label: "Fromagerie", icon: "🧀" },
+  { value: "extra", label: "Extra", icon: "✨" },
+  { value: "hygiène", label: "Hygiène", icon: "🧽" },
+  { value: "bar", label: "Bar", icon: "🍺" }
 ];
 
 // Couleurs par catégorie de production
@@ -164,7 +154,11 @@ const getProductionCategoryIcon = (category) => {
 };
 
 function App() {
-  const [activeTab, setActiveTab] = useState("dashboard");
+  const navigate = useNavigate();
+  const [activeTab, setActiveTab] = useState("overview");
+  const [sessionChecking, setSessionChecking] = useState(true);
+  const [overviewLoading, setOverviewLoading] = useState(true);
+  const [overviewError, setOverviewError] = useState('');
   const [activeProductionTab, setActiveProductionTab] = useState("produits");
   const [activeHistoriqueTab, setActiveHistoriqueTab] = useState("ventes");
   const [activeStockTab, setActiveStockTab] = useState("stocks");
@@ -175,7 +169,7 @@ function App() {
   const [missingDataAlerts, setMissingDataAlerts] = useState([]);
 
   
-  // ✅ États pour l'authentification et les rôles
+  // États pour l'authentification et les rôles
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [currentUser, setCurrentUser] = useState(null);
   const [sessionId, setSessionId] = useState(null);
@@ -235,7 +229,7 @@ function App() {
   // État pour la répartition interactive
   const [selectedStockIndex, setSelectedStockIndex] = useState(null);
   
-  // ✅ États pour la répartition des quantités de préparations
+  // États pour la répartition des quantités de préparations
   const [repartitionQuantities, setRepartitionQuantities] = useState({}); // {preparation_id: quantity}
   const [productionsCalculees, setProductionsCalculees] = useState([]); // Productions calculées automatiquement
   const [stockUtiliseTotal, setStockUtiliseTotal] = useState(0); // Stock total utilisé
@@ -309,7 +303,7 @@ function App() {
     });
   };
 
-  // ✅ Générer stocks prévisionnels à partir des vraies données
+  // Générer stocks prévisionnels à partir des vraies données
   const generateStocksPrevisionnels = () => {
     try {
       // Utiliser les vrais stocks et recettes pour créer des stocks prévisionnels
@@ -417,7 +411,7 @@ function App() {
     notes: ""
   });
   
-  // ✅ États pour l'affichage accordéon des produits
+  // États pour l'affichage accordéon des produits
   const [produitsParCategories, setProduitsParCategories] = useState({ categories: {}, total_categories: 0, total_products: 0 });
   const [categoriesExpanded, setCategoriesExpanded] = useState({}); // Quelles catégories sont ouvertes
   const [showCategoriesView, setShowCategoriesView] = useState(false); // Vue liste normale vs accordéon (Produits)
@@ -425,7 +419,7 @@ function App() {
   const [showRecettesCategoriesView, setShowRecettesCategoriesView] = useState(false); // Vue catégories Productions
   const [showFournisseursCategoriesView, setShowFournisseursCategoriesView] = useState(false); // Vue catégories Fournisseurs
   
-  // ✅ États pour la gestion des stocks de préparations
+  // États pour la gestion des stocks de préparations
   const [stocksPreparations, setStocksPreparations] = useState([]); // Stocks des préparations avec quantités
   const [mouvementsPreparations, setMouvementsPreparations] = useState([]); // Mouvements de stock des préparations
   const [showMovementPreparationModal, setShowMovementPreparationModal] = useState(false);
@@ -440,7 +434,7 @@ function App() {
   const [preparationsParCategories, setPreparationsParCategories] = useState({});
   const [categoriesPreparationsExpanded, setCategoriesPreparationsExpanded] = useState({});
   
-  // ✅ États pour la création de missions
+  // États pour la création de missions
   const [showMissionModal, setShowMissionModal] = useState(false);
   const [missionForm, setMissionForm] = useState({
     title: '',
@@ -459,7 +453,7 @@ function App() {
   const [missionRefreshKey, setMissionRefreshKey] = useState(0); // Pour forcer le refresh du RoleBasedDashboard
   const [historiqueProduction, setHistoriqueProduction] = useState([]); // Historique des opérations production
   
-  // ✅ États pour la validation des mercuriales
+  // États pour la validation des mercuriales
   const [showMercurialeValidation, setShowMercurialeValidation] = useState(false);
   const [mercurialeToValidate, setMercurialeToValidate] = useState(null);
   // États pour la validation des factures
@@ -469,7 +463,7 @@ function App() {
   const [mercurialeSelectedSupplier, setMercurialeSelectedSupplier] = useState('');
   const [fournisseurForm, setFournisseurForm] = useState({
     nom: "", contact: "", email: "", telephone: "", adresse: "", couleur: "#3B82F6", logo: "", 
-    categorie: "frais", categories: ["frais"], // ✅ Added categories list
+    categorie: "frais", categories: ["frais"], // Added categories list
     deliveryCost: 0, extraCost: 0,
     delivery_rules: {
       order_days: [],
@@ -493,8 +487,10 @@ function App() {
   });
 
   // Charger les données initiales
+  useEffect(() => { checkSession().finally(() => setSessionChecking(false)); }, []);
+
   useEffect(() => {
-    checkSession(); // Vérifier la session utilisateur
+    if (!isAuthenticated) return;
     fetchDashboardStats();
     fetchProduits();
     fetchFournisseurs();
@@ -514,24 +510,22 @@ function App() {
     fetchAvailableUsers(); // Récupérer les utilisateurs pour missions
     fetchHistoriqueProduction(); // Récupérer l&apos;historique des opérations
     
-    // Générer stocks prévisionnels après chargement des données
-    setTimeout(() => {
-      generateStocksPrevisionnels();
-    }, 2000); // Attendre que stocks et recettes soient chargés
-    
-    // ✅ Enregistrer le Service Worker pour PWA
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/sw.js')
-          .then((registration) => {
-            console.log('✅ Service Worker enregistré:', registration);
-          })
-          .catch((error) => {
-            console.log('❌ Erreur Service Worker:', error);
-          });
-      });
-    }
-  }, []);
+    loadOverview();
+  }, [isAuthenticated]);
+
+  const loadOverview = async () => {
+    setOverviewLoading(true);
+    setOverviewError('');
+    try {
+      const [stockResult, documentResult] = await Promise.all([
+        axios.get(`${API}/stocks`), axios.get(`${API}/ocr/documents`)
+      ]);
+      setStocks(Array.isArray(stockResult.data) ? stockResult.data : []);
+      setDocumentsOcr(Array.isArray(documentResult.data) ? documentResult.data : []);
+    } catch (_) {
+      setOverviewError('Vos données n’ont pas pu être chargées. Vérifiez votre connexion puis réessayez.');
+    } finally { setOverviewLoading(false); }
+  };
 
   // Fonction pour récupérer les catégories de production
   const fetchCategoriesProduction = async () => {
@@ -639,13 +633,13 @@ function App() {
     }
   };
 
-  // ✅ Auto-génération des préparations
+  // Auto-génération des préparations
   const handleAutoGeneratePreparations = async () => {
     try {
       setLoading(true);
       
       const confirmation = window.confirm(
-        "🔄 AUTO-GÉNÉRATION DES PRÉPARATIONS\n\n" +
+        "AUTO-GÉNÉRATION DES PRÉPARATIONS\n\n" +
         "Cette action va :\n" +
         "• Analyser tous vos produits avec catégories\n" +
         "• Créer 2-3 préparations cohérentes par produit\n" +
@@ -659,27 +653,27 @@ function App() {
       const response = await axios.post(`${API}/preparations/auto-generate`);
       
       if (response.data.success) {
-        alert(`✅ AUTO-GÉNÉRATION RÉUSSIE !\n\n` +
-              `📊 Résultats :\n` +
+        alert(`AUTO-GÉNÉRATION RÉUSSIE !\n\n` +
+              `Résultats :\n` +
               `• ${response.data.preparations_created} préparations créées\n` +
               `• ${response.data.details.total_products_processed} produits traités\n` +
               `• Catégories : ${response.data.details.categories_processed.join(', ')}\n\n` +
-              `📝 Exemples créés :\n` +
+              `Exemples créés :\n` +
               `${response.data.details.sample_preparations.slice(0, 5).join('\n')}`);
         
         fetchPreparations(); // Rafraîchir la liste
       } else {
-        alert(`❌ ERREUR : ${response.data.message}`);
+        alert(`ERREUR : ${response.data.message}`);
       }
     } catch (error) {
       console.error("Erreur lors de l&apos;auto-génération:", error);
-      alert(`❌ Erreur lors de l&apos;auto-génération: ${error.response?.data?.detail || error.message}`);
+      alert(`Erreur lors de l&apos;auto-génération: ${error.response?.data?.detail || error.message}`);
     } finally {
       setLoading(false);
     }
   };
 
-  // ✅ Récupérer les produits groupés par catégories pour l'affichage accordéon  
+  // Récupérer les produits groupés par catégories pour l'affichage accordéon
   const fetchProduitsParCategories = async () => {
     try {
       const response = await axios.get(`${API}/produits/by-categories`);
@@ -716,7 +710,7 @@ function App() {
       const response = await axios.get(`${API}/dashboard/analytics`);
       const normalized = normalizeAnalyticsData(response.data, restopDemoMode);
       setFilteredAnalytics(normalized);
-      console.log("📊 Analytics chargées:", normalized);
+      console.log("Analytics chargées:", normalized);
     } catch (error) {
       console.error("Erreur lors de la récupération des analytics:", error);
     }
@@ -726,7 +720,7 @@ function App() {
     try {
       const response = await axios.get(`${API}/dashboard/missing-data-alerts`);
       setMissingDataAlerts(response.data.alerts || []);
-      console.log("⚠️ Alertes de données manquantes:", response.data);
+      console.log("Alertes de données manquantes:", response.data);
     } catch (error) {
       console.error("Erreur lors de la récupération des alertes:", error);
       setMissingDataAlerts([]);
@@ -734,12 +728,13 @@ function App() {
   };
 
 
-  // ✅ Fonctions d&apos;authentification
+  // Fonctions d&apos;authentification
   const handleLoginSuccess = (user, session_id) => {
     axios.defaults.headers.common.Authorization = 'Bearer ' + session_id;
     setCurrentUser(user);
     setSessionId(session_id);
     setIsAuthenticated(true);
+    navigate("/app", { replace: true });
     
     // TOUT LE MONDE utilise l'interface normale ResTop
     // Les restrictions se feront sur les onglets individuels
@@ -774,23 +769,17 @@ function App() {
   };
 
   const logout = async () => {
-    try {
-      if (sessionId) {
-        await axios.post(`${API}/auth/logout?session_id=${sessionId}`);
-      }
-      
+    try { if (sessionId) await axios.post(`${API}/auth/logout?session_id=${encodeURIComponent(sessionId)}`); }
+    catch (_) { /* Always clear the local session, including when offline. */ }
+    finally {
       localStorage.removeItem('user_session');
       delete axios.defaults.headers.common.Authorization;
-      setIsAuthenticated(false);
-      setCurrentUser(null);
-      setSessionId(null);
-      setShowRoleBasedDashboard(false);
-    } catch (error) {
-      console.error('Erreur déconnexion:', error);
+      setIsAuthenticated(false); setCurrentUser(null); setSessionId(null);
+      navigate('/connexion', { replace: true });
     }
   };
 
-  // ✅ Helper pour vérifier les permissions selon le rôle
+  // Helper pour vérifier les permissions selon le rôle
   const canEditItems = () => {
     return currentUser?.role !== 'employe_cuisine';
   };
@@ -820,7 +809,7 @@ function App() {
            currentUser?.role === 'chef_cuisine';
   };
 
-  // ✅ Fonctions pour la création de missions
+  // Fonctions pour la création de missions
   const fetchAvailableUsers = async () => {
     try {
       const response = await axios.get(`${API}/admin/users`);
@@ -830,7 +819,7 @@ function App() {
     }
   };
 
-  // ✅ Fonction de rafraîchissement des missions pour le RoleBasedDashboard
+  // Fonction de rafraîchissement des missions pour le RoleBasedDashboard
   const refreshMissions = async () => {
     // Déclencher un rechargement réel des données 
     // On va forcer un re-render ET recharger les données
@@ -840,7 +829,7 @@ function App() {
     window.dispatchEvent(new CustomEvent('refreshMissions'));
   };
 
-  // ✅ Fonction pour récupérer l&apos;historique des opérations production
+  // Fonction pour récupérer l&apos;historique des opérations production
   const fetchHistoriqueProduction = async () => {
     try {
       // Récupérer différentes données pour construire l&apos;historique
@@ -864,7 +853,7 @@ function App() {
           type: 'mouvement',
           nom: `${mouvement.type === 'entree' ? '📈' : mouvement.type === 'sortie' ? '📉' : '🔄'} ${mouvement.type} - ${mouvement.produit_nom}`,
           details: `${new Date(mouvement.date).toLocaleDateString('fr-FR')} • ${mouvement.quantite} ${mouvement.produit_nom ? (produits.find(p => p.id === mouvement.produit_id)?.unite || '') : ''} • ${mouvement.commentaire || 'Aucun commentaire'}`,
-          statut: mouvement.type === 'entree' ? '✅ Entrée' : mouvement.type === 'sortie' ? '📉 Sortie' : '🔄 Ajusté',
+          statut: mouvement.type === 'entree' ? 'Entrée' : mouvement.type === 'sortie' ? 'Sortie' : 'Ajusté',
           date: new Date(mouvement.date),
           couleur: mouvement.type === 'entree' ? 'positive' : mouvement.type === 'sortie' ? 'negative' : 'neutral'
         });
@@ -875,9 +864,9 @@ function App() {
         operations.push({
           id: rapport.id,
           type: 'rapport',
-          nom: `📊 Rapport Z - Service ${new Date(rapport.date).getHours() < 15 ? 'Déjeuner' : 'Dîner'}`,
+          nom: `Rapport Z - Service ${new Date(rapport.date).getHours() < 15 ? 'Déjeuner' : 'Dîner'}`,
           details: `${new Date(rapport.date).toLocaleDateString('fr-FR')} ${new Date(rapport.date).toLocaleTimeString('fr-FR', {hour: '2-digit', minute: '2-digit'})} • CA: ${rapport.ca_total.toFixed(2)}€ • ${rapport.produits.length} produits`,
-          statut: '✅ Traité',
+          statut: 'Traité',
           date: new Date(rapport.date),
           couleur: 'positive'
         });
@@ -885,9 +874,9 @@ function App() {
 
       // Ajouter les missions récentes liées à la production
       missions.filter(m => m.category === 'cuisine' || m.type === 'preparation').slice(0, 4).forEach(mission => {
-        const statusText = mission.status === 'validee' ? '✅ Validée' : 
-                          mission.status === 'terminee_attente' ? '⏳ En attente' : 
-                          '🔄 En cours';
+        const statusText = mission.status === 'validee' ? 'Validée' :
+                          mission.status === 'terminee_attente' ? 'En attente' :
+                          'En cours';
         
         operations.push({
           id: mission.id,
@@ -912,7 +901,7 @@ function App() {
     }
   };
 
-  // ✅ Fonction pour actualiser toutes les données de l'application
+  // Fonction pour actualiser toutes les données de l'application
   const refreshAllData = async () => {
     try {
       setLoading(true);
@@ -926,10 +915,10 @@ function App() {
         fetchDocumentsOcr()
       ]);
       
-      alert('✅ Données actualisées avec succès !');
+      alert('Données actualisées avec succès !');
     } catch (error) {
       console.error('Erreur refresh:', error);
-      alert('❌ Erreur lors de l\'actualisation');
+      alert('Erreur lors de l\'actualisation');
     } finally {
       setLoading(false);
     }
@@ -942,7 +931,7 @@ function App() {
 
     try {
       if (missionForm.assigned_to_user_ids.length === 0) {
-        alert('❌ Veuillez sélectionner au moins un employé');
+        alert('Veuillez sélectionner au moins un employé');
         setLoading(false);
         return;
       }
@@ -971,8 +960,8 @@ function App() {
       await Promise.all(promises);
       
       const message = missionForm.assigned_to_user_ids.length === 1 
-        ? '✅ Mission créée et assignée avec succès !'
-        : `✅ Mission créée et assignée à ${missionForm.assigned_to_user_ids.length} personnes avec succès !`;
+        ? 'Mission créée et assignée avec succès !'
+        : `Mission créée et assignée à ${missionForm.assigned_to_user_ids.length} personnes avec succès !`;
       
       alert(message);
       
@@ -983,7 +972,7 @@ function App() {
       resetMissionForm();
     } catch (error) {
       console.error('Erreur lors de la création:', error);
-      alert(`❌ Erreur lors de la création: ${error.response?.data?.detail || error.message}`);
+      alert(`Erreur lors de la création: ${error.response?.data?.detail || error.message}`);
     } finally {
       setLoading(false);
     }
@@ -1036,7 +1025,7 @@ function App() {
            currentUser?.role === 'caissier';
   };
 
-  // ✅ Permissions spécifiques BAR pour le barman
+  // Permissions spécifiques BAR pour le barman
   const canEditBarItems = () => {
     return currentUser?.role === 'super_admin' || currentUser?.role === 'patron' || 
            (currentUser?.role === 'barman');
@@ -1376,10 +1365,10 @@ function App() {
       
       if (editingItem) {
         await axios.put(`${API}/preparations/${editingItem.id}`, preparationData);
-        alert("✅ Préparation mise à jour");
+        alert("Préparation mise à jour");
       } else {
         await axios.post(`${API}/preparations`, preparationData);
-        alert("✅ Préparation créée");
+        alert("Préparation créée");
       }
       
       fetchPreparations();
@@ -1388,7 +1377,7 @@ function App() {
       setEditingItem(null);
     } catch (error) {
       console.error("Erreur:", error);
-      alert("❌ Erreur lors de l&apos;enregistrement");
+      alert("Erreur lors de l&apos;enregistrement");
     }
     
     setLoading(false);
@@ -1451,7 +1440,7 @@ function App() {
     }
   };
 
-  // ✅ Fonctions pour la répartition des quantités de préparations
+  // Fonctions pour la répartition des quantités de préparations
   const updateRepartitionQuantity = (preparationId, quantity) => {
     const newRepartition = {
       ...repartitionQuantities,
@@ -1539,7 +1528,7 @@ function App() {
     setSelectedStockIndex(null);
   };
 
-  // ✅ Fonctions pour la gestion des stocks de préparations
+  // Fonctions pour la gestion des stocks de préparations
   const fetchStocksPreparations = async () => {
     try {
       const response = await axios.get(`${API}/preparations`);
@@ -1637,11 +1626,11 @@ function App() {
         dlc: ""
       });
       
-      alert("✅ Mouvement de préparation enregistré");
+      alert("Mouvement de préparation enregistré");
       
     } catch (error) {
       console.error("Erreur lors de l&apos;enregistrement:", error);
-      alert("❌ Erreur lors de l&apos;enregistrement");
+      alert("Erreur lors de l&apos;enregistrement");
     }
     
     setLoading(false);
@@ -1738,7 +1727,7 @@ function App() {
         couleur: item.couleur || "#3B82F6",
         logo: item.logo || "",
         categorie: item.categorie || "frais",
-        categories: item.categories || [item.categorie || "frais"], // ✅ Fix: Load existing categories
+        categories: item.categories || [item.categorie || "frais"], // Fix: Load existing categories
         deliveryCost: 0,
         extraCost: 0,
         delivery_rules: item.delivery_rules || {
@@ -1791,7 +1780,7 @@ function App() {
     if (!window.confirm("Êtes-vous sûr de vouloir supprimer cet élément ?")) return;
     
     // Deuxième avertissement de sécurité (Double vérification)
-    if (!window.confirm("⚠️ ATTENTION : Cette action est IRRÉVERSIBLE !\n\nL'élément sera définitivement effacé de la base de données (pas d'archivage).\n\nConfirmer la suppression DÉFINITIVE ?")) return;
+    if (!window.confirm("ATTENTION : Cette action est IRRÉVERSIBLE !\n\nL'élément sera définitivement effacé de la base de données (pas d'archivage).\n\nConfirmer la suppression DÉFINITIVE ?")) return;
 
     try {
       if (type === "produit") {
@@ -1809,7 +1798,7 @@ function App() {
         fetchPreparations();
       }
       fetchDashboardStats();
-      alert("✅ Élément supprimé définitivement.");
+      alert("Élément supprimé définitivement.");
     } catch (error) {
       console.error(`Erreur lors de la suppression du ${type}:`, error);
       alert("Erreur lors de la suppression : " + (error.response?.data?.detail || error.message));
@@ -1935,197 +1924,16 @@ function App() {
     }
   };
 
-  // ✅ Calculer les vraies analytics à partir des données de rapports Z
   const calculateRealAnalytics = async (dateRange) => {
-    try {
-      if (restopDemoMode) {
-        return normalizeAnalyticsData(RESTOP_DEMO_ANALYTICS, true);
-      }
-
-      // Récupérer les rapports Z pour la période
-      const rapportsResponse = await axios.get(`${API}/rapports_z`);
-      const rapports = rapportsResponse.data || [];
-      
-      // Récupérer les recettes pour les productions
-      const recettesResponse = await axios.get(`${API}/recettes`);
-      const recettesData = recettesResponse.data || [];
-      
-      if (rapports.length === 0) {
-        // Si pas de données réelles, retourner des 0
-        return {
-          caTotal: 0,
-          caMidi: 0,
-          caSoir: 0,
-          couvertsMidi: 0,
-          couvertsSoir: 0,
-          topProductions: [],
-          flopProductions: [],
-          ventesParCategorie: {
-            entrees: 0,
-            plats: 0,
-            desserts: 0,
-            boissons: 0,
-            autres: 0
-          }
-        };
-      }
-      
-      // Calculer les vraies analytics à partir des rapports Z
-      const caTotal = rapports.reduce((sum, r) => sum + (r.ca_total || 0), 0);
-      const caParService = rapports.reduce((acc, r) => {
-        const heure = new Date(r.date).getHours();
-        if (heure < 15) {
-          acc.midi += r.ca_total || 0;
-        } else {
-          acc.soir += r.ca_total || 0;
-        }
-        return acc;
-      }, { midi: 0, soir: 0 });
-      
-      // Analyser les productions à partir des rapports
-      const productionsAnalysis = {};
-      rapports.forEach(rapport => {
-        if (rapport.produits) {
-          rapport.produits.forEach(prod => {
-            if (!productionsAnalysis[prod.nom]) {
-              productionsAnalysis[prod.nom] = { ventes: 0, quantite: 0 };
-            }
-            productionsAnalysis[prod.nom].ventes += prod.quantite || 0;
-            productionsAnalysis[prod.nom].quantite += prod.quantite || 0;
-          });
-        }
-      });
-      
-      const topProductions = Object.entries(productionsAnalysis)
-        .sort((a, b) => b[1].ventes - a[1].ventes)
-        .slice(0, 7)
-        .map(([nom, data]) => {
-          const recette = recettesData.find(r => r.nom.toLowerCase().includes(nom.toLowerCase()));
-          return {
-            nom,
-            ventes: data.ventes * Math.floor(Math.random() * 30) + 100,
-            portions: data.quantite,
-            categorie: recette?.categorie || "Autres",
-            coefficientPrevu: recette?.coefficient_prevu || 2.5,
-            coefficientReel: recette?.coefficient_reel || 2.4,
-            coutMatiere: recette?.cout_matiere || Math.floor(Math.random() * 500) + 100,
-            prixVente: recette?.prix_vente || Math.floor(Math.random() * 30) + 15
-          };
-        });
-      
-      return {
-        caTotal,
-        caMidi: caParService.midi,
-        caSoir: caParService.soir,
-        couvertsMidi: Math.floor(caParService.midi / 65), // Moyenne panier 65€
-        couvertsSoir: Math.floor(caParService.soir / 55), // Moyenne panier 55€
-        topProductions,
-        flopProductions: topProductions.slice().reverse().slice(0, 7),
-        ventesParCategorie: {
-          entrees: Math.floor(caTotal * 0.18),
-          plats: Math.floor(caTotal * 0.45),
-          desserts: Math.floor(caTotal * 0.12),
-          boissons: Math.floor(caTotal * 0.20),
-          autres: Math.floor(caTotal * 0.05)
-        }
-      };
-      
-    } catch (error) {
-      console.error('Erreur calcul analytics:', error);
-      // Retourner des 0 en cas d'erreur (pas de fallback sur données de démo)
-      return {
-        caTotal: 0,
-        caMidi: 0,
-        caSoir: 0,
-        couvertsMidi: 0,
-        couvertsSoir: 0,
-        topProductions: [],
-        flopProductions: [],
-        ventesParCategorie: {
-          entrees: 0,
-          plats: 0,
-          desserts: 0,
-          boissons: 0,
-          autres: 0
-        }
-      };
-    }
+    const [reports, recipes] = await Promise.all([
+      axios.get(`${API}/rapports_z`), axios.get(`${API}/recettes`)
+    ]);
+    return aggregateReports(reports.data, recipes.data, dateRange);
   };
-
-
-  // Fonction pour calculer les données selon la période sélectionnée
   const calculateAnalyticsForPeriod = async (dateRange) => {
     if (!dateRange) return;
-
-    console.log("Calcul pour période:", dateRange.label, "de", dateRange.startDate, "à", dateRange.endDate);
-
-    try {
-      // Utiliser les vraies analytics au lieu des données mockées
-      const realAnalytics = await calculateRealAnalytics(dateRange);
-      
-      // Calculer le multiplicateur selon la période pour ajuster les données
-      let periodMultiplier = 1;
-      const daysDiff = Math.ceil((dateRange.endDate - dateRange.startDate) / (1000 * 60 * 60 * 24)) + 1;
-      
-      switch (true) {
-        case dateRange.label.includes('Aujourd\'hui'):
-          periodMultiplier = 1;
-          break;
-        case dateRange.label.includes('Hier'):
-          periodMultiplier = 0.92;
-          break;
-        case dateRange.label.includes('Cette semaine'):
-          periodMultiplier = daysDiff * 0.88;
-          break;
-        case dateRange.label.includes('Semaine dernière'):
-          periodMultiplier = 7 * 0.85;
-          break;
-        case dateRange.label.includes('Ce mois'):
-          periodMultiplier = daysDiff * 0.82;
-          break;
-        case dateRange.label.includes('Mois dernier'):
-          periodMultiplier = 30 * 0.80;
-          break;
-        default:
-          periodMultiplier = daysDiff * 0.87;
-          break;
-      }
-      
-      console.log("Période:", dateRange.label, "Multiplicateur:", periodMultiplier, "Jours:", daysDiff);
-      
-      const analytics = {
-        caTotal: Math.round(realAnalytics.caTotal * periodMultiplier * 100) / 100,
-        caMidi: Math.round(realAnalytics.caMidi * periodMultiplier * 100) / 100,
-        caSoir: Math.round(realAnalytics.caSoir * periodMultiplier * 100) / 100,
-        couvertsMidi: Math.round(realAnalytics.couvertsMidi * periodMultiplier),
-        couvertsSoir: Math.round(realAnalytics.couvertsSoir * periodMultiplier),
-        topProductions: realAnalytics.topProductions.map(production => ({
-          ...production,
-          ventes: Math.round(production.ventes * periodMultiplier),
-          portions: Math.round(production.portions * periodMultiplier),
-          coutMatiere: Math.round(production.coutMatiere * periodMultiplier * 100) / 100
-        })),
-        flopProductions: realAnalytics.flopProductions.map(production => ({
-          ...production,
-          ventes: Math.round(production.ventes * periodMultiplier),
-          portions: Math.round(production.portions * periodMultiplier),
-          coutMatiere: Math.round(production.coutMatiere * periodMultiplier * 100) / 100
-        })),
-        ventesParCategorie: {
-          entrees: Math.round(realAnalytics.ventesParCategorie.entrees * periodMultiplier),
-          plats: Math.round(realAnalytics.ventesParCategorie.plats * periodMultiplier),
-          desserts: Math.round(realAnalytics.ventesParCategorie.desserts * periodMultiplier),
-          boissons: Math.round(realAnalytics.ventesParCategorie.boissons * periodMultiplier),
-          autres: Math.round(realAnalytics.ventesParCategorie.autres * periodMultiplier)
-        }
-      };
-
-      console.log("Nouvelles données calculées:", analytics);
-      setFilteredAnalytics(analytics);
-      
-    } catch (error) {
-      console.error('Erreur calcul analytics pour période:', error);
-    }
+    try { setFilteredAnalytics(await calculateRealAnalytics(dateRange)); }
+    catch (_) { setFilteredAnalytics(normalizeAnalyticsData(null)); }
   };
 
   // Gérer le changement de période
@@ -2165,7 +1973,7 @@ function App() {
     }
   }, [currentUser]);
 
-  // ✅ Auto-refresh historique production
+  // Auto-refresh historique production
   useEffect(() => {
     if (activeProductionTab === 'historique') {
       fetchHistoriqueProduction();
@@ -2184,9 +1992,9 @@ function App() {
     });
     
     if (stocksCritiques.length === 0) {
-      alert("✅ Aucun stock critique pour le moment !");
+      alert("Aucun stock critique pour le moment !");
     } else {
-      const message = `⚠️ STOCKS CRITIQUES (${stocksCritiques.length} produits):\n\n` +
+      const message = `STOCKS CRITIQUES (${stocksCritiques.length} produits):\n\n` +
         stocksCritiques.map(stock => {
           const produit = produits.find(p => p.id === stock.produit_id);
           const unite = getDisplayUnit(produit?.unite);
@@ -2207,21 +2015,21 @@ function App() {
       fournisseurs: [...new Set(produits.map(p => p.fournisseur_id).filter(Boolean))]
     };
 
-    alert(`📊 ANALYSE PRODUITS:\n\n` +
-      `📦 Total produits: ${stats.totalProduits}\n` +
-      `💰 Produits avec prix: ${stats.produitsAvecPrix}\n` +
-      `💰 Prix moyen: ${stats.prixMoyen.toFixed(2)}€\n` +
-      `📁 Catégories: ${stats.categories.length} (${stats.categories.slice(0, 3).join(', ')}...)\n` +
-      `🏪 Fournisseurs: ${stats.fournisseurs.length}`);
+    alert(`ANALYSE PRODUITS:\n\n` +
+      `Total produits: ${stats.totalProduits}\n` +
+      `Produits avec prix: ${stats.produitsAvecPrix}\n` +
+      `Prix moyen: ${stats.prixMoyen.toFixed(2)}€\n` +
+      `Catégories: ${stats.categories.length} (${stats.categories.slice(0, 3).join(', ')}...)\n` +
+      `Fournisseurs: ${stats.fournisseurs.length}`);
   };
 
   // Générer Étiquettes
   const handleGenererEtiquettes = () => {
-    alert(`🏷️ GÉNÉRATION D'ÉTIQUETTES:\n\n` +
+    alert(`GÉNÉRATION D'ÉTIQUETTES:\n\n` +
       `Cette fonctionnalité générera des étiquettes PDF\n` +
       `pour tous les produits sélectionnés.\n\n` +
       `Fonctionnalité en cours de développement.\n` +
-      `Utilisez "📊 Rapport Stock" pour export Excel en attendant.`);
+      `Utilisez "Rapport Stock" pour export Excel en attendant.`);
   };
   const handlePageInventaire = () => {
     // Cette fonction pourrait ouvrir une page dédiée inventaire
@@ -2233,10 +2041,10 @@ function App() {
       return total + (stock.quantite_actuelle * (produit?.prix_achat || 0));
     }, 0);
 
-    alert(`📱 INVENTAIRE RAPIDE:\n\n` +
-      `📦 Total produits: ${totalProduits}\n` +
-      `⚠️ Stocks critiques: ${stocksCritiques}\n` +
-      `💰 Valeur totale: ${valeurTotale.toFixed(2)}€\n\n` +
+    alert(`INVENTAIRE RAPIDE:\n\n` +
+      `Total produits: ${totalProduits}\n` +
+      `Stocks critiques: ${stocksCritiques}\n` +
+      `Valeur totale: ${valeurTotale.toFixed(2)}€\n\n` +
       `Utilisez les sections dédiées pour un inventaire complet.`);
   };
   const handleImportRecettes = async (event) => {
@@ -2323,12 +2131,12 @@ function App() {
       if (file.type.startsWith('image/')) {
         try {
           const originalSize = (file.size / 1024 / 1024).toFixed(2);
-          console.log(`📸 Image originale: ${originalSize} MB`);
+          console.log(`Image originale: ${originalSize} MB`);
           
           finalFile = await compressImage(file);
           
           const compressedSize = (finalFile.size / 1024 / 1024).toFixed(2);
-          console.log(`✅ Image compressée: ${compressedSize} MB (réduction: ${((1 - finalFile.size / file.size) * 100).toFixed(0)}%)`);
+          console.log(`Image compressée: ${compressedSize} MB (réduction: ${((1 - finalFile.size / file.size) * 100).toFixed(0)}%)`);
         } catch (error) {
           console.error('Erreur compression:', error);
           // En cas d'erreur, utiliser le fichier original
@@ -2405,7 +2213,7 @@ function App() {
       formData.append('document_type', documentType);
 
       const fileSize = (ocrFile.size / 1024 / 1024).toFixed(2);
-      console.log(`📤 Upload en cours: ${fileSize} MB`);
+      console.log(`Upload en cours: ${fileSize} MB`);
 
       const response = await axios.post(`${API}/ocr/upload-document`, formData, {
         headers: {
@@ -2419,13 +2227,13 @@ function App() {
       // Gestion des réponses de factures multiples
       if (response.data.multi_invoice) {
         const data = response.data;
-        let message = `📊 Traitement de factures multiples terminé !\n\n`;
-        message += `🔍 Factures détectées: ${data.total_detected}\n`;
-        message += `✅ Traitées avec succès: ${data.successfully_processed}\n`;
+        let message = `Traitement de factures multiples terminé !\n\n`;
+        message += `Factures détectées: ${data.total_detected}\n`;
+        message += `Traitées avec succès: ${data.successfully_processed}\n`;
         
         if (data.rejected_count > 0) {
-          message += `❌ Rejetées: ${data.rejected_count}\n\n`;
-          message += `📋 Détails des rejets:\n`;
+          message += `Rejetées: ${data.rejected_count}\n\n`;
+          message += `Détails des rejets:\n`;
           
           data.rejected_invoices.forEach(rejected => {
             message += `• Facture ${rejected.index}: ${rejected.reason}\n`;
@@ -2434,7 +2242,7 @@ function App() {
             }
           });
           
-          message += `\n💡 Les factures rejetées peuvent être re-uploadées individuellement pour un traitement manuel.`;
+          message += `\nLes factures rejetées peuvent être re-uploadées individuellement pour un traitement manuel.`;
         }
         
         alert(message);
@@ -2493,20 +2301,20 @@ function App() {
       const documentsEnAttente = documentsOcr.filter(doc => !doc.donnees_parsees || Object.keys(doc.donnees_parsees).length === 0);
       
       if (documentsEnAttente.length === 0) {
-        alert("✅ Tous les documents ont déjà été traités !");
+        alert("Tous les documents ont déjà été traités !");
         return;
       }
 
-      const confirmation = window.confirm(`🔄 TRAITEMENT AUTOMATIQUE:\n\nTraiter automatiquement ${documentsEnAttente.length} documents en attente ?\n\n(Cette opération peut prendre plusieurs minutes)`);
+      const confirmation = window.confirm(`TRAITEMENT AUTOMATIQUE:\n\nTraiter automatiquement ${documentsEnAttente.length} documents en attente ?\n\n(Cette opération peut prendre plusieurs minutes)`);
       
       if (confirmation) {
-        alert(`🚀 Traitement automatique démarré pour ${documentsEnAttente.length} documents.\n\nLe traitement se fait en arrière-plan.\nVous recevrez une notification à la fin.`);
+        alert(`Traitement automatique démarré pour ${documentsEnAttente.length} documents.\n\nLe traitement se fait en arrière-plan.\nVous recevrez une notification à la fin.`);
         
         // Ici on pourrait lancer un traitement batch en arrière-plan
         // Pour l'instant, on simule juste l'action
         
         setTimeout(() => {
-          alert("✅ Traitement automatique terminé !\nConsultez l&apos;historique pour voir les résultats.");
+          alert("Traitement automatique terminé !\nConsultez l&apos;historique pour voir les résultats.");
           fetchDocumentsOcr();
         }, 2000);
       }
@@ -2524,16 +2332,16 @@ function App() {
       setLoading(true);
       
       if (documentsOcr.length === 0) {
-        alert("ℹ️ Aucun document à supprimer");
+        alert("Aucun document à supprimer");
         return;
       }
 
-      const confirmation = window.confirm(`🗑️ SUPPRESSION DE L'HISTORIQUE:\n\nÊtes-vous sûr de vouloir supprimer tous les ${documentsOcr.length} documents OCR ?\n\n⚠️ Cette action est irréversible !`);
+      const confirmation = window.confirm(`SUPPRESSION DE L'HISTORIQUE:\n\nÊtes-vous sûr de vouloir supprimer tous les ${documentsOcr.length} documents OCR ?\n\nCette action est irréversible !`);
       
       if (confirmation) {
         const response = await axios.delete(`${API}/ocr/documents/all`);
         
-        alert(`✅ Historique vidé avec succès !\n\n${response.data.deleted_count} document(s) supprimé(s)`);
+        alert(`Historique vidé avec succès !\n\n${response.data.deleted_count} document(s) supprimé(s)`);
         
         // Rafraîchir la liste des documents ET réinitialiser les affichages
         await fetchDocumentsOcr();
@@ -2550,7 +2358,7 @@ function App() {
       }
     } catch (error) {
       console.error("Erreur suppression documents OCR:", error);
-      alert("❌ Erreur lors de la suppression de l&apos;historique");
+      alert("Erreur lors de la suppression de l&apos;historique");
     } finally {
       setLoading(false);
     }
@@ -2571,10 +2379,10 @@ function App() {
     setProcessingOcr(false);
   };
 
-  // ✅ Fonctions pour la gestion des mercuriales
+  // Fonctions pour la gestion des mercuriales
   const handleValidateMercuriale = (document) => {
     if (!document.donnees_parsees?.produits_detectes) {
-      alert('❌ Aucun produit détecté dans cette mercuriale');
+      alert('Aucun produit détecté dans cette mercuriale');
       return;
     }
 
@@ -2585,7 +2393,7 @@ function App() {
 
   const handleCreateProductsFromMercuriale = async () => {
     if (!mercurialeToValidate || selectedMercurialeProducts.length === 0) {
-      alert('❌ Aucun produit sélectionné');
+      alert('Aucun produit sélectionné');
       return;
     }
 
@@ -2595,7 +2403,7 @@ function App() {
       const produitsToCreate = selectedMercurialeProducts.filter(p => p.selected);
       
       if (produitsToCreate.length === 0) {
-        alert('❌ Veuillez sélectionner au moins un produit à créer');
+        alert('Veuillez sélectionner au moins un produit à créer');
         return;
       }
 
@@ -2624,7 +2432,7 @@ function App() {
       }
 
       // Message de résultat
-      let message = `✅ Import terminé !\n\n`;
+      let message = `Import terminé !\n\n`;
       message += `📦 ${createdCount} produits créés avec succès\n`;
       if (errorCount > 0) {
         message += `❌ ${errorCount} erreurs\n\n`;
@@ -2647,14 +2455,14 @@ function App() {
 
     } catch (error) {
       console.error('Erreur lors de la création des produits:', error);
-      alert(`❌ Erreur lors de la création: ${error.message}`);
+      alert(`Erreur lors de la création: ${error.message}`);
     } finally {
       setLoading(false);
     }
   };
 
   const handleCancelMercurialeImport = async (documentId) => {
-    if (!window.confirm('❌ Êtes-vous sûr de vouloir annuler cet import ?\n\nCela supprimera définitivement cette mercuriale de l\'historique.')) {
+    if (!window.confirm('Êtes-vous sûr de vouloir annuler cet import ?\n\nCela supprimera définitivement cette mercuriale de l\'historique.')) {
       return;
     }
 
@@ -2663,14 +2471,14 @@ function App() {
       
       await axios.delete(`${API}/ocr/document/${documentId}`);
       
-      alert('✅ Import mercuriale annulé et supprimé avec succès');
+      alert('Import mercuriale annulé et supprimé avec succès');
       
       // Rafraîchir l&apos;historique OCR
       fetchDocumentsOcr();
       
     } catch (error) {
       console.error('Erreur lors de l\'annulation:', error);
-      alert(`❌ Erreur lors de l'annulation: ${error.response?.data?.detail || error.message}`);
+      alert(`Erreur lors de l'annulation: ${error.response?.data?.detail || error.message}`);
     } finally {
       setLoading(false);
     }
@@ -2716,153 +2524,19 @@ function App() {
   return (
     <>
       {/* Système d&apos;authentification */}
-      {!isAuthenticated ? (
+      {sessionChecking ? <div className="rt-loading" role="status">Ouverture de votre espace…</div> : !isAuthenticated ? (
         <LoginPage onLoginSuccess={handleLoginSuccess} />
       ) : (
-        <div className="App">
-      {/* Header Mobile */}
-      <div className="header">
-        <div style={{display: 'flex', alignItems: 'center', gap: '12px', flex: 1, justifyContent: 'center'}}>
-          <img 
-            src="/logo-restop.jpg" 
-            alt="ResTop" 
-            style={{
-              height: '48px', 
-              width: 'auto',
-              objectFit: 'contain',
-              filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.1))',
-              background: 'white',
-              padding: '4px',
-              borderRadius: '8px'
-            }} 
-          />
-          <h1>La Table d'Augustine</h1>
-        </div>
-        {/* Boutons header mobile */}
-        <div style={{display: 'flex', gap: '8px', alignItems: 'center'}}>
-          {/* Menu Burger */}
-          <div className="burger-menu">
-          <button onClick={() => setShowBurgerMenu(!showBurgerMenu)}>
-            ☰
-          </button>
-          
-          {/* Menu déroulant */}
-          {showBurgerMenu && (
-            <div className="burger-dropdown">
-              {/* Bouton Utilisateurs - Accès SUPER ADMIN et PATRON */}
-              {(currentUser?.role === 'super_admin' || currentUser?.role === 'patron') && (
-                <button 
-                  className="button" 
-                  onClick={() => {
-                    setActiveTab("users");
-                    setShowBurgerMenu(false);
-                  }}
-                  style={{width: '100%', marginBottom: '8px'}}
-                >
-                  👑 Utilisateurs
-                </button>
-              )}
-              
-              {/* Bouton actualiser données */}
-              <button 
-                className="button secondary" 
-                onClick={refreshAllData}
-                disabled={loading}
-                style={{width: '100%', marginBottom: '8px'}}
-              >
-                {loading ? '🔄 Actualisation...' : '🔄 Actualiser Données'}
-              </button>
-              
-              <button 
-                className="button secondary" 
-                onClick={() => {
-                  toggleTheme();
-                  setShowBurgerMenu(false);
-                }}
-                style={{width: '100%', marginBottom: '8px'}}
-              >
-                {isDarkMode ? '☀️ Mode Clair' : '🌙 Mode Sombre'}
-              </button>
-              
-              {/* Boutons données - Admin seulement */}
-              {currentUser && (currentUser.role === 'super_admin' || currentUser.role === 'patron') && (
-                <>
-                  <button 
-                    className="button" 
-                    onClick={async () => {
-                      if (window.confirm('Voulez-vous restaurer les VRAIES données du restaurant ? (Fournisseurs, Produits, Préparations, Recettes)\n\nCela supprimera toutes les données existantes et recréera les données du restaurant.')) {
-                        try {
-                          setLoading(true);
-                          await axios.post(`${API}/api/demo/init-real-restaurant-data`);
-                          alert('✅ Données réelles du restaurant restaurées !');
-                          // Rafraîchir toutes les données
-                          refreshAllData();
-                          setShowBurgerMenu(false);
-                        } catch (error) {
-                          console.error('Erreur restauration données:', error);
-                          alert('❌ Erreur lors de la restauration des données');
-                        } finally {
-                          setLoading(false);
-                        }
-                      }
-                    }}
-                    style={{width: '100%', marginBottom: '8px'}}
-                  >
-                    🍽️ Données Restaurant
-                  </button>
-                  
-                  <button 
-                    className="button warning" 
-                    onClick={async () => {
-                      if (window.confirm('Voulez-vous supprimer les doublons dans les données ?\n\nCela supprimera les produits, fournisseurs, préparations et recettes en double.')) {
-                        try {
-                          setLoading(true);
-                          const response = await axios.post(`${API}/api/demo/clean-duplicates`);
-                          alert(`✅ ${response.data.total_removed} doublons supprimés !\n\nProduits: ${response.data.collections_cleaned.produits}\nFournisseurs: ${response.data.collections_cleaned.fournisseurs}\nPréparations: ${response.data.collections_cleaned.preparations}\nRecettes: ${response.data.collections_cleaned.recettes}`);
-                          // Rafraîchir toutes les données
-                          refreshAllData();
-                          setShowBurgerMenu(false);
-                        } catch (error) {
-                          console.error('Erreur nettoyage doublons:', error);
-                          alert('❌ Erreur lors du nettoyage des doublons');
-                        } finally {
-                          setLoading(false);
-                        }
-                      }
-                    }}
-                    style={{width: '100%', marginBottom: '8px'}}
-                  >
-                    🧹 Supprimer Doublons
-                  </button>
-                  
-                  <button 
-                    className="button secondary" 
-                    onClick={() => {
-                      setShowDemoData(!showDemoData);
-                      setShowBurgerMenu(false);
-                    }}
-                    style={{width: '100%', marginBottom: '8px'}}
-                  >
-                    {showDemoData ? '🙈 Cacher Démo' : '👁️ Afficher Démo'}
-                  </button>
-                </>
-              )}
-              
-              {/* Bouton déconnexion */}
-              {currentUser && (
-                <button 
-                  className="button danger" 
-                  onClick={logout}
-                  style={{width: '100%', marginBottom: '8px'}}
-                >
-                  🚪 Déconnexion
-                </button>
-              )}
-            </div>
-          )}
-        </div>
-        </div>  {/* Fermeture div header buttons */}
-      </div>
+        <div className="App rt-workspace">
+      <AppNavigation activeTab={activeTab} onNavigate={setActiveTab} user={currentUser}
+        onLogout={logout} onRefresh={async () => { await refreshAllData(); await loadOverview(); }} loading={loading}
+        canOrders={canAccessOrders()} onSuppliers={() => { setActiveTab('production'); setActiveProductionTab('fournisseurs'); }} />
+      {activeTab === 'overview' && <Overview stocks={stocks.map(s => ({...s, unite: s.unite || produits.find(p => p.id === s.produit_id)?.unite}))} documents={documentsOcr} user={currentUser}
+        loading={overviewLoading} error={overviewError} onRetry={loadOverview}
+        onStocks={() => { setActiveTab('stocks'); setActiveStockTab('stocks'); setStockFilter('all'); }}
+        onStockAlerts={() => { setActiveTab('stocks'); setActiveStockTab('stocks'); setStockFilter('critical'); }}
+        onPurchases={() => { setActiveTab('stocks'); setActiveStockTab('ocr'); setActiveOcrTab('factures'); }}
+        onImport={currentUser?.role !== 'employe_cuisine' ? () => { setActiveTab('stocks'); setActiveStockTab('ocr'); setActiveOcrTab('factures'); setShowOcrModal(true); } : null} />}
 
       {/* Top Navigation Tabs (Analytics) - SUPER ADMIN et PATRON */}
       {activeTab === "dashboard" && (currentUser?.role === 'super_admin' || currentUser?.role === 'patron') && (
@@ -2905,14 +2579,14 @@ function App() {
         <div id="dashboard" className={`wireframe-section ${activeTab === "dashboard" ? "active" : ""}`}>
           
           {/* Sélecteur de période - MASQUÉ pour employé cuisine, barman ET caissier */}
-          {currentUser?.role !== 'employe_cuisine' && currentUser?.role !== 'barman' && currentUser?.role !== 'caissier' && (
+          {activeTab === 'dashboard' && currentUser?.role !== 'employe_cuisine' && currentUser?.role !== 'barman' && currentUser?.role !== 'caissier' && (
             <DateRangePicker 
               onDateRangeChange={handleDateRangeChange}
             />
           )}
 
           {/* Section Missions intégrée (visible selon le rôle) - TOUJOURS AFFICHÉE */}
-          {currentUser && (
+          {currentUser && activeTab === 'dashboard' && (
             <RoleBasedDashboard 
               key={missionRefreshKey} // Forcer re-render quand missions changent
               user={currentUser} 
@@ -2934,7 +2608,7 @@ function App() {
               {activeDashboardTab === "ventes" && (
             <div className="section-card">
               <div className="section-title">
-                💰 Analyse des Ventes {showDemoData && '(Données de Démo)'}
+                Analyse des Ventes {showDemoData && '(Données de Démo)'}
                 {selectedDateRange && (
                   <span style={{ 
                     fontSize: '12px', 
@@ -2947,6 +2621,7 @@ function App() {
                 )}
               </div>
               
+              {filteredAnalytics.caNonVentile > 0 && <p className="rt-feedback">{filteredAnalytics.caNonVentile.toLocaleString('fr-FR')} € de ventes sans service renseigné. Les montants midi et soir ne sont pas estimés.</p>}
               {/* Message d'info si pas de données */}
               {filteredAnalytics.caTotal === 0 && (
                 <div style={{
@@ -2958,7 +2633,7 @@ function App() {
                   marginBottom: '16px'
                 }}>
                   <div style={{fontSize: '14px', color: 'var(--color-text-secondary)'}}>
-                    ℹ️ Aucune donnée de vente pour la période sélectionnée. Importez un Ticket Z via OCR pour voir les statistiques.
+                    Aucune donnée de vente pour la période sélectionnée. Importez un Ticket Z via OCR pour voir les statistiques.
                   </div>
                 </div>
               )}
@@ -2969,7 +2644,7 @@ function App() {
                   <div className="icon">💰</div>
                   <div className="title">CA Total</div>
                   <div className="value">{filteredAnalytics.caTotal.toLocaleString('fr-FR')} €</div>
-                  <div className="subtitle">{(filteredAnalytics.couvertsMidi + filteredAnalytics.couvertsSoir)} couverts</div>
+                  <div className="subtitle">{(filteredAnalytics.couvertsTotal ?? (filteredAnalytics.couvertsMidi + filteredAnalytics.couvertsSoir))} couverts</div>
                 </div>
                 <div className="kpi-card">
                   <div className="icon">☀️</div>
@@ -2988,8 +2663,8 @@ function App() {
                   <div className="icon">🍽️</div>
                   <div className="title">Ticket Moyen Global</div>
                   <div className="value">
-                    {(filteredAnalytics.couvertsMidi + filteredAnalytics.couvertsSoir) > 0 
-                      ? (filteredAnalytics.caTotal / (filteredAnalytics.couvertsMidi + filteredAnalytics.couvertsSoir)).toFixed(2)
+                    {(filteredAnalytics.couvertsTotal ?? (filteredAnalytics.couvertsMidi + filteredAnalytics.couvertsSoir)) > 0
+                      ? (filteredAnalytics.caTotal / (filteredAnalytics.couvertsTotal ?? (filteredAnalytics.couvertsMidi + filteredAnalytics.couvertsSoir))).toFixed(2)
                       : '0.00'
                     } €
                   </div>
@@ -3041,9 +2716,9 @@ function App() {
                   <div className="value">{filteredAnalytics.ventesParCategorie.autres.toLocaleString('fr-FR')} €</div>
                 </div>
               </div>
-              {/* Top Productions avec filtre */}
+              {/* Les meilleures ventes avec filtre */}
               <div className="item-list">
-                <div className="section-title">🍽️ Top Productions</div>
+                <div className="section-title">Les meilleures ventes</div>
                 {/* Filtre par catégorie */}
                 <div className="filter-section" style={{marginBottom: '15px'}}>
                   <div className="filter-group" style={{display: 'flex', alignItems: 'center', gap: '10px'}}>
@@ -3063,11 +2738,11 @@ function App() {
                       }}
                     >
                       <option value="">Toutes</option>
-                      <option value="Entrée">🥗 Entrées</option>
-                      <option value="Plat">🍽️ Plats</option>
-                      <option value="Dessert">🍰 Desserts</option>
-                      <option value="Bar">🍹 Bar</option>
-                      <option value="Autres">📝 Autres</option>
+                      <option value="Entrée">Entrées</option>
+                      <option value="Plat">Plats</option>
+                      <option value="Dessert">Desserts</option>
+                      <option value="Bar">Bar</option>
+                      <option value="Autres">Autres</option>
                     </select>
                     <div className="filter-info" style={{
                       fontSize: '12px', 
@@ -3087,7 +2762,7 @@ function App() {
                     color: 'var(--color-text-secondary)',
                     fontSize: '14px'
                   }}>
-                    📊 Aucune production pour cette période
+                    Aucune production pour cette période
                   </div>
                 )}
                 {/* Liste des productions filtrées avec coefficients */}
@@ -3098,8 +2773,8 @@ function App() {
                   const coefficientPrevu = production.coefficientPrevu || 0;
                   const coefficientReel = production.coefficientReel || 0;
                   const coefficientStatus = coefficientReel >= coefficientPrevu ? 'success' : 'warning';
-                  const coefficientIcon = coefficientReel >= coefficientPrevu ? '✅' : '⚠️';
-                  const coefficientText = coefficientReel >= coefficientPrevu ? 'Respecté' : 'Pas atteint';
+                  const coefficientIcon = !coefficientPrevu || !coefficientReel ? '' : coefficientReel >= coefficientPrevu ? '✅' : '⚠️';
+                  const coefficientText = !coefficientPrevu || !coefficientReel ? 'Non renseigné' : coefficientReel >= coefficientPrevu ? 'Respecté' : 'Pas atteint';
                   return (
                     <div key={index} className="item-row">
                       <div className="item-info">
@@ -3117,8 +2792,8 @@ function App() {
                           </span>
                         </div>
                         <div className="item-details">
-                          {production.portions} portions • Coeff. prévu: {coefficientPrevu.toFixed(2)} • 
-                          Coeff. réel: {coefficientReel.toFixed(2)} {coefficientIcon}
+                          {production.portions} portions • Coeff. prévu: {(coefficientPrevu ? coefficientPrevu.toFixed(2) : '—')} •
+                          Coeff. réel: {(coefficientReel ? coefficientReel.toFixed(2) : '—')} {coefficientIcon}
                         </div>
                       </div>
                       <div className="item-actions">
@@ -3137,7 +2812,7 @@ function App() {
                     </div>
                   );
                 })}
-                {/* Bouton Voir plus pour Top Productions */}
+                {/* Bouton Voir plus pour Les meilleures ventes */}
                 {getFilteredProductions(filteredAnalytics.topProductions, selectedProductionCategory).length > 4 && (
                   <div style={{textAlign: 'center', marginTop: '15px', marginBottom: '20px'}}>
                     <button 
@@ -3151,14 +2826,14 @@ function App() {
                         fontSize: '13px'
                       }}
                     >
-                      {showMoreTopProductions ? '📤 Voir moins' : '📥 Voir plus (+5)'}
+                      {showMoreTopProductions ? 'Voir moins' : 'Voir plus (+5)'}
                     </button>
                   </div>
                 )}
               </div>
-              {/* Flop Productions avec filtre */}
+              {/* Les moins vendues avec filtre */}
               <div className="item-list">
-                <div className="section-title">📉 Flop Productions</div>
+                <div className="section-title">Les moins vendues</div>
                 {/* Filtre par catégorie pour les flops */}
                 <div className="filter-section" style={{marginBottom: '15px'}}>
                   <div className="filter-group" style={{display: 'flex', alignItems: 'center', gap: '10px'}}>
@@ -3178,11 +2853,11 @@ function App() {
                       }}
                     >
                       <option value="">Toutes</option>
-                      <option value="Entrée">🥗 Entrées</option>
-                      <option value="Plat">🍽️ Plats</option>
-                      <option value="Dessert">🍰 Desserts</option>
-                      <option value="Bar">🍹 Bar</option>
-                      <option value="Autres">📝 Autres</option>
+                      <option value="Entrée">Entrées</option>
+                      <option value="Plat">Plats</option>
+                      <option value="Dessert">Desserts</option>
+                      <option value="Bar">Bar</option>
+                      <option value="Autres">Autres</option>
                     </select>
                     <div className="filter-info" style={{
                       fontSize: '12px', 
@@ -3200,8 +2875,8 @@ function App() {
                   const coefficientPrevu = production.coefficientPrevu || 0;
                   const coefficientReel = production.coefficientReel || 0;
                   const coefficientStatus = coefficientReel >= coefficientPrevu ? 'success' : 'warning';
-                  const coefficientIcon = coefficientReel >= coefficientPrevu ? '✅' : '⚠️';
-                  const coefficientText = coefficientReel >= coefficientPrevu ? 'Respecté' : 'Pas atteint';
+                  const coefficientIcon = !coefficientPrevu || !coefficientReel ? '' : coefficientReel >= coefficientPrevu ? '✅' : '⚠️';
+                  const coefficientText = !coefficientPrevu || !coefficientReel ? 'Non renseigné' : coefficientReel >= coefficientPrevu ? 'Respecté' : 'Pas atteint';
                   return (
                     <div key={index} className="item-row">
                       <div className="item-info">
@@ -3219,8 +2894,8 @@ function App() {
                           </span>
                         </div>
                         <div className="item-details">
-                          {production.portions} portions • Coeff. prévu: {coefficientPrevu.toFixed(2)} • 
-                          Coeff. réel: {coefficientReel.toFixed(2)} {coefficientIcon}
+                          {production.portions} portions • Coeff. prévu: {(coefficientPrevu ? coefficientPrevu.toFixed(2) : '—')} •
+                          Coeff. réel: {(coefficientReel ? coefficientReel.toFixed(2) : '—')} {coefficientIcon}
                         </div>
                       </div>
                       <div className="item-actions">
@@ -3239,7 +2914,7 @@ function App() {
                     </div>
                   );
                 })}
-                {/* Bouton Voir plus pour Flop Productions */}
+                {/* Bouton Voir plus pour Les moins vendues */}
                 {getFilteredProductions(filteredAnalytics.flopProductions, selectedFlopCategory).length > 4 && (
                   <div style={{textAlign: 'center', marginTop: '15px', marginBottom: '20px'}}>
                     <button 
@@ -3253,7 +2928,7 @@ function App() {
                         fontSize: '13px'
                       }}
                     >
-                      {showMoreFlopProductions ? '📤 Voir moins' : '📥 Voir plus (+5)'}
+                      {showMoreFlopProductions ? 'Voir moins' : 'Voir plus (+5)'}
                     </button>
                   </div>
                 )}
@@ -3264,7 +2939,7 @@ function App() {
           {activeDashboardTab === "alertes" && (
             <div className="section-card">
               <div className="section-title">
-                ⚠️ Alertes & Notifications {showDemoData && '(Données de Démo)'}
+                Alertes & Notifications {showDemoData && '(Données de Démo)'}
                 {selectedDateRange && (
                   <span style={{ 
                     fontSize: '12px', 
@@ -3280,7 +2955,7 @@ function App() {
               {/* Section Données Manquantes - TOUJOURS AFFICHÉE */}
               <div className="alert-section" style={{marginBottom: 'var(--spacing-lg)'}}>
                 <div className="alert-header">
-                  <div className="alert-title">⚠️ Données Manquantes</div>
+                  <div className="alert-title">Données Manquantes</div>
                   <button 
                     onClick={fetchMissingDataAlerts}
                     className="button small"
@@ -3291,7 +2966,7 @@ function App() {
                       fontSize: '12px'
                     }}
                   >
-                    🔄 Actualiser
+                    Actualiser
                   </button>
                 </div>
                 
@@ -3400,9 +3075,9 @@ function App() {
                     color: 'var(--color-text-secondary)',
                     fontSize: '14px'
                   }}>
-                    <li>📦 Stock d&apos;un produit devient critique</li>
-                    <li>⏰ DLC d&apos;une préparation approche (&lt; 3 jours)</li>
-                    <li>🔄 Rupture de stock détectée</li>
+                    <li>Stock d&apos;un produit devient critique</li>
+                    <li>DLC d&apos;une préparation approche (&lt; 3 jours)</li>
+                    <li>Rupture de stock détectée</li>
                   </ul>
                 </div>
               )}
@@ -3463,7 +3138,7 @@ function App() {
                     <div className="alert-card">
                       <div className="alert-item">
                         <div className="product-info">
-                          <div className="product-name">🍅 Tomates cerises</div>
+                          <div className="product-name">Tomates cerises</div>
                           <div className="stock-info">
                             Stock: <span className="stock-current">1.2 kg</span> / Min: <span className="stock-min">5.0 kg</span>
                           </div>
@@ -3474,7 +3149,7 @@ function App() {
                     <div className="alert-card">
                       <div className="alert-item">
                         <div className="product-info">
-                          <div className="product-name">🥬 Salade verte</div>
+                          <div className="product-name">Salade verte</div>
                           <div className="stock-info">
                             Stock: <span className="stock-current">5.3 kg</span> / Min: <span className="stock-min">10.0 kg</span>
                           </div>
@@ -3485,7 +3160,7 @@ function App() {
                     <div className="alert-card warning">
                       <div className="alert-item">
                         <div className="product-info">
-                          <div className="product-name">🧀 Fromage de chèvre</div>
+                          <div className="product-name">Fromage de chèvre</div>
                           <div className="stock-info">
                             Stock: <span className="stock-current">3.3 kg</span> / Min: <span className="stock-min">8.0 kg</span>
                           </div>
@@ -3498,7 +3173,7 @@ function App() {
                     <div className="alert-card">
                       <div className="alert-item">
                         <div className="product-info">
-                          <div className="product-name">🍽️ Salade Méditerranéenne</div>
+                          <div className="product-name">Salade Méditerranéenne</div>
                           <div className="stock-info">
                             Ingrédient manquant: Tomates cerises • Production limitée
                           </div>
@@ -3509,7 +3184,7 @@ function App() {
                     <div className="alert-card warning">
                       <div className="alert-item">
                         <div className="product-info">
-                          <div className="product-name">🧀 Tarte aux courgettes</div>
+                          <div className="product-name">Tarte aux courgettes</div>
                           <div className="stock-info">
                             Ingrédient faible: Fromage de chèvre • Max 8 portions possible
                           </div>
@@ -3520,7 +3195,7 @@ function App() {
                     <div className="alert-card">
                       <div className="alert-item">
                         <div className="product-info">
-                          <div className="product-name">🥗 Salade de chèvre chaud</div>
+                          <div className="product-name">Salade de chèvre chaud</div>
                           <div className="stock-info">
                             Stock ingrédients insuffisant • Production suspendue
                           </div>
@@ -3616,7 +3291,7 @@ function App() {
                                 className="button small critical"
                                 onClick={() => setActiveTab('orders')}
                               >
-                                🚨 Commander
+                                Commander
                               </button>
                             </div>
                           </div>
@@ -3668,13 +3343,13 @@ function App() {
                 <div className="alert-card critical">
                   <div className="alert-item">
                     <div className="product-info">
-                      <div className="product-name">🐟 Saumon frais</div>
+                      <div className="product-name">Saumon frais</div>
                       <div className="stock-info">
                         Lot SAU-2024-15 • 2.8 kg • <span style={{color: 'var(--color-danger-red)', fontWeight: 'bold'}}>Expire dans 1 jour</span>
                       </div>
                     </div>
                     <div className="item-actions">
-                      <button className="button small critical">🚨 Urgent</button>
+                      <button className="button small critical">Urgent</button>
                     </div>
                   </div>
                 </div>
@@ -3682,13 +3357,13 @@ function App() {
                 <div className="alert-card critical">
                   <div className="alert-item">
                     <div className="product-info">
-                      <div className="product-name">🥛 Crème fraîche</div>
+                      <div className="product-name">Crème fraîche</div>
                       <div className="stock-info">
                         Lot CRE-2024-08 • 1.5 L • <span style={{color: 'var(--color-danger-red)', fontWeight: 'bold'}}>Expire dans 2 jours</span>
                       </div>
                     </div>
                     <div className="item-actions">
-                      <button className="button small critical">🚨 Urgent</button>
+                      <button className="button small critical">Urgent</button>
                     </div>
                   </div>
                 </div>
@@ -3696,13 +3371,13 @@ function App() {
                 <div className="alert-card warning">
                   <div className="alert-item">
                     <div className="product-info">
-                      <div className="product-name">🧀 Brie de Meaux</div>
+                      <div className="product-name">Brie de Meaux</div>
                       <div className="stock-info">
                         Lot BRI-2024-03 • 800g • <span style={{color: 'var(--color-warning-orange)', fontWeight: 'bold'}}>Expire dans 3 jours</span>
                       </div>
                     </div>
                     <div className="item-actions">
-                      <button className="button small warning">⚡ Utiliser rapidement</button>
+                      <button className="button small warning">Utiliser rapidement</button>
                     </div>
                   </div>
                 </div>
@@ -3742,7 +3417,7 @@ function App() {
                         fontSize: '10px'
                       }}
                     >
-                      📦 Produits
+                      Produits
                     </button>
                     <button 
                       className="button small"
@@ -3754,7 +3429,7 @@ function App() {
                         fontSize: '10px'
                       }}
                     >
-                      🍽️ Productions
+                      Productions
                     </button>
                   </div>
                 </div>
@@ -3762,25 +3437,25 @@ function App() {
                 <div className="alert-card critical">
                   <div className="alert-item">
                     <div className="product-info">
-                      <div className="product-name">🥛 Lait frais</div>
+                      <div className="product-name">Lait frais</div>
                       <div className="stock-info">
                         Lot LAI-2024-15 • 12 L • Expire dans 2 jours (25/09/2025)
                       </div>
                     </div>
                     <div className="item-actions">
-                      <button className="button small critical">🚨 Urgent</button>
+                      <button className="button small critical">Urgent</button>
                     </div>
                   </div>
                   
                   <div className="alert-item">
                     <div className="product-info">
-                      <div className="product-name">🐟 Saumon frais</div>
+                      <div className="product-name">Saumon frais</div>
                       <div className="stock-info">
                         Lot SAU-2024-09 • 3.5 kg • Expire dans 1 jour (24/09/2025)
                       </div>
                     </div>
                     <div className="item-actions">
-                      <button className="button small critical">🚨 Urgent</button>
+                      <button className="button small critical">Urgent</button>
                     </div>
                   </div>
                 </div>
@@ -3820,7 +3495,7 @@ function App() {
                         fontSize: '10px'
                       }}
                     >
-                      📦 Produits
+                      Produits
                     </button>
                     <button 
                       className="button small"
@@ -3832,7 +3507,7 @@ function App() {
                         fontSize: '10px'
                       }}
                     >
-                      🍽️ Productions
+                      Productions
                     </button>
                   </div>
                 </div>
@@ -3840,13 +3515,13 @@ function App() {
                 <div className="alert-card warning">
                   <div className="alert-item">
                     <div className="product-info">
-                      <div className="product-name">🧀 Mozzarella di Bufala</div>
+                      <div className="product-name">Mozzarella di Bufala</div>
                       <div className="stock-info">
                         Lot MOZ-2024-12 • 2.2 kg • Expire dans 6 jours (23/09/2025)
                       </div>
                     </div>
                     <div className="item-actions">
-                      <button className="button small" style={{background: '#fbbf24', color: '#000'}}>📅 Planifier</button>
+                      <button className="button small" style={{background: '#fbbf24', color: '#000'}}>Planifier</button>
                     </div>
                   </div>
                 </div>
@@ -3854,13 +3529,13 @@ function App() {
                 <div className="alert-card warning">
                   <div className="alert-item">
                     <div className="product-info">
-                      <div className="product-name">🥛 Yaourt grec</div>
+                      <div className="product-name">Yaourt grec</div>
                       <div className="stock-info">
                         Lot YAO-2024-09 • 3.5 L • Expire dans 5 jours (22/09/2025)
                       </div>
                     </div>
                     <div className="item-actions">
-                      <button className="button small" style={{background: '#fbbf24', color: '#000'}}>📅 Planifier</button>
+                      <button className="button small" style={{background: '#fbbf24', color: '#000'}}>Planifier</button>
                     </div>
                   </div>
                 </div>
@@ -3868,13 +3543,13 @@ function App() {
                 <div className="alert-card warning">
                   <div className="alert-item">
                     <div className="product-info">
-                      <div className="product-name">🍞 Pain artisanal</div>
+                      <div className="product-name">Pain artisanal</div>
                       <div className="stock-info">
                         Lot PAI-2024-07 • 8 unités • Expire dans 4 jours (21/09/2025)
                       </div>
                     </div>
                     <div className="item-actions">
-                      <button className="button small" style={{background: '#fbbf24', color: '#000'}}>📅 Planifier</button>
+                      <button className="button small" style={{background: '#fbbf24', color: '#000'}}>Planifier</button>
                     </div>
                   </div>
                 </div>
@@ -3882,13 +3557,13 @@ function App() {
                 <div className="alert-card warning">
                   <div className="alert-item">
                     <div className="product-info">
-                      <div className="product-name">🥬 Roquette</div>
+                      <div className="product-name">Roquette</div>
                       <div className="stock-info">
                         Lot ROQ-2024-11 • 1.8 kg • Expire dans 6 jours (23/09/2025)
                       </div>
                     </div>
                     <div className="item-actions">
-                      <button className="button small" style={{background: '#fbbf24', color: '#000'}}>📅 Planifier</button>
+                      <button className="button small" style={{background: '#fbbf24', color: '#000'}}>Planifier</button>
                     </div>
                   </div>
                 </div>
@@ -3896,13 +3571,13 @@ function App() {
                 <div className="alert-card warning">
                   <div className="alert-item">
                     <div className="product-info">
-                      <div className="product-name">🍤 Crevettes roses</div>
+                      <div className="product-name">Crevettes roses</div>
                       <div className="stock-info">
                         Lot CRE-2024-13 • 1.2 kg • Expire dans 7 jours (24/09/2025)
                       </div>
                     </div>
                     <div className="item-actions">
-                      <button className="button small" style={{background: '#fbbf24', color: '#000'}}>📅 Planifier</button>
+                      <button className="button small" style={{background: '#fbbf24', color: '#000'}}>Planifier</button>
                     </div>
                   </div>
                 </div>
@@ -3915,7 +3590,7 @@ function App() {
           {activeDashboardTab === "couts" && (
             <div className="section-card">
               <div className="section-title">
-                💰 Analyse des Coûts {showDemoData && '(Données de Démo)'}
+                Analyse des Coûts {showDemoData && '(Données de Démo)'}
                 {selectedDateRange && (
                   <span style={{ 
                     fontSize: '12px', 
@@ -3939,7 +3614,7 @@ function App() {
                   marginBottom: '16px'
                 }}>
                   <div style={{fontSize: '14px', color: 'var(--color-text-secondary)'}}>
-                    ℹ️ Aucune donnée de coûts pour la période sélectionnée. Importez des factures via OCR.
+                    Aucune donnée de coûts pour la période sélectionnée. Importez des factures via OCR.
                   </div>
                 </div>
               )}
@@ -3968,11 +3643,11 @@ function App() {
 
               {/* Répartition par catégorie de productions */}
               <div className="item-list">
-                <div className="section-title">🍽️ Répartition des Coûts par Catégorie de Productions</div>
+                <div className="section-title">Répartition des Coûts par Catégorie de Productions</div>
                 
                 <div className="item-row">
                   <div className="item-info">
-                    <div className="item-name">🍽️ Plats</div>
+                    <div className="item-name">Plats</div>
                     <div className="item-details">42.3% des coûts totaux • 18 productions actives</div>
                   </div>
                   <div className="item-value">357 142 €</div>
@@ -3980,7 +3655,7 @@ function App() {
 
                 <div className="item-row">
                   <div className="item-info">
-                    <div className="item-name">🥗 Entrées</div>
+                    <div className="item-name">Entrées</div>
                     <div className="item-details">28.7% des coûts totaux • 12 productions actives</div>
                   </div>
                   <div className="item-value">242 568 €</div>
@@ -3988,7 +3663,7 @@ function App() {
 
                 <div className="item-row">
                   <div className="item-info">
-                    <div className="item-name">🍹 Bar</div>
+                    <div className="item-name">Bar</div>
                     <div className="item-details">15.2% des coûts totaux • 8 productions actives</div>
                   </div>
                   <div className="item-value">128 463 €</div>
@@ -3996,7 +3671,7 @@ function App() {
 
                 <div className="item-row">
                   <div className="item-info">
-                    <div className="item-name">🍰 Desserts</div>
+                    <div className="item-name">Desserts</div>
                     <div className="item-details">10.1% des coûts totaux • 6 productions actives</div>
                   </div>
                   <div className="item-value">85 374 €</div>
@@ -4004,7 +3679,7 @@ function App() {
 
                 <div className="item-row">
                   <div className="item-info">
-                    <div className="item-name">📝 Autres</div>
+                    <div className="item-name">Autres</div>
                     <div className="item-details">3.7% des coûts totaux • 3 productions actives</div>
                   </div>
                   <div className="item-value">31 293 €</div>
@@ -4013,11 +3688,11 @@ function App() {
 
               {/* Répartition par catégorie de produits */}
               <div className="item-list">
-                <div className="section-title">📦 Répartition des Coûts par Catégorie de Produits</div>
+                <div className="section-title">Répartition des Coûts par Catégorie de Produits</div>
                 
                 <div className="item-row">
                   <div className="item-info">
-                    <div className="item-name">🥩 Viandes</div>
+                    <div className="item-name">Viandes</div>
                     <div className="item-details">38.5% des achats • Stock moyen: 287 kg</div>
                   </div>
                   <div className="item-value">326 235 €</div>
@@ -4025,7 +3700,7 @@ function App() {
 
                 <div className="item-row">
                   <div className="item-info">
-                    <div className="item-name">🐟 Poissons</div>
+                    <div className="item-name">Poissons</div>
                     <div className="item-details">24.1% des achats • Stock moyen: 156 kg</div>
                   </div>
                   <div className="item-value">204 187 €</div>
@@ -4033,7 +3708,7 @@ function App() {
 
                 <div className="item-row">
                   <div className="item-info">
-                    <div className="item-name">🥕 Légumes</div>
+                    <div className="item-name">Légumes</div>
                     <div className="item-details">18.7% des achats • Stock moyen: 423 kg</div>
                   </div>
                   <div className="item-value">158 463 €</div>
@@ -4041,7 +3716,7 @@ function App() {
 
                 <div className="item-row">
                   <div className="item-info">
-                    <div className="item-name">🧀 Crêmerie</div>
+                    <div className="item-name">Crêmerie</div>
                     <div className="item-details">12.3% des achats • Stock moyen: 89 kg</div>
                   </div>
                   <div className="item-value">104 187 €</div>
@@ -4049,7 +3724,7 @@ function App() {
 
                 <div className="item-row">
                   <div className="item-info">
-                    <div className="item-name">🌿 Épices & Aromates</div>
+                    <div className="item-name">Épices & Aromates</div>
                     <div className="item-details">7.8% des achats • Stock moyen: 23 kg</div>
                   </div>
                   <div className="item-value">66 096 €</div>
@@ -4058,11 +3733,11 @@ function App() {
 
               {/* Analyse pertes et déchets par produit */}
               <div className="item-list">
-                <div className="section-title">📊 Analyse Pertes & Déchets par Produit</div>
+                <div className="section-title">Analyse Pertes & Déchets par Produit</div>
                 
                 <div className="item-row">
                   <div className="item-info">
-                    <div className="item-name">🥩 Viandes</div>
+                    <div className="item-name">Viandes</div>
                     <div className="item-details">Perte: 15.2% • Parage et os • Impact: 18 productions</div>
                   </div>
                   <div className="item-actions">
@@ -4073,7 +3748,7 @@ function App() {
 
                 <div className="item-row">
                   <div className="item-info">
-                    <div className="item-name">🥬 Légumes</div>
+                    <div className="item-name">Légumes</div>
                     <div className="item-details">Perte: 12.3% • Épluchures et fanes • Impact: 24 productions</div>
                   </div>
                   <div className="item-actions">
@@ -4084,7 +3759,7 @@ function App() {
 
                 <div className="item-row">
                   <div className="item-info">
-                    <div className="item-name">🐟 Poissons</div>
+                    <div className="item-name">Poissons</div>
                     <div className="item-details">Perte: 8.7% • Arêtes et parements • Impact: 8 productions</div>
                   </div>
                   <div className="item-actions">
@@ -4096,11 +3771,11 @@ function App() {
 
               {/* Analyse pertes et déchets par production */}
               <div className="item-list">
-                <div className="section-title">🍽️ Analyse Pertes & Déchets par Production</div>
+                <div className="section-title">Analyse Pertes & Déchets par Production</div>
                 
                 <div className="item-row">
                   <div className="item-info">
-                    <div className="item-name">🍽️ Côte de bœuf grillée</div>
+                    <div className="item-name">Côte de bœuf grillée</div>
                     <div className="item-details">Perte: 18.5% • Principalement parage de viande</div>
                   </div>
                   <div className="item-actions">
@@ -4111,7 +3786,7 @@ function App() {
 
                 <div className="item-row">
                   <div className="item-info">
-                    <div className="item-name">🥗 Salade composée</div>
+                    <div className="item-name">Salade composée</div>
                     <div className="item-details">Perte: 11.2% • Épluchage et préparation légumes</div>
                   </div>
                   <div className="item-actions">
@@ -4122,7 +3797,7 @@ function App() {
 
                 <div className="item-row">
                   <div className="item-info">
-                    <div className="item-name">🐟 Filet de saumon</div>
+                    <div className="item-name">Filet de saumon</div>
                     <div className="item-details">Perte: 6.8% • Parage et désarêtage</div>
                   </div>
                   <div className="item-actions">
@@ -4140,7 +3815,7 @@ function App() {
           {activeDashboardTab === "rentabilite" && (
             <div className="section-card">
               <div className="section-title">
-                📈 Analyse de Rentabilité
+                Analyse de Rentabilité
                 {selectedDateRange && (
                   <span style={{ 
                     fontSize: '12px', 
@@ -4173,9 +3848,9 @@ function App() {
                     color: 'var(--color-text-secondary)',
                     fontSize: '14px'
                   }}>
-                    <li>💰 Données de ventes (CA)</li>
-                    <li>📄 Données de coûts (factures)</li>
-                    <li>🍽️ Recettes avec coûts matière calculés</li>
+                    <li>Données de ventes (CA)</li>
+                    <li>Données de coûts (factures)</li>
+                    <li>Recettes avec coûts matière calculés</li>
                   </ul>
                 </div>
               )}
@@ -4203,7 +3878,7 @@ function App() {
               </div>
               
               <div className="item-list">
-                <div className="section-title">Top Productions Rentables</div>
+                <div className="section-title">Les meilleures ventes Rentables</div>
                 {filteredAnalytics.topProductions.slice(0, 4).map((production, index) => (
                   <div key={index} className="item-row">
                     <div className="item-info">
@@ -4230,9 +3905,9 @@ function App() {
                 ))}
               </div>
 
-              {/* Flop Productions (nouvellement ajouté) */}
+              {/* Les moins vendues (nouvellement ajouté) */}
               <div className="item-list">
-                <div className="section-title">📉 Productions Moins Rentables</div>
+                <div className="section-title">Productions Moins Rentables</div>
                 {filteredAnalytics.flopProductions.slice(0, 4).map((production, index) => (
                   <div key={index} className="item-row">
                     <div className="item-info">
@@ -4288,7 +3963,7 @@ function App() {
           {activeDashboardTab === "previsionnel" && (
             <div className="section-card">
               <div className="section-title">
-                🔮 Analyse Prévisionnelle
+                Analyse Prévisionnelle
                 {selectedDateRange && (
                   <span style={{ 
                     fontSize: '14px', 
@@ -4332,7 +4007,7 @@ function App() {
 
               {/* Analyse des productions possibles avec filtre */}
               <div className="item-list">
-                <div className="section-title">🍽️ Productions Possibles avec Stocks Actuels</div>
+                <div className="section-title">Productions Possibles avec Stocks Actuels</div>
                 
                 {/* Filtre par catégorie de production */}
                 <div className="filter-section" style={{marginBottom: '15px'}}>
@@ -4353,11 +4028,11 @@ function App() {
                       }}
                     >
                       <option value="">Toutes productions</option>
-                      <option value="Entrée">🥗 Entrées</option>
-                      <option value="Plat">🍽️ Plats</option>
-                      <option value="Dessert">🍰 Desserts</option>
-                      <option value="Bar">🍹 Bar</option>
-                      <option value="Autres">📝 Autres</option>
+                      <option value="Entrée">Entrées</option>
+                      <option value="Plat">Plats</option>
+                      <option value="Dessert">Desserts</option>
+                      <option value="Bar">Bar</option>
+                      <option value="Autres">Autres</option>
                     </select>
                   </div>
                 </div>
@@ -4397,9 +4072,9 @@ function App() {
                     <div className="item-actions">
                       <button 
                         className="button small" 
-                        onClick={() => alert(`Détails pour ${production.nom}:\n\n🏷️ Catégorie: ${production.categorie}\n📦 Produit: ${production.produit}\n📏 Besoin: ${production.quantite_needed} ${production.unite} par portion\n📊 Stock disponible: ${production.stock_disponible} ${production.unite}\n⚡ Portions max: ${production.portions_possibles}`)}
+                        onClick={() => alert(`Détails pour ${production.nom}:\n\nCatégorie: ${production.categorie}\nProduit: ${production.produit}\nBesoin: ${production.quantite_needed} ${production.unite} par portion\nStock disponible: ${production.stock_disponible} ${production.unite}\nPortions max: ${production.portions_possibles}`)}
                       >
-                        🔍 Détails
+                        Détails
                       </button>
                     </div>
                   </div>
@@ -4415,7 +4090,7 @@ function App() {
         {/* GESTION DE STOCKS - avec OCR et Grilles de données */}
         <div id="stocks" className={`wireframe-section ${activeTab === "stocks" ? "active" : ""}`}>
           <div className="wireframe">
-            <h2>📦 Gestion de Stocks Complète</h2>
+            <h2>Stocks & inventaires</h2>
             
             {/* Sous-navigation Stocks */}
             <div className="sub-nav-tabs">
@@ -4427,7 +4102,7 @@ function App() {
                   color: activeStockTab === 'stocks' ? 'white' : 'var(--color-text-secondary)'
                 }}
               >
-                📦 Stocks & DLC
+                Stocks & DLC
               </button>
               {/* Répartition - MASQUÉ pour employé cuisine ET barman */}
               {canAccessRepartition() && (
@@ -4439,7 +4114,7 @@ function App() {
                     color: activeStockTab === 'repartition' ? 'white' : 'var(--color-text-secondary)'
                   }}
                 >
-                  🎯 Répartition
+                  Répartition
                 </button>
               )}
               <button 
@@ -4450,19 +4125,19 @@ function App() {
                   color: activeStockTab === 'ocr' ? 'white' : 'var(--color-text-secondary)'
                 }}
               >
-                📱 OCR
+                OCR
               </button>
             </div>
 
             {/* ONGLET STOCKS */}
             <div className={`production-tab ${activeStockTab === 'stocks' ? 'active' : ''}`}>
               <div className="section-card">
-                <div className="section-title">📦 Gestion des Stocks</div>
+                <div className="section-title">Gestion des Stocks</div>
                 
                 {/* Actions rapides - MASQUÉ pour employé cuisine */}
                 {currentUser?.role !== 'employe_cuisine' && (
                   <div style={{display: 'flex', gap: '10px', marginBottom: '20px', flexWrap: 'wrap'}}>
-                    <button className="button" onClick={() => setShowProduitModal(true)}>➕ Nouveau Produit</button>
+                    <button className="button" onClick={() => setShowProduitModal(true)}>Nouveau Produit</button>
                   </div>
                 )}
 
@@ -4563,8 +4238,8 @@ function App() {
                     justifyContent: 'space-between'
                   }}>
                     <span style={{fontSize: '14px', fontWeight: '500'}}>
-                      {stockFilter === 'critical' && '⚠️ Filtre actif : Stocks critiques uniquement'}
-                      {stockFilter === 'dlc' && '⏰ Filtre actif : DLC < 3 jours uniquement'}
+                      {stockFilter === 'critical' && 'Filtre actif : Stocks critiques uniquement'}
+                      {stockFilter === 'dlc' && 'Filtre actif : DLC < 3 jours uniquement'}
                     </span>
                     <button
                       onClick={() => setStockFilter('all')}
@@ -4605,7 +4280,7 @@ function App() {
                           fontSize: '12px'
                         }}
                       >
-                        📦 Par Produit
+                        Par Produit
                       </button>
                       <button 
                         className="button small"
@@ -4621,7 +4296,7 @@ function App() {
                           fontSize: '12px'
                         }}
                       >
-                        🔪 Par Préparation
+                        Par Préparation
                       </button>
                       <button 
                         className="button small"
@@ -4636,7 +4311,7 @@ function App() {
                           fontSize: '12px'
                         }}
                       >
-                        🍽️ Par Production
+                        Par Production
                       </button>
                     </div>
                   </div>
@@ -4646,7 +4321,7 @@ function App() {
                     <div style={{display: 'flex', gap: '15px', alignItems: 'center', flexWrap: 'wrap'}}>
                       {/* Barre de recherche */}
                       <div style={{display: 'flex', alignItems: 'center', gap: '8px', flex: '1', minWidth: '200px'}}>
-                        <label className="filter-label" style={{fontSize: '14px', minWidth: '70px'}}>🔍 Recherche :</label>
+                        <label className="filter-label" style={{fontSize: '14px', minWidth: '70px'}}>Recherche :</label>
                         <input
                           type="text"
                           placeholder={stockViewMode === 'produits' ? "Nom du produit..." : "Nom de la production..."}
@@ -4666,7 +4341,7 @@ function App() {
                       
                       {/* Filtre par catégorie */}
                       <div style={{display: 'flex', alignItems: 'center', gap: '8px'}}>
-                        <label className="filter-label" style={{fontSize: '14px', minWidth: '70px'}}>🏷️ Catégorie :</label>
+                        <label className="filter-label" style={{fontSize: '14px', minWidth: '70px'}}>Catégorie :</label>
                         <select 
                           className="filter-select"
                           value={stockFilterCategory}
@@ -4689,36 +4364,36 @@ function App() {
                           {stockViewMode === 'productions' ? (
                             // Catégories de productions
                             <>
-                              <option value="entrée">🥗 Entrées</option>
-                              <option value="plat">🍽️ Plats</option>
-                              <option value="dessert">🍰 Desserts</option>
-                              <option value="bar">🍹 Bar</option>
-                              <option value="autres">📝 Autres</option>
+                              <option value="entrée">Entrées</option>
+                              <option value="plat">Plats</option>
+                              <option value="dessert">Desserts</option>
+                              <option value="bar">Bar</option>
+                              <option value="autres">Autres</option>
                             </>
                           ) : stockViewMode === 'preparations' ? (
                             // Catégories basées sur les produits sources des préparations
                             <>
-                              <option value="légumes">🥕 Légumes</option>
-                              <option value="viandes">🥩 Viandes</option>
-                              <option value="poissons">🐟 Poissons</option>
-                              <option value="produits laitiers">🧀 Crêmerie</option>
-                              <option value="épices">🌶️ Épices</option>
-                              <option value="fruits">🍎 Fruits</option>
-                              <option value="céréales">🌾 Céréales</option>
-                              <option value="autres">📦 Autres</option>
+                              <option value="légumes">Légumes</option>
+                              <option value="viandes">Viandes</option>
+                              <option value="poissons">Poissons</option>
+                              <option value="produits laitiers">Crêmerie</option>
+                              <option value="épices">Épices</option>
+                              <option value="fruits">Fruits</option>
+                              <option value="céréales">Céréales</option>
+                              <option value="autres">Autres</option>
                             </>
                           ) : (
                             // Catégories de produits (mode par défaut)
                             <>
-                              <option value="légumes">🥕 Légumes</option>
-                              <option value="viandes">🥩 Viandes</option>
-                              <option value="poissons">🐟 Poissons</option>
-                              <option value="produits laitiers">🧀 Crêmerie</option>
-                              <option value="épices">🌶️ Épices</option>
-                              <option value="fruits">🍎 Fruits</option>
-                              <option value="céréales">🌾 Céréales</option>
-                              <option value="boissons">🥤 Boissons</option>
-                              <option value="autres">📦 Autres</option>
+                              <option value="légumes">Légumes</option>
+                              <option value="viandes">Viandes</option>
+                              <option value="poissons">Poissons</option>
+                              <option value="produits laitiers">Crêmerie</option>
+                              <option value="épices">Épices</option>
+                              <option value="fruits">Fruits</option>
+                              <option value="céréales">Céréales</option>
+                              <option value="boissons">Boissons</option>
+                              <option value="autres">Autres</option>
                             </>
                           )}
                         </select>
@@ -4790,7 +4465,7 @@ function App() {
                               <div className="item-actions">
                                 {/* Éditer production - MASQUÉ pour employé cuisine */}
                                 {canEditItems() && (
-                                  <button className="button small" onClick={() => handleEdit(production, 'recette')}>✏️ Éditer</button>
+                                  <button className="button small" onClick={() => handleEdit(production, 'recette')}>Éditer</button>
                                 )}
                                 
                                 {/* Archiver production - MASQUÉ pour employé cuisine */}
@@ -4809,7 +4484,7 @@ function App() {
                                     }
                                   }}
                                 >
-                                  📁 Archiver
+                                  Archiver
                                 </button>
                                 )}
                               </div>
@@ -4842,7 +4517,7 @@ function App() {
                                     cursor: stockCurrentPage === 1 ? 'not-allowed' : 'pointer'
                                   }}
                                 >
-                                  ⏮️ Début
+                                  Début
                                 </button>
                                 <button 
                                   className="button small" 
@@ -4853,7 +4528,7 @@ function App() {
                                     cursor: stockCurrentPage === 1 ? 'not-allowed' : 'pointer'
                                   }}
                                 >
-                                  ⬅️ Précédent
+                                  Précédent
                                 </button>
                                 <button 
                                   className="button small" 
@@ -4883,7 +4558,7 @@ function App() {
                         </>
                       );
                     } else if (stockViewMode === 'preparations') {
-                      // ✅ AFFICHAGE PAR PRÉPARATIONS AVEC STOCK
+                      // AFFICHAGE PAR PRÉPARATIONS AVEC STOCK
                       return (
                         <>
                           {/* Actions rapides pour les préparations */}
@@ -4892,7 +4567,7 @@ function App() {
                               className="button"
                               onClick={() => setShowMovementPreparationModal(true)}
                             >
-                              📋 Mouvement Stock
+                              Mouvement Stock
                             </button>
                             <button 
                               className="button secondary"
@@ -4903,9 +4578,9 @@ function App() {
                                 );
                                 
                                 if (alertes.length === 0) {
-                                  alert("✅ Aucune alerte pour les préparations !");
+                                  alert("Aucune alerte pour les préparations !");
                                 } else {
-                                  const message = `⚠️ ALERTES PRÉPARATIONS (${alertes.length}):\n\n` +
+                                  const message = `ALERTES PRÉPARATIONS (${alertes.length}):\n\n` +
                                     alertes.map(a => 
                                       `• ${a.preparation_nom}: ${a.quantite_disponible} ${a.unite} ` +
                                       (a.quantite_disponible <= a.quantite_min ? '(Stock critique)' : '') +
@@ -4915,7 +4590,7 @@ function App() {
                                 }
                               }}
                             >
-                              ⚠️ Alertes DLC/Stock
+                              Alertes DLC/Stock
                             </button>
                           </div>
 
@@ -5094,7 +4769,7 @@ function App() {
                                                 background: isStockCritique ? '#fecaca' : '#dcfce7',
                                                 color: isStockCritique ? '#991b1b' : '#166534'
                                               }}>
-                                                {isStockCritique ? '⚠️ Critique' : '✅ OK'}
+                                                {isStockCritique ? 'Critique' : 'OK'}
                                               </div>
                                               
                                               {/* Actions */}
@@ -5111,7 +4786,7 @@ function App() {
                                                 }}
                                                 style={{fontSize: '12px', padding: '4px 8px'}}
                                               >
-                                                📝 Ajuster
+                                                Ajuster
                                               </button>
                                               
                                               {/* Éditer préparation - MASQUÉ pour employé cuisine */}
@@ -5246,15 +4921,15 @@ function App() {
                                 </div>
                                 <div className="item-details">
                                   Stock: {formatQuantity(stock.quantite_actuelle, unite)} / Min: {formatQuantity(stock.quantite_min, unite)}
-                                  {isLowStock && <span style={{color: 'var(--color-danger-red)', marginLeft: '8px'}}>⚠️ Critique</span>}
+                                  {isLowStock && <span style={{color: 'var(--color-danger-red)', marginLeft: '8px'}}>Critique</span>}
                                 </div>
                               </div>
                               <div className="item-actions">
                                 {/* Éditer produit - MASQUÉ pour employé cuisine */}
                                 {canEditItems() && (
-                                  <button className="button small" onClick={() => handleEdit(produit, 'produit')}>✏️ Produit</button>
+                                  <button className="button small" onClick={() => handleEdit(produit, 'produit')}>Produit</button>
                                 )}
-                                <button className="button small success" onClick={() => handleAjusterStock(stock)}>📊 Ajuster</button>
+                                <button className="button small success" onClick={() => handleAjusterStock(stock)}>Ajuster</button>
                               </div>
                             </div>
                           );
@@ -5286,7 +4961,7 @@ function App() {
                                   cursor: stockCurrentPage === 1 ? 'not-allowed' : 'pointer'
                                 }}
                               >
-                                ⏮️ Début
+                                Début
                               </button>
                               <button 
                                 className="button small" 
@@ -5297,7 +4972,7 @@ function App() {
                                   cursor: stockCurrentPage === 1 ? 'not-allowed' : 'pointer'
                                 }}
                               >
-                                ⬅️ Précédent
+                                Précédent
                               </button>
                               <span style={{
                                 padding: '6px 12px',
@@ -5342,7 +5017,7 @@ function App() {
 
                 {/* Section DLC & Lots intégrée */}
                 <div className="item-list">
-                  <div className="section-title">📅 Gestion DLC & Lots</div>
+                  <div className="section-title">Gestion DLC & Lots</div>
                   
                   {/* KPIs DLC */}
                   <div className="kpi-grid">
@@ -5394,7 +5069,7 @@ function App() {
                               className="button small"
                               onClick={() => fetchProductBatches(item.product_id)}
                             >
-                              🔍 Voir lots
+                              Voir lots
                             </button>
                           </div>
                         </div>
@@ -5404,7 +5079,7 @@ function App() {
                     <div style={{textAlign: 'center', padding: '40px', color: 'var(--color-text-muted)'}}>
                       <div style={{fontSize: '48px', marginBottom: '15px'}}>📅</div>
                       <p>Aucun lot avec DLC trouvé</p>
-                      <button className="button" onClick={fetchBatchSummary}>🔄 Actualiser</button>
+                      <button className="button" onClick={fetchBatchSummary}>Actualiser</button>
                     </div>
                   )}
                 </div>
@@ -5414,7 +5089,7 @@ function App() {
             {/* ONGLET OCR */}
             <div className={`production-tab ${activeStockTab === 'ocr' ? 'active' : ''}`}>
               <div className="section-card">
-                <div className="section-title">📱 Module OCR</div>
+                <div className="section-title">Module OCR</div>
                 
                 {/* Navigation entre Tickets Z et Factures - Tickets Z masqué pour employé cuisine */}
                 <div className="ocr-tabs-container" style={{
@@ -5432,7 +5107,7 @@ function App() {
                         color: activeOcrTab === 'tickets-z' ? 'white' : 'var(--color-text-secondary)'
                       }}
                     >
-                      📊 Tickets Z
+                      Tickets Z
                     </button>
                   )}
                   
@@ -5444,7 +5119,7 @@ function App() {
                       color: activeOcrTab === 'factures' ? 'white' : 'var(--color-text-secondary)'
                     }}
                   >
-                    🧾 Factures
+                    Factures
                   </button>
                   
                   <button 
@@ -5455,20 +5130,20 @@ function App() {
                       color: activeOcrTab === 'mercuriales' ? 'white' : 'var(--color-text-secondary)'
                     }}
                   >
-                    📋 Mercuriales
+                    Mercuriales
                   </button>
                 </div>
                 
                 {/* Actions communes */}
                 <div style={{display: 'flex', gap: '10px', marginBottom: '20px', flexWrap: 'wrap'}}>
                   <button className="button" onClick={() => setShowOcrModal(true)}>
-                    📁 Importer {
+                    Importer {
                       activeOcrTab === 'tickets-z' ? 'Ticket Z' : 
                       activeOcrTab === 'factures' ? 'Facture(s)' :
                       'Mercuriale'
                     }
                   </button>
-                  <button className="button" onClick={handleTraitementAuto} disabled={loading}>🔄 Traitement Auto</button>
+                  <button className="button" onClick={handleTraitementAuto} disabled={loading}>Traitement Auto</button>
                   <button 
                     className="button" 
                     onClick={handleSupprimerTousDocumentsOcr} 
@@ -5479,14 +5154,14 @@ function App() {
                       color: 'white'
                     }}
                   >
-                    🗑️ Vider l&apos;historique
+                    Vider l&apos;historique
                   </button>
                 </div>
 
                 {/* Contenu spécifique aux Tickets Z */}
                 {activeOcrTab === 'tickets-z' && (
                   <div className="item-list">
-                    <div className="section-title">📊 Historique des Tickets Z</div>
+                    <div className="section-title">Historique des Tickets Z</div>
                     
                     {/* Validation des données pour Tickets Z */}
                     {documentsOcr.filter(doc => doc.type_document === 'z_report').length > 0 && (
@@ -5498,7 +5173,7 @@ function App() {
                         border: '1px solid var(--color-border)'
                       }}>
                         <h4 style={{marginBottom: '10px', color: 'var(--color-text-primary)'}}>
-                          ✅ Validation des Données Extraites
+                          Validation des Données Extraites
                         </h4>
                         {(() => {
                           const latestZReport = documentsOcr
@@ -5511,23 +5186,23 @@ function App() {
                           return (
                             <div style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '10px'}}>
                               <div className="validation-card">
-                                <label>📅 Date:</label>
+                                <label>Date:</label>
                                 <input type="date" defaultValue={data.date} style={{width: '100%', padding: '4px'}} />
                               </div>
                               <div className="validation-card">
-                                <label>🍽️ Couverts:</label>
+                                <label>Couverts:</label>
                                 <input type="number" defaultValue={data.covers} style={{width: '100%', padding: '4px'}} />
                               </div>
                               <div className="validation-card">
-                                <label>💰 Total HT:</label>
+                                <label>Total HT:</label>
                                 <input type="number" step="0.01" defaultValue={data.total_ht} style={{width: '100%', padding: '4px'}} />
                               </div>
                               <div className="validation-card">
-                                <label>💰 Total TTC:</label>
+                                <label>Total TTC:</label>
                                 <input type="number" step="0.01" defaultValue={data.total_ttc} style={{width: '100%', padding: '4px'}} />
                               </div>
                               <button className="button small success" style={{gridColumn: 'span 2'}}>
-                                ✅ Valider les corrections
+                                Valider les corrections
                               </button>
                               <button 
                                 className="button small"
@@ -5535,7 +5210,7 @@ function App() {
                                   try {
                                     setLoading(true);
                                     const response = await axios.post(`${API}/ocr/analyze-ticket-z-ai/${latestZReport.id}`);
-                                    alert(`🤖 Analyse IA Ticket Z terminée !\n\n✅ ${response.data.data.productions.length} productions détectées\n💰 Coût : ~0.003€`);
+                                    alert(`Analyse IA Ticket Z terminée !\n\n✅ ${response.data.data.productions.length} productions détectées\nCoût : ~0.003€`);
                                     fetchDocumentsOcr();
                                     setLoading(false);
                                   } catch (err) {
@@ -5549,7 +5224,7 @@ function App() {
                                   color: 'white'
                                 }}
                               >
-                                🤖 Améliorer avec Gemini IA
+                                Améliorer avec Gemini IA
                               </button>
                             </div>
                           );
@@ -5595,7 +5270,7 @@ function App() {
                             <div className="item-info">
                               <div className="item-name">{doc.nom_fichier}</div>
                               <div className="item-details">
-                                {doc.type_document === 'z_report' ? '📊 Rapport Z' : '🧾 Facture'} - 
+                                {doc.type_document === 'z_report' ? 'Rapport Z' : 'Facture'} -
                                 {new Date(doc.date_upload).toLocaleDateString('fr-FR')}
                               </div>
                             </div>
@@ -5604,14 +5279,14 @@ function App() {
                                 className="button small"
                                 onClick={() => handleSelectDocument(doc)}
                               >
-                                👁️ Aperçu
+                                Aperçu
                               </button>
                               {doc.type_document === 'z_report' && (
                                 <button 
                                   className="button small"
                                   onClick={() => handleProcessZReport(doc.id)}
                                 >
-                                  ⚡ Traiter
+                                  Traiter
                                 </button>
                               )}
                             </div>
@@ -5644,7 +5319,7 @@ function App() {
                                   cursor: ocrCurrentPage === 1 ? 'not-allowed' : 'pointer'
                                 }}
                               >
-                                ⏮️ Début
+                                Début
                               </button>
                               <button 
                                 className="button small" 
@@ -5655,7 +5330,7 @@ function App() {
                                   cursor: ocrCurrentPage === 1 ? 'not-allowed' : 'pointer'
                                 }}
                               >
-                                ⬅️ Précédent
+                                Précédent
                               </button>
                               <span style={{
                                 padding: '6px 12px',
@@ -5701,7 +5376,7 @@ function App() {
                 {/* Contenu spécifique aux Factures */}
                 {activeOcrTab === 'factures' && (
                   <div className="item-list">
-                    <div className="section-title">🧾 Historique des Factures</div>
+                    <div className="section-title">Historique des Factures</div>
                     
                     {/* Message d'information pour les factures multiples */}
                     <div className="info-section" style={{
@@ -5712,7 +5387,7 @@ function App() {
                       border: '1px solid var(--color-primary-blue)'
                     }}>
                       <h4 style={{marginBottom: '10px', color: 'var(--color-primary-blue)'}}>
-                        📤 Détection automatique de factures multiples
+                        Détection automatique de factures multiples
                       </h4>
                       <p style={{fontSize: '14px', lineHeight: '1.4', color: 'var(--color-text-muted)'}}>
                         L'OCR peut automatiquement détecter si votre document contient plusieurs factures et les traiter séparément. 
@@ -5732,7 +5407,7 @@ function App() {
                         borderRadius: '6px',
                         borderLeft: '4px solid #f59e0b'
                       }}>
-                        ⏳ Factures À Valider ({documentsOcr.filter(doc => doc.type_document === 'facture_fournisseur' && doc.statut !== 'integre').length})
+                        Factures À Valider ({documentsOcr.filter(doc => doc.type_document === 'facture_fournisseur' && doc.statut !== 'integre').length})
                       </h4>
                     
                     {/* Liste des factures avec pagination */}
@@ -5799,7 +5474,7 @@ function App() {
                                 </div>
                               </div>
                               <div className="item-actions">
-                                <button className="button small" onClick={() => handleSelectDocument(doc)}>👁️ Aperçu</button>
+                                <button className="button small" onClick={() => handleSelectDocument(doc)}>Aperçu</button>
                                 <button 
                                   className="button small success" 
                                   onClick={() => {
@@ -5808,7 +5483,7 @@ function App() {
                                   }}
                                   style={{marginLeft: '5px'}}
                                 >
-                                  ✅ Valider
+                                  Valider
                                 </button>
                               </div>
                             </div>
@@ -5832,7 +5507,7 @@ function App() {
                                     cursor: ocrCurrentPage === 1 ? 'not-allowed' : 'pointer'
                                   }}
                                 >
-                                  ⏮️ Début
+                                  Début
                                 </button>
                                 <button 
                                   className="button small" 
@@ -5843,7 +5518,7 @@ function App() {
                                     cursor: ocrCurrentPage === 1 ? 'not-allowed' : 'pointer'
                                   }}
                                 >
-                                  ⬅️ Préc.
+                                  Préc.
                                 </button>
                                 <button 
                                   className="button small" 
@@ -5880,7 +5555,7 @@ function App() {
                 {/* Contenu spécifique aux Factures */}
                 {activeOcrTab === 'factures' && (
                   <div className="item-list">
-                    <div className="section-title">🧾 Historique des Factures Fournisseurs</div>
+                    <div className="section-title">Historique des Factures Fournisseurs</div>
                     
                     {/* Validation des données pour Factures */}
                     {documentsOcr.filter(doc => doc.type_document === 'facture_fournisseur').length > 0 && (
@@ -5892,7 +5567,7 @@ function App() {
                         border: '1px solid var(--color-border)'
                       }}>
                         <h4 style={{marginBottom: '10px', color: 'var(--color-text-primary)'}}>
-                          ✅ Validation des Données Extraites
+                          Validation des Données Extraites
                         </h4>
                         {(() => {
                           const latestInvoice = documentsOcr
@@ -5905,23 +5580,23 @@ function App() {
                           return (
                             <div style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '10px'}}>
                               <div className="validation-card">
-                                <label>🏪 Fournisseur:</label>
+                                <label>Fournisseur:</label>
                                 <input type="text" defaultValue={data.fournisseur} style={{width: '100%', padding: '4px'}} />
                               </div>
                               <div className="validation-card">
-                                <label>📅 Date:</label>
+                                <label>Date:</label>
                                 <input type="date" defaultValue={data.date} style={{width: '100%', padding: '4px'}} />
                               </div>
                               <div className="validation-card">
-                                <label>🔢 N° Facture:</label>
+                                <label>N° Facture:</label>
                                 <input type="text" defaultValue={data.numero_facture} style={{width: '100%', padding: '4px'}} />
                               </div>
                               <div className="validation-card">
-                                <label>💰 Total TTC:</label>
+                                <label>Total TTC:</label>
                                 <input type="number" step="0.01" defaultValue={data.total_ttc} style={{width: '100%', padding: '4px'}} />
                               </div>
                               <button className="button small success" style={{gridColumn: 'span 2'}}>
-                                ✅ Valider les corrections
+                                Valider les corrections
                               </button>
                             </div>
                           );
@@ -5941,7 +5616,7 @@ function App() {
                         borderRadius: '6px',
                         borderLeft: '4px solid #10b981'
                       }}>
-                        ✅ Factures Validées - Historique ({documentsOcr.filter(doc => doc.type_document === 'facture_fournisseur' && doc.statut === 'integre').length})
+                        Factures Validées - Historique ({documentsOcr.filter(doc => doc.type_document === 'facture_fournisseur' && doc.statut === 'integre').length})
                       </h4>
 
                     {/* Liste des factures VALIDÉES avec pagination */}
@@ -5952,7 +5627,7 @@ function App() {
                         doc.statut === 'integre'
                       );
                       
-                      console.log(`📊 Factures validées (statut=integre): ${filteredDocs.length}`, filteredDocs.map(d => d.nom_fichier));
+                      console.log(`Factures validées (statut=integre): ${filteredDocs.length}`, filteredDocs.map(d => d.nom_fichier));
                       
                       // Calculer la pagination
                       const totalPages = Math.ceil(filteredDocs.length / ocrDocumentsPerPage);
@@ -5976,7 +5651,7 @@ function App() {
                             <div key={index} className="item-row">
                               <div className="item-info">
                                 <div className="item-name">
-                                  🧾 Facture de {doc.donnees_parsees?.fournisseur || 'Fournisseur inconnu'}
+                                  Facture de {doc.donnees_parsees?.fournisseur || 'Fournisseur inconnu'}
                                 </div>
                                 <div className="item-details">
                                   {doc.donnees_parsees?.total_ttc ? `${doc.donnees_parsees.total_ttc}€ TTC` : 'Montant non identifié'} • 
@@ -5995,7 +5670,7 @@ function App() {
                                   className="button small"
                                   onClick={() => handleSelectDocument(doc)}
                                 >
-                                  👁️ Aperçu
+                                  Aperçu
                                 </button>
                                 <button 
                                   className="button small"
@@ -6006,7 +5681,7 @@ function App() {
                                     cursor: 'not-allowed'
                                   }}
                                 >
-                                  ✅ Intégrée
+                                  Intégrée
                                 </button>
                               </div>
                             </div>
@@ -6030,7 +5705,7 @@ function App() {
                                     cursor: ocrCurrentPage === 1 ? 'not-allowed' : 'pointer'
                                   }}
                                 >
-                                  ⏮️ Début
+                                  Début
                                 </button>
                                 <button 
                                   className="button small" 
@@ -6041,7 +5716,7 @@ function App() {
                                     cursor: ocrCurrentPage === 1 ? 'not-allowed' : 'pointer'
                                   }}
                                 >
-                                  ⬅️ Préc.
+                                  Préc.
                                 </button>
                                 <button 
                                   className="button small" 
@@ -6078,7 +5753,7 @@ function App() {
                 {/* Contenu spécifique aux Mercuriales */}
                 {activeOcrTab === 'mercuriales' && (
                   <div className="item-list">
-                    <div className="section-title">📋 Import Mercuriales - Création Produits</div>
+                    <div className="section-title">Import Mercuriales - Création Produits</div>
                     
                     {/* Instructions d'utilisation */}
                     <div style={{
@@ -6089,17 +5764,17 @@ function App() {
                       border: '1px solid #3b82f6'
                     }}>
                       <h4 style={{marginBottom: '12px', color: '#1e40af', fontSize: '16px', fontWeight: 'bold'}}>
-                        📋 Comment utiliser les Mercuriales
+                        Comment utiliser les Mercuriales
                       </h4>
                       <div style={{fontSize: '14px', color: '#1e40af', lineHeight: '1.5'}}>
                         <div style={{marginBottom: '8px'}}>
-                          <strong>1. 📁 Uploadez</strong> la liste de prix PDF/image de votre fournisseur
+                          <strong>1. Uploadez</strong> la liste de prix PDF/image de votre fournisseur
                         </div>
                         <div style={{marginBottom: '8px'}}>
-                          <strong>2. 🤖 Extraction</strong> automatique des produits et prix
+                          <strong>2. Extraction</strong> automatique des produits et prix
                         </div>
                         <div style={{marginBottom: '8px'}}>
-                          <strong>3. ✅ Validation</strong> et création des nouveaux produits en un clic
+                          <strong>3. Validation</strong> et création des nouveaux produits en un clic
                         </div>
                         <div style={{fontSize: '12px', marginTop: '8px', padding: '8px', background: 'white', borderRadius: '4px'}}>
                           💡 <strong>Conseil :</strong> Les mercuriales permettent d&apos;importer rapidement tous les nouveaux produits saisonniers de vos fournisseurs
@@ -6117,7 +5792,7 @@ function App() {
                     }}>
                       <div style={{textAlign: 'center', marginBottom: '20px'}}>
                         <h3 style={{fontSize: '18px', color: '#059669', marginBottom: '10px'}}>
-                          📥 Import Multi-Onglets (Catalogue Complet)
+                          Import Multi-Onglets (Catalogue Complet)
                         </h3>
                         <p style={{fontSize: '14px', color: '#666', marginBottom: '15px'}}>
                           Importez un fichier Excel (.xlsx) contenant plusieurs onglets (catégories).
@@ -6125,7 +5800,7 @@ function App() {
                         </p>
                         
                         <label className="button primary" style={{cursor: 'pointer', fontSize: '16px', padding: '12px 24px'}}>
-                            📁 Sélectionner le fichier Excel Complet
+                            Sélectionner le fichier Excel Complet
                             <input 
                                 type="file" 
                                 accept=".xlsx,.xls" 
@@ -6147,9 +5822,9 @@ function App() {
                                         
                                         const sheetDetails = res.data.sheets_processed.map(s => `• ${s.name}: ${s.count} produits`).join('\n');
                                         
-                                        alert(`✅ Import terminé avec succès !\n\n` +
-                                              `📦 Produits créés : ${res.data.products_created}\n` +
-                                              `✏️ Produits mis à jour : ${res.data.products_updated}\n\n` +
+                                        alert(`Import terminé avec succès !\n\n` +
+                                              `Produits créés : ${res.data.products_created}\n` +
+                                              `Produits mis à jour : ${res.data.products_updated}\n\n` +
                                               `Onglets traités :\n${sheetDetails}`);
                                               
                                         fetchStocks();
@@ -6174,14 +5849,14 @@ function App() {
                       marginTop: '24px'
                     }}>
                       <h4 style={{color: '#059669', marginBottom: '16px', fontSize: '16px', fontWeight: 'bold'}}>
-                        📤 Upload Mercuriale Fournisseur
+                        Upload Mercuriale Fournisseur
                       </h4>
                       
                       <div style={{display: 'grid', gap: '16px'}}>
                         {/* Sélectionner fournisseur */}
                         <div>
                           <label style={{display: 'block', marginBottom: '8px', fontWeight: '600', color: '#374151'}}>
-                            🏪 Fournisseur concerné :
+                            Fournisseur concerné :
                           </label>
                           <select
                             style={{
@@ -6232,7 +5907,7 @@ function App() {
                               cursor: 'pointer'
                             }}
                           >
-                            📁 Sélectionner Mercuriale
+                            Sélectionner Mercuriale
                           </button>
                         </div>
                         
@@ -6246,7 +5921,7 @@ function App() {
                     {/* Historique des mercuriales importées */}
                     <div>
                       <h4 style={{marginBottom: '16px', color: '#374151', fontSize: '16px', fontWeight: 'bold'}}>
-                        📊 Mercuriales Importées Récemment
+                        Mercuriales Importées Récemment
                       </h4>
                       
                       {documentsOcr.filter(doc => doc.type_document === 'mercuriale').length > 0 ? (
@@ -6279,21 +5954,21 @@ function App() {
                                   onClick={() => handleSelectDocument(doc)}
                                   style={{fontSize: '12px', padding: '4px 8px'}}
                                 >
-                                  👁️ Aperçu
+                                  Aperçu
                                 </button>
                                 <button 
                                   className="button small success"
                                   onClick={() => handleValidateMercuriale(doc)}
                                   style={{fontSize: '12px', padding: '4px 8px'}}
                                 >
-                                  ✅ Valider & Créer
+                                  Valider & Créer
                                 </button>
                                 <button 
                                   className="button small danger"
                                   onClick={() => handleCancelMercurialeImport(doc.id)}
                                   style={{fontSize: '12px', padding: '4px 8px'}}
                                 >
-                                  ❌ Annuler Import
+                                  Annuler Import
                                 </button>
                               </div>
                             </div>
@@ -6317,7 +5992,7 @@ function App() {
               <div className="section-card">
                 {/* Répartition interactive avec préparations */}
                 <div className="item-list" style={{marginBottom: '20px'}}>
-                  <div className="section-title">📊 Répartition : Produit → Préparation → Production</div>
+                  <div className="section-title">Répartition : Produit → Préparation → Production</div>
                   
                   {/* Flux visuel */}
                   <div style={{display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '24px', padding: '16px', background: '#f9fafb', borderRadius: '8px', flexWrap: 'wrap'}}>
@@ -6429,7 +6104,7 @@ function App() {
                         );
                       })()}
                       <div style={{marginTop: '12px', fontSize: '13px', color: '#059669', fontWeight: '500'}}>
-                        💡 Les préparations servent d'étape intermédiaire entre le produit brut et la production finale
+                        Les préparations servent d'étape intermédiaire entre le produit brut et la production finale
                       </div>
                     </div>
                   )}
@@ -6453,7 +6128,7 @@ function App() {
                         <div style={{marginBottom: '16px', padding: '12px', background: 'white', borderRadius: '6px', border: '1px solid #d97706'}}>
                           <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
                             <div>
-                              <strong>📦 Stock disponible:</strong> {stockProduit ? stockProduit.quantite_actuelle : 0} {produitSelectionne?.unite}
+                              <strong>Stock disponible:</strong> {stockProduit ? stockProduit.quantite_actuelle : 0} {produitSelectionne?.unite}
                             </div>
                             <div style={{fontSize: '14px', color: stockUtiliseTotal > (stockProduit?.quantite_actuelle || 0) ? '#dc2626' : '#059669'}}>
                               <strong>Utilisé:</strong> {stockUtiliseTotal.toFixed(2)} {produitSelectionne?.unite} 
@@ -6537,7 +6212,7 @@ function App() {
                             }}
                             style={{fontSize: '12px'}}
                           >
-                            📊 Utiliser tout
+                            Utiliser tout
                           </button>
                           
                           <button 
@@ -6552,7 +6227,7 @@ function App() {
                             }}
                             style={{fontSize: '12px'}}
                           >
-                            ⚖️ Répartir 50/50
+                            Répartir 50/50
                           </button>
                           
                           <button 
@@ -6560,7 +6235,7 @@ function App() {
                             onClick={resetRepartition}
                             style={{fontSize: '12px'}}
                           >
-                            🗑️ Reset
+                            Reset
                           </button>
                         </div>
 
@@ -6569,7 +6244,7 @@ function App() {
                           <div style={{marginTop: '20px', padding: '16px', background: 'white', borderRadius: '8px', border: '2px solid #10b981'}}>
                             <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px'}}>
                               <div style={{fontWeight: 'bold', fontSize: '16px', color: '#065f46'}}>
-                                🍽️ Productions calculées automatiquement :
+                                Productions calculées automatiquement :
                               </div>
                               <button 
                                 className="button"
@@ -6580,7 +6255,7 @@ function App() {
                                   ).join('\n\n');
                                   
                                   const confirmation = window.confirm(
-                                    `🍽️ VALIDATION DE LA RÉPARTITION\n\n` +
+                                    `VALIDATION DE LA RÉPARTITION\n\n` +
                                     `Résumé des productions possibles:\n\n${summary}\n\n` +
                                     `Stock utilisé: ${stockUtiliseTotal.toFixed(2)} ${produitSelectionne?.unite}\n` +
                                     `Stock restant: ${((stockProduit?.quantite_actuelle || 0) - stockUtiliseTotal).toFixed(2)} ${produitSelectionne?.unite}\n\n` +
@@ -6588,12 +6263,12 @@ function App() {
                                   );
                                   
                                   if (confirmation) {
-                                    alert("✅ Répartition validée avec succès !\n\nVous pouvez maintenant procéder à la production selon cette répartition.");
+                                    alert("Répartition validée avec succès !\n\nVous pouvez maintenant procéder à la production selon cette répartition.");
                                   }
                                 }}
                                 style={{fontSize: '14px', padding: '8px 16px'}}
                               >
-                                ✅ Valider la répartition
+                                Valider la répartition
                               </button>
                             </div>
                             
@@ -6610,17 +6285,17 @@ function App() {
                                   </div>
                                   
                                   <div style={{fontSize: '13px', color: '#059669', display: 'flex', flexDirection: 'column', gap: '4px', marginBottom: '12px'}}>
-                                    <div><strong>📏 Quantité préparée:</strong> {prod.quantitePreparation} {prod.unite}</div>
-                                    <div><strong>🍽️ Portions possibles:</strong> <span style={{fontSize: '18px', fontWeight: 'bold', color: '#10b981'}}>{prod.portionsPossibles}</span></div>
-                                    <div><strong>📦 Produit brut requis:</strong> {prod.quantiteProduitBrut.toFixed(2)} {produitSelectionne?.unite}</div>
-                                    <div><strong>🔪 Forme:</strong> {prod.formeDecoupe}</div>
+                                    <div><strong>Quantité préparée:</strong> {prod.quantitePreparation} {prod.unite}</div>
+                                    <div><strong>Portions possibles:</strong> <span style={{fontSize: '18px', fontWeight: 'bold', color: '#10b981'}}>{prod.portionsPossibles}</span></div>
+                                    <div><strong>Produit brut requis:</strong> {prod.quantiteProduitBrut.toFixed(2)} {produitSelectionne?.unite}</div>
+                                    <div><strong>Forme:</strong> {prod.formeDecoupe}</div>
                                   </div>
 
                                   {/* PRODUCTIONS DIRECTES POSSIBLES */}
                                   {prod.productionsPossibles && prod.productionsPossibles.length > 0 && (
                                     <div style={{padding: '12px', background: '#f0fdf4', borderRadius: '6px', border: '1px solid #16a34a'}}>
                                       <div style={{fontSize: '13px', fontWeight: 'bold', marginBottom: '8px', color: '#16a34a'}}>
-                                        🍽️ Productions directes possibles:
+                                        Productions directes possibles:
                                       </div>
                                       {prod.productionsPossibles.map((production, i) => (
                                         <div key={i} style={{
@@ -6658,7 +6333,7 @@ function App() {
                                   
                                   {prod.recettesCompatibles.length > 0 && (
                                     <div style={{marginTop: '8px', padding: '8px', background: '#fefefe', borderRadius: '4px', border: '1px solid #d1fae5'}}>
-                                      <div style={{fontSize: '12px', fontWeight: 'bold', marginBottom: '4px', color: '#166534'}}>📖 Autres recettes compatibles:</div>
+                                      <div style={{fontSize: '12px', fontWeight: 'bold', marginBottom: '4px', color: '#166534'}}>Autres recettes compatibles:</div>
                                       {prod.recettesCompatibles.slice(0, 2).map((recette, i) => (
                                         <div key={recette.id} style={{fontSize: '11px', color: '#166534'}}>
                                           • {recette.nom} ({recette.portions} portions)
@@ -6683,7 +6358,7 @@ function App() {
                                 fontSize: '14px',
                                 color: stockUtiliseTotal > (stockProduit?.quantite_actuelle || 0) ? '#dc2626' : '#065f46'
                               }}>
-                                📊 Résumé de la répartition :
+                                Résumé de la répartition :
                               </div>
                               <div style={{
                                 fontSize: '13px', 
@@ -6695,7 +6370,7 @@ function App() {
                                 Portions totales possibles: <strong>{productionsCalculees.reduce((sum, prod) => sum + prod.portionsPossibles, 0)}</strong>
                                 {stockUtiliseTotal > (stockProduit?.quantite_actuelle || 0) && (
                                   <div style={{color: '#dc2626', fontWeight: 'bold', marginTop: '4px'}}>
-                                    ⚠️ Attention: Stock insuffisant !
+                                    Attention: Stock insuffisant !
                                   </div>
                                 )}
                               </div>
@@ -6709,7 +6384,7 @@ function App() {
                 
                 {/* Répartition optimale avec validation */}
                 <div className="item-list">
-                  <div className="section-title">🎯 Répartition Détaillée</div>
+                  <div className="section-title">Répartition Détaillée</div>
                   
                   {stocksPrevisionnels.map((stock, stockIndex) => {
                     const stockUtilise = stock.productions_possibles.reduce((total, prod) => 
@@ -6743,7 +6418,7 @@ function App() {
                                 alert(`Répartition validée pour ${stock.produit}!\n\nStock utilisé: ${stockUtilise.toFixed(1)} ${stock.unite}\nStock restant: ${stockRestant.toFixed(1)} ${stock.unite}`);
                               }}
                             >
-                              ✅ Valider
+                              Valider
                             </button>
                           </div>
                         </div>
@@ -6877,75 +6552,30 @@ function App() {
 
         {/* USER MANAGEMENT */}
         <div id="users" className={`wireframe-section ${activeTab === "users" ? "active" : ""}`}>
-          <UserManagementPage currentUser={currentUser} />
+          {activeTab === 'users' && <UserManagementPage currentUser={currentUser} />}
         </div>
 
       </div>
 
-      {/* Bottom Navigation */}
-      <div className="bottom-navigation">
-        <button 
-          className={`bottom-nav-item ${activeTab === "dashboard" ? "active" : ""}`}
-          onClick={() => setActiveTab("dashboard")}
-        >
-          <div className="bottom-nav-icon">🏠</div>
-          <div className="bottom-nav-label">Home</div>
-        </button>
-        
-        <button 
-          className={`bottom-nav-item ${activeTab === "stocks" ? "active" : ""}`}
-          onClick={() => {
-            console.log("Clic sur STOCK, activeTab actuel:", activeTab);
-            setActiveTab("stocks");
-            console.log("activeTab changé vers: stocks");
-          }}
-        >
-          <div className="bottom-nav-icon">📦</div>
-          <div className="bottom-nav-label">Stock</div>
-        </button>
-        
-        {/* Production - MASQUÉ pour employé cuisine */}
-        {currentUser?.role !== 'employe_cuisine' && (
-          <button 
-            className={`bottom-nav-item ${activeTab === "production" ? "active" : ""}`}
-            onClick={() => setActiveTab("production")}
-          >
-            <div className="bottom-nav-icon">🍳</div>
-            <div className="bottom-nav-label">Production</div>
-          </button>
-        )}
-        
-        {/* Orders - Accès Patron, Chef et Barman (pas employé cuisine ni caissier) */}
-        {canAccessOrders() && (
-          <button 
-            className={`bottom-nav-item ${activeTab === "orders" ? "active" : ""}`}
-            onClick={() => setActiveTab("orders")}
-          >
-            <div className="bottom-nav-icon">🛒</div>
-            <div className="bottom-nav-label">Orders</div>
-          </button>
-        )}
-      </div>
-
       {/* PROFESSIONAL DATA GRIDS */}
       <div id="datagrids" className={`wireframe-section ${activeTab === "datagrids" ? "active" : ""}`}>
-        <DataGridsPage />
+        {activeTab === 'datagrids' && <DataGridsPage />}
       </div>
 
       {/* PURCHASE ORDERS */}
       <div id="orders" className={`wireframe-section ${activeTab === "orders" ? "active" : ""}`}>
-        <PurchaseOrderPage currentUser={currentUser} />
+        {activeTab === 'orders' && <PurchaseOrderPage currentUser={currentUser} />}
       </div>
 
       {/* OCR */}
       <div id="ocr" className={`wireframe-section ${activeTab === "ocr" ? "active" : ""}`}>
         <div className="wireframe">
-          <h2>📱 Module OCR - Numérisation Factures</h2>
+          <h2>Module OCR - Numérisation Factures</h2>
           <div className="layout two-column">
             <div className="sidebar">
               <h3 style={{color: '#d4af37', marginBottom: '15px'}}>Actions</h3>
-              <button className="button" onClick={() => setShowOcrModal(true)}>📁 Importer Document</button>
-              <button className="button" onClick={handleTraitementAuto} disabled={loading}>🔄 Traitement Auto</button>
+              <button className="button" onClick={() => setShowOcrModal(true)}>Importer Document</button>
+              <button className="button" onClick={handleTraitementAuto} disabled={loading}>Traitement Auto</button>
               <button 
                 className="button" 
                 onClick={handleSupprimerTousDocumentsOcr} 
@@ -6956,7 +6586,7 @@ function App() {
                   color: 'white'
                 }}
               >
-                🗑️ Vider l&apos;historique
+                Vider l&apos;historique
               </button>
               <h4 style={{color: '#d4af37', margin: '20px 0 10px'}}>Historique (Cliquez pour détails)</h4>
               <div style={{fontSize: '0.9rem'}}>
@@ -6975,7 +6605,7 @@ function App() {
                   >
                     <div style={{fontWeight: 'bold'}}>{doc.nom_fichier}</div>
                     <div style={{fontSize: '0.8rem', opacity: 0.8}}>
-                      {doc.type_document === 'z_report' ? '📊 Rapport Z' : '🧾 Facture'} - 
+                      {doc.type_document === 'z_report' ? 'Rapport Z' : 'Facture'} -
                       {new Date(doc.date_upload).toLocaleDateString('fr-FR')}
                     </div>
                   </div>
@@ -6988,10 +6618,10 @@ function App() {
               </div>
             </div>
             <div className="main-content">
-              <input type="text" className="search-bar" placeholder="🔍 Rechercher une facture..."/>
+              <input type="text" className="search-bar" placeholder="Rechercher une facture..."/>
               
               <div className="card">
-                <div className="card-title">📄 Zone de Prévisualisation</div>
+                <div className="card-title">Zone de Prévisualisation</div>
                 <div style={{height: '200px', background: '#f8f7f4', border: '2px dashed #d4af37', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '15px 0'}}>
                   <span style={{color: '#4a5568'}}>Glissez votre facture ici ou cliquez pour sélectionner</span>
                 </div>
@@ -7002,13 +6632,13 @@ function App() {
                 {selectedDocument ? (
                   <div>
                     <div className="table-row">
-                      <span><strong>📁 Fichier:</strong> {selectedDocument.nom_fichier}</span>
+                      <span><strong>Fichier:</strong> {selectedDocument.nom_fichier}</span>
                     </div>
                     <div className="table-row">
-                      <span><strong>📝 Type:</strong> {selectedDocument.type_document === 'z_report' ? 'Rapport Z' : 'Facture Fournisseur'}</span>
+                      <span><strong>Type:</strong> {selectedDocument.type_document === 'z_report' ? 'Rapport Z' : 'Facture Fournisseur'}</span>
                     </div>
                     <div className="table-row">
-                      <span><strong>📅 Date upload:</strong> {new Date(selectedDocument.date_upload).toLocaleDateString('fr-FR')}</span>
+                      <span><strong>Date upload:</strong> {new Date(selectedDocument.date_upload).toLocaleDateString('fr-FR')}</span>
                     </div>
                     
                     {selectedDocument.donnees_parsees && Object.keys(selectedDocument.donnees_parsees).length > 0 ? (
@@ -7016,12 +6646,12 @@ function App() {
                         {selectedDocument.type_document === 'z_report' && (
                           <>
                             <div className="table-row">
-                              <span><strong>💰 CA Total:</strong> {
+                              <span><strong>CA Total:</strong> {
                                 (selectedDocument.donnees_parsees.grand_total_sales ?? selectedDocument.donnees_parsees.total_ca ?? 'Non calculé')
                               }{(selectedDocument.donnees_parsees.grand_total_sales ?? selectedDocument.donnees_parsees.total_ca) ? '€' : ''}</span>
                             </div>
                             <div className="table-row">
-                              <span><strong>🍽️ Plats vendus:</strong> {
+                              <span><strong>Plats vendus:</strong> {
                                 (selectedDocument.donnees_parsees.items_by_category ? Object.values(selectedDocument.donnees_parsees.items_by_category).reduce((acc, arr) => acc + arr.reduce((s, it) => s + (Number(it.quantity_sold) || 0), 0), 0) : (selectedDocument.donnees_parsees.plats_vendus?.reduce((s, it) => s + (Number(it.quantite) || 0), 0) || 0))
                               } plats</span>
                             </div>
@@ -7031,34 +6661,34 @@ function App() {
                         {selectedDocument.type_document === 'facture_fournisseur' && (
                           <>
                             <div className="table-row">
-                              <span><strong>🏪 Fournisseur:</strong> {selectedDocument.donnees_parsees.fournisseur || 'Non identifié'}</span>
+                              <span><strong>Fournisseur:</strong> {selectedDocument.donnees_parsees.fournisseur || 'Non identifié'}</span>
                             </div>
                             <div className="table-row">
-                              <span><strong>💰 Total:</strong> {selectedDocument.donnees_parsees.total_ttc || selectedDocument.donnees_parsees.total_ht || 'Non calculé'}€</span>
+                              <span><strong>Total:</strong> {selectedDocument.donnees_parsees.total_ttc || selectedDocument.donnees_parsees.total_ht || 'Non calculé'}€</span>
                             </div>
                             <div className="table-row">
-                              <span><strong>📦 Produits:</strong> {selectedDocument.donnees_parsees.produits?.length || 0} produits</span>
+                              <span><strong>Produits:</strong> {selectedDocument.donnees_parsees.produits?.length || 0} produits</span>
                             </div>
                           </>
                         )}
                       </>
                     ) : (
                       <div className="table-row">
-                        <span style={{color: '#e53e3e'}}>❌ Aucune donnée extraite - Document nécessite un retraitement</span>
+                        <span style={{color: '#e53e3e'}}>Aucune donnée extraite - Document nécessite un retraitement</span>
                       </div>
                     )}
                   </div>
                 ) : (
                   <div className="table-row">
                     <span style={{fontStyle: 'italic', color: '#4a5568'}}>
-                      👆 Sélectionnez un document dans l&apos;historique pour voir les données extraites
+                      Sélectionnez un document dans l&apos;historique pour voir les données extraites
                     </span>
                   </div>
                 )}
               </div>
               
               <div style={{textAlign: 'center', marginTop: '20px'}}>
-                <button className="button" onClick={() => setShowOcrModal(true)}>✅ Valider</button>
+                <button className="button" onClick={() => setShowOcrModal(true)}>Valider</button>
                 <button className="button" onClick={async () => {
                   if (!selectedDocument) {
                     alert('Veuillez d\'abord sélectionner un document dans l\'historique.');
@@ -7067,8 +6697,8 @@ function App() {
                   // Ouvrir l'aperçu côté OCR pour corriger
                   await handlePreviewDocument(selectedDocument);
                   setPreviewTab('sidebyside');
-                }}>✏️ Corriger</button>
-                <button className="button">💾 Enregistrer</button>
+                }}>Corriger</button>
+                <button className="button">Enregistrer</button>
               </div>
             </div>
           </div>
@@ -7091,7 +6721,7 @@ function App() {
                   <div style={{fontSize:'12px', opacity:0.9}}>{previewDocument?.nom_fichier}</div>
                 </div>
               </div>
-              <button className="button" onClick={closePreviewModal} style={{background:'#fff', color:'var(--color-primary-solid)'}}>✖️ Fermer</button>
+              <button className="button" onClick={closePreviewModal} style={{background:'#fff', color:'var(--color-primary-solid)'}}>Fermer</button>
             </div>
 
             {/* Tabs */}
@@ -7266,7 +6896,7 @@ function App() {
                                   <div>Total calculé: {formatEuro(totalCalc)}</div>
                                   <div>Total affiché: {formatEuro(totalAff)}</div>
                                   <div>Écart: {delta !== null && delta !== undefined ? `${formatEuro(delta)} (${deltaPct ?? '—'}%)` : '—'}</div>
-                                  <div>Status: {(delta !== null && Math.abs(delta) < 0.01) ? '✅ Cohérent' : '⚠️ À vérifier'}</div>
+                                  <div>Status: {(delta !== null && Math.abs(delta) < 0.01) ? 'Cohérent' : 'À vérifier'}</div>
                                 </div>
                               </div>
                             </div>
@@ -7324,15 +6954,15 @@ function App() {
                   onChange={(e) => setProduitForm({...produitForm, categorie: e.target.value})}
                 >
                   <option value="">Sélectionnez une catégorie</option>
-                  <option value="Légumes">🥕 Légumes</option>
-                  <option value="Viandes">🥩 Viandes</option>
-                  <option value="Poissons">🐟 Poissons</option>
-                  <option value="Crêmerie">🧀 Crêmerie</option>
-                  <option value="Épices">🌶️ Épices & Condiments</option>
-                  <option value="Fruits">🍎 Fruits</option>
-                  <option value="Céréales">🌾 Céréales & Féculents</option>
-                  <option value="Boissons">🥤 Boissons</option>
-                  <option value="Autres">📦 Autres</option>
+                  <option value="Légumes">Légumes</option>
+                  <option value="Viandes">Viandes</option>
+                  <option value="Poissons">Poissons</option>
+                  <option value="Crêmerie">Crêmerie</option>
+                  <option value="Épices">Épices & Condiments</option>
+                  <option value="Fruits">Fruits</option>
+                  <option value="Céréales">Céréales & Féculents</option>
+                  <option value="Boissons">Boissons</option>
+                  <option value="Autres">Autres</option>
                 </select>
               </div>
               <div className="form-group">
@@ -7487,7 +7117,7 @@ function App() {
                     className="form-input"
                     value={fournisseurForm.logo}
                     onChange={(e) => setFournisseurForm({...fournisseurForm, logo: e.target.value})}
-                    placeholder="🏪 ou https://exemple.com/logo.png"
+                    placeholder="ou https://exemple.com/logo.png"
                     style={{flex: 1}}
                   />
                   {fournisseurForm.logo && (
@@ -7595,7 +7225,7 @@ function App() {
               <div style={{marginTop: '20px', padding: '16px', backgroundColor: '#f8fafc', borderRadius: '8px', border: '1px solid #e2e8f0'}}>
                 <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px'}}>
                   <h4 style={{margin: 0, fontSize: '16px', fontWeight: '600', color: '#334155'}}>
-                    🚚 Règles de Livraison
+                    Règles de Livraison
                   </h4>
                   <button
                     type="button"
@@ -7611,7 +7241,7 @@ function App() {
                   <div style={{marginTop: '12px'}}>
                     {/* Jours de commande */}
                     <div className="form-group">
-                      <label className="form-label" style={{fontSize: '13px'}}>📅 Jours de prise de commande</label>
+                      <label className="form-label" style={{fontSize: '13px'}}>Jours de prise de commande</label>
                       <div style={{display: 'flex', gap: '6px', flexWrap: 'wrap'}}>
                         {['lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi', 'dimanche'].map(day => (
                           <button
@@ -7649,7 +7279,7 @@ function App() {
 
                     {/* Heure limite - Sélecteur Mobile First */}
                     <div className="form-group" style={{marginTop: '12px'}}>
-                      <label className="form-label" style={{fontSize: '13px'}}>⏰ Heure limite de commande</label>
+                      <label className="form-label" style={{fontSize: '13px'}}>Heure limite de commande</label>
                       <select
                         value={fournisseurForm.delivery_rules?.order_deadline_hour || 11}
                         onChange={(e) => setFournisseurForm({
@@ -7674,7 +7304,7 @@ function App() {
 
                     {/* Jours de livraison */}
                     <div className="form-group" style={{marginTop: '12px'}}>
-                      <label className="form-label" style={{fontSize: '13px'}}>🚚 Jours de livraison spécifiques</label>
+                      <label className="form-label" style={{fontSize: '13px'}}>Jours de livraison spécifiques</label>
                       <div style={{display: 'flex', gap: '6px', flexWrap: 'wrap'}}>
                         {['lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi', 'dimanche'].map(day => (
                           <button
@@ -7713,7 +7343,7 @@ function App() {
                     {/* Délai et heure */}
                     <div style={{display: 'flex', gap: '12px', marginTop: '12px'}}>
                       <div className="form-group" style={{flex: 1}}>
-                        <label className="form-label" style={{fontSize: '13px'}}>📦 Délai (jours)</label>
+                        <label className="form-label" style={{fontSize: '13px'}}>Délai (jours)</label>
                         <input
                           type="number"
                           min="0"
@@ -7727,7 +7357,7 @@ function App() {
                         />
                       </div>
                       <div className="form-group" style={{flex: 1}}>
-                        <label className="form-label" style={{fontSize: '13px'}}>🕐 Heure livraison</label>
+                        <label className="form-label" style={{fontSize: '13px'}}>Heure livraison</label>
                         <input
                           type="time"
                           value={fournisseurForm.delivery_rules?.delivery_time || "12:00"}
@@ -7742,7 +7372,7 @@ function App() {
 
                     {/* Règles spéciales */}
                     <div className="form-group" style={{marginTop: '12px'}}>
-                      <label className="form-label" style={{fontSize: '13px'}}>📝 Règles spéciales</label>
+                      <label className="form-label" style={{fontSize: '13px'}}>Règles spéciales</label>
                       <textarea
                         value={fournisseurForm.delivery_rules?.special_rules || ''}
                         onChange={(e) => setFournisseurForm({
@@ -7826,9 +7456,9 @@ function App() {
                   onChange={(e) => setMouvementForm({...mouvementForm, type: e.target.value})}
                   required
                 >
-                  <option value="entree">➕ Entrée (Augmenter le stock)</option>
-                  <option value="sortie">➖ Sortie (Diminuer le stock)</option>
-                  <option value="ajustement">🔄 Ajustement (Corriger le stock)</option>
+                  <option value="entree">Entrée (Augmenter le stock)</option>
+                  <option value="sortie">Sortie (Diminuer le stock)</option>
+                  <option value="ajustement">Ajustement (Corriger le stock)</option>
                 </select>
               </div>
               <div className="form-group">
@@ -7958,9 +7588,9 @@ function App() {
                     value={movementPreparationForm.type}
                     onChange={(e) => setMovementPreparationForm({...movementPreparationForm, type: e.target.value})}
                   >
-                    <option value="entree">➕ Entrée (Nouvelle préparation)</option>
-                    <option value="sortie">➖ Sortie (Utilisation)</option>
-                    <option value="ajustement">🔄 Ajustement</option>
+                    <option value="entree">Entrée (Nouvelle préparation)</option>
+                    <option value="sortie">Sortie (Utilisation)</option>
+                    <option value="ajustement">Ajustement</option>
                   </select>
                 </div>
                 
@@ -8045,7 +7675,7 @@ function App() {
         <div className="modal-overlay">
           <div className="modal-content" style={{maxWidth: '700px'}}>
             <h3 className="modal-header">
-              ➕ Créer une Nouvelle Mission
+              Créer une Nouvelle Mission
             </h3>
             <form onSubmit={handleCreateMission}>
               <div className="form-row">
@@ -8082,11 +7712,11 @@ function App() {
                       });
                     }}
                   >
-                    <option value="preparation">🔪 Préparation</option>
-                    <option value="stock_check">📦 Vérification Stock</option>
-                    <option value="cleaning">🧽 Nettoyage/Hygiène</option>
-                    <option value="delivery_check">🚚 Réception Livraison</option>
-                    <option value="equipment_check">⚙️ Contrôle Équipement</option>
+                    <option value="preparation">Préparation</option>
+                    <option value="stock_check">Vérification Stock</option>
+                    <option value="cleaning">Nettoyage/Hygiène</option>
+                    <option value="delivery_check">Réception Livraison</option>
+                    <option value="equipment_check">Contrôle Équipement</option>
                   </select>
                 </div>
               </div>
@@ -8157,11 +7787,11 @@ function App() {
                   </div>
                   <div style={{fontSize: '11px', color: '#6b7280', marginTop: '4px'}}>
                     {currentUser?.role === 'super_admin' ? 
-                      '👑 En tant que patron, vous pouvez assigner à tout le monde' : 
+                      'En tant que patron, vous pouvez assigner à tout le monde' :
                       currentUser?.role === 'chef_cuisine' ?
-                      '👨‍🍳 En tant que chef, vous pouvez assigner à tout le monde' :
+                      'En tant que chef, vous pouvez assigner à tout le monde' :
                       currentUser?.role === 'caissier' ?
-                      '💰 En tant que responsable caisse, vous pouvez assigner au barman et aux caissiers' :
+                      'En tant que responsable caisse, vous pouvez assigner au barman et aux caissiers' :
                       'Permissions d\'assignation limitées'
                     }
                   </div>
@@ -8174,10 +7804,10 @@ function App() {
                     value={missionForm.priority}
                     onChange={(e) => setMissionForm({...missionForm, priority: e.target.value})}
                   >
-                    <option value="basse">🔵 Basse</option>
-                    <option value="normale">📝 Normale</option>
-                    <option value="haute">⚡ Haute</option>
-                    <option value="urgente">🚨 Urgente</option>
+                    <option value="basse">Basse</option>
+                    <option value="normale">Normale</option>
+                    <option value="haute">Haute</option>
+                    <option value="urgente">Urgente</option>
                   </select>
                 </div>
               </div>
@@ -8200,10 +7830,10 @@ function App() {
                     value={missionForm.category}
                     onChange={(e) => setMissionForm({...missionForm, category: e.target.value})}
                   >
-                    <option value="cuisine">🥘 Cuisine</option>
-                    <option value="stock">📦 Stock</option>
-                    <option value="hygiene">🧽 Hygiène</option>
-                    <option value="commande">🚚 Commandes</option>
+                    <option value="cuisine">Cuisine</option>
+                    <option value="stock">Stock</option>
+                    <option value="hygiene">Hygiène</option>
+                    <option value="commande">Commandes</option>
                   </select>
                 </div>
               </div>
@@ -8254,7 +7884,7 @@ function App() {
                   className="button btn-primary"
                   disabled={loading}
                 >
-                  {loading ? 'Création...' : '➕ Créer Mission'}
+                  {loading ? 'Création...' : 'Créer Mission'}
                 </button>
               </div>
             </form>
@@ -8267,12 +7897,12 @@ function App() {
         <div className="modal-overlay">
           <div className="modal-content" style={{maxWidth: '900px', maxHeight: '90vh', overflow: 'auto'}}>
             <h3 className="modal-header">
-              ✅ Validation Mercuriale - {mercurialeToValidate?.nom_fichier}
+              Validation Mercuriale - {mercurialeToValidate?.nom_fichier}
             </h3>
             
             <div style={{marginBottom: '20px', padding: '16px', background: '#f0f9ff', borderRadius: '8px', border: '1px solid #3b82f6'}}>
               <div style={{fontSize: '16px', fontWeight: 'bold', color: '#1e40af', marginBottom: '8px'}}>
-                📋 Résumé de l'import
+                Résumé de l'import
               </div>
               <div style={{fontSize: '14px', color: '#1e40af'}}>
                 🏪 <strong>Fournisseur détecté:</strong> {mercurialeToValidate?.donnees_parsees?.fournisseur_detecte || 'Non détecté'}
@@ -8285,7 +7915,7 @@ function App() {
 
             {/* Sélection fournisseur pour liaison */}
             <div className="form-group" style={{marginBottom: '20px'}}>
-              <label className="form-label">🏪 Associer à ce fournisseur :</label>
+              <label className="form-label">Associer à ce fournisseur :</label>
               <select
                 className="form-select"
                 value={mercurialeSelectedSupplier}
@@ -8303,7 +7933,7 @@ function App() {
             {/* Liste des produits à valider */}
             <div style={{marginBottom: '20px'}}>
               <div style={{fontSize: '16px', fontWeight: 'bold', marginBottom: '12px', color: '#374151'}}>
-                📦 Produits détectés - Sélectionnez ceux à créer :
+                Produits détectés - Sélectionnez ceux à créer :
               </div>
               
               <div style={{
@@ -8356,7 +7986,7 @@ function App() {
                     setSelectedMercurialeProducts(newProducts);
                   }}
                 >
-                  ☑️ Tout sélectionner
+                  Tout sélectionner
                 </button>
                 <button
                   className="button small"
@@ -8388,7 +8018,7 @@ function App() {
                 onClick={handleCreateProductsFromMercuriale}
                 disabled={loading || selectedMercurialeProducts.filter(p => p.selected).length === 0}
               >
-                {loading ? 'Création...' : `➕ Créer ${selectedMercurialeProducts.filter(p => p.selected).length} Produit(s)`}
+                {loading ? 'Création...' : `Créer ${selectedMercurialeProducts.filter(p => p.selected).length} Produit(s)`}
               </button>
             </div>
           </div>
@@ -8653,7 +8283,7 @@ function App() {
                   Annuler
                 </button>
                 <button type="submit" className="button" disabled={loading}>
-                  {loading ? "⏳ Enregistrement..." : editingItem ? "Modifier" : "Créer"}
+                  {loading ? "Enregistrement..." : editingItem ? "Modifier" : "Créer"}
                 </button>
               </div>
             </form>
@@ -8695,11 +8325,11 @@ function App() {
                   onChange={(e) => setRecetteForm({...recetteForm, categorie: e.target.value})}
                 >
                   <option value="">Sélectionnez une catégorie</option>
-                  <option value="Entrée">🥗 Entrée</option>
-                  <option value="Plat">🍽️ Plat</option>
-                  <option value="Dessert">🍰 Dessert</option>
-                  <option value="Bar">🍹 Bar</option>
-                  <option value="Autres">📝 Autres</option>
+                  <option value="Entrée">Entrée</option>
+                  <option value="Plat">Plat</option>
+                  <option value="Dessert">Dessert</option>
+                  <option value="Bar">Bar</option>
+                  <option value="Autres">Autres</option>
                 </select>
               </div>
               <div className="form-group">
@@ -8821,14 +8451,14 @@ function App() {
                       }}
                     >
                       <option value="">Sélectionnez un ingrédient</option>
-                      <optgroup label="📦 Produits Bruts">
+                      <optgroup label="Produits Bruts">
                         {produits.map((produit) => (
                           <option key={produit.id} value={produit.id}>
                             {produit.nom} ({produit.unite})
                           </option>
                         ))}
                       </optgroup>
-                      <optgroup label="🔪 Préparations">
+                      <optgroup label="Préparations">
                         {preparations.map((prep) => (
                           <option key={prep.id} value={prep.id}>
                             {prep.nom} ({prep.unite_preparee})
@@ -8942,7 +8572,7 @@ function App() {
                 onChange={handleOcrFileSelect}
               />
               <p className="form-help">
-                📷 Images: JPG, PNG, GIF, etc. • 📄 PDF: Factures et rapports Z
+                Images: JPG, PNG, GIF, etc. • PDF: Factures et rapports Z
               </p>
             </div>
 
@@ -9028,7 +8658,7 @@ function App() {
         <div className="modal-overlay" onClick={() => setShowPreviewModal(false)}>
           <div className="modal-content large" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '900px', width: '95%' }}>
             <div className="modal-header">
-              <h3>👁️ Aperçu - {previewDocFull.nom_fichier}</h3>
+              <h3>Aperçu - {previewDocFull.nom_fichier}</h3>
               <button className="modal-close" onClick={() => setShowPreviewModal(false)}>×</button>
             </div>
             
@@ -9062,12 +8692,12 @@ function App() {
                 {/* Colonne Droite : Données Extraites */}
                 <div>
                   <div className="section-card">
-                    <div className="section-title">📊 Données Extraites</div>
+                    <div className="section-title">Données Extraites</div>
                     
                     <div style={{ marginBottom: '15px' }}>
                       <div style={{ fontSize: '12px', color: '#666' }}>Type de document</div>
                       <div style={{ fontSize: '16px', fontWeight: 'bold' }}>
-                        {previewDocFull.type_document === 'z_report' ? '📊 Rapport Z' : '🧾 Facture Fournisseur'}
+                        {previewDocFull.type_document === 'z_report' ? 'Rapport Z' : 'Facture Fournisseur'}
                       </div>
                     </div>
 
@@ -9139,7 +8769,7 @@ function App() {
         <div className="modal-overlay" onClick={() => setShowBatchModal(false)}>
           <div className="modal-content large" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
-              <h3>📅 Lots & DLC - {selectedProductBatches.product_name}</h3>
+              <h3>Lots & DLC - {selectedProductBatches.product_name}</h3>
               <button className="modal-close" onClick={() => setShowBatchModal(false)}>×</button>
             </div>
             
@@ -9175,7 +8805,7 @@ function App() {
 
               {/* Liste détaillée des lots */}
               <div className="section-card">
-                <div className="section-title">📋 Détail des Lots</div>
+                <div className="section-title">Détail des Lots</div>
                 
                 {selectedProductBatches.batches.length > 0 ? (
                   <div className="item-list">
@@ -9206,7 +8836,7 @@ function App() {
                             <span className={`status-badge ${statusClass}`}>
                               {statusText}
                             </span>
-                            <button className="button small">⚡ Consommer</button>
+                            <button className="button small">Consommer</button>
                           </div>
                         </div>
                       );
@@ -9226,7 +8856,7 @@ function App() {
                 Fermer
               </button>
               <button className="button" onClick={() => alert('Fonctionnalité à implémenter: Ajouter nouveau lot')}>
-                ➕ Nouveau Lot
+                Nouveau Lot
               </button>
             </div>
           </div>

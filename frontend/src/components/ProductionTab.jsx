@@ -34,7 +34,7 @@ const ProductionTab = (props) => {
     <>
               <div id="production" className={`wireframe-section ${activeTab === "production" ? "active" : ""}`}>
           <div className="section-card">
-            <div className="section-title">🍳 Production & Historique</div>
+            <div className="section-title">Production & Historique</div>
             
             {/* Sous-navigation Production */}
             <div className="sub-nav-tabs">
@@ -46,7 +46,7 @@ const ProductionTab = (props) => {
                   color: activeProductionTab === 'produits' ? 'white' : 'var(--color-text-secondary)'
                 }}
               >
-                🥕 Produits
+                Produits
               </button>
               <button 
                 className="button" 
@@ -56,7 +56,7 @@ const ProductionTab = (props) => {
                   color: activeProductionTab === 'fournisseurs' ? 'white' : 'var(--color-text-secondary)'
                 }}
               >
-                🚚 Fournisseurs
+                Fournisseurs
               </button>
               <button 
                 className="button" 
@@ -66,7 +66,7 @@ const ProductionTab = (props) => {
                   color: activeProductionTab === 'preparations' ? 'white' : 'var(--color-text-secondary)'
                 }}
               >
-                🔪 Préparations ({preparations.length})
+                Préparations ({preparations.length})
               </button>
               <button 
                 className="button" 
@@ -76,7 +76,7 @@ const ProductionTab = (props) => {
                   color: activeProductionTab === 'recettes' ? 'white' : 'var(--color-text-secondary)'
                 }}
               >
-                🍽️ Productions
+                Productions
               </button>
               {/* Onglets réservés au super admin */}
               {currentUser?.role === 'super_admin' && (
@@ -89,7 +89,7 @@ const ProductionTab = (props) => {
                       color: activeProductionTab === 'datagrids' ? 'white' : 'var(--color-text-secondary)'
                     }}
                   >
-                    📊 Grilles de données
+                    Grilles de données
                   </button>
                   <button 
                     className="button" 
@@ -99,7 +99,7 @@ const ProductionTab = (props) => {
                       color: activeProductionTab === 'historique' ? 'white' : 'var(--color-text-secondary)'
                     }}
                   >
-                    📊 Historique
+                    Historique
                   </button>
                 </>
               )}
@@ -114,17 +114,17 @@ const ProductionTab = (props) => {
                   color: activeProductionTab === 'archives' ? 'white' : 'var(--color-text-secondary)'
                 }}
               >
-                📁 Archives
+                Archives
               </button>
             </div>
 
             {/* ONGLET PRODUITS */}
             {activeProductionTab === 'produits' && (
               <div className="item-list">
-                <div className="section-title">🥕 Gestion des Produits (Ingrédients)</div>
+                <div className="section-title">Gestion des Produits (Ingrédients)</div>
                 
                 <div style={{display: 'flex', gap: '10px', marginBottom: '20px', flexWrap: 'wrap'}}>
-                  <button className="button" onClick={() => setShowProduitModal(true)}>➕ Nouveau Produit</button>
+                  <button className="button" onClick={() => setShowProduitModal(true)}>Nouveau Produit</button>
                   <button 
                     className={`button ${showCategoriesView ? 'secondary' : ''}`}
                     onClick={async () => {
@@ -143,7 +143,7 @@ const ProductionTab = (props) => {
                     }}
                     style={{backgroundColor: showCategoriesView ? '#6366f1' : '', color: showCategoriesView ? 'white' : ''}}
                   >
-                    {showCategoriesView ? '📋 Vue Liste' : '📁 Vue Catégories'}
+                    {showCategoriesView ? 'Vue Liste' : 'Vue Catégories'}
                   </button>
                 </div>
 
@@ -154,7 +154,7 @@ const ProductionTab = (props) => {
                     <div style={{marginBottom: '10px'}}>
                       <input
                         type="text"
-                        placeholder="🔍 Rechercher un produit..."
+                        placeholder="Rechercher un produit..."
                         value={productSearch}
                         onChange={(e) => setProductSearch(e.target.value)}
                         className="form-input"
@@ -162,7 +162,7 @@ const ProductionTab = (props) => {
                       />
                     </div>
                     <div className="filter-group">
-                      <label className="filter-label">🏷️ Filtrer par catégorie d'ingrédients :</label>
+                      <label className="filter-label">Filtrer par catégorie d'ingrédients :</label>
                       <select 
                         className="filter-select"
                         onChange={(e) => filterProduitsByCategory(e.target.value)}
@@ -176,16 +176,16 @@ const ProductionTab = (props) => {
                         }}
                       >
                         <option value="">Tous les ingrédients</option>
-                        <option value="Légumes">🥕 Légumes</option>
-                        <option value="Viandes">🥩 Viandes</option>
-                        <option value="Poissons">🐟 Poissons</option>
-                        <option value="Crêmerie">🧀 Crêmerie</option>
-                        <option value="Épices">🌶️ Épices & Condiments</option>
-                        <option value="Fruits">🍎 Fruits</option>
-                        <option value="Épicerie">🥫 Épicerie</option>
-                        <option value="Céréales">🌾 Céréales & Féculents</option>
-                        <option value="Boissons">🥤 Boissons</option>
-                        <option value="Autres">📦 Autres</option>
+                        <option value="Légumes">Légumes</option>
+                        <option value="Viandes">Viandes</option>
+                        <option value="Poissons">Poissons</option>
+                        <option value="Crêmerie">Crêmerie</option>
+                        <option value="Épices">Épices & Condiments</option>
+                        <option value="Fruits">Fruits</option>
+                        <option value="Épicerie">Épicerie</option>
+                        <option value="Céréales">Céréales & Féculents</option>
+                        <option value="Boissons">Boissons</option>
+                        <option value="Autres">Autres</option>
                       </select>
                       
                       <div className="filter-info" style={{
@@ -210,7 +210,7 @@ const ProductionTab = (props) => {
                       marginBottom: '16px'
                     }}>
                       <div style={{fontSize: '16px', fontWeight: 'bold', marginBottom: '8px'}}>
-                        📊 Résumé par catégories
+                        Résumé par catégories
                       </div>
                       <div style={{fontSize: '14px', color: 'var(--color-text-secondary)'}}>
                         {produitsParCategories.total_categories} catégories • {produitsParCategories.total_products} produits total
@@ -420,7 +420,7 @@ const ProductionTab = (props) => {
                       <div className="item-actions">
                         {/* Éditer produit - MASQUÉ pour employé cuisine */}
                         {canEditItems() && (
-                          <button className="button small" onClick={() => handleEdit(produit, 'produit')}>✏️ Éditer</button>
+                          <button className="button small" onClick={() => handleEdit(produit, 'produit')}>Éditer</button>
                         )}
                         
                         {/* Archiver produit - MASQUÉ pour employé cuisine */}
@@ -439,7 +439,7 @@ const ProductionTab = (props) => {
                               }
                             }}
                           >
-                            📁 Archiver
+                            Archiver
                           </button>
                         )}
                       </div>
@@ -454,17 +454,17 @@ const ProductionTab = (props) => {
             {/* ONGLET FOURNISSEURS */}
             {activeProductionTab === 'fournisseurs' && (
               <div className="item-list">
-                <div className="section-title">🚚 Gestion des Fournisseurs</div>
+                <div className="section-title">Gestion des Fournisseurs</div>
                 
                 <div style={{display: 'flex', gap: '10px', marginBottom: '20px', flexWrap: 'wrap'}}>
-                  <button className="button" onClick={() => setShowFournisseurModal(true)}>➕ Nouveau Fournisseur</button>
-                  <button className="button">📊 Évaluation</button>
+                  <button className="button" onClick={() => setShowFournisseurModal(true)}>Nouveau Fournisseur</button>
+                  <button className="button">Évaluation</button>
                   <button 
                     className={`button ${showFournisseursCategoriesView ? 'secondary' : ''}`}
                     onClick={() => setShowFournisseursCategoriesView(!showFournisseursCategoriesView)}
                     style={{backgroundColor: showFournisseursCategoriesView ? '#6366f1' : '', color: showFournisseursCategoriesView ? 'white' : ''}}
                   >
-                    {showFournisseursCategoriesView ? '📋 Vue Liste' : '📁 Vue Catégories'}
+                    {showFournisseursCategoriesView ? 'Vue Liste' : 'Vue Catégories'}
                   </button>
                 </div>
 
@@ -523,7 +523,7 @@ const ProductionTab = (props) => {
                   <div style={{marginBottom: '15px'}}>
                     <input
                       type="text"
-                      placeholder="🔍 Rechercher un fournisseur..."
+                      placeholder="Rechercher un fournisseur..."
                       value={supplierSearch}
                       onChange={(e) => setSupplierSearch(e.target.value)}
                       className="form-input"
@@ -555,7 +555,7 @@ const ProductionTab = (props) => {
                       </div>
                     </div>
                     <div className="item-actions">
-                      <button className="button small" onClick={() => handleEdit(fournisseur, 'fournisseur')}>✏️ Éditer</button>
+                      <button className="button small" onClick={() => handleEdit(fournisseur, 'fournisseur')}>Éditer</button>
                       <button 
                         className="button small warning" 
                         onClick={async () => {
@@ -570,7 +570,7 @@ const ProductionTab = (props) => {
                           }
                         }}
                       >
-                        📁 Archiver
+                        Archiver
                       </button>
                     </div>
                   </div>
@@ -583,10 +583,10 @@ const ProductionTab = (props) => {
             {/* ONGLET PRÉPARATIONS */}
             {activeProductionTab === 'preparations' && (
               <div className="item-list">
-                <div className="section-title">🔪 Préparations</div>
+                <div className="section-title">Préparations</div>
                 
                 <div style={{display: 'flex', gap: '10px', marginBottom: '20px', flexWrap: 'wrap'}}>
-                  <button className="button" onClick={() => setShowPreparationModal(true)}>➕ Nouvelle Préparation</button>
+                  <button className="button" onClick={() => setShowPreparationModal(true)}>Nouvelle Préparation</button>
                   <button 
                     className="button secondary" 
                     onClick={handleAutoGeneratePreparations}
@@ -600,10 +600,10 @@ const ProductionTab = (props) => {
                     onClick={() => setShowPreparationsCategoriesView(!showPreparationsCategoriesView)}
                     style={{backgroundColor: showPreparationsCategoriesView ? '#6366f1' : '', color: showPreparationsCategoriesView ? 'white' : ''}}
                   >
-                    {showPreparationsCategoriesView ? '📋 Vue Liste' : '📁 Vue Catégories'}
+                    {showPreparationsCategoriesView ? 'Vue Liste' : 'Vue Catégories'}
                   </button>
                   <div style={{fontSize: '14px', alignSelf: 'center', color: 'var(--color-text-secondary)'}}>
-                    💡 L&apos;auto-génération crée 2-3 préparations par produit
+                    L&apos;auto-génération crée 2-3 préparations par produit
                   </div>
                 </div>
 
@@ -611,7 +611,7 @@ const ProductionTab = (props) => {
                 {preparations.filter(p => p.dlc && new Date(p.dlc) < new Date(NOW + 3 * 24 * 60 * 60 * 1000)).length > 0 && (
                   <div style={{background: '#fef3c7', border: '1px solid #fbbf24', borderRadius: '8px', padding: '12px', marginBottom: '20px'}}>
                     <div style={{fontWeight: 'bold', color: '#92400e', marginBottom: '8px'}}>
-                      ⚠️ Alertes DLC - {preparations.filter(p => p.dlc && new Date(p.dlc) < new Date(NOW + 3 * 24 * 60 * 60 * 1000)).length} préparation(s)
+                      Alertes DLC - {preparations.filter(p => p.dlc && new Date(p.dlc) < new Date(NOW + 3 * 24 * 60 * 60 * 1000)).length} préparation(s)
                     </div>
                     {preparations.filter(p => p.dlc && new Date(p.dlc) < new Date(NOW + 3 * 24 * 60 * 60 * 1000)).map(prep => (
                       <div key={prep.id} style={{fontSize: '14px', color: '#78350f', marginTop: '4px'}}>
@@ -670,7 +670,7 @@ const ProductionTab = (props) => {
                     <div style={{marginBottom: '10px'}}>
                       <input
                         type="text"
-                        placeholder="🔍 Rechercher une préparation..."
+                        placeholder="Rechercher une préparation..."
                         value={preparationSearch}
                         onChange={(e) => setPreparationSearch(e.target.value)}
                         className="form-input"
@@ -717,8 +717,8 @@ const ProductionTab = (props) => {
                                     <span style={{fontWeight: 'bold', color: isDlcExpired ? '#dc2626' : isDlcSoon ? '#f59e0b' : '#10b981'}}>
                                       DLC:
                                     </span> {dlcDate.toLocaleDateString('fr-FR')}
-                                    {isDlcExpired && <span style={{marginLeft: '4px', color: '#dc2626'}}>⚠️ Expirée</span>}
-                                    {isDlcSoon && !isDlcExpired && <span style={{marginLeft: '4px', color: '#f59e0b'}}>⚠️ Bientôt</span>}
+                                    {isDlcExpired && <span style={{marginLeft: '4px', color: '#dc2626'}}>Expirée</span>}
+                                    {isDlcSoon && !isDlcExpired && <span style={{marginLeft: '4px', color: '#f59e0b'}}>Bientôt</span>}
                                   </div>
                                 )}
                               </div>
@@ -755,17 +755,17 @@ const ProductionTab = (props) => {
             {/* ONGLET RECETTES */}
             {activeProductionTab === 'recettes' && (
               <div className="item-list">
-                <div className="section-title">📝 Productions</div>
+                <div className="section-title">Productions</div>
                 
                 <div style={{display: 'flex', gap: '10px', marginBottom: '20px', flexWrap: 'wrap'}}>
-                  <button className="button" onClick={() => setShowRecetteModal(true)}>➕ Nouvelle Production</button>
-                  <button className="button" onClick={handleExportRecettes}>📖 Export Excel</button>
+                  <button className="button" onClick={() => setShowRecetteModal(true)}>Nouvelle Production</button>
+                  <button className="button" onClick={handleExportRecettes}>Export Excel</button>
                   <button 
                     className={`button ${showRecettesCategoriesView ? 'secondary' : ''}`}
                     onClick={() => setShowRecettesCategoriesView(!showRecettesCategoriesView)}
                     style={{backgroundColor: showRecettesCategoriesView ? '#6366f1' : '', color: showRecettesCategoriesView ? 'white' : ''}}
                   >
-                    {showRecettesCategoriesView ? '📋 Vue Liste' : '📁 Vue Catégories'}
+                    {showRecettesCategoriesView ? 'Vue Liste' : 'Vue Catégories'}
                   </button>
                 </div>
 
@@ -776,7 +776,7 @@ const ProductionTab = (props) => {
                     <div style={{marginBottom: '10px'}}>
                       <input
                         type="text"
-                        placeholder="🔍 Rechercher une production..."
+                        placeholder="Rechercher une production..."
                         value={recipeSearch}
                         onChange={(e) => setRecipeSearch(e.target.value)}
                         className="form-input"
@@ -784,7 +784,7 @@ const ProductionTab = (props) => {
                       />
                     </div>
                     <div className="filter-group">
-                      <label className="filter-label">🏷️ Filtrer par catégorie :</label>
+                      <label className="filter-label">Filtrer par catégorie :</label>
                       <select 
                       className="filter-select"
                       value={selectedCategoryFilter}
@@ -947,7 +947,7 @@ const ProductionTab = (props) => {
                       <div className="item-actions">
                         {/* Éditer production - MASQUÉ pour employé cuisine */}
                         {canEditItems() && (
-                          <button className="button small" onClick={() => handleEdit(recette, 'recette')}>✏️ Éditer</button>
+                          <button className="button small" onClick={() => handleEdit(recette, 'recette')}>Éditer</button>
                         )}
                         
                         {/* Archiver production - MASQUÉ pour employé cuisine */}
@@ -966,7 +966,7 @@ const ProductionTab = (props) => {
                               }
                             }}
                           >
-                            📁 Archiver
+                            Archiver
                           </button>
                         )}
                       </div>
@@ -989,7 +989,7 @@ const ProductionTab = (props) => {
             {activeProductionTab === 'archives' && (
               <div>
                 <div className="section-card">
-                  <div className="section-title">📁 Gestion des Archives</div>
+                  <div className="section-title">Gestion des Archives</div>
                   
                   {/* Filtres par type */}
                   <div className="filter-section" style={{marginBottom: '20px'}}>
@@ -1012,9 +1012,9 @@ const ProductionTab = (props) => {
                         }}
                       >
                         <option value="tous">Tous les éléments</option>
-                        <option value="produit">📦 Produits</option>
-                        <option value="production">🍽️ Productions</option>
-                        <option value="fournisseur">🚚 Fournisseurs</option>
+                        <option value="produit">Produits</option>
+                        <option value="production">Productions</option>
+                        <option value="fournisseur">Fournisseurs</option>
                       </select>
                       
                       <div className="filter-info" style={{
@@ -1035,7 +1035,7 @@ const ProductionTab = (props) => {
                         padding: '40px',
                         color: 'var(--color-text-secondary)'
                       }}>
-                        📭 Aucun élément archivé
+                        Aucun élément archivé
                       </div>
                     ) : (
                       archivedItems.map((archive, index) => (
@@ -1074,7 +1074,7 @@ const ProductionTab = (props) => {
                                 }
                               }}
                             >
-                              ↩️ Restaurer
+                              Restaurer
                             </button>
                             <button 
                               className="button small danger"
@@ -1089,7 +1089,7 @@ const ProductionTab = (props) => {
                                 }
                               }}
                             >
-                              🗑️ Supprimer
+                              Supprimer
                             </button>
                           </div>
                         </div>
@@ -1103,7 +1103,7 @@ const ProductionTab = (props) => {
             {/* ONGLET HISTORIQUE */}
             {activeProductionTab === 'historique' && (
               <div>
-                <div className="section-title">📊 Historique des Opérations</div>
+                <div className="section-title">Historique des Opérations</div>
                 
                 {/* Bouton actualiser et indicateur auto-refresh */}
                 <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px'}}>
@@ -1112,13 +1112,13 @@ const ProductionTab = (props) => {
                     onClick={fetchHistoriqueProduction}
                     style={{fontSize: '14px', padding: '8px 16px'}}
                   >
-                    🔄 Actualiser
+                    Actualiser
                   </button>
                   
                   <div style={{fontSize: '12px', color: '#6b7280', textAlign: 'right'}}>
-                    📅 Dernière mise à jour : {new Date().toLocaleTimeString('fr-FR')}
+                    Dernière mise à jour : {new Date().toLocaleTimeString('fr-FR')}
                     <br />
-                    🔄 Auto-refresh toutes les 30s
+                    Auto-refresh toutes les 30s
                   </div>
                 </div>
                 

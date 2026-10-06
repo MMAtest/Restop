@@ -63,7 +63,7 @@ export default function HistoriqueZPage() {
   if (loading) {
     return (
       <div className="wireframe">
-        <h2>📊 Historique des Rapports Z</h2>
+        <h2>Historique des Rapports Z</h2>
         <div className="card">
           <div className="card-content">Chargement des rapports...</div>
         </div>
@@ -74,7 +74,7 @@ export default function HistoriqueZPage() {
   if (error) {
     return (
       <div className="wireframe">
-        <h2>📊 Historique des Rapports Z</h2>
+        <h2>Historique des Rapports Z</h2>
         <div className="card">
           <div className="card-content error">{error}</div>
         </div>
@@ -84,11 +84,11 @@ export default function HistoriqueZPage() {
 
   return (
     <div className="wireframe">
-      <h2>📊 Historique des Rapports Z</h2>
+      <h2>Historique des Rapports Z</h2>
       
       <div className="layout">
         <div className="card full-width">
-          <div className="card-title">📋 Liste des Rapports Z</div>
+          <div className="card-title">Liste des Rapports Z</div>
           
           {rapports.length === 0 ? (
             <div className="card-content">
@@ -109,10 +109,10 @@ export default function HistoriqueZPage() {
                       className="button" 
                       style={{fontSize: '0.7rem', padding: '4px 8px'}}
                       onClick={() => {
-                        const details = `📊 DÉTAILS RAPPORT Z\n\n` +
-                          `📅 Date: ${formatDate(rapport.date)}\n` +
-                          `💰 CA Total: ${formatMoney(rapport.ca_total)}\n` +
-                          `🍽️ Plats vendus: ${rapport.produits ? rapport.produits.length : 0}\n\n`;
+                        const details = `DÉTAILS RAPPORT Z\n\n` +
+                          `Date: ${formatDate(rapport.date)}\n` +
+                          `CA Total: ${formatMoney(rapport.ca_total)}\n` +
+                          `Plats vendus: ${rapport.produits ? rapport.produits.length : 0}\n\n`;
                         
                         let platsList = '';
                         if (rapport.produits && rapport.produits.length > 0) {
@@ -125,7 +125,7 @@ export default function HistoriqueZPage() {
                         alert(details + platsList);
                       }}
                     >
-                      👁️ Détails
+                      Détails
                     </button>
                   </div>
                 </div>
@@ -143,10 +143,10 @@ export default function HistoriqueZPage() {
                 cursor: loading ? 'not-allowed' : 'pointer'
               }}
             >
-              {loading ? '🔄 Actualisation...' : '🔄 Actualiser'}
+              {loading ? 'Actualisation...' : 'Actualiser'}
             </button>
             <button className="button">
-              📊 Exporter Excel
+              Exporter Excel
             </button>
             
             {/* Indicateur dernière mise à jour */}
@@ -155,9 +155,9 @@ export default function HistoriqueZPage() {
               color: '#6b7280', 
               marginTop: '8px'
             }}>
-              📅 Dernière mise à jour : {new Date().toLocaleTimeString('fr-FR')}
+              Dernière mise à jour : {new Date().toLocaleTimeString('fr-FR')}
               <br />
-              🔄 Auto-refresh toutes les 30s
+              Auto-refresh toutes les 30s
             </div>
           </div>
         </div>

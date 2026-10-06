@@ -113,21 +113,21 @@ const UserManagementPage = ({ currentUser }) => {
         
         // Message de confirmation
         const message = editingUser 
-          ? `✅ Utilisateur "${userForm.full_name || userForm.username}" modifié avec succès !` 
-          : `✅ Utilisateur "${userForm.full_name || userForm.username}" créé avec succès !`;
+          ? `Utilisateur "${userForm.full_name || userForm.username}" modifié avec succès !`
+          : `Utilisateur "${userForm.full_name || userForm.username}" créé avec succès !`;
         
         alert(message);
         
-        console.log('✅ Utilisateur sauvegardé avec succès');
+        console.log('Utilisateur sauvegardé avec succès');
       } else {
         const errorData = await response.json();
         const errorMessage = errorData.detail || errorData.message || `Erreur HTTP ${response.status}`;
-        alert(`❌ Erreur lors de la sauvegarde: ${errorMessage}`);
+        alert(`Erreur lors de la sauvegarde: ${errorMessage}`);
         console.error('Erreur sauvegarde:', errorData);
       }
     } catch (error) {
       console.error('Erreur lors de la sauvegarde:', error);
-      alert(`❌ Erreur de connexion: ${error.message}`);
+      alert(`Erreur de connexion: ${error.message}`);
     } finally {
       setLoading(false);
     }
@@ -200,7 +200,7 @@ const UserManagementPage = ({ currentUser }) => {
       {/* Header */}
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-800 mb-2">
-          👑 Gestion des Utilisateurs
+          Gestion des Utilisateurs
         </h1>
         <p className="text-gray-600">Panneau d&apos;administration pour la gestion des comptes utilisateurs et des rôles</p>
       </div>
@@ -312,7 +312,7 @@ const UserManagementPage = ({ currentUser }) => {
                             <button
                               onClick={() => {
                                 navigator.clipboard.writeText('password123');
-                                alert('🔑 Mot de passe copié dans le presse-papiers !');
+                                alert('Mot de passe copié dans le presse-papiers !');
                               }}
                               style={{
                                 background: '#10b981',
@@ -338,7 +338,7 @@ const UserManagementPage = ({ currentUser }) => {
                           <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
                             user.is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
                           }`}>
-                            {user.is_active ? '✅ Actif' : '❌ Inactif'}
+                            {user.is_active ? 'Actif' : 'Inactif'}
                           </span>
                         </td>
                         <td className="py-3 px-4 text-sm text-gray-600">
@@ -358,7 +358,7 @@ const UserManagementPage = ({ currentUser }) => {
                                 onClick={() => handleEditUser(user)}
                                 className="text-blue-600 hover:text-blue-800 font-medium text-sm"
                               >
-                                ✏️ Modifier
+                                Modifier
                               </button>
                             )}
                             
@@ -370,7 +370,7 @@ const UserManagementPage = ({ currentUser }) => {
                                 onClick={() => handleDeleteUser(user.id, user.username)}
                                 className="text-red-600 hover:text-red-800 font-medium text-sm"
                               >
-                                🗑️ Supprimer
+                                Supprimer
                               </button>
                             )}
                           </div>

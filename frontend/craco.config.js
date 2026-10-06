@@ -7,6 +7,7 @@ const config = {
 };
 
 module.exports = {
+  devServer: { allowedHosts: ['terminal.local', 'localhost'] },
   webpack: {
     alias: {
       '@': path.resolve(__dirname, 'src'),

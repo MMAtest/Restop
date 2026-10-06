@@ -1,5 +1,8 @@
 import React, { useState } from 'react';
 import axios from 'axios';
+import { Link } from 'react-router-dom';
+import { ArrowLeft, ArrowRight } from '@phosphor-icons/react';
+import Brand from './restop/Brand';
 
 const fieldStyle = {
   width: '100%',
@@ -79,104 +82,23 @@ const LoginPage = ({ onLoginSuccess }) => {
     }
   };
 
-  return (
-    <div style={{
-      minHeight: '100vh',
-      background: 'linear-gradient(145deg, #f5f7f4 0%, #e8f2ed 100%)',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      padding: '24px'
-    }}>
-      <div style={{
-        background: '#fff',
-        border: '1px solid #e3e8e5',
-        borderRadius: '20px',
-        padding: '36px',
-        maxWidth: '440px',
-        width: '100%',
-        boxShadow: '0 22px 60px rgba(18, 51, 50, 0.10)'
-      }}>
-        <div style={{ marginBottom: '28px' }}>
-          <div style={{ color: '#123332', fontSize: '13px', letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: '8px' }}>
-            ResTop
-          </div>
-          <h1 style={{ margin: 0, fontSize: '30px', fontWeight: 500, color: '#1D4241' }}>
-            {mode === 'register' ? 'Créer votre espace' : 'Connexion'}
-          </h1>
-          <p style={{ color: '#6f7b77', margin: '10px 0 0', lineHeight: 1.5 }}>
-            {mode === 'register'
-              ? 'Une base vierge et sécurisée sera créée pour votre établissement.'
-              : 'Accédez à vos stocks, fournisseurs et opérations.'}
-          </p>
-        </div>
-
-        <form onSubmit={handleSubmit}>
-          {mode === 'register' && (
-            <>
-              <div style={{ marginBottom: 14 }}>
-                <label style={{ display: 'block', fontSize: 13, marginBottom: 6, color: '#314744' }}>Nom du restaurant</label>
-                <input style={fieldStyle} value={form.restaurant_name} onChange={update('restaurant_name')} required />
-              </div>
-              <div style={{ marginBottom: 14 }}>
-                <label style={{ display: 'block', fontSize: 13, marginBottom: 6, color: '#314744' }}>Votre nom</label>
-                <input style={fieldStyle} value={form.full_name} onChange={update('full_name')} required />
-              </div>
-              <div style={{ marginBottom: 14 }}>
-                <label style={{ display: 'block', fontSize: 13, marginBottom: 6, color: '#314744' }}>Email</label>
-                <input style={fieldStyle} type="email" value={form.email} onChange={update('email')} required />
-              </div>
-            </>
-          )}
-
-          <div style={{ marginBottom: 14 }}>
-            <label style={{ display: 'block', fontSize: 13, marginBottom: 6, color: '#314744' }}>Nom d'utilisateur</label>
-            <input style={fieldStyle} value={form.username} onChange={update('username')} autoComplete="username" required />
-          </div>
-
-          <div style={{ marginBottom: 18 }}>
-            <label style={{ display: 'block', fontSize: 13, marginBottom: 6, color: '#314744' }}>Mot de passe</label>
-            <input style={fieldStyle} type="password" value={form.password} onChange={update('password')} minLength={8} autoComplete={mode === 'register' ? 'new-password' : 'current-password'} required />
-          </div>
-
-          {error && (
-            <div style={{ background: '#fff2f0', border: '1px solid #f2c7bf', color: '#8a3428', borderRadius: 10, padding: '11px 13px', fontSize: 13, marginBottom: 16 }}>
-              {error}
-            </div>
-          )}
-
-          <button type="submit" disabled={loading} style={{ width: '100%', border: 0, borderRadius: 10, padding: '13px 16px', background: loading ? '#8ba09a' : '#1D4241', color: '#fff', fontSize: 15, cursor: loading ? 'wait' : 'pointer' }}>
-            {loading ? 'Chargement…' : mode === 'register' ? 'Créer mon espace' : 'Se connecter'}
-          </button>
-        </form>
-
-        <button type="button" onClick={() => { setMode(mode === 'login' ? 'register' : 'login'); setError(''); }} style={{ width: '100%', marginTop: 12, padding: '10px', border: 0, background: 'transparent', color: '#1D4241', cursor: 'pointer', fontSize: 13 }}>
-          {mode === 'login' ? 'Première connexion ? Créer un compte' : 'Déjà un compte ? Se connecter'}
-        </button>
-
-        {mode === 'login' && (
-          <button
-            type="button"
-            onClick={handleDemo}
-            disabled={loading}
-            style={{
-              width: '100%',
-              marginTop: 10,
-              padding: '12px 14px',
-              border: '1px solid #1D4241',
-              borderRadius: 10,
-              background: '#fff',
-              color: '#1D4241',
-              cursor: loading ? 'wait' : 'pointer',
-              fontSize: 14
-            }}
-          >
-            Accéder à la démo commerciale
-          </button>
-        )}
-      </div>
-    </div>
-  );
+  return <div className="rt-auth">
+    <aside className="rt-auth-editorial"><img src="/images/restop-chef.webp" alt="" /><Link to="/" aria-label="Accueil Restop"><Brand light /></Link><div><h2>Moins de gestion.<br />Plus de cuisine.</h2><p>Retrouvez votre restaurant, vos produits et votre équipe dans un même espace.</p></div></aside>
+    <main className="rt-auth-content"><div className="rt-auth-form"><Link className="rt-auth-return" to="/"><ArrowLeft size={16} />Retour à l’accueil</Link><h1>{mode === 'register' ? 'Créer votre espace' : 'Heureux de vous retrouver.'}</h1><p>{mode === 'register' ? 'Renseignez votre établissement pour commencer.' : 'Connectez-vous à votre espace Restop.'}</p>
+      <form onSubmit={handleSubmit}>
+        {mode === 'register' && <>
+          <div><label htmlFor="restaurant_name">Nom du restaurant</label><input id="restaurant_name" value={form.restaurant_name} onChange={update('restaurant_name')} autoComplete="organization" required /></div>
+          <div><label htmlFor="full_name">Votre nom</label><input id="full_name" value={form.full_name} onChange={update('full_name')} autoComplete="name" required /></div>
+          <div><label htmlFor="email">Adresse e-mail</label><input id="email" type="email" value={form.email} onChange={update('email')} autoComplete="email" required /></div>
+        </>}
+        <div><label htmlFor="username">Nom d’utilisateur</label><input id="username" value={form.username} onChange={update('username')} autoComplete="username" required /></div>
+        <div><label htmlFor="password">Mot de passe</label><input id="password" type="password" value={form.password} onChange={update('password')} minLength={mode === 'register' ? 8 : undefined} autoComplete={mode === 'register' ? 'new-password' : 'current-password'} required /></div>
+        {error && <p className="rt-feedback" role="alert">{error}</p>}
+        <button className="rt-button rt-peach" type="submit" disabled={loading}>{loading ? 'Chargement…' : mode === 'register' ? 'Créer mon espace' : 'Se connecter'}<ArrowRight size={18} /></button>
+      </form>
+      <button className="rt-auth-switch" onClick={() => {setMode(mode === 'login' ? 'register' : 'login');setError('');}}>{mode === 'login' ? 'Première connexion ? Créer un compte' : 'Déjà un compte ? Se connecter'}</button>
+      {mode === 'login' && <button className="rt-button rt-outline" onClick={handleDemo} disabled={loading}>Explorer la démo commerciale<ArrowRight size={18} /></button>}
+    </div></main>
+  </div>;
 };
-
 export default LoginPage;

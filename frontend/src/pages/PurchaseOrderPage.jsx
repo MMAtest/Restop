@@ -245,7 +245,7 @@ const PurchaseOrderPage = ({ currentUser }) => {
       
       if (response.ok) {
         const order = await response.json();
-        alert(`✅ Commande créée avec succès!\n\nN° ${order.order_number}\nLivraison estimée: ${new Date(order.estimated_delivery_date).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' })}`);
+        alert(`Commande créée avec succès!\n\nN° ${order.order_number}\nLivraison estimée: ${new Date(order.estimated_delivery_date).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' })}`);
         
         // Réinitialiser
         setOrderItems([]);
@@ -259,11 +259,11 @@ const PurchaseOrderPage = ({ currentUser }) => {
         setActiveOrderTab('history');
       } else {
         const error = await response.json();
-        alert('❌ Erreur lors de la création: ' + (error.detail || 'Erreur inconnue'));
+        alert('Erreur lors de la création: ' + (error.detail || 'Erreur inconnue'));
       }
     } catch (error) {
       console.error('Erreur:', error);
-      alert('❌ Erreur lors de la création de la commande');
+      alert('Erreur lors de la création de la commande');
     } finally {
       setLoading(false);
     }
@@ -276,14 +276,14 @@ const PurchaseOrderPage = ({ currentUser }) => {
       });
       
       if (response.ok) {
-        alert(`✅ Statut mis à jour: ${newStatus}`);
+        alert(`Statut mis à jour: ${newStatus}`);
         fetchOrders();
       } else {
-        alert('❌ Erreur lors de la mise à jour du statut');
+        alert('Erreur lors de la mise à jour du statut');
       }
     } catch (error) {
       console.error('Erreur:', error);
-      alert('❌ Erreur de connexion');
+      alert('Erreur de connexion');
     }
   };
 
@@ -369,7 +369,7 @@ const PurchaseOrderPage = ({ currentUser }) => {
       {/* Header */}
       <div className="mb-8 px-6 orders-page-header">
         <h1 className="text-3xl font-bold mb-2" style={{ color: 'var(--color-text-primary)' }}>
-          🛒 Gestion des Commandes
+          Gestion des Commandes
         </h1>
         <p style={{ color: 'var(--color-text-secondary)' }}>
           Suivi et création de commandes fournisseurs
@@ -799,11 +799,11 @@ const PurchaseOrderPage = ({ currentUser }) => {
                           </div>
                           {deliveryEstimate.can_order_today ? (
                             <div className="text-xs inline-block px-2 py-1 rounded" style={{ background: 'rgba(16, 185, 129, 0.1)', color: 'var(--color-success-green)' }}>
-                              ✅ Commande possible aujourd'hui
+                              Commande possible aujourd'hui
                             </div>
                           ) : (
                             <div className="text-xs inline-block px-2 py-1 rounded" style={{ background: 'rgba(245, 158, 11, 0.1)', color: 'var(--color-accent-gold)' }}>
-                              ⏰ Prochaine commande: {new Date(deliveryEstimate.next_order_date).toLocaleDateString('fr-FR')}
+                              Prochaine commande: {new Date(deliveryEstimate.next_order_date).toLocaleDateString('fr-FR')}
                             </div>
                           )}
                           <p className="text-xs mt-2" style={{ color: 'var(--color-text-muted)' }}>
@@ -820,7 +820,7 @@ const PurchaseOrderPage = ({ currentUser }) => {
                     className="w-full py-2 rounded-lg font-medium disabled:opacity-50 disabled:cursor-not-allowed"
                     style={{ background: 'var(--color-accent-gold)', color: '#1a1a1a' }}
                   >
-                    {loading ? '⏳ Création...' : '✅ Valider Commande'}
+                    {loading ? 'Création...' : 'Valider Commande'}
                   </button>
                 </div>
               </>
@@ -883,7 +883,7 @@ const PurchaseOrderPage = ({ currentUser }) => {
               <div className="p-6">
                 {/* Informations de livraison */}
                 <div className="rounded-lg p-4 mb-4" style={{ background: 'rgba(245, 158, 11, 0.1)', border: '1px solid rgba(245, 158, 11, 0.3)' }}>
-                  <h4 className="font-semibold mb-2" style={{ color: 'var(--color-accent-gold)' }}>📅 Informations de Livraison</h4>
+                  <h4 className="font-semibold mb-2" style={{ color: 'var(--color-accent-gold)' }}>Informations de Livraison</h4>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                     <div>
                       <span style={{ color: 'var(--color-text-secondary)' }}>Date de commande:</span>
@@ -1036,7 +1036,7 @@ const PurchaseOrderPage = ({ currentUser }) => {
                         className="px-6 py-2 rounded-lg font-medium disabled:opacity-50"
                         style={{ background: 'var(--color-accent-gold)', color: '#1a1a1a' }}
                       >
-                        {loading ? 'Calcul...' : '🤖 Calculer les Commandes'}
+                        {loading ? 'Calcul...' : 'Calculer les Commandes'}
                       </button>
                     </div>
                   </div>
@@ -1079,7 +1079,7 @@ const PurchaseOrderPage = ({ currentUser }) => {
                   
                   {/* Récapitulatif général */}
                   <div className="rounded-lg p-4 mb-4" style={{ background: 'rgba(245, 158, 11, 0.1)', border: '1px solid rgba(245, 158, 11, 0.3)' }}>
-                    <h4 className="font-semibold mb-2" style={{ color: 'var(--color-accent-gold)' }}>📋 Récapitulatif Général</h4>
+                    <h4 className="font-semibold mb-2" style={{ color: 'var(--color-accent-gold)' }}>Récapitulatif Général</h4>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
                       <div>
                         <span style={{ color: 'var(--color-text-secondary)' }}>Nombre de fournisseurs:</span>
@@ -1180,7 +1180,7 @@ const PurchaseOrderPage = ({ currentUser }) => {
           {activeOrderTab === 'history' && (
             <div>
               <div className="mb-6">
-                <h3 className="text-xl font-bold mb-2" style={{ color: 'var(--color-text-primary)' }}>📋 Historique des Commandes</h3>
+                <h3 className="text-xl font-bold mb-2" style={{ color: 'var(--color-text-primary)' }}>Historique des Commandes</h3>
                 <p style={{ color: 'var(--color-text-secondary)' }}>Suivez l'état de vos commandes en temps réel</p>
               </div>
               
@@ -1199,7 +1199,7 @@ const PurchaseOrderPage = ({ currentUser }) => {
                     className="px-6 py-2 rounded-lg font-medium"
                     style={{ background: 'var(--color-accent-gold)', color: '#1a1a1a' }}
                   >
-                    ➕ Créer une commande
+                    Créer une commande
                   </button>
                 </div>
               ) : (
@@ -1275,7 +1275,7 @@ const PurchaseOrderPage = ({ currentUser }) => {
                               className="px-4 py-2 rounded-lg text-sm font-medium hover:bg-opacity-90 text-white"
                               style={{ background: '#8B5CF6' }}
                             >
-                              🚚 En transit
+                              En transit
                             </button>
                           )}
                           {order.status === 'in_transit' && (
@@ -1284,7 +1284,7 @@ const PurchaseOrderPage = ({ currentUser }) => {
                               className="px-4 py-2 rounded-lg text-sm font-medium hover:bg-opacity-90 text-white"
                               style={{ background: 'var(--color-success-green)' }}
                             >
-                              ✅ Marquer comme livré
+                              Marquer comme livré
                             </button>
                           )}
                           {order.status === 'pending' && (
@@ -1297,7 +1297,7 @@ const PurchaseOrderPage = ({ currentUser }) => {
                               className="px-4 py-2 rounded-lg text-sm font-medium hover:bg-opacity-90 text-white"
                               style={{ background: 'var(--color-danger-red)' }}
                             >
-                              ❌ Annuler
+                              Annuler
                             </button>
                           )}
                         </div>

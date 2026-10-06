@@ -94,7 +94,7 @@ const AnalyticsPage = () => {
       {/* Header */}
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-800 mb-2">
-          📊 Analytics & Profitabilité
+          Analytics & Profitabilité
         </h1>
         <p className="text-gray-600">Tableau de bord complet pour la gestion et l'analyse des performances</p>
       </div>
@@ -204,7 +204,7 @@ const AnalyticsPage = () => {
 
           {/* Top Recipes */}
           <div className="md:col-span-2 bg-white p-6 rounded-lg shadow-sm">
-            <h3 className="text-lg font-semibold mb-4">🏆 Top 5 Recettes par CA</h3>
+            <h3 className="text-lg font-semibold mb-4">Top 5 Recettes par CA</h3>
             <div className="space-y-3">
               {salesPerformance?.top_recipes?.slice(0, 5).map((recipe, index) => (
                 <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
@@ -225,7 +225,7 @@ const AnalyticsPage = () => {
 
           {/* Sales by Category */}
           <div className="md:col-span-2 bg-white p-6 rounded-lg shadow-sm">
-            <h3 className="text-lg font-semibold mb-4">🍽️ Ventes par Catégorie</h3>
+            <h3 className="text-lg font-semibold mb-4">Ventes par Catégorie</h3>
             <div className="space-y-3">
               {salesPerformance?.sales_by_category && Object.entries(salesPerformance.sales_by_category).map(([category, amount]) => (
                 <div key={category} className="flex items-center justify-between">
@@ -246,7 +246,7 @@ const AnalyticsPage = () => {
       {activeTab === 'profitability' && (
         <div className="bg-white rounded-lg shadow-sm">
           <div className="p-6 border-b border-gray-200">
-            <h3 className="text-lg font-semibold">💰 Analyse de Profitabilité par Recette</h3>
+            <h3 className="text-lg font-semibold">Analyse de Profitabilité par Recette</h3>
             <p className="text-sm text-gray-600 mt-1">Marge bénéficiaire et rentabilité de chaque recette</p>
           </div>
           <div className="p-6">
@@ -304,7 +304,7 @@ const AnalyticsPage = () => {
           {alertCenter.expiring_products.length > 0 && (
             <div className="bg-white rounded-lg shadow-sm">
               <div className="p-6 border-b border-gray-200">
-                <h3 className="text-lg font-semibold text-red-600">⏰ Produits Expirant Bientôt</h3>
+                <h3 className="text-lg font-semibold text-red-600">Produits Expirant Bientôt</h3>
                 <p className="text-sm text-gray-600 mt-1">{alertCenter.expiring_products.length} produit(s) expire(nt) dans les 7 prochains jours</p>
               </div>
               <div className="p-6">
@@ -345,7 +345,7 @@ const AnalyticsPage = () => {
           {alertCenter.low_stock_items.length > 0 && (
             <div className="bg-white rounded-lg shadow-sm">
               <div className="p-6 border-b border-gray-200">
-                <h3 className="text-lg font-semibold text-orange-600">📉 Stocks Faibles</h3>
+                <h3 className="text-lg font-semibold text-orange-600">Stocks Faibles</h3>
                 <p className="text-sm text-gray-600 mt-1">{alertCenter.low_stock_items.length} produit(s) sous le seuil minimum</p>
               </div>
               <div className="p-6">
@@ -382,7 +382,7 @@ const AnalyticsPage = () => {
           {alertCenter.price_anomalies.length > 0 && (
             <div className="bg-white rounded-lg shadow-sm">
               <div className="p-6 border-b border-gray-200">
-                <h3 className="text-lg font-semibold text-purple-600">💲 Anomalies de Prix</h3>
+                <h3 className="text-lg font-semibold text-purple-600">Anomalies de Prix</h3>
                 <p className="text-sm text-gray-600 mt-1">{alertCenter.price_anomalies.length} écart(s) de prix détecté(s)</p>
               </div>
               <div className="p-6">
@@ -467,7 +467,7 @@ const AnalyticsPage = () => {
           {/* Most Expensive Ingredients */}
           <div className="bg-white rounded-lg shadow-sm">
             <div className="p-6 border-b border-gray-200">
-              <h3 className="text-lg font-semibold">💎 Ingrédients les Plus Coûteux</h3>
+              <h3 className="text-lg font-semibold">Ingrédients les Plus Coûteux</h3>
               <p className="text-sm text-gray-600 mt-1">Top 10 des ingrédients par prix unitaire</p>
             </div>
             <div className="p-6">
@@ -493,7 +493,7 @@ const AnalyticsPage = () => {
           {/* Cost Trends */}
           <div className="bg-white rounded-lg shadow-sm">
             <div className="p-6 border-b border-gray-200">
-              <h3 className="text-lg font-semibold">📈 Tendances des Coûts</h3>
+              <h3 className="text-lg font-semibold">Tendances des Coûts</h3>
             </div>
             <div className="p-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -535,7 +535,7 @@ const AnalyticsPage = () => {
           onClick={fetchAnalyticsData}
           className="bg-primary-500 hover:bg-primary-600 text-white px-6 py-2 rounded-lg font-medium transition-colors"
         >
-          🔄 Actualiser les Données
+          Actualiser les Données
         </button>
       </div>
     </div>
