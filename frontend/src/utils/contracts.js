@@ -29,3 +29,12 @@ export function cutForms(value) {
  for(const row of [{id:'sauce',nom:'Sauce',description:'Transformé en sauce'},{id:'frites',nom:'Frites',description:'Taillé en bâtonnets'}]) if(!predefined.some(f=>f.id===row.id))predefined.push(row);
  return {predefined,custom:normalize(asList(value,'custom'))};
 }
+
+export function restaurantDate(value) {
+ if (!value) return '';
+ if (/^\d{4}-\d{2}-\d{2}$/.test(value)) return value;
+ const date=new Date(value); if (!Number.isFinite(date.getTime())) return '';
+ const parts=new Intl.DateTimeFormat('en-CA',{timeZone:'Europe/Paris',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(date);
+ const get=type=>parts.find(p=>p.type===type).value;
+ return `${get('year')}-${get('month')}-${get('day')}`;
+}

@@ -6,6 +6,7 @@ La revue porte sur le frontend effectivement compilé et l’API Deno Supabase e
 
 - Page blanche sur **Productions** : les catégories renvoyées en tableau étaient traitées comme un objet. Normalisation des deux contrats.
 - Page blanche sur **Nouveau produit** : unités absentes ou contrat incorrect. Liste standard disponible côté serveur et valeur de secours côté client.
+- Édition de DLC : conservation du jour du restaurant lors du passage UTC/Europe-Paris ; date invalide sans crash.
 - Champs nullables de préparations et décimaux renvoyés en chaînes : édition et formatage sécurisés.
 - Session locale JSON corrompue : démarrage protégé et nettoyage de la session invalide.
 - Suppression du remplacement global de `window.fetch`. Les pages passent par un client explicite avec authentification et délai maximal.
@@ -39,7 +40,7 @@ La revue porte sur le frontend effectivement compilé et l’API Deno Supabase e
 
 ## Vérification
 
-- `cd frontend && npm test -- --watchAll=false --runInBand` : **18 tests réussis**.
+- `cd frontend && npm test -- --watchAll=false --runInBand` : **19 tests réussis**.
 - `cd frontend && npm run lint` : aucune erreur sur le code actif pour les identifiants inconnus, clés dupliquées et chaînes optionnelles dangereuses.
 - `cd frontend && npm run build` : compilation de production réussie.
 - `node backend/deployed/tests/routes.cjs` : **13 contrôles de routes et de droits réussis** sur le vrai fichier serveur avec client de base simulé.

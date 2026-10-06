@@ -7,7 +7,7 @@ import Overview from './components/restop/Overview';
 import OperationalAnalytics from './components/restop/OperationalAnalytics';
 import { recipeCapacity } from './utils/planning';
 import { aggregateReports } from './utils/analytics';
-import { cutForms, cutFormCode, asList, number, categories, units, recipe, groupedProducts } from './utils/contracts';
+import { restaurantDate, cutForms, cutFormCode, asList, number, categories, units, recipe, groupedProducts } from './utils/contracts';
 import { readSession, clearSession } from './utils/session';
 import './styles/workspace.css';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
@@ -1691,7 +1691,7 @@ function App() {
         nombre_portions: String(item.nombre_portions ?? ""),
         taille_portion: String(item.taille_portion ?? ""),
         unite_portion: item.unite_portion,
-        dlc: item.dlc ? new Date(item.dlc).toISOString().split('T')[0] : "",
+        dlc: restaurantDate(item.dlc),
         notes: item.notes || ""
       });
       setShowPreparationModal(true);

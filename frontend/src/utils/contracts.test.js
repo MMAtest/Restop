@@ -1,4 +1,4 @@
-import {cutForms,cutFormCode,asList,number,categories,units,recipe,missionGroups} from './contracts';
+import {restaurantDate,cutForms,cutFormCode,asList,number,categories,units,recipe,missionGroups} from './contracts';
 import {readSession} from './session';
 import {csvCell} from './export';
 test('malformed lists and null numbers are safe without losing numeric strings',()=>{
@@ -16,3 +16,5 @@ test('cut form labels and codes accept both server strings and legacy objects',(
  expect(forms.predefined.some(f=>f.id==='sauce')).toBe(true);
  expect(forms.predefined.every(f=>f.id && f.nom)).toBe(true);
 });
+
+test("editing DLC preserves the restaurant day across UTC midnight",()=>{expect(restaurantDate("2026-10-07T22:00:00Z")).toBe("2026-10-08");expect(restaurantDate("2026-10-08")).toBe("2026-10-08");expect(restaurantDate("invalid")).toBe("");});
