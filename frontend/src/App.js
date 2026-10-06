@@ -24,6 +24,62 @@ const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
 
 const restopDemoMode = new URLSearchParams(window.location.search).get('demo') === '1';
+
+const EMPTY_ANALYTICS = {
+  caTotal: 0,
+  caMidi: 0,
+  caSoir: 0,
+  couvertsMidi: 0,
+  couvertsSoir: 0,
+  topProductions: [],
+  flopProductions: [],
+  ventesParCategorie: { entrees: 0, plats: 0, desserts: 0, boissons: 0, autres: 0 }
+};
+
+const RESTOP_DEMO_ANALYTICS = {
+  caTotal: 8420,
+  caMidi: 2860,
+  caSoir: 5560,
+  couvertsMidi: 48,
+  couvertsSoir: 86,
+  topProductions: [
+    { nom: 'Bœuf Wellington à la truffe', ventes: 1456, portions: 26, categorie: 'plats', coefficientPrevu: 3.2, coefficientReel: 3.35, coutMatiere: 435, prixVente: 56 },
+    { nom: 'Rigatoni à la truffe de Forcalquier', ventes: 1240, portions: 40, categorie: 'plats', coefficientPrevu: 3.0, coefficientReel: 3.18, coutMatiere: 390, prixVente: 31 },
+    { nom: 'Linguine aux palourdes', ventes: 1092, portions: 39, categorie: 'plats', coefficientPrevu: 2.9, coefficientReel: 3.04, coutMatiere: 359, prixVente: 28 },
+    { nom: 'Supions en persillade de Mamie', ventes: 936, portions: 39, categorie: 'entrees', coefficientPrevu: 2.8, coefficientReel: 2.94, coutMatiere: 318, prixVente: 24 }
+  ],
+  flopProductions: [
+    { nom: 'Fleurs de courgettes de Mamet', ventes: 336, portions: 16, categorie: 'entrees', coefficientPrevu: 2.8, coefficientReel: 2.41, coutMatiere: 139, prixVente: 21 },
+    { nom: 'Souris d’agneau confite', ventes: 396, portions: 11, categorie: 'plats', coefficientPrevu: 3.1, coefficientReel: 2.72, coutMatiere: 146, prixVente: 36 }
+  ],
+  ventesParCategorie: { entrees: 1420, plats: 3690, desserts: 950, boissons: 1840, autres: 520 }
+};
+
+function normalizeAnalyticsData(data, demoMode = false) {
+  const fallback = demoMode ? RESTOP_DEMO_ANALYTICS : EMPTY_ANALYTICS;
+  if (!data || Array.isArray(data) || typeof data !== 'object') {
+    return {
+      ...fallback,
+      topProductions: [...fallback.topProductions],
+      flopProductions: [...fallback.flopProductions],
+      ventesParCategorie: { ...fallback.ventesParCategorie }
+    };
+  }
+  return {
+    caTotal: Number(data.caTotal ?? fallback.caTotal ?? 0),
+    caMidi: Number(data.caMidi ?? fallback.caMidi ?? 0),
+    caSoir: Number(data.caSoir ?? fallback.caSoir ?? 0),
+    couvertsMidi: Number(data.couvertsMidi ?? fallback.couvertsMidi ?? 0),
+    couvertsSoir: Number(data.couvertsSoir ?? fallback.couvertsSoir ?? 0),
+    topProductions: Array.isArray(data.topProductions) ? data.topProductions : [...fallback.topProductions],
+    flopProductions: Array.isArray(data.flopProductions) ? data.flopProductions : [...fallback.flopProductions],
+    ventesParCategorie: {
+      ...fallback.ventesParCategorie,
+      ...(data.ventesParCategorie && typeof data.ventesParCategorie === 'object' ? data.ventesParCategorie : {})
+    }
+  };
+}
+
 if (restopDemoMode) {
   localStorage.setItem('user_session', JSON.stringify({
     user: {
@@ -130,22 +186,7 @@ function App() {
   const [selectedDateRange, setSelectedDateRange] = useState(null);
   const [selectedProductionCategory, setSelectedProductionCategory] = useState(''); // Filtre pour les top productions
   const [selectedFlopCategory, setSelectedFlopCategory] = useState(''); // Filtre pour les flop productions séparé
-  const [filteredAnalytics, setFilteredAnalytics] = useState({
-    caTotal: 0,
-    caMidi: 0,
-    caSoir: 0,
-    couvertsMidi: 0,
-    couvertsSoir: 0,
-    topProductions: [],
-    flopProductions: [],
-    ventesParCategorie: {
-      plats: 0,
-      boissons: 0,
-      desserts: 0,
-      entrees: 0,
-      autres: 0
-    }
-  });
+  const [filteredAnalytics, setFilteredAnalytics] = useState(() => normalizeAnalyticsData(null, restopDemoMode));
   const [dashboardStats, setDashboardStats] = useState({});
   const [produits, setProduits] = useState([]);
   const [fournisseurs, setFournisseurs] = useState([]);
@@ -673,8 +714,9 @@ function App() {
   const fetchDashboardAnalytics = async () => {
     try {
       const response = await axios.get(`${API}/dashboard/analytics`);
-      setFilteredAnalytics(response.data);
-      console.log("📊 Analytics réelles chargées:", response.data);
+      const normalized = normalizeAnalyticsData(response.data, restopDemoMode);
+      setFilteredAnalytics(normalized);
+      console.log("📊 Analytics chargées:", normalized);
     } catch (error) {
       console.error("Erreur lors de la récupération des analytics:", error);
     }
@@ -1896,6 +1938,10 @@ function App() {
   // ✅ Calculer les vraies analytics à partir des données de rapports Z
   const calculateRealAnalytics = async (dateRange) => {
     try {
+      if (restopDemoMode) {
+        return normalizeAnalyticsData(RESTOP_DEMO_ANALYTICS, true);
+      }
+
       // Récupérer les rapports Z pour la période
       const rapportsResponse = await axios.get(`${API}/rapports_z`);
       const rapports = rapportsResponse.data || [];
