@@ -1,3 +1,5 @@
+import { asList, number } from '../utils/contracts';
+import { downloadCsv } from '../utils/export';
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 
@@ -35,7 +37,7 @@ export default function HistoriqueZPage() {
     try {
       setLoading(true);
       const response = await axios.get(`${API}/rapports_z`);
-      setRapports(response.data);
+      setRapports(asList(response.data));
       setError(null);
     } catch (err) {
       console.error('Erreur lors du chargement des rapports Z:', err);
@@ -118,7 +120,7 @@ export default function HistoriqueZPage() {
                         if (rapport.produits && rapport.produits.length > 0) {
                           platsList = 'TOP PLATS VENDUS:\n';
                           rapport.produits.slice(0, 10).forEach((plat, i) => {
-                            platsList += `${i + 1}. ${plat.quantite || 1}x ${plat.nom}\n`;
+                            platsList += `${i + 1}. ${number(plat.qty ?? plat.quantite, 1)}x ${plat.name || plat.nom || "Plat sans nom"}\n`;
                           });
                         }
                         
@@ -145,8 +147,8 @@ export default function HistoriqueZPage() {
             >
               {loading ? 'Actualisation...' : 'Actualiser'}
             </button>
-            <button className="button">
-              Exporter Excel
+            <button className="button" onClick={() => downloadCsv("rapports-z.csv", ["Date","CA total"], rapports.map(r => [r.date, number(r.ca_total)]))}>
+              Exporter CSV
             </button>
             
             {/* Indicateur dernière mise à jour */}

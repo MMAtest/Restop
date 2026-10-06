@@ -1,4 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import { buildPurchaseDrafts } from '../utils/planning';
+import { downloadCsv } from '../utils/export';
+import { apiFetch, responseJson } from '../utils/api';
+import { asList, number, recipe } from '../utils/contracts';
+import React, { useState, useEffect, useRef } from 'react';
 import OrderTimeline from '../components/OrderTimeline';
 
 const PurchaseOrderPage = ({ currentUser }) => {
@@ -18,6 +22,9 @@ const PurchaseOrderPage = ({ currentUser }) => {
   const [manualOrderSummary, setManualOrderSummary] = useState(null); // Pour le récapitulatif de commande manuelle
   
   // États pour l'historique des commandes
+  const requestId = useRef(0);
+  const savingDrafts = useRef(new Set());
+  const [error, setError] = useState('');
   const [orders, setOrders] = useState([]);
   const [deliveryEstimate, setDeliveryEstimate] = useState(null);
 
@@ -49,91 +56,38 @@ const PurchaseOrderPage = ({ currentUser }) => {
     }
   }, [selectedSupplier]);
 
+  useEffect(() => {setAutoOrderResults([]);}, [selectedRecipes]);
+
   const fetchRecipes = async () => {
-    try {
-      const response = await fetch(`${backendUrl}/api/recettes`);
-      if (response.ok) {
-        const data = await response.json();
-        setRecipes(data);
-      } else {
-        // Données de test si API ne fonctionne pas
-        setRecipes([
-          {
-            id: 'recipe-1',
-            nom: 'Salade César',
-            categorie: 'Entrée',
-            portions: 4
-          },
-          {
-            id: 'recipe-2',
-            nom: 'Lasagnes',
-            categorie: 'Plat',
-            portions: 6
-          },
-          {
-            id: 'recipe-3',
-            nom: 'Tiramisu',
-            categorie: 'Dessert',
-            portions: 8
-          }
-        ]);
-      }
-    } catch (error) {
-      console.error('Erreur lors du chargement des recettes:', error);
-      // Données de test en cas d'erreur
-      setRecipes([
-        {
-          id: 'recipe-1',
-          nom: 'Salade César',
-          categorie: 'Entrée',
-          portions: 4
-        },
-        {
-          id: 'recipe-2',
-          nom: 'Lasagnes',
-          categorie: 'Plat',
-          portions: 6
-        },
-        {
-          id: 'recipe-3',
-          nom: 'Tiramisu',
-          categorie: 'Dessert',
-          portions: 8
-        }
-      ]);
-    }
+    try {setRecipes(asList(await responseJson(await apiFetch(`${backendUrl}/api/recettes`))).map(recipe));}
+    catch (error) {setError(`Recettes indisponibles : ${error.message}`);}
   };
 
   const fetchSuppliers = async () => {
     try {
-      const response = await fetch(`${backendUrl}/api/fournisseurs`);
-      if (response.ok) {
-        const data = await response.json();
-        setSuppliers(data);
-      }
+      const response = await apiFetch(`${backendUrl}/api/fournisseurs`);
+      setSuppliers(asList(await responseJson(response)));
     } catch (error) {
-      console.error('Erreur lors du chargement des fournisseurs:', error);
+      setError(`Fournisseurs indisponibles : ${error.message}`);
     }
   };
   
   const fetchOrders = async () => {
     try {
-      const response = await fetch(`${backendUrl}/api/orders`);
-      if (response.ok) {
-        const data = await response.json();
-        setOrders(data);
-      }
+      const response = await apiFetch(`${backendUrl}/api/orders`);
+      setOrders(asList(await responseJson(response)));
     } catch (error) {
-      console.error('Erreur lors du chargement des commandes:', error);
+      setError(`Commandes indisponibles : ${error.message}`);
     }
   };
   
   const fetchDeliveryEstimate = async (supplierId) => {
+    const sequence = requestId.current;
     try {
-      const response = await fetch(`${backendUrl}/api/suppliers/${supplierId}/delivery-estimate`);
+      const response = await apiFetch(`${backendUrl}/api/suppliers/${supplierId}/delivery-estimate`);
       if (response.ok) {
         const data = await response.json();
-        setDeliveryEstimate(data);
+        if (requestId.current === sequence) setDeliveryEstimate(data);
       }
     } catch (error) {
       console.error('Erreur lors du calcul de livraison:', error);
@@ -142,41 +96,22 @@ const PurchaseOrderPage = ({ currentUser }) => {
   };
 
   const handleSupplierSelect = async (supplier) => {
-    setSelectedSupplier(supplier);
-    setLoading(true);
+    const sequence = ++requestId.current;
+    setSelectedSupplier(supplier); setOrderItems([]); setSupplierProducts([]); setDeliveryEstimate(null); setError(''); setLoading(true);
     try {
-      // Get products from this supplier
-      const response = await fetch(`${backendUrl}/api/supplier-product-info/${supplier.id}`);
-      if (response.ok) {
-        const data = await response.json();
-        
-        // Get product details for each relation
-        const productsWithDetails = await Promise.all(
-          data.map(async (relation) => {
-            const productResponse = await fetch(`${backendUrl}/api/produits/${relation.product_id}`);
-            if (productResponse.ok) {
-              const product = await productResponse.json();
-              return {
-                ...relation,
-                product_name: product.nom,
-                product_unit: product.unite,
-                product_category: product.categorie
-              };
-            }
-            return relation;
-          })
-        );
-        
-        setSupplierProducts(productsWithDetails);
-      }
-    } catch (error) {
-      console.error('Erreur lors du chargement des produits:', error);
-    } finally {
-      setLoading(false);
-    }
+      const rows = asList(await responseJson(await apiFetch(`${backendUrl}/api/supplier-product-info/${supplier.id}`)));
+      const products = await Promise.all(rows.map(async relation => {
+        const product = await responseJson(await apiFetch(`${backendUrl}/api/produits/${relation.product_id}`));
+        return {...relation,price:number(relation.price),product_name:product.nom,product_unit:product.unite,product_category:product.categorie};
+      }));
+      if(sequence === requestId.current) setSupplierProducts(products);
+    } catch(error) {if(sequence === requestId.current) setError(error.message);}
+    finally {if(sequence === requestId.current) setLoading(false);}
   };
 
   const addToOrder = (productRelation, quantity = 1) => {
+    quantity = number(quantity);
+    if (quantity <= 0) return;
     const existingItem = orderItems.find(item => item.product_id === productRelation.product_id);
     
     if (existingItem) {
@@ -189,7 +124,7 @@ const PurchaseOrderPage = ({ currentUser }) => {
       setOrderItems([...orderItems, {
         product_id: productRelation.product_id,
         product_name: productRelation.product_name,
-        unit_price: productRelation.price,
+        unit_price: number(productRelation.price),
         quantity: quantity,
         unit: productRelation.product_unit
       }]);
@@ -197,6 +132,7 @@ const PurchaseOrderPage = ({ currentUser }) => {
   };
 
   const updateQuantity = (productId, newQuantity) => {
+    newQuantity = number(newQuantity);
     if (newQuantity <= 0) {
       setOrderItems(orderItems.filter(item => item.product_id !== productId));
     } else {
@@ -226,7 +162,7 @@ const PurchaseOrderPage = ({ currentUser }) => {
     setLoading(true);
     try {
       // Créer la commande via l'API
-      const response = await fetch(`${backendUrl}/api/orders`, {
+      const response = await apiFetch(`${backendUrl}/api/orders`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -271,7 +207,7 @@ const PurchaseOrderPage = ({ currentUser }) => {
 
   const updateOrderStatus = async (orderId, newStatus) => {
     try {
-      const response = await fetch(`${backendUrl}/api/orders/${orderId}/status?status=${newStatus}`, {
+      const response = await apiFetch(`${backendUrl}/api/orders/${orderId}/status?status=${newStatus}`, {
         method: 'PUT'
       });
       
@@ -293,68 +229,25 @@ const PurchaseOrderPage = ({ currentUser }) => {
       return;
     }
 
-    setLoading(true);
+    setLoading(true); setError(''); setAutoOrderResults([]);
     try {
-      // Simuler le calcul automatique avec des données de test
-      const mockOrdersBySupplier = [
-        {
-          supplierId: 'supplier-1',
-          supplierName: 'Fournisseur Rungis',
-          products: [
-            {
-              productId: 'prod-1',
-              productName: 'Tomates cerises',
-              quantity: 5,
-              unit: 'kg',
-              pricePerUnit: 4.50,
-              totalPrice: 22.50
-            },
-            {
-              productId: 'prod-2',
-              productName: 'Mozzarella',
-              quantity: 2,
-              unit: 'kg',
-              pricePerUnit: 12.00,
-              totalPrice: 24.00
-            }
-          ],
-          total: 46.50
-        },
-        {
-          supplierId: 'supplier-2',
-          supplierName: 'Boucherie Martin',
-          products: [
-            {
-              productId: 'prod-3',
-              productName: 'Bœuf haché',
-              quantity: 3,
-              unit: 'kg',
-              pricePerUnit: 18.50,
-              totalPrice: 55.50
-            }
-          ],
-          total: 55.50
-        }
-      ];
+      const [products,stocks] = await Promise.all(['produits','stocks'].map(async path => asList(await responseJson(await apiFetch(`${backendUrl}/api/${path}`)))));
+      const result = buildPurchaseDrafts(selectedRecipes, products, stocks, suppliers);
+      if(result.errors.length) throw new Error(result.errors.join(' ; '));
+      setAutoOrderResults(result.orders);
+      if(!result.orders.length) setError('Le stock disponible couvre les portions demandées. Aucune commande nécessaire.');
+    } catch(error) {setError(error.message);} finally {setLoading(false);}
+  };
 
-      // Calculer les besoins réels basés sur les recettes sélectionnées
-      const realCalculation = {};
-      selectedRecipes.forEach(recipe => {
-        const quantity = recipe.selectedQuantity || 1;
-        realCalculation[recipe.nom] = {
-          quantity: quantity,
-          estimatedCost: quantity * 15 // Estimation de base
-        };
-      });
-
-      setAutoOrderResults(mockOrdersBySupplier);
-      
-    } catch (error) {
-      console.error('Erreur lors du calcul automatique:', error);
-      alert('Erreur lors du calcul des commandes automatiques');
-    } finally {
-      setLoading(false);
-    }
+  const exportDrafts = drafts => downloadCsv('commandes.csv', ['Fournisseur','Produit','Quantité','Unité','Prix unitaire','Total'], drafts.flatMap(o=>o.products.map(p=>[o.supplierName,p.productName,p.quantity,p.unit,p.pricePerUnit,p.totalPrice])));
+  const saveDraft = async order => {
+    if(savingDrafts.current.has(order.supplierId)) return;
+    savingDrafts.current.add(order.supplierId);setLoading(true);setError('');
+    try {
+      await responseJson(await apiFetch(`${backendUrl}/api/orders`, {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({supplier_id:order.supplierId,items:order.products.map(p=>({product_id:p.productId,product_name:p.productName,quantity:p.quantity,unit:p.unit,unit_price:p.pricePerUnit,total_price:p.totalPrice}))})}));
+      setAutoOrderResults(rows=>rows.filter(o=>o.supplierId!==order.supplierId));
+      await fetchOrders();
+    } catch(error) {setError(error.message);} finally {savingDrafts.current.delete(order.supplierId);setLoading(false);}
   };
 
   const formatCurrency = (amount) => {
@@ -366,6 +259,7 @@ const PurchaseOrderPage = ({ currentUser }) => {
 
   return (
     <div className="min-h-screen" style={{ background: 'var(--color-background-dark)', color: 'var(--color-text-primary)' }}>
+      {error && <div role="alert" className="p-4 mx-6 mb-4">{error}</div>}
       {/* Header */}
       <div className="mb-8 px-6 orders-page-header">
         <h1 className="text-3xl font-bold mb-2" style={{ color: 'var(--color-text-primary)' }}>
@@ -394,7 +288,7 @@ const PurchaseOrderPage = ({ currentUser }) => {
                 {(() => {
                   const now = new Date();
                   const thisMonth = orders.filter(o => {
-                    const orderDate = new Date(o.created_at || o.date_commande);
+                    const orderDate = new Date(o.order_date || o.created_at || o.date_commande);
                     return orderDate.getMonth() === now.getMonth() && 
                            orderDate.getFullYear() === now.getFullYear();
                   });
@@ -417,11 +311,11 @@ const PurchaseOrderPage = ({ currentUser }) => {
                 {(() => {
                   const now = new Date();
                   const thisMonthOrders = orders.filter(o => {
-                    const orderDate = new Date(o.created_at || o.date_commande);
+                    const orderDate = new Date(o.order_date || o.created_at || o.date_commande);
                     return orderDate.getMonth() === now.getMonth() && 
                            orderDate.getFullYear() === now.getFullYear();
                   });
-                  const total = thisMonthOrders.reduce((sum, order) => sum + (order.montant_total || 0), 0);
+                  const total = thisMonthOrders.reduce((sum, order) => sum + number(order.total_amount ?? order.montant_total), 0);
                   return `${total.toFixed(0)}€`;
                 })()}
               </p>
@@ -442,7 +336,7 @@ const PurchaseOrderPage = ({ currentUser }) => {
             <div>
               <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>En attente</p>
               <p className="text-2xl font-bold" style={{ color: 'var(--color-text-primary)' }}>
-                {orders.filter(o => o.statut === 'en_attente' || o.statut === 'confirmee').length}
+                {orders.filter(o => ['pending','confirmed','en_attente','confirmee'].includes(o.status || o.statut)).length}
               </p>
             </div>
           </div>
@@ -454,7 +348,7 @@ const PurchaseOrderPage = ({ currentUser }) => {
           style={{ background: 'var(--color-background-card)', border: '1px solid var(--color-border)' }}
           onClick={() => {
             if (currentUser?.role === 'patron' || currentUser?.role === 'super_admin' || currentUser?.role === 'chef_cuisine') {
-              window.location.href = '/?tab=production&subtab=fournisseurs';
+              window.location.href = '/app?tab=production&subtab=fournisseurs';
             }
           }}
         >
@@ -847,17 +741,17 @@ const PurchaseOrderPage = ({ currentUser }) => {
                   <div className="flex space-x-2">
                     <button 
                       onClick={() => {
-                        alert(`PDF généré pour la commande ${manualOrderSummary.orderNumber}`);
+                        window.print();
                       }}
                       className="text-white px-3 py-1 rounded text-sm flex items-center"
                       style={{ background: 'var(--color-primary-blue)' }}
                     >
                       <span className="mr-1">📄</span>
-                      PDF
+                      Imprimer
                     </button>
                     <button 
                       onClick={() => {
-                        alert(`Email envoyé à ${manualOrderSummary.supplier.nom}`);
+                        setError('L’envoi par email n’est pas configuré. Exportez la commande pour la transmettre.');
                       }}
                       className="text-white px-3 py-1 rounded text-sm flex items-center"
                       style={{ background: 'var(--color-success-green)' }}
@@ -928,7 +822,7 @@ const PurchaseOrderPage = ({ currentUser }) => {
                   <div className="flex justify-center space-x-4">
                     <button 
                       onClick={() => {
-                        alert('Commande confirmée et envoyée au fournisseur !');
+                        handleCreateOrder();
                         setManualOrderSummary(null);
                         setOrderItems([]);
                       }}
@@ -1055,18 +949,18 @@ const PurchaseOrderPage = ({ currentUser }) => {
                       <button
                         onClick={() => {
                           // Générer PDF pour toutes les commandes
-                          alert('Téléchargement PDF de toutes les commandes...');
+                          exportDrafts(autoOrderResults);
                         }}
                         className="text-white px-4 py-2 rounded-lg text-sm flex items-center"
                         style={{ background: 'var(--color-primary-blue)' }}
                       >
                         <span className="mr-2">📄</span>
-                        Télécharger tout (PDF)
+                        Télécharger tout (CSV)
                       </button>
                       <button
                         onClick={() => {
                           // Envoyer emails à tous les fournisseurs
-                          alert('Envoi des emails à tous les fournisseurs...');
+                          setError('L’envoi par email n’est pas configuré. Exportez les commandes pour les transmettre.');
                         }}
                         className="text-white px-4 py-2 rounded-lg text-sm flex items-center"
                         style={{ background: 'var(--color-success-green)' }}
@@ -1114,17 +1008,17 @@ const PurchaseOrderPage = ({ currentUser }) => {
                           <div className="flex space-x-2">
                             <button 
                               onClick={() => {
-                                alert(`PDF généré pour ${order.supplierName}`);
+                                exportDrafts([order]);
                               }}
                               className="text-white px-3 py-1 rounded text-sm flex items-center"
                               style={{ background: 'var(--color-primary-blue)' }}
                             >
                               <span className="mr-1">📄</span>
-                              PDF
+                              Imprimer
                             </button>
                             <button 
                               onClick={() => {
-                                alert(`Email envoyé à ${order.supplierName}`);
+                                setError('L’envoi par email n’est pas configuré. Exportez la commande pour la transmettre.');
                               }}
                               className="text-white px-3 py-1 rounded text-sm flex items-center"
                               style={{ background: 'var(--color-success-green)' }}
@@ -1134,7 +1028,7 @@ const PurchaseOrderPage = ({ currentUser }) => {
                             </button>
                             <button 
                               onClick={() => {
-                                alert(`Commande validée pour ${order.supplierName}!`);
+                                saveDraft(order);
                               }}
                               className="px-3 py-1 rounded text-sm font-medium flex items-center"
                               style={{ background: 'var(--color-accent-gold)', color: '#1a1a1a' }}

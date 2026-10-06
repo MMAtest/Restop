@@ -1,3 +1,4 @@
+import { asList, recipe } from '../utils/contracts';
 import React, { useState, useEffect } from 'react';
 import ProductsDataGrid from '../components/ProductsDataGrid';
 import SuppliersDataGrid from '../components/SuppliersDataGrid';
@@ -40,7 +41,7 @@ const DataGridsPage = () => {
   const fetchProducts = async () => {
     try {
       const response = await axios.get(`${API}/produits`);
-      setProducts(response.data);
+      setProducts(asList(response.data));
     } catch (error) {
       console.error('Erreur lors du chargement des produits:', error);
     }
@@ -49,7 +50,7 @@ const DataGridsPage = () => {
   const fetchSuppliers = async () => {
     try {
       const response = await axios.get(`${API}/fournisseurs`);
-      setSuppliers(response.data);
+      setSuppliers(asList(response.data));
     } catch (error) {
       console.error('Erreur lors du chargement des fournisseurs:', error);
     }
@@ -58,7 +59,7 @@ const DataGridsPage = () => {
   const fetchRecipes = async () => {
     try {
       const response = await axios.get(`${API}/recettes`);
-      setRecipes(response.data);
+      setRecipes(asList(response.data).map(recipe));
     } catch (error) {
       console.error('Erreur lors du chargement des recettes:', error);
     }
@@ -77,20 +78,20 @@ const DataGridsPage = () => {
   };
 
   const handleEdit = async (item) => {
-    alert(`Édition de: ${item.nom}`);
+    alert('Pour modifier cet élément, ouvrez le module Production puis son bouton Modifier.');
     // Ici vous pouvez ouvrir un modal d'édition
     // Puis rafraîchir les données après modification
     await fetchAllData();
   };
 
-  const handleDelete = async (item) => {
+  const handleDelete = async (item, type) => {
     if (window.confirm(`Confirmer la suppression de "${item.nom}" ?`)) {
       try {
-        if (selectedItem?.type === 'product') {
+        if (type === 'product') {
           await axios.delete(`${API}/produits/${item.id}`);
-        } else if (selectedItem?.type === 'supplier') {
+        } else if (type === 'supplier') {
           await axios.delete(`${API}/fournisseurs/${item.id}`);
-        } else if (selectedItem?.type === 'recipe') {
+        } else if (type === 'recipe') {
           await axios.delete(`${API}/recettes/${item.id}`);
         }
         alert(`${item.nom} supprimé avec succès`);
@@ -216,7 +217,7 @@ const DataGridsPage = () => {
             products={products}
             onProductSelect={handleProductSelect}
             onProductEdit={handleEdit}
-            onProductDelete={handleDelete}
+            onProductDelete={item => handleDelete(item, "product")}
             loading={loading}
           />
         )}
@@ -226,7 +227,7 @@ const DataGridsPage = () => {
             suppliers={suppliers}
             onSupplierSelect={handleSupplierSelect}
             onSupplierEdit={handleEdit}
-            onSupplierDelete={handleDelete}
+            onSupplierDelete={item => handleDelete(item, "supplier")}
             loading={loading}
           />
         )}
@@ -236,7 +237,7 @@ const DataGridsPage = () => {
             recipes={recipes}
             onRecipeSelect={handleRecipeSelect}
             onRecipeEdit={handleEdit}
-            onRecipeDelete={handleDelete}
+            onRecipeDelete={item => handleDelete(item, "recipe")}
             onCalculateCosts={handleCalculateCosts}
             loading={loading}
           />

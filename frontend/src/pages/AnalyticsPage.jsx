@@ -1,3 +1,5 @@
+import { apiFetch, responseJson } from '../utils/api';
+import { asList, number, recipe } from '../utils/contracts';
 import React, { useEffect, useState } from 'react';
 
 const AnalyticsPage = () => {
@@ -5,6 +7,7 @@ const AnalyticsPage = () => {
   const [salesPerformance, setSalesPerformance] = useState(null);
   const [alertCenter, setAlertCenter] = useState(null);
   const [costAnalysis, setCostAnalysis] = useState(null);
+  const [error, setError] = useState('');
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('overview');
 
@@ -16,28 +19,28 @@ const AnalyticsPage = () => {
 
   const fetchAnalyticsData = async () => {
     try {
-      setLoading(true);
+      setLoading(true);setError('');
       
       const [profitResponse, salesResponse, alertsResponse, costResponse] = await Promise.all([
-        fetch(`${backendUrl}/api/analytics/profitability`),
-        fetch(`${backendUrl}/api/analytics/sales-performance`),
-        fetch(`${backendUrl}/api/analytics/alerts`),
-        fetch(`${backendUrl}/api/analytics/cost-analysis`)
+        apiFetch(`${backendUrl}/api/analytics/profitability`),
+        apiFetch(`${backendUrl}/api/analytics/sales-performance`),
+        apiFetch(`${backendUrl}/api/analytics/alerts`),
+        apiFetch(`${backendUrl}/api/analytics/cost-analysis`)
       ]);
 
       const [profit, sales, alerts, costs] = await Promise.all([
-        profitResponse.json(),
-        salesResponse.json(),
-        alertsResponse.json(),
-        costResponse.json()
+        responseJson(profitResponse),
+        responseJson(salesResponse),
+        responseJson(alertsResponse),
+        responseJson(costResponse)
       ]);
 
-      setProfitabilityData(profit);
-      setSalesPerformance(sales);
-      setAlertCenter(alerts);
-      setCostAnalysis(costs);
+      setProfitabilityData(asList(profit));
+      setSalesPerformance({...sales,top_recipes:asList(sales,'top_recipes')});
+      setAlertCenter({...alerts,expiring_products:asList(alerts,'expiring_products'),low_stock_items:asList(alerts,'low_stock_items'),price_anomalies:asList(alerts,'price_anomalies')});
+      setCostAnalysis({...costs,most_expensive_ingredients:asList(costs,'most_expensive_ingredients')});
     } catch (error) {
-      console.error('Erreur lors du chargement des analytics:', error);
+      setError(error.message);
     } finally {
       setLoading(false);
     }
@@ -46,7 +49,7 @@ const AnalyticsPage = () => {
   const handleResolveAlert = async (alertType, alertId) => {
     try {
       if (alertType === 'price_anomaly') {
-        const response = await fetch(`${backendUrl}/api/price-anomalies/${alertId}/resolve`, {
+        const response = await apiFetch(`${backendUrl}/api/price-anomalies/${alertId}/resolve`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ resolution_note: 'Résolu depuis le dashboard' })
@@ -75,7 +78,7 @@ const AnalyticsPage = () => {
   };
 
   const formatPercentage = (value) => {
-    return `${value.toFixed(1)}%`;
+    return `${number(value).toFixed(1)}%`;
   };
 
   if (loading) {
@@ -91,6 +94,7 @@ const AnalyticsPage = () => {
 
   return (
     <div className="p-6 bg-gradient-to-br from-gray-100 to-gray-200 min-h-screen">
+      {error && <div role="alert">{error} <button onClick={fetchAnalyticsData}>Réessayer</button></div>}
       {/* Header */}
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-800 mb-2">
@@ -361,7 +365,7 @@ const AnalyticsPage = () => {
                         </div>
                         <div className="flex items-center space-x-2">
                           <span className="px-3 py-1 bg-orange-100 text-orange-800 rounded-full text-xs font-medium">
-                            Manque {item.shortage.toFixed(1)}
+                            Manque {number(item.shortage).toFixed(1)}
                           </span>
                           <button
                             onClick={() => handleResolveAlert('low_stock', item.product_name)}

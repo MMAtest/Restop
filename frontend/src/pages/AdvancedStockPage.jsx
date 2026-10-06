@@ -1,3 +1,5 @@
+import { apiFetch, responseJson } from '../utils/api';
+import { asList, number, recipe } from '../utils/contracts';
 import React, { useEffect, useState } from 'react';
 
 const AdvancedStockPage = () => {
@@ -26,13 +28,13 @@ const AdvancedStockPage = () => {
     setLoading(true);
     try {
       if (activeTab === 'adjustments') {
-        const response = await fetch(`${backendUrl}/api/stock/adjustments-history`);
-        const data = await response.json();
-        setAdjustmentHistory(data);
+        const response = await apiFetch(`${backendUrl}/api/stock/adjustments-history`);
+        const data = await responseJson(response);
+        setAdjustmentHistory(asList(data));
       } else if (activeTab === 'batches') {
-        const response = await fetch(`${backendUrl}/api/stock/batch-summary`);
-        const data = await response.json();
-        setBatchSummary(data);
+        const response = await apiFetch(`${backendUrl}/api/stock/batch-summary`);
+        const data = await responseJson(response);
+        setBatchSummary(asList(data));
       }
     } catch (error) {
       console.error('Erreur lors du chargement:', error);
@@ -44,9 +46,9 @@ const AdvancedStockPage = () => {
   const fetchTargets = async (type) => {
     try {
       const endpoint = type === 'ingredient' ? '/api/produits' : '/api/recettes';
-      const response = await fetch(`${backendUrl}${endpoint}`);
-      const data = await response.json();
-      setAvailableTargets(data);
+      const response = await apiFetch(`${backendUrl}${endpoint}`);
+      const data = await responseJson(response);
+      setAvailableTargets(asList(data));
     } catch (error) {
       console.error('Erreur lors du chargement des cibles:', error);
     }
@@ -60,7 +62,7 @@ const AdvancedStockPage = () => {
   const handleSubmitAdjustment = async (e) => {
     e.preventDefault();
     try {
-      const response = await fetch(`${backendUrl}/api/stock/advanced-adjustment`, {
+      const response = await apiFetch(`${backendUrl}/api/stock/advanced-adjustment`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

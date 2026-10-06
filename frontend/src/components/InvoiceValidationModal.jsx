@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import ProgressBar from './ProgressBar';
+import { asList, number } from '../utils/contracts';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
@@ -192,7 +193,7 @@ const MobileItemCard = ({ item, index, handleItemChange, handleDeleteItem, produ
   </div>
 );
 
-const InvoiceValidationModal = ({ documentId, onClose, onSuccess, onRefresh, produitsList, fournisseursList }) => {
+const InvoiceValidationModal = ({ documentId, onClose, onSuccess, onRefresh, produitsList = [], fournisseursList = [] }) => {
   const [loading, setLoading] = useState(true);
   const [analysis, setAnalysis] = useState(null);
   const [error, setError] = useState(null);
@@ -234,8 +235,8 @@ const InvoiceValidationModal = ({ documentId, onClose, onSuccess, onRefresh, pro
         setEditableNumero(data.numero_facture || '');
 
         // Logique Produits
-        const initializedItems = data.items.map(item => {
-          const productName = item.status === 'matched' ? item.product_name : item.ocr_name;
+        const initializedItems = asList(data.items).map(item => {
+          const productName = String((item.status === 'matched' ? item.product_name : item.ocr_name) || item.ocr_name || 'Produit');
           const dlc = item.dlc || '';
           
           // Générer automatiquement un numéro de lot si une DLC est détectée
@@ -251,9 +252,9 @@ const InvoiceValidationModal = ({ documentId, onClose, onSuccess, onRefresh, pro
             ...item,
             selected_product_id: item.status === 'matched' ? item.product_id : '', 
             final_name: productName,
-            final_qty: item.ocr_qty || 1,
+            final_qty: number(item.ocr_qty, 1),
             final_unit: item.ocr_unit || 'pièce',
-            final_price: item.ocr_price || 0,
+            final_price: number(item.ocr_price),
             batch_number: batchNumber,
             dlc: dlc
           };
@@ -310,8 +311,8 @@ const InvoiceValidationModal = ({ documentId, onClose, onSuccess, onRefresh, pro
       setEditableNumero(data.numero_facture || '');
 
       // Logique Produits avec DLC auto-générée par Gemini
-      const initializedItems = data.items.map(item => {
-        const productName = item.status === 'matched' ? item.product_name : item.ocr_name;
+      const initializedItems = asList(data.items).map(item => {
+        const productName = String((item.status === 'matched' ? item.product_name : item.ocr_name) || item.ocr_name || 'Produit');
         const dlc = item.dlc || '';
         
         // Générer lot si DLC présente
@@ -327,9 +328,9 @@ const InvoiceValidationModal = ({ documentId, onClose, onSuccess, onRefresh, pro
           ...item,
           selected_product_id: item.status === 'matched' ? item.product_id : '', 
           final_name: productName,
-          final_qty: item.ocr_qty || 1,
+          final_qty: number(item.ocr_qty, 1),
           final_unit: item.ocr_unit || 'pièce',
-          final_price: item.ocr_price || 0,
+          final_price: number(item.ocr_price),
           batch_number: batchNumber,
           dlc: dlc
         };

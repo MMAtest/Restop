@@ -1,0 +1,1184 @@
+{
+  "/categories-production": [
+    "Entrée",
+    "Plat",
+    "Dessert",
+    "Bar",
+    "Autres"
+  ],
+  "/formes-decoupe": [],
+  "/produits": [
+    {
+      "id": "10000000-0000-4000-8000-000000002008",
+      "nom": "Beurre doux",
+      "description": "Plaque cuisine",
+      "categorie": "Crèmerie",
+      "unite": "kg",
+      "prix_achat": 8.4,
+      "reference_price": 8.2,
+      "main_supplier_id": "10000000-0000-4000-8000-000000001005",
+      "secondary_supplier_ids": [],
+      "fournisseur_id": "10000000-0000-4000-8000-000000001005",
+      "fournisseur_nom": "Maison du Frais",
+      "created_at": "2026-10-05T23:38:25.282604+00:00"
+    },
+    {
+      "id": "10000000-0000-4000-8000-000000002014",
+      "nom": "Burrata 125 g",
+      "description": "Pièce individuelle",
+      "categorie": "Fromagerie",
+      "unite": "pièce",
+      "prix_achat": 2.1,
+      "reference_price": 2,
+      "main_supplier_id": "10000000-0000-4000-8000-000000001005",
+      "secondary_supplier_ids": [],
+      "fournisseur_id": "10000000-0000-4000-8000-000000001005",
+      "fournisseur_nom": "Maison du Frais",
+      "created_at": "2026-10-05T23:38:25.282604+00:00"
+    },
+    {
+      "id": "10000000-0000-4000-8000-000000002017",
+      "nom": "Café grains",
+      "description": "Assemblage CHR",
+      "categorie": "Bar",
+      "unite": "kg",
+      "prix_achat": 16.5,
+      "reference_price": 16,
+      "main_supplier_id": "10000000-0000-4000-8000-000000001001",
+      "secondary_supplier_ids": [],
+      "fournisseur_id": "10000000-0000-4000-8000-000000001001",
+      "fournisseur_nom": "Métro La Valentine",
+      "created_at": "2026-10-05T23:38:25.282604+00:00"
+    },
+    {
+      "id": "10000000-0000-4000-8000-000000002010",
+      "nom": "Citron jaune",
+      "description": "Calibre 4/5",
+      "categorie": "Primeur",
+      "unite": "kg",
+      "prix_achat": 2.9,
+      "reference_price": 2.8,
+      "main_supplier_id": "10000000-0000-4000-8000-000000001003",
+      "secondary_supplier_ids": [],
+      "fournisseur_id": "10000000-0000-4000-8000-000000001003",
+      "fournisseur_nom": "Castelli Primeur",
+      "created_at": "2026-10-05T23:38:25.282604+00:00"
+    },
+    {
+      "id": "10000000-0000-4000-8000-000000002009",
+      "nom": "Crème liquide 30%",
+      "description": "Cuisine",
+      "categorie": "Crèmerie",
+      "unite": "L",
+      "prix_achat": 3.2,
+      "reference_price": 3.1,
+      "main_supplier_id": "10000000-0000-4000-8000-000000001005",
+      "secondary_supplier_ids": [],
+      "fournisseur_id": "10000000-0000-4000-8000-000000001005",
+      "fournisseur_nom": "Maison du Frais",
+      "created_at": "2026-10-05T23:38:25.282604+00:00"
+    },
+    {
+      "id": "10000000-0000-4000-8000-000000002019",
+      "nom": "Détergent cuisine",
+      "description": "Bidon professionnel",
+      "categorie": "Hygiène",
+      "unite": "L",
+      "prix_achat": 3.8,
+      "reference_price": 3.7,
+      "main_supplier_id": "10000000-0000-4000-8000-000000001006",
+      "secondary_supplier_ids": [],
+      "fournisseur_id": "10000000-0000-4000-8000-000000001006",
+      "fournisseur_nom": "Provence Hygiène",
+      "created_at": "2026-10-05T23:38:25.282604+00:00"
+    },
+    {
+      "id": "10000000-0000-4000-8000-000000002018",
+      "nom": "Eau pétillante 75 cl",
+      "description": "Caisse de 12",
+      "categorie": "Bar",
+      "unite": "bouteille",
+      "prix_achat": 0.92,
+      "reference_price": 0.9,
+      "main_supplier_id": "10000000-0000-4000-8000-000000001001",
+      "secondary_supplier_ids": [],
+      "fournisseur_id": "10000000-0000-4000-8000-000000001001",
+      "fournisseur_nom": "Métro La Valentine",
+      "created_at": "2026-10-05T23:38:25.282604+00:00"
+    },
+    {
+      "id": "10000000-0000-4000-8000-000000002001",
+      "nom": "Entrecôte Charolaise",
+      "description": "Pièce maturée 21 jours",
+      "categorie": "Viandes",
+      "unite": "kg",
+      "prix_achat": 28.5,
+      "reference_price": 28,
+      "main_supplier_id": "10000000-0000-4000-8000-000000001004",
+      "secondary_supplier_ids": [],
+      "fournisseur_id": "10000000-0000-4000-8000-000000001004",
+      "fournisseur_nom": "Lerda Viandes",
+      "created_at": "2026-10-05T23:38:25.282604+00:00"
+    },
+    {
+      "id": "10000000-0000-4000-8000-000000002012",
+      "nom": "Farine T55",
+      "description": "Sac restauration",
+      "categorie": "Épicerie",
+      "unite": "kg",
+      "prix_achat": 1.4,
+      "reference_price": 1.35,
+      "main_supplier_id": "10000000-0000-4000-8000-000000001001",
+      "secondary_supplier_ids": [],
+      "fournisseur_id": "10000000-0000-4000-8000-000000001001",
+      "fournisseur_nom": "Métro La Valentine",
+      "created_at": "2026-10-05T23:38:25.282604+00:00"
+    },
+    {
+      "id": "10000000-0000-4000-8000-000000002003",
+      "nom": "Filet de loup",
+      "description": "Portionnable sans peau",
+      "categorie": "Marée",
+      "unite": "kg",
+      "prix_achat": 22,
+      "reference_price": 21.5,
+      "main_supplier_id": "10000000-0000-4000-8000-000000001002",
+      "secondary_supplier_ids": [],
+      "fournisseur_id": "10000000-0000-4000-8000-000000001002",
+      "fournisseur_nom": "RM Marée",
+      "created_at": "2026-10-05T23:38:25.282604+00:00"
+    },
+    {
+      "id": "10000000-0000-4000-8000-000000002013",
+      "nom": "Frites surgelées 9/9",
+      "description": "Carton 10 kg",
+      "categorie": "Surgelés",
+      "unite": "kg",
+      "prix_achat": 2.4,
+      "reference_price": 2.3,
+      "main_supplier_id": "10000000-0000-4000-8000-000000001001",
+      "secondary_supplier_ids": [],
+      "fournisseur_id": "10000000-0000-4000-8000-000000001001",
+      "fournisseur_nom": "Métro La Valentine",
+      "created_at": "2026-10-05T23:38:25.282604+00:00"
+    },
+    {
+      "id": "10000000-0000-4000-8000-000000002011",
+      "nom": "Huile d'olive vierge",
+      "description": "Bidon 5 L",
+      "categorie": "Épicerie",
+      "unite": "L",
+      "prix_achat": 7.5,
+      "reference_price": 7.3,
+      "main_supplier_id": "10000000-0000-4000-8000-000000001001",
+      "secondary_supplier_ids": [],
+      "fournisseur_id": "10000000-0000-4000-8000-000000001001",
+      "fournisseur_nom": "Métro La Valentine",
+      "created_at": "2026-10-05T23:38:25.282604+00:00"
+    },
+    {
+      "id": "10000000-0000-4000-8000-000000002015",
+      "nom": "Linguine",
+      "description": "Pâtes sèches",
+      "categorie": "Épicerie",
+      "unite": "kg",
+      "prix_achat": 2.2,
+      "reference_price": 2.1,
+      "main_supplier_id": "10000000-0000-4000-8000-000000001001",
+      "secondary_supplier_ids": [],
+      "fournisseur_id": "10000000-0000-4000-8000-000000001001",
+      "fournisseur_nom": "Métro La Valentine",
+      "created_at": "2026-10-05T23:38:25.282604+00:00"
+    },
+    {
+      "id": "10000000-0000-4000-8000-000000002002",
+      "nom": "Moules de bouchot",
+      "description": "Calibre restauration",
+      "categorie": "Marée",
+      "unite": "kg",
+      "prix_achat": 5.8,
+      "reference_price": 5.6,
+      "main_supplier_id": "10000000-0000-4000-8000-000000001002",
+      "secondary_supplier_ids": [],
+      "fournisseur_id": "10000000-0000-4000-8000-000000001002",
+      "fournisseur_nom": "RM Marée",
+      "created_at": "2026-10-05T23:38:25.282604+00:00"
+    },
+    {
+      "id": "10000000-0000-4000-8000-000000002016",
+      "nom": "Palourdes",
+      "description": "Calibre cuisine",
+      "categorie": "Marée",
+      "unite": "kg",
+      "prix_achat": 9.8,
+      "reference_price": 9.5,
+      "main_supplier_id": "10000000-0000-4000-8000-000000001002",
+      "secondary_supplier_ids": [],
+      "fournisseur_id": "10000000-0000-4000-8000-000000001002",
+      "fournisseur_nom": "RM Marée",
+      "created_at": "2026-10-05T23:38:25.282604+00:00"
+    },
+    {
+      "id": "10000000-0000-4000-8000-000000002006",
+      "nom": "Persil plat",
+      "description": "Botte fraîche",
+      "categorie": "Primeur",
+      "unite": "botte",
+      "prix_achat": 1.2,
+      "reference_price": 1.1,
+      "main_supplier_id": "10000000-0000-4000-8000-000000001003",
+      "secondary_supplier_ids": [],
+      "fournisseur_id": "10000000-0000-4000-8000-000000001003",
+      "fournisseur_nom": "Castelli Primeur",
+      "created_at": "2026-10-05T23:38:25.282604+00:00"
+    },
+    {
+      "id": "10000000-0000-4000-8000-000000002007",
+      "nom": "Pommes de terre Agria",
+      "description": "Spécial frites",
+      "categorie": "Primeur",
+      "unite": "kg",
+      "prix_achat": 1.7,
+      "reference_price": 1.6,
+      "main_supplier_id": "10000000-0000-4000-8000-000000001003",
+      "secondary_supplier_ids": [],
+      "fournisseur_id": "10000000-0000-4000-8000-000000001003",
+      "fournisseur_nom": "Castelli Primeur",
+      "created_at": "2026-10-05T23:38:25.282604+00:00"
+    },
+    {
+      "id": "10000000-0000-4000-8000-000000002020",
+      "nom": "Roquette",
+      "description": "Sachet 500 g",
+      "categorie": "Primeur",
+      "unite": "kg",
+      "prix_achat": 7.2,
+      "reference_price": 7,
+      "main_supplier_id": "10000000-0000-4000-8000-000000001003",
+      "secondary_supplier_ids": [],
+      "fournisseur_id": "10000000-0000-4000-8000-000000001003",
+      "fournisseur_nom": "Castelli Primeur",
+      "created_at": "2026-10-05T23:38:25.282604+00:00"
+    },
+    {
+      "id": "10000000-0000-4000-8000-000000002004",
+      "nom": "Saumon frais",
+      "description": "Filet qualité sashimi",
+      "categorie": "Marée",
+      "unite": "kg",
+      "prix_achat": 18.9,
+      "reference_price": 18.5,
+      "main_supplier_id": "10000000-0000-4000-8000-000000001002",
+      "secondary_supplier_ids": [],
+      "fournisseur_id": "10000000-0000-4000-8000-000000001002",
+      "fournisseur_nom": "RM Marée",
+      "created_at": "2026-10-05T23:38:25.282604+00:00"
+    },
+    {
+      "id": "10000000-0000-4000-8000-000000002005",
+      "nom": "Tomate cœur de bœuf",
+      "description": "Origine Provence",
+      "categorie": "Primeur",
+      "unite": "kg",
+      "prix_achat": 4.2,
+      "reference_price": 4,
+      "main_supplier_id": "10000000-0000-4000-8000-000000001003",
+      "secondary_supplier_ids": [],
+      "fournisseur_id": "10000000-0000-4000-8000-000000001003",
+      "fournisseur_nom": "Castelli Primeur",
+      "created_at": "2026-10-05T23:38:25.282604+00:00"
+    }
+  ],
+  "/fournisseurs": [
+    {
+      "id": "10000000-0000-4000-8000-000000001003",
+      "nom": "Castelli Primeur",
+      "contact": "Sophie C.",
+      "email": "contact@castelli-demo.fr",
+      "telephone": "0491001003",
+      "adresse": "Marché des Arnavaux, Marseille",
+      "couleur": "#22C55E",
+      "logo": null,
+      "categorie": "primeur",
+      "categories": [
+        "primeur",
+        "frais"
+      ],
+      "delivery_rules": {
+        "delivery_days": [
+          "lundi",
+          "mercredi",
+          "vendredi"
+        ],
+        "minimum_order": 80
+      },
+      "created_at": "2026-10-05T23:38:25.282604+00:00"
+    },
+    {
+      "id": "10000000-0000-4000-8000-000000001004",
+      "nom": "Lerda Viandes",
+      "contact": "Marc L.",
+      "email": "contact@lerda-demo.fr",
+      "telephone": "0491001004",
+      "adresse": "Aubagne",
+      "couleur": "#DC2626",
+      "logo": null,
+      "categorie": "boucherie",
+      "categories": [
+        "boucherie"
+      ],
+      "delivery_rules": {
+        "cutoff": "16:00",
+        "delivery_days": [
+          "mardi",
+          "jeudi",
+          "samedi"
+        ]
+      },
+      "created_at": "2026-10-05T23:38:25.282604+00:00"
+    },
+    {
+      "id": "10000000-0000-4000-8000-000000001005",
+      "nom": "Maison du Frais",
+      "contact": "Claire P.",
+      "email": "contact@frais-demo.fr",
+      "telephone": "0491001005",
+      "adresse": "Marseille",
+      "couleur": "#A855F7",
+      "logo": null,
+      "categorie": "frais",
+      "categories": [
+        "frais",
+        "fromagerie"
+      ],
+      "delivery_rules": {
+        "delivery_days": [
+          "mardi",
+          "vendredi"
+        ],
+        "minimum_order": 100
+      },
+      "created_at": "2026-10-05T23:38:25.282604+00:00"
+    },
+    {
+      "id": "10000000-0000-4000-8000-000000001001",
+      "nom": "Métro La Valentine",
+      "contact": "Service Pro",
+      "email": "commandes@metro-demo.fr",
+      "telephone": "0491001001",
+      "adresse": "Marseille 11e",
+      "couleur": "#2563EB",
+      "logo": null,
+      "categorie": "extra",
+      "categories": [
+        "extra",
+        "bar",
+        "hygiène"
+      ],
+      "delivery_rules": {
+        "delivery_days": [
+          "mardi",
+          "vendredi"
+        ],
+        "minimum_order": 150
+      },
+      "created_at": "2026-10-05T23:38:25.282604+00:00"
+    },
+    {
+      "id": "10000000-0000-4000-8000-000000001006",
+      "nom": "Provence Hygiène",
+      "contact": "Service CHR",
+      "email": "contact@hygiene-demo.fr",
+      "telephone": "0491001006",
+      "adresse": "Vitrolles",
+      "couleur": "#64748B",
+      "logo": null,
+      "categorie": "hygiène",
+      "categories": [
+        "hygiène"
+      ],
+      "delivery_rules": {
+        "delivery_days": [
+          "jeudi"
+        ],
+        "minimum_order": 120
+      },
+      "created_at": "2026-10-05T23:38:25.282604+00:00"
+    },
+    {
+      "id": "10000000-0000-4000-8000-000000001002",
+      "nom": "RM Marée",
+      "contact": "Paul R.",
+      "email": "contact@rmmaree-demo.fr",
+      "telephone": "0491001002",
+      "adresse": "MIN des Arnavaux, Marseille",
+      "couleur": "#0EA5E9",
+      "logo": null,
+      "categorie": "marée",
+      "categories": [
+        "marée"
+      ],
+      "delivery_rules": {
+        "cutoff": "18:00",
+        "delivery_days": [
+          "mardi",
+          "mercredi",
+          "jeudi",
+          "vendredi",
+          "samedi"
+        ]
+      },
+      "created_at": "2026-10-05T23:38:25.282604+00:00"
+    }
+  ],
+  "/recettes": [
+    {
+      "id": "10000000-0000-4000-8000-000000003001",
+      "nom": "Moules marinières",
+      "description": "Moules, persillade, crème légère",
+      "categorie": "Plat",
+      "portions": 1,
+      "temps_preparation": 15,
+      "instructions": "Ouvrir les moules minute, terminer avec persillade et crème.",
+      "prix_vente": 24,
+      "coefficient_prevu": 3.2,
+      "coefficient_reel": 3.38,
+      "cout_matiere": 7.1,
+      "ingredients": [
+        {
+          "ingredient_id": "10000000-0000-4000-8000-000000002002",
+          "ingredient_type": "produit",
+          "ingredient_nom": "Moules de bouchot",
+          "produit_id": "10000000-0000-4000-8000-000000002002",
+          "produit_nom": "Moules de bouchot",
+          "quantite": 0.85,
+          "unite": "kg"
+        },
+        {
+          "ingredient_id": "10000000-0000-4000-8000-000000002006",
+          "ingredient_type": "produit",
+          "ingredient_nom": "Persil plat",
+          "produit_id": "10000000-0000-4000-8000-000000002006",
+          "produit_nom": "Persil plat",
+          "quantite": 0.1,
+          "unite": "botte"
+        },
+        {
+          "ingredient_id": "10000000-0000-4000-8000-000000002009",
+          "ingredient_type": "produit",
+          "ingredient_nom": "Crème liquide 30%",
+          "produit_id": "10000000-0000-4000-8000-000000002009",
+          "produit_nom": "Crème liquide 30%",
+          "quantite": 0.12,
+          "unite": "L"
+        }
+      ],
+      "created_at": "2026-10-05T23:38:25.282604+00:00"
+    },
+    {
+      "id": "10000000-0000-4000-8000-000000003002",
+      "nom": "Entrecôte, frites maison",
+      "description": "Entrecôte grillée, pommes Agria, sauce poivre",
+      "categorie": "Plat",
+      "portions": 1,
+      "temps_preparation": 20,
+      "instructions": "Cuisson à la demande, repos 3 min avant dressage.",
+      "prix_vente": 31,
+      "coefficient_prevu": 3,
+      "coefficient_reel": 3.04,
+      "cout_matiere": 10.2,
+      "ingredients": [
+        {
+          "ingredient_id": "10000000-0000-4000-8000-000000002001",
+          "ingredient_type": "produit",
+          "ingredient_nom": "Entrecôte Charolaise",
+          "produit_id": "10000000-0000-4000-8000-000000002001",
+          "produit_nom": "Entrecôte Charolaise",
+          "quantite": 0.3,
+          "unite": "kg"
+        },
+        {
+          "ingredient_id": "10000000-0000-4000-8000-000000002007",
+          "ingredient_type": "produit",
+          "ingredient_nom": "Pommes de terre Agria",
+          "produit_id": "10000000-0000-4000-8000-000000002007",
+          "produit_nom": "Pommes de terre Agria",
+          "quantite": 0.35,
+          "unite": "kg"
+        }
+      ],
+      "created_at": "2026-10-05T23:38:25.282604+00:00"
+    },
+    {
+      "id": "10000000-0000-4000-8000-000000003003",
+      "nom": "Burrata & tomates de Provence",
+      "description": "Burrata, tomates, roquette, huile d'olive",
+      "categorie": "Entrée",
+      "portions": 1,
+      "temps_preparation": 8,
+      "instructions": "Dressage minute, huile d'olive et fleur de sel.",
+      "prix_vente": 16,
+      "coefficient_prevu": 3.5,
+      "coefficient_reel": 3.6,
+      "cout_matiere": 4.45,
+      "ingredients": [
+        {
+          "ingredient_id": "10000000-0000-4000-8000-000000002014",
+          "ingredient_type": "produit",
+          "ingredient_nom": "Burrata 125 g",
+          "produit_id": "10000000-0000-4000-8000-000000002014",
+          "produit_nom": "Burrata 125 g",
+          "quantite": 1,
+          "unite": "pièce"
+        },
+        {
+          "ingredient_id": "10000000-0000-4000-8000-000000002005",
+          "ingredient_type": "produit",
+          "ingredient_nom": "Tomate cœur de bœuf",
+          "produit_id": "10000000-0000-4000-8000-000000002005",
+          "produit_nom": "Tomate cœur de bœuf",
+          "quantite": 0.22,
+          "unite": "kg"
+        },
+        {
+          "ingredient_id": "10000000-0000-4000-8000-000000002020",
+          "ingredient_type": "produit",
+          "ingredient_nom": "Roquette",
+          "produit_id": "10000000-0000-4000-8000-000000002020",
+          "produit_nom": "Roquette",
+          "quantite": 0.04,
+          "unite": "kg"
+        }
+      ],
+      "created_at": "2026-10-05T23:38:25.282604+00:00"
+    },
+    {
+      "id": "10000000-0000-4000-8000-000000003004",
+      "nom": "Linguine aux palourdes",
+      "description": "Linguine, palourdes, persil, citron",
+      "categorie": "Plat",
+      "portions": 1,
+      "temps_preparation": 18,
+      "instructions": "Cuire les palourdes séparément, lier avec eau de cuisson.",
+      "prix_vente": 26,
+      "coefficient_prevu": 3.1,
+      "coefficient_reel": 3.31,
+      "cout_matiere": 7.85,
+      "ingredients": [
+        {
+          "ingredient_id": "10000000-0000-4000-8000-000000002015",
+          "ingredient_type": "produit",
+          "ingredient_nom": "Linguine",
+          "produit_id": "10000000-0000-4000-8000-000000002015",
+          "produit_nom": "Linguine",
+          "quantite": 0.12,
+          "unite": "kg"
+        },
+        {
+          "ingredient_id": "10000000-0000-4000-8000-000000002016",
+          "ingredient_type": "produit",
+          "ingredient_nom": "Palourdes",
+          "produit_id": "10000000-0000-4000-8000-000000002016",
+          "produit_nom": "Palourdes",
+          "quantite": 0.35,
+          "unite": "kg"
+        }
+      ],
+      "created_at": "2026-10-05T23:38:25.282604+00:00"
+    },
+    {
+      "id": "10000000-0000-4000-8000-000000003005",
+      "nom": "Loup rôti, beurre citron",
+      "description": "Filet de loup, beurre monté, pommes vapeur",
+      "categorie": "Plat",
+      "portions": 1,
+      "temps_preparation": 22,
+      "instructions": "Rôtir côté peau, finir au beurre citron.",
+      "prix_vente": 29,
+      "coefficient_prevu": 3,
+      "coefficient_reel": 3.12,
+      "cout_matiere": 9.3,
+      "ingredients": [
+        {
+          "ingredient_id": "10000000-0000-4000-8000-000000002003",
+          "ingredient_type": "produit",
+          "ingredient_nom": "Filet de loup",
+          "produit_id": "10000000-0000-4000-8000-000000002003",
+          "produit_nom": "Filet de loup",
+          "quantite": 0.25,
+          "unite": "kg"
+        },
+        {
+          "ingredient_id": "10000000-0000-4000-8000-000000002008",
+          "ingredient_type": "produit",
+          "ingredient_nom": "Beurre doux",
+          "produit_id": "10000000-0000-4000-8000-000000002008",
+          "produit_nom": "Beurre doux",
+          "quantite": 0.04,
+          "unite": "kg"
+        }
+      ],
+      "created_at": "2026-10-05T23:38:25.282604+00:00"
+    }
+  ],
+  "/preparations": [
+    {
+      "id": "10000000-0000-4000-8000-000000004001",
+      "nom": "Persillade maison",
+      "produit_id": "10000000-0000-4000-8000-000000002006",
+      "produit_nom": "Persil plat",
+      "forme_decoupe": "haché",
+      "forme_decoupe_custom": null,
+      "quantite_produit_brut": 8,
+      "unite_produit_brut": "botte",
+      "quantite_preparee": 1.8,
+      "unite_preparee": "kg",
+      "perte": 0.25,
+      "perte_pourcentage": 12.2,
+      "nombre_portions": 45,
+      "taille_portion": 40,
+      "unite_portion": "g",
+      "date_preparation": "2026-10-05T19:38:25.282604+00:00",
+      "dlc": "2026-10-07T23:38:25.282604+00:00",
+      "notes": "Préparation pour moules et palourdes",
+      "created_at": "2026-10-05T23:38:25.282604+00:00",
+      "updated_at": "2026-10-05T23:38:25.282604+00:00"
+    },
+    {
+      "id": "10000000-0000-4000-8000-000000004002",
+      "nom": "Sauce poivre",
+      "produit_id": "10000000-0000-4000-8000-000000002009",
+      "produit_nom": "Crème liquide 30%",
+      "forme_decoupe": "sauce",
+      "forme_decoupe_custom": null,
+      "quantite_produit_brut": 4,
+      "unite_produit_brut": "L",
+      "quantite_preparee": 3.4,
+      "unite_preparee": "L",
+      "perte": 0.6,
+      "perte_pourcentage": 15,
+      "nombre_portions": 34,
+      "taille_portion": 100,
+      "unite_portion": "ml",
+      "date_preparation": "2026-10-05T18:38:25.282604+00:00",
+      "dlc": "2026-10-08T23:38:25.282604+00:00",
+      "notes": "Pour entrecôtes",
+      "created_at": "2026-10-05T23:38:25.282604+00:00",
+      "updated_at": "2026-10-05T23:38:25.282604+00:00"
+    },
+    {
+      "id": "10000000-0000-4000-8000-000000004003",
+      "nom": "Pommes Agria taillées",
+      "produit_id": "10000000-0000-4000-8000-000000002007",
+      "produit_nom": "Pommes de terre Agria",
+      "forme_decoupe": "frites",
+      "forme_decoupe_custom": null,
+      "quantite_produit_brut": 12,
+      "unite_produit_brut": "kg",
+      "quantite_preparee": 10.8,
+      "unite_preparee": "kg",
+      "perte": 1.2,
+      "perte_pourcentage": 10,
+      "nombre_portions": 36,
+      "taille_portion": 300,
+      "unite_portion": "g",
+      "date_preparation": "2026-10-05T21:38:25.282604+00:00",
+      "dlc": "2026-10-06T23:38:25.282604+00:00",
+      "notes": "Bac GN service soir",
+      "created_at": "2026-10-05T23:38:25.282604+00:00",
+      "updated_at": "2026-10-05T23:38:25.282604+00:00"
+    }
+  ],
+  "/stocks": [
+    {
+      "id": "10000000-0000-4000-8000-000000002008",
+      "produit_id": "10000000-0000-4000-8000-000000002008",
+      "produit_nom": "Beurre doux",
+      "quantite_actuelle": 5,
+      "quantite_min": 3,
+      "quantite_max": 8,
+      "derniere_maj": "2026-10-05T23:38:25.282604+00:00"
+    },
+    {
+      "id": "10000000-0000-4000-8000-000000002014",
+      "produit_id": "10000000-0000-4000-8000-000000002014",
+      "produit_nom": "Burrata 125 g",
+      "quantite_actuelle": 18,
+      "quantite_min": 10,
+      "quantite_max": 30,
+      "derniere_maj": "2026-10-05T23:38:25.282604+00:00"
+    },
+    {
+      "id": "10000000-0000-4000-8000-000000002017",
+      "produit_id": "10000000-0000-4000-8000-000000002017",
+      "produit_nom": "Café grains",
+      "quantite_actuelle": 5.5,
+      "quantite_min": 3,
+      "quantite_max": 8,
+      "derniere_maj": "2026-10-05T23:38:25.282604+00:00"
+    },
+    {
+      "id": "10000000-0000-4000-8000-000000002010",
+      "produit_id": "10000000-0000-4000-8000-000000002010",
+      "produit_nom": "Citron jaune",
+      "quantite_actuelle": 6,
+      "quantite_min": 3,
+      "quantite_max": 9,
+      "derniere_maj": "2026-10-05T23:38:25.282604+00:00"
+    },
+    {
+      "id": "10000000-0000-4000-8000-000000002009",
+      "produit_id": "10000000-0000-4000-8000-000000002009",
+      "produit_nom": "Crème liquide 30%",
+      "quantite_actuelle": 8,
+      "quantite_min": 4,
+      "quantite_max": 12,
+      "derniere_maj": "2026-10-05T23:38:25.282604+00:00"
+    },
+    {
+      "id": "10000000-0000-4000-8000-000000002019",
+      "produit_id": "10000000-0000-4000-8000-000000002019",
+      "produit_nom": "Détergent cuisine",
+      "quantite_actuelle": 3,
+      "quantite_min": 4,
+      "quantite_max": 10,
+      "derniere_maj": "2026-10-05T23:38:25.282604+00:00"
+    },
+    {
+      "id": "10000000-0000-4000-8000-000000002018",
+      "produit_id": "10000000-0000-4000-8000-000000002018",
+      "produit_nom": "Eau pétillante 75 cl",
+      "quantite_actuelle": 62,
+      "quantite_min": 24,
+      "quantite_max": 96,
+      "derniere_maj": "2026-10-05T23:38:25.282604+00:00"
+    },
+    {
+      "id": "10000000-0000-4000-8000-000000002001",
+      "produit_id": "10000000-0000-4000-8000-000000002001",
+      "produit_nom": "Entrecôte Charolaise",
+      "quantite_actuelle": 14.2,
+      "quantite_min": 6,
+      "quantite_max": 18,
+      "derniere_maj": "2026-10-05T23:38:25.282604+00:00"
+    },
+    {
+      "id": "10000000-0000-4000-8000-000000002012",
+      "produit_id": "10000000-0000-4000-8000-000000002012",
+      "produit_nom": "Farine T55",
+      "quantite_actuelle": 20,
+      "quantite_min": 8,
+      "quantite_max": 30,
+      "derniere_maj": "2026-10-05T23:38:25.282604+00:00"
+    },
+    {
+      "id": "10000000-0000-4000-8000-000000002003",
+      "produit_id": "10000000-0000-4000-8000-000000002003",
+      "produit_nom": "Filet de loup",
+      "quantite_actuelle": 8.5,
+      "quantite_min": 4,
+      "quantite_max": 12,
+      "derniere_maj": "2026-10-05T23:38:25.282604+00:00"
+    },
+    {
+      "id": "10000000-0000-4000-8000-000000002013",
+      "produit_id": "10000000-0000-4000-8000-000000002013",
+      "produit_nom": "Frites surgelées 9/9",
+      "quantite_actuelle": 30,
+      "quantite_min": 12,
+      "quantite_max": 45,
+      "derniere_maj": "2026-10-05T23:38:25.282604+00:00"
+    },
+    {
+      "id": "10000000-0000-4000-8000-000000002011",
+      "produit_id": "10000000-0000-4000-8000-000000002011",
+      "produit_nom": "Huile d'olive vierge",
+      "quantite_actuelle": 12,
+      "quantite_min": 6,
+      "quantite_max": 18,
+      "derniere_maj": "2026-10-05T23:38:25.282604+00:00"
+    },
+    {
+      "id": "10000000-0000-4000-8000-000000002015",
+      "produit_id": "10000000-0000-4000-8000-000000002015",
+      "produit_nom": "Linguine",
+      "quantite_actuelle": 15,
+      "quantite_min": 6,
+      "quantite_max": 24,
+      "derniere_maj": "2026-10-05T23:38:25.282604+00:00"
+    },
+    {
+      "id": "10000000-0000-4000-8000-000000002002",
+      "produit_id": "10000000-0000-4000-8000-000000002002",
+      "produit_nom": "Moules de bouchot",
+      "quantite_actuelle": 24,
+      "quantite_min": 12,
+      "quantite_max": 35,
+      "derniere_maj": "2026-10-06T00:45:22.810067+00:00"
+    },
+    {
+      "id": "10000000-0000-4000-8000-000000002016",
+      "produit_id": "10000000-0000-4000-8000-000000002016",
+      "produit_nom": "Palourdes",
+      "quantite_actuelle": 9,
+      "quantite_min": 6,
+      "quantite_max": 15,
+      "derniere_maj": "2026-10-05T23:38:25.282604+00:00"
+    },
+    {
+      "id": "10000000-0000-4000-8000-000000002006",
+      "produit_id": "10000000-0000-4000-8000-000000002006",
+      "produit_nom": "Persil plat",
+      "quantite_actuelle": 8,
+      "quantite_min": 4,
+      "quantite_max": 12,
+      "derniere_maj": "2026-10-05T23:38:25.282604+00:00"
+    },
+    {
+      "id": "10000000-0000-4000-8000-000000002007",
+      "produit_id": "10000000-0000-4000-8000-000000002007",
+      "produit_nom": "Pommes de terre Agria",
+      "quantite_actuelle": 38,
+      "quantite_min": 15,
+      "quantite_max": 55,
+      "derniere_maj": "2026-10-05T23:38:25.282604+00:00"
+    },
+    {
+      "id": "10000000-0000-4000-8000-000000002020",
+      "produit_id": "10000000-0000-4000-8000-000000002020",
+      "produit_nom": "Roquette",
+      "quantite_actuelle": 1.4,
+      "quantite_min": 2,
+      "quantite_max": 5,
+      "derniere_maj": "2026-10-05T23:38:25.282604+00:00"
+    },
+    {
+      "id": "10000000-0000-4000-8000-000000002004",
+      "produit_id": "10000000-0000-4000-8000-000000002004",
+      "produit_nom": "Saumon frais",
+      "quantite_actuelle": 6,
+      "quantite_min": 5,
+      "quantite_max": 10,
+      "derniere_maj": "2026-10-05T23:38:25.282604+00:00"
+    },
+    {
+      "id": "10000000-0000-4000-8000-000000002005",
+      "produit_id": "10000000-0000-4000-8000-000000002005",
+      "produit_nom": "Tomate cœur de bœuf",
+      "quantite_actuelle": 10,
+      "quantite_min": 5,
+      "quantite_max": 16,
+      "derniere_maj": "2026-10-05T23:38:25.282604+00:00"
+    }
+  ],
+  "/stocks/critiques/produits": [
+    {
+      "produit_id": "10000000-0000-4000-8000-000000002019",
+      "produit_nom": "Détergent cuisine",
+      "quantite_actuelle": 3,
+      "quantite_min": 4
+    },
+    {
+      "produit_id": "10000000-0000-4000-8000-000000002020",
+      "produit_nom": "Roquette",
+      "quantite_actuelle": 1.4,
+      "quantite_min": 2
+    }
+  ],
+  "/stock/batch-summary": [
+    {
+      "product_id": "10000000-0000-4000-8000-000000002004",
+      "product_name": "Saumon frais",
+      "total_stock": 6,
+      "critical_batches": 1,
+      "expired_batches": 0,
+      "batches": [
+        {
+          "id": "demo-batch-saumon-1",
+          "quantity": 2.5,
+          "received_date": "2026-10-05T07:36:40.038Z",
+          "expiry_date": "2026-10-08T07:36:40.038Z",
+          "batch_number": "SAU-0610",
+          "supplier_id": "10000000-0000-4000-8000-000000001002",
+          "status": "critical"
+        },
+        {
+          "id": "demo-batch-saumon-2",
+          "quantity": 3.5,
+          "received_date": "2026-10-06T07:36:40.038Z",
+          "expiry_date": "2026-10-11T07:36:40.038Z",
+          "batch_number": "SAU-0710",
+          "supplier_id": "10000000-0000-4000-8000-000000001002",
+          "status": "critical"
+        }
+      ]
+    },
+    {
+      "product_id": "10000000-0000-4000-8000-000000002014",
+      "product_name": "Burrata 125 g",
+      "total_stock": 18,
+      "critical_batches": 1,
+      "expired_batches": 0,
+      "batches": [
+        {
+          "id": "demo-batch-burrata-1",
+          "quantity": 8,
+          "received_date": "2026-10-04T07:36:40.038Z",
+          "expiry_date": "2026-10-10T07:36:40.038Z",
+          "batch_number": "BUR-0410",
+          "supplier_id": "10000000-0000-4000-8000-000000001005",
+          "status": "critical"
+        },
+        {
+          "id": "demo-batch-burrata-2",
+          "quantity": 10,
+          "received_date": "2026-10-06T07:36:40.038Z",
+          "expiry_date": "2026-10-15T07:36:40.038Z",
+          "batch_number": "BUR-0610",
+          "supplier_id": "10000000-0000-4000-8000-000000001005",
+          "status": "good"
+        }
+      ]
+    },
+    {
+      "product_id": "10000000-0000-4000-8000-000000002002",
+      "product_name": "Moules de bouchot",
+      "total_stock": 24,
+      "critical_batches": 1,
+      "expired_batches": 0,
+      "batches": [
+        {
+          "id": "demo-batch-moules-1",
+          "quantity": 10,
+          "received_date": "2026-10-05T07:36:40.038Z",
+          "expiry_date": "2026-10-07T07:36:40.038Z",
+          "batch_number": "MOU-0510",
+          "supplier_id": "10000000-0000-4000-8000-000000001002",
+          "status": "critical"
+        },
+        {
+          "id": "demo-batch-moules-2",
+          "quantity": 14,
+          "received_date": "2026-10-06T07:36:40.038Z",
+          "expiry_date": "2026-10-09T07:36:40.038Z",
+          "batch_number": "MOU-0610",
+          "supplier_id": "10000000-0000-4000-8000-000000001002",
+          "status": "critical"
+        }
+      ]
+    }
+  ],
+  "/produits/by-categories": [],
+  "/missions/by-user/demo-restop": [
+    {
+      "id": "10000000-0000-4000-8000-000000006001",
+      "restaurant_id": "10000000-0000-4000-8000-000000000001",
+      "title": "Réceptionner RM Marée",
+      "description": "Contrôler poids, température et DLC à la livraison",
+      "mission_type": "reception",
+      "category": "Réception",
+      "assigned_to_user_id": null,
+      "assigned_by_user_id": null,
+      "status": "en_cours",
+      "priority": "haute",
+      "due_date": "2026-10-06T17:38:25.282604+00:00",
+      "related_product_id": "10000000-0000-4000-8000-000000002002",
+      "related_preparation_id": null,
+      "related_supplier_id": null,
+      "target_quantity": 30,
+      "target_unit": "kg",
+      "employee_notes": null,
+      "validation_notes": null,
+      "completed_at": null,
+      "validated_at": null,
+      "created_at": "2026-10-05T23:38:25.282604+00:00",
+      "updated_at": "2026-10-05T23:38:25.282604+00:00"
+    },
+    {
+      "id": "10000000-0000-4000-8000-000000006002",
+      "restaurant_id": "10000000-0000-4000-8000-000000000001",
+      "title": "Refaire la persillade",
+      "description": "Préparer 45 portions avant le service du soir",
+      "mission_type": "preparation",
+      "category": "Cuisine",
+      "assigned_to_user_id": null,
+      "assigned_by_user_id": null,
+      "status": "en_cours",
+      "priority": "normale",
+      "due_date": "2026-10-06T05:38:25.282604+00:00",
+      "related_product_id": "10000000-0000-4000-8000-000000002006",
+      "related_preparation_id": null,
+      "related_supplier_id": null,
+      "target_quantity": 45,
+      "target_unit": "portions",
+      "employee_notes": null,
+      "validation_notes": null,
+      "completed_at": null,
+      "validated_at": null,
+      "created_at": "2026-10-05T23:38:25.282604+00:00",
+      "updated_at": "2026-10-05T23:38:25.282604+00:00"
+    },
+    {
+      "id": "10000000-0000-4000-8000-000000006003",
+      "restaurant_id": "10000000-0000-4000-8000-000000000001",
+      "title": "Inventaire bar",
+      "description": "Compter café, eaux et consommables bar",
+      "mission_type": "inventaire",
+      "category": "Bar",
+      "assigned_to_user_id": null,
+      "assigned_by_user_id": null,
+      "status": "terminee_attente",
+      "priority": "normale",
+      "due_date": "2026-10-05T21:38:25.282604+00:00",
+      "related_product_id": null,
+      "related_preparation_id": null,
+      "related_supplier_id": null,
+      "target_quantity": null,
+      "target_unit": null,
+      "employee_notes": null,
+      "validation_notes": null,
+      "completed_at": null,
+      "validated_at": null,
+      "created_at": "2026-10-05T23:38:25.282604+00:00",
+      "updated_at": "2026-10-05T23:38:25.282604+00:00"
+    }
+  ],
+  "/orders": [
+    {
+      "id": "10000000-0000-4000-8000-000000005003",
+      "order_number": "CMD-10055118",
+      "supplier_id": "10000000-0000-4000-8000-000000001001",
+      "items": [
+        {
+          "product_id": "10000000-0000-4000-8000-000000002017",
+          "product_name": "Café grains",
+          "quantity": 6,
+          "unit": "kg",
+          "unit_price": 16.5,
+          "total_price": 99
+        },
+        {
+          "product_id": "10000000-0000-4000-8000-000000002018",
+          "product_name": "Eau pétillante 75 cl",
+          "quantity": 120,
+          "unit": "bouteille",
+          "unit_price": 0.92,
+          "total_price": 110.4
+        },
+        {
+          "product_id": "10000000-0000-4000-8000-000000002019",
+          "product_name": "Détergent cuisine",
+          "quantity": 10,
+          "unit": "L",
+          "unit_price": 3.8,
+          "total_price": 38
+        },
+        {
+          "product_id": "10000000-0000-4000-8000-000000002011",
+          "product_name": "Huile d'olive vierge",
+          "quantity": 10.77,
+          "unit": "L",
+          "unit_price": 7.5,
+          "total_price": 80.8
+        }
+      ],
+      "total_amount": 328.2,
+      "order_date": "2026-10-05T22:38:25.282604+00:00",
+      "estimated_delivery_date": "2026-10-07T23:38:25.282604+00:00",
+      "actual_delivery_date": null,
+      "status": "pending",
+      "notes": "Réassort bar, épicerie et hygiène",
+      "created_by": null,
+      "created_at": "2026-10-05T23:38:25.282604+00:00",
+      "updated_at": "2026-10-05T23:38:25.282604+00:00"
+    },
+    {
+      "id": "10000000-0000-4000-8000-000000005002",
+      "order_number": "CMD-10054902",
+      "supplier_id": "10000000-0000-4000-8000-000000001003",
+      "items": [
+        {
+          "product_id": "10000000-0000-4000-8000-000000002005",
+          "product_name": "Tomate cœur de bœuf",
+          "quantity": 18,
+          "unit": "kg",
+          "unit_price": 4.2,
+          "total_price": 75.6
+        },
+        {
+          "product_id": "10000000-0000-4000-8000-000000002007",
+          "product_name": "Pommes de terre Agria",
+          "quantity": 45,
+          "unit": "kg",
+          "unit_price": 1.7,
+          "total_price": 76.5
+        },
+        {
+          "product_id": "10000000-0000-4000-8000-000000002006",
+          "product_name": "Persil plat",
+          "quantity": 12,
+          "unit": "botte",
+          "unit_price": 1.2,
+          "total_price": 14.4
+        },
+        {
+          "product_id": "10000000-0000-4000-8000-000000002010",
+          "product_name": "Citron jaune",
+          "quantity": 6.86,
+          "unit": "kg",
+          "unit_price": 2.9,
+          "total_price": 19.9
+        }
+      ],
+      "total_amount": 186.4,
+      "order_date": "2026-10-05T17:38:25.282604+00:00",
+      "estimated_delivery_date": "2026-10-06T23:38:25.282604+00:00",
+      "actual_delivery_date": null,
+      "status": "confirmed",
+      "notes": "Primeur pour services mercredi/jeudi",
+      "created_by": null,
+      "created_at": "2026-10-05T23:38:25.282604+00:00",
+      "updated_at": "2026-10-05T23:38:25.282604+00:00"
+    },
+    {
+      "id": "10000000-0000-4000-8000-000000005001",
+      "order_number": "CMD-10054231",
+      "supplier_id": "10000000-0000-4000-8000-000000001002",
+      "items": [
+        {
+          "product_id": "10000000-0000-4000-8000-000000002002",
+          "product_name": "Moules de bouchot",
+          "quantity": 30,
+          "unit": "kg",
+          "unit_price": 5.8,
+          "total_price": 174
+        },
+        {
+          "product_id": "10000000-0000-4000-8000-000000002003",
+          "product_name": "Filet de loup",
+          "quantity": 7,
+          "unit": "kg",
+          "unit_price": 22,
+          "total_price": 154
+        },
+        {
+          "product_id": "10000000-0000-4000-8000-000000002016",
+          "product_name": "Palourdes",
+          "quantity": 8.63,
+          "unit": "kg",
+          "unit_price": 9.8,
+          "total_price": 84.6
+        }
+      ],
+      "total_amount": 412.6,
+      "order_date": "2026-10-03T23:38:25.282604+00:00",
+      "estimated_delivery_date": "2026-10-04T23:38:25.282604+00:00",
+      "actual_delivery_date": "2026-10-04T23:38:25.282604+00:00",
+      "status": "delivered",
+      "notes": "Réception conforme, température contrôlée",
+      "created_by": null,
+      "created_at": "2026-10-05T23:38:25.282604+00:00",
+      "updated_at": "2026-10-05T23:38:25.282604+00:00"
+    }
+  ]
+}

@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { asList, missionGroups } from '../utils/contracts';
 
 const RoleBasedDashboard = ({ user, sessionId, onNavigateToPage, onCreateMission, activeDashboardTab, selectedDateRange }) => {
-  const [missions, setMissions] = useState([]);
+  const [missions, setMissions] = useState({assigned_to_me:[],created_by_me:[]});
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  const API = process.env.REACT_APP_BACKEND_URL || import.meta.env.REACT_APP_BACKEND_URL;
+  const API = process.env.REACT_APP_BACKEND_URL;
 
   useEffect(() => {
     if (user?.id) {
@@ -33,11 +34,11 @@ const RoleBasedDashboard = ({ user, sessionId, onNavigateToPage, onCreateMission
       
       // Récupérer les missions de l'utilisateur
       const missionsResponse = await axios.get(`${API}/api/missions/by-user/${user.id}`);
-      setMissions(missionsResponse.data);
+      setMissions(missionGroups(missionsResponse.data,user.id));
       
       // Récupérer les notifications
       const notificationsResponse = await axios.get(`${API}/api/notifications/${user.id}`);
-      setNotifications(notificationsResponse.data);
+      setNotifications(asList(notificationsResponse.data));
       
     } catch (error) {
       console.error('Erreur lors du chargement:', error);

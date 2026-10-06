@@ -1,0 +1,8 @@
+import { convertQuantity, recipeCapacity, buildPurchaseDrafts } from './planning';
+const products=[{id:'tomato',nom:'Tomates',unite:'kg',prix_achat:4,fournisseur_id:'s1'},{id:'oil',nom:'Huile',unite:'L',prix_achat:8,fournisseur_id:'s1'}];
+const stocks=[{produit_id:'tomato',quantite_actuelle:1},{produit_id:'oil',quantite_actuelle:0.1}];
+const recipe={id:'r',nom:'Salade',portions:2,ingredients:[{produit_id:'tomato',quantite:500,unite:'g'},{produit_id:'oil',quantite:100,unite:'mL'}]};
+test('converts mass and volume, refuses incompatible units',()=>{expect(convertQuantity(500,'g','kg')).toBe(.5);expect(convertQuantity(10,'cl','L')).toBe(.1);expect(convertQuantity(1,'kg','L')).toBeNull();});
+test('capacity uses the limiting ingredient and recipe portion count',()=>{const row=recipeCapacity(recipe,products,stocks);expect(row.portions).toBe(2);expect(row.costPerPortion).toBeCloseTo(1.4);});
+test('shared ingredients are summed before subtracting available stock',()=>{const result=buildPurchaseDrafts([{...recipe,selectedQuantity:6},{...recipe,id:'r2',selectedQuantity:2}],products,stocks,[{id:'s1',nom:'Primeur'}]);expect(result.errors).toEqual([]);expect(result.orders[0].products.find(p=>p.productId==='tomato').quantity).toBe(1);expect(result.orders[0].total).toBeCloseTo(6.4);});
+test('missing or incompatible ingredients do not produce invented orders',()=>{const bad={...recipe,ingredients:[{produit_id:'unknown',quantite:2,unite:'kg'}]};expect(recipeCapacity(bad,products,stocks).portions).toBeNull();expect(buildPurchaseDrafts([{...bad,selectedQuantity:2}],products,stocks,[]).errors.length).toBe(1);});

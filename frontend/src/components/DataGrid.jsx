@@ -67,7 +67,7 @@ const DataGrid = ({
       className={`ag-theme-quartz ${className}`} 
       style={{ height, width: '100%' }}
     >
-      <AgGridReact
+      <AgGridReact theme="legacy"
         rowData={data}
         columnDefs={columns}
         gridOptions={gridOptions}

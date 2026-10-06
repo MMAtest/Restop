@@ -1,3 +1,5 @@
+import { apiFetch, responseJson } from '../utils/api';
+import { asList, number, recipe } from '../utils/contracts';
 import React, { useEffect, useState } from 'react';
 
 const UserManagementPage = ({ currentUser }) => {
@@ -68,10 +70,10 @@ const UserManagementPage = ({ currentUser }) => {
   const fetchUsers = async () => {
     setLoading(true);
     try {
-      const response = await fetch(`${backendUrl}/api/admin/users`);
+      const response = await apiFetch(`${backendUrl}/api/admin/users`);
       if (response.ok) {
         const data = await response.json();
-        setUsers(data);
+        setUsers(asList(data));
       } else {
         console.error('Erreur lors du chargement des utilisateurs');
       }
@@ -96,7 +98,7 @@ const UserManagementPage = ({ currentUser }) => {
         ? { ...userForm, password: userForm.password || undefined } // Don't send empty password for updates
         : userForm;
 
-      const response = await fetch(url, {
+      const response = await apiFetch(url, {
         method,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(submitData)
@@ -148,7 +150,7 @@ const UserManagementPage = ({ currentUser }) => {
   const handleDeleteUser = async (userId, username) => {
     if (window.confirm(`Confirmer la suppression de l'utilisateur "${username}" ?`)) {
       try {
-        const response = await fetch(`${backendUrl}/api/admin/users/${userId}?requester_role=${currentUser?.role || 'super_admin'}`, {
+        const response = await apiFetch(`${backendUrl}/api/admin/users/${userId}?requester_role=${currentUser?.role || 'super_admin'}`, {
           method: 'DELETE'
         });
 
@@ -298,35 +300,7 @@ const UserManagementPage = ({ currentUser }) => {
                         </td>
                         <td className="py-3 px-4 text-sm text-gray-600">{user.email}</td>
                         <td className="py-3 px-4">
-                          <div style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '8px',
-                            padding: '4px 8px',
-                            background: '#f3f4f6',
-                            borderRadius: '4px',
-                            fontSize: '12px',
-                            fontFamily: 'monospace'
-                          }}>
-                            <span style={{color: '#374151'}}>password123</span>
-                            <button
-                              onClick={() => {
-                                navigator.clipboard.writeText('password123');
-                                alert('Mot de passe copié dans le presse-papiers !');
-                              }}
-                              style={{
-                                background: '#10b981',
-                                color: 'white',
-                                border: 'none',
-                                padding: '2px 6px',
-                                borderRadius: '3px',
-                                cursor: 'pointer',
-                                fontSize: '10px'
-                              }}
-                            >
-                              📋
-                            </button>
-                          </div>
+                          <span>Non accessible</span>
                         </td>
                         <td className="py-3 px-4">
                           <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${roleInfo.color}`}>

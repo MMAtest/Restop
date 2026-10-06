@@ -1,0 +1,2 @@
+const globals=require('globals');
+module.exports=[{ignores:['build/**','node_modules/**','src/**/temp_content.jsx','src/**/*.broken']},{files:['src/**/*.{js,jsx}'],languageOptions:{ecmaVersion:2022,sourceType:'module',parserOptions:{ecmaFeatures:{jsx:true}},globals:{...globals.browser,...globals.jest,process:'readonly',global:'readonly'}},rules:{'no-undef':'error','no-dupe-keys':'error','no-unsafe-optional-chaining':'error'}}];

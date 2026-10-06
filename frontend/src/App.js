@@ -1,10 +1,14 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import "./App.css";
 import axios from "axios";
 import { useNavigate } from 'react-router-dom';
 import AppNavigation from './components/restop/AppNavigation';
 import Overview from './components/restop/Overview';
+import OperationalAnalytics from './components/restop/OperationalAnalytics';
+import { recipeCapacity } from './utils/planning';
 import { aggregateReports } from './utils/analytics';
+import { asList, number, categories, units, recipe, groupedProducts } from './utils/contracts';
+import { readSession, clearSession } from './utils/session';
 import './styles/workspace.css';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
 import { Pie } from 'react-chartjs-2';
@@ -85,33 +89,8 @@ function normalizeAnalyticsData(data, demoMode = false) {
   };
 }
 
-// RESTOP_SESSION_BOOTSTRAP
-try {
-  const storedSession = JSON.parse(localStorage.getItem('user_session') || 'null');
-  if (storedSession?.session_id) {
-    axios.defaults.headers.common.Authorization = 'Bearer ' + storedSession.session_id;
-  }
-} catch (_) {
-  localStorage.removeItem('user_session');
-}
-
-if (!window.__RESTOP_AUTH_FETCH_PATCHED__) {
-  const nativeFetch = window.fetch.bind(window);
-  window.fetch = (input, init = {}) => {
-    const requestUrl = typeof input === 'string' ? input : input?.url;
-    const stored = JSON.parse(localStorage.getItem('user_session') || 'null');
-    if (requestUrl?.startsWith(BACKEND_URL) && stored?.session_id) {
-      const headers = new Headers(init.headers || {});
-      if (!headers.has('Authorization')) {
-        headers.set('Authorization', 'Bearer ' + stored.session_id);
-      }
-      return nativeFetch(input, { ...init, headers });
-    }
-    return nativeFetch(input, init);
-  };
-  window.__RESTOP_AUTH_FETCH_PATCHED__ = true;
-}
-
+const storedSession = readSession();
+if (storedSession) axios.defaults.headers.common.Authorization = `Bearer ${storedSession.session_id}`;
 
 // Constantes pour les catégories de fournisseurs
 const CATEGORIES_FOURNISSEURS = [
@@ -238,21 +217,7 @@ function App() {
   const [activeOcrTab, setActiveOcrTab] = useState('factures'); // 'tickets-z' ou 'factures' ou 'mercuriales'
   
   // États pour le module prévisionnel
-  const [stocksPrevisionnels, setStocksPrevisionnels] = useState([
-    { id: 1, produit: "Tomates", stock_actuel: 25, unite: "kg", productions_possibles: [
-      { nom: "Salade Méditerranéenne", quantite_needed: 2, portions_possibles: 12, portions_selectionnees: 0, categorie: "Entrée" },
-      { nom: "Ratatouille", quantite_needed: 3, portions_possibles: 8, portions_selectionnees: 0, categorie: "Plat" },
-      { nom: "Gazpacho", quantite_needed: 1.5, portions_possibles: 16, portions_selectionnees: 0, categorie: "Entrée" }
-    ]},
-    { id: 2, produit: "Fromage de chèvre", stock_actuel: 3.2, unite: "kg", productions_possibles: [
-      { nom: "Salade de chèvre chaud", quantite_needed: 0.15, portions_possibles: 21, portions_selectionnees: 0, categorie: "Entrée" },
-      { nom: "Tarte aux courgettes", quantite_needed: 0.2, portions_possibles: 16, portions_selectionnees: 0, categorie: "Plat" }
-    ]},
-    { id: 3, produit: "Saumon frais", stock_actuel: 4.8, unite: "kg", productions_possibles: [
-      { nom: "Saumon grillé", quantite_needed: 0.18, portions_possibles: 26, portions_selectionnees: 0, categorie: "Plat" },
-      { nom: "Tartare de saumon", quantite_needed: 0.12, portions_possibles: 40, portions_selectionnees: 0, categorie: "Entrée" }
-    ]}
-  ]);
+  const [stocksPrevisionnels, setStocksPrevisionnels] = useState([]);
   const [selectedProductionPrevisionnelle, setSelectedProductionPrevisionnelle] = useState('');
 
   // États pour la pagination et filtres OCR
@@ -304,60 +269,18 @@ function App() {
   };
 
   // Générer stocks prévisionnels à partir des vraies données
-  const generateStocksPrevisionnels = () => {
-    try {
-      // Utiliser les vrais stocks et recettes pour créer des stocks prévisionnels
-      const stocksRéels = stocks.slice(0, 10); // Prendre 10 produits avec stock
-      
-      const stocksPrevisionnelsGeneres = stocksRéels.map((stock, index) => {
-        const produit = produits.find(p => p.id === stock.produit_id);
-        if (!produit) return null;
-        
-        // Trouver des recettes qui utilisent ce produit
-        const recettesUtilisant = recettes.filter(recette => 
-          recette.ingredients.some(ing => ing.produit_id === produit.id)
-        );
-        
-        const productionsPossibles = recettesUtilisant.slice(0, 3).map(recette => {
-          const ingredient = recette.ingredients.find(ing => ing.produit_id === produit.id);
-          const quantiteParPortion = ingredient ? ingredient.quantite / recette.portions : 0.2;
-          const portionsPossibles = quantiteParPortion > 0 ? Math.floor(stock.quantite_actuelle / quantiteParPortion) : 0;
-          
-          return {
-            nom: recette.nom,
-            quantite_needed: quantiteParPortion,
-            portions_possibles: portionsPossibles,
-            portions_selectionnees: 0,
-            categorie: recette.categorie || "Autres"
-          };
-        });
-        
-        // Si pas de recettes trouvées, créer des productions génériques
-        if (productionsPossibles.length === 0) {
-          productionsPossibles.push({
-            nom: `Plat avec ${produit.nom}`,
-            quantite_needed: 0.15,
-            portions_possibles: Math.floor(stock.quantite_actuelle / 0.15),
-            portions_selectionnees: 0,
-            categorie: "Plat"
-          });
-        }
-        
-        return {
-          id: index + 1,
-          produit: produit.nom,
-          stock_actuel: stock.quantite_actuelle,
-          unite: produit.unite,
-          productions_possibles: productionsPossibles
-        };
-      }).filter(Boolean);
-      
-      setStocksPrevisionnels(stocksPrevisionnelsGeneres);
-    } catch (error) {
-      console.error('Erreur génération stocks prévisionnels:', error);
-    }
-  };
-
+  useEffect(() => {
+    const rows=recettes.map(r=>recipeCapacity(r,produits,stocks)).filter(r=>!r.errors.length);
+    setStocksPrevisionnels(stocks.map(stock=>{
+      const product=produits.find(p=>p.id===stock.produit_id);
+      if(!product)return null;
+      const possible=rows.filter(r=>r.ingredients.some(i=>i.product.id===product.id)).map(r=>({
+        nom:r.recipe.nom,quantite_needed:r.ingredients.find(i=>i.product.id===product.id).perPortion,
+        portions_possibles:r.portions,portions_selectionnees:0,categorie:r.recipe.categorie || 'Autres'
+      }));
+      return {id:product.id,produit:product.nom,stock_actuel:number(stock.quantite_actuelle),unite:product.unite,productions_possibles:possible};
+    }).filter(Boolean));
+  },[produits,stocks,recettes]);
 
   // États pour les modals
   const [showProduitModal, setShowProduitModal] = useState(false);
@@ -495,7 +418,6 @@ function App() {
     fetchProduits();
     fetchFournisseurs();
     fetchUnitesStandardisees(); // Charger les unités standardisées
-    fetchDashboardAnalytics();
     fetchMissingDataAlerts(); // Récupérer les alertes de données manquantes
     fetchStocks();
     fetchStocksCritiques(); // Charger les stocks critiques pour les alertes
@@ -531,11 +453,13 @@ function App() {
   const fetchCategoriesProduction = async () => {
     try {
       const response = await axios.get(`${API}/categories-production`);
-      setCategoriesProduction(response.data.categories);
+      setCategoriesProduction(categories(response.data));
     } catch (error) {
       console.error("Erreur lors du chargement des catégories:", error);
     }
   };
+
+  useEffect(() => {setFilteredRecettes(selectedCategoryFilter ? recettes.filter(r=>r.categorie === selectedCategoryFilter) : recettes);}, [recettes,selectedCategoryFilter]);
 
   // Fonction pour filtrer les recettes par catégorie
   const filterRecettesByCategory = (category) => {
@@ -579,14 +503,14 @@ function App() {
   const fetchBatchSummary = async () => {
     try {
       const response = await axios.get(`${API}/stock/batch-summary`);
-      setBatchSummary(response.data);
+      setBatchSummary(asList(response.data).map(item=>({...item,batches:asList(item.batches)})));
       
       // Séparer les produits expirés et critiques
       const expired = [];
       const critical = [];
       
-      response.data.forEach(item => {
-        item.batches.forEach(batch => {
+      asList(response.data).forEach(item => {
+        asList(item.batches).forEach(batch => {
           if (batch.status === 'expired') {
             expired.push({
               product_name: item.product_name,
@@ -618,7 +542,7 @@ function App() {
   const fetchPreparations = async () => {
     try {
       const response = await axios.get(`${API}/preparations`);
-      setPreparations(response.data);
+      setPreparations(asList(response.data));
     } catch (error) {
       console.error("Erreur lors du chargement des préparations:", error);
     }
@@ -627,7 +551,7 @@ function App() {
   const fetchFormesDecoupe = async () => {
     try {
       const response = await axios.get(`${API}/formes-decoupe`);
-      setFormesDecoupe(response.data);
+      setFormesDecoupe({predefined:asList(response.data,'predefined'),custom:asList(response.data,'custom')});
     } catch (error) {
       console.error("Erreur lors du chargement des formes de découpe:", error);
     }
@@ -677,10 +601,10 @@ function App() {
   const fetchProduitsParCategories = async () => {
     try {
       const response = await axios.get(`${API}/produits/by-categories`);
-      return response.data;
+      return groupedProducts(response.data, produits);
     } catch (error) {
       console.error("Erreur lors du chargement des produits par catégories:", error);
-      return { categories: {}, total_categories: 0, total_products: 0 };
+      return groupedProducts(null, produits);
     }
   };
 
@@ -688,7 +612,8 @@ function App() {
   const fetchProductBatches = async (productId) => {
     try {
       const response = await axios.get(`${API}/stock/batch-info/${productId}`);
-      setSelectedProductBatches(response.data);
+      if (!response.data || Array.isArray(response.data)) throw new Error('Les détails de lots ne sont pas disponibles.');
+      setSelectedProductBatches({...response.data,batches:asList(response.data.batches)});
       setShowBatchModal(true);
     } catch (error) {
       console.error("Erreur lors du chargement des lots du produit:", error);
@@ -705,21 +630,10 @@ function App() {
     }
   };
 
-  const fetchDashboardAnalytics = async () => {
-    try {
-      const response = await axios.get(`${API}/dashboard/analytics`);
-      const normalized = normalizeAnalyticsData(response.data, restopDemoMode);
-      setFilteredAnalytics(normalized);
-      console.log("Analytics chargées:", normalized);
-    } catch (error) {
-      console.error("Erreur lors de la récupération des analytics:", error);
-    }
-  };
-
   const fetchMissingDataAlerts = async () => {
     try {
       const response = await axios.get(`${API}/dashboard/missing-data-alerts`);
-      setMissingDataAlerts(response.data.alerts || []);
+      setMissingDataAlerts(asList(response.data,'alerts'));
       console.log("Alertes de données manquantes:", response.data);
     } catch (error) {
       console.error("Erreur lors de la récupération des alertes:", error);
@@ -745,13 +659,14 @@ function App() {
     try {
       const stored = localStorage.getItem('user_session');
       if (stored) {
-        const session = JSON.parse(stored);
+        const session = readSession();
+        if (!session) return;
         
         // Vérifier que la session est encore valide
         const response = await axios.get(`${API}/auth/session`, { headers: { Authorization: `Bearer ${session.session_id}` } });
         
         if (response.data.valid) {
-          setCurrentUser(session.user);
+          setCurrentUser(response.data.user || session.user);
           setSessionId(session.session_id);
           setIsAuthenticated(true);
           
@@ -759,12 +674,14 @@ function App() {
           setShowRoleBasedDashboard(false);
         } else {
           // Session expirée
-          localStorage.removeItem('user_session');
+          clearSession();
+          delete axios.defaults.headers.common.Authorization;
         }
       }
     } catch (error) {
       console.error('Erreur vérification session:', error);
-      localStorage.removeItem('user_session');
+      clearSession();
+          delete axios.defaults.headers.common.Authorization;
     }
   };
 
@@ -772,8 +689,8 @@ function App() {
     try { if (sessionId) await axios.post(`${API}/auth/logout?session_id=${encodeURIComponent(sessionId)}`); }
     catch (_) { /* Always clear the local session, including when offline. */ }
     finally {
-      localStorage.removeItem('user_session');
-      delete axios.defaults.headers.common.Authorization;
+      clearSession();
+          delete axios.defaults.headers.common.Authorization;
       setIsAuthenticated(false); setCurrentUser(null); setSessionId(null);
       navigate('/connexion', { replace: true });
     }
@@ -812,8 +729,8 @@ function App() {
   // Fonctions pour la création de missions
   const fetchAvailableUsers = async () => {
     try {
-      const response = await axios.get(`${API}/admin/users`);
-      setAvailableUsers(response.data);
+      const response = await axios.get(`${API}/users`);
+      setAvailableUsers(asList(response.data));
     } catch (error) {
       console.error('Erreur lors du chargement des utilisateurs:', error);
     }
@@ -839,9 +756,9 @@ function App() {
         axios.get(`${API}/missions`)
       ]);
 
-      const mouvements = mouvementsResp.data || [];
-      const rapports = rapportsResp.data || [];
-      const missions = missionsResp.data || [];
+      const mouvements = asList(mouvementsResp.data);
+      const rapports = asList(rapportsResp.data);
+      const missions = asList(missionsResp.data);
 
       // Construire l&apos;historique avec différents types d'opérations
       const operations = [];
@@ -865,7 +782,7 @@ function App() {
           id: rapport.id,
           type: 'rapport',
           nom: `Rapport Z - Service ${new Date(rapport.date).getHours() < 15 ? 'Déjeuner' : 'Dîner'}`,
-          details: `${new Date(rapport.date).toLocaleDateString('fr-FR')} ${new Date(rapport.date).toLocaleTimeString('fr-FR', {hour: '2-digit', minute: '2-digit'})} • CA: ${rapport.ca_total.toFixed(2)}€ • ${rapport.produits.length} produits`,
+          details: `${new Date(rapport.date).toLocaleDateString('fr-FR')} ${new Date(rapport.date).toLocaleTimeString('fr-FR', {hour: '2-digit', minute: '2-digit'})} • CA: ${number(rapport.ca_total).toFixed(2)}€ • ${asList(rapport.produits).length} produits`,
           statut: 'Traité',
           date: new Date(rapport.date),
           couleur: 'positive'
@@ -1043,7 +960,7 @@ function App() {
   const fetchProduits = async () => {
     try {
       const response = await axios.get(`${API}/produits`);
-      setProduits(response.data);
+      setProduits(asList(response.data));
     } catch (error) {
       console.error("Erreur lors du chargement des produits:", error);
     }
@@ -1052,7 +969,7 @@ function App() {
   const fetchFournisseurs = async () => {
     try {
       const response = await axios.get(`${API}/fournisseurs`);
-      setFournisseurs(response.data);
+      setFournisseurs(asList(response.data));
     } catch (error) {
       console.error("Erreur lors du chargement des fournisseurs:", error);
     }
@@ -1061,7 +978,7 @@ function App() {
   const fetchUnitesStandardisees = async () => {
     try {
       const response = await axios.get(`${API}/unites`);
-      setUnitesStandardisees(response.data.unites);
+      setUnitesStandardisees(units(response.data));
     } catch (error) {
       console.error("Erreur lors du chargement des unités:", error);
       // En cas d'erreur, utiliser des unités par défaut
@@ -1079,7 +996,7 @@ function App() {
   const fetchStocksCritiques = async () => {
     try {
       const response = await axios.get(`${API}/stocks/critiques/produits`);
-      setStocksCritiques(response.data.stocks_critiques || []);
+      setStocksCritiques(asList(response.data, 'stocks_critiques'));
     } catch (error) {
       console.error("Erreur lors du chargement des stocks critiques:", error);
       setStocksCritiques([]);
@@ -1091,7 +1008,7 @@ function App() {
     try {
       const url = itemType ? `${API}/archives?item_type=${itemType}` : `${API}/archives`;
       const response = await axios.get(url);
-      setArchivedItems(response.data);
+      setArchivedItems(asList(response.data));
     } catch (error) {
       console.error("Erreur lors du chargement des archives:", error);
     }
@@ -1109,6 +1026,7 @@ function App() {
       if (itemType === 'produit') fetchProduits();
       else if (itemType === 'production') fetchRecettes();
       else if (itemType === 'fournisseur') fetchFournisseurs();
+      else if (itemType === 'preparation') fetchPreparations();
       
       fetchArchives();
       return true;
@@ -1126,6 +1044,7 @@ function App() {
       fetchProduits();
       fetchRecettes();
       fetchFournisseurs();
+      fetchPreparations();
       return true;
     } catch (error) {
       console.error("Erreur lors de la restauration:", error);
@@ -1147,7 +1066,7 @@ function App() {
   const fetchStocks = async () => {
     try {
       const response = await axios.get(`${API}/stocks`);
-      setStocks(response.data);
+      setStocks(asList(response.data));
     } catch (error) {
       console.error("Erreur lors du chargement des stocks:", error);
     }
@@ -1156,7 +1075,7 @@ function App() {
   const fetchMouvements = async () => {
     try {
       const response = await axios.get(`${API}/mouvements`);
-      setMouvements(response.data.slice(0, 10)); // Derniers 10 mouvements
+      setMouvements(asList(response.data).slice(0, 10)); // Derniers 10 mouvements
     } catch (error) {
       console.error("Erreur lors du chargement des mouvements:", error);
     }
@@ -1165,7 +1084,7 @@ function App() {
   const fetchRecettes = async () => {
     try {
       const response = await axios.get(`${API}/recettes`);
-      setRecettes(response.data);
+      setRecettes(asList(response.data).map(recipe));
     } catch (error) {
       console.error("Erreur lors du chargement des recettes:", error);
     }
@@ -1174,7 +1093,7 @@ function App() {
   const fetchDocumentsOcr = async () => {
     try {
       const response = await axios.get(`${API}/ocr/documents`);
-      setDocumentsOcr(response.data);
+      setDocumentsOcr(asList(response.data));
     } catch (error) {
       console.error("Erreur lors du chargement des documents OCR:", error);
     }
@@ -1231,30 +1150,7 @@ function App() {
         supplierId = response.data.id;
       }
 
-      // Mettre à jour la configuration des coûts si nécessaire
-      if (deliveryCost > 0 || extraCost > 0) {
-        try {
-          // Essayer de mettre à jour la configuration existante
-          await axios.put(`${API}/supplier-cost-config/${supplierId}`, {
-            supplier_id: supplierId,
-            delivery_cost: deliveryCost,
-            extra_cost: extraCost
-          });
-        } catch (updateError) {
-          // Si la mise à jour échoue, créer une nouvelle configuration
-          if (updateError.response?.status === 404) {
-            try {
-              await axios.post(`${API}/supplier-cost-config`, {
-                supplier_id: supplierId,
-                delivery_cost: deliveryCost,
-                extra_cost: extraCost
-              });
-            } catch (createError) {
-              console.warn("Impossible de créer la configuration des coûts:", createError);
-            }
-          }
-        }
-      }
+      await axios.put(`${API}/supplier-cost-config/${supplierId}`, {supplier_id:supplierId,delivery_cost:number(deliveryCost),extra_cost:number(extraCost)});
 
       setShowFournisseurModal(false);
       setFournisseurForm({ 
@@ -1532,7 +1428,7 @@ function App() {
   const fetchStocksPreparations = async () => {
     try {
       const response = await axios.get(`${API}/preparations`);
-      const preparationsData = response.data;
+      const preparationsData = asList(response.data);
       
       // Créer des stocks fictifs pour les préparations (pour l'instant)
       // Dans une vraie application, on aurait un endpoint séparé pour les stocks de préparations
@@ -1696,6 +1592,7 @@ function App() {
   const calculateProductionCapacity = async (recetteId) => {
     try {
       const response = await axios.get(`${API}/recettes/${recetteId}/production-capacity`);
+      if (!response.data || Array.isArray(response.data)) throw new Error('Capacité de production indisponible');
       setProductionCapacity(response.data);
       setSelectedRecette(recetteId);
     } catch (error) {
@@ -1705,6 +1602,44 @@ function App() {
   };
 
   // Fonction d'édition
+  const openNewProduit = () => {setEditingItem(null);setProduitForm({
+    nom: "", description: "", categorie: "", unite: "", prix_achat: "", fournisseur_id: ""
+  });setShowProduitModal(true);};
+  const openNewFournisseur = () => {setEditingItem(null);setFournisseurForm({
+    nom: "", contact: "", email: "", telephone: "", adresse: "", couleur: "#3B82F6", logo: "",
+    categorie: "frais", categories: ["frais"], // Added categories list
+    deliveryCost: 0, extraCost: 0,
+    delivery_rules: {
+      order_days: [],
+      order_deadline_hour: 11,
+      delivery_days: [],
+      delivery_delay_days: 1,
+      delivery_time: "12:00",
+      special_rules: ""
+    }
+  });setShowFournisseurModal(true);};
+  const openNewPreparation = () => {setEditingItem(null);setPreparationForm({
+    nom: "",
+    produit_id: "",
+    forme_decoupe: "",
+    forme_decoupe_custom: "",
+    quantite_produit_brut: "",
+    unite_produit_brut: "kg",
+    quantite_preparee: "",
+    unite_preparee: "kg",
+    perte: "",
+    perte_pourcentage: "",
+    nombre_portions: "",
+    taille_portion: "",
+    unite_portion: "g",
+    dlc: "",
+    notes: ""
+  });setShowPreparationModal(true);};
+  const openNewRecette = () => {setEditingItem(null);setRecetteForm({
+    nom: "", description: "", categorie: "", portions: "", temps_preparation: "",
+    prix_vente: "", coefficient_prevu: "", instructions: "", ingredients: []
+  });setShowRecetteModal(true);};
+
   const handleEdit = (item, type) => {
     setEditingItem(item);
     if (type === "produit") {
@@ -1739,6 +1674,7 @@ function App() {
           special_rules: ""
         }
       });
+      axios.get(`${API}/supplier-cost-config/${item.id}`).then(response=>setFournisseurForm(prev=>({...prev,deliveryCost:number(response.data.delivery_cost),extraCost:number(response.data.extra_cost)}))).catch(error=>console.error('Coûts fournisseur indisponibles',error));
       setShowFournisseurModal(true);
     } else if (type === "preparation") {
       setPreparationForm({
@@ -1746,14 +1682,14 @@ function App() {
         produit_id: item.produit_id,
         forme_decoupe: item.forme_decoupe,
         forme_decoupe_custom: item.forme_decoupe_custom || "",
-        quantite_produit_brut: item.quantite_produit_brut.toString(),
+        quantite_produit_brut: String(item.quantite_produit_brut ?? ""),
         unite_produit_brut: item.unite_produit_brut,
-        quantite_preparee: item.quantite_preparee.toString(),
+        quantite_preparee: String(item.quantite_preparee ?? ""),
         unite_preparee: item.unite_preparee,
-        perte: item.perte.toString(),
-        perte_pourcentage: item.perte_pourcentage.toString(),
-        nombre_portions: item.nombre_portions.toString(),
-        taille_portion: item.taille_portion.toString(),
+        perte: String(item.perte ?? ""),
+        perte_pourcentage: String(item.perte_pourcentage ?? ""),
+        nombre_portions: String(item.nombre_portions ?? ""),
+        taille_portion: String(item.taille_portion ?? ""),
         unite_portion: item.unite_portion,
         dlc: item.dlc ? new Date(item.dlc).toISOString().split('T')[0] : "",
         notes: item.notes || ""
@@ -1764,11 +1700,12 @@ function App() {
         nom: item.nom,
         description: item.description || "",
         categorie: item.categorie || "",
-        portions: item.portions.toString(),
+        portions: String(item.portions ?? ""),
         temps_preparation: item.temps_preparation?.toString() || "",
         prix_vente: item.prix_vente?.toString() || "",
+        coefficient_prevu: item.coefficient_prevu?.toString() || "",
         instructions: item.instructions || "",
-        ingredients: item.ingredients || []
+        ingredients: asList(item.ingredients)
       });
       setShowRecetteModal(true);
     }
@@ -1930,10 +1867,12 @@ function App() {
     ]);
     return aggregateReports(reports.data, recipes.data, dateRange);
   };
+  const analyticsRequest = useRef(0);
   const calculateAnalyticsForPeriod = async (dateRange) => {
+    const request=++analyticsRequest.current;
     if (!dateRange) return;
-    try { setFilteredAnalytics(await calculateRealAnalytics(dateRange)); }
-    catch (_) { setFilteredAnalytics(normalizeAnalyticsData(null)); }
+    try { const data=await calculateRealAnalytics(dateRange); if(request===analyticsRequest.current) setFilteredAnalytics(data); }
+    catch (_) { if(request===analyticsRequest.current) setFilteredAnalytics(normalizeAnalyticsData(null)); }
   };
 
   // Gérer le changement de période
@@ -2486,7 +2425,7 @@ function App() {
 
   // Fonction utilitaire pour formater les quantités
   const formatQuantity = (quantity, unit) => {
-    if (quantity === undefined || quantity === null) return "0";
+    quantity = number(quantity);
     
     // Si c'est un nombre entier ou très proche d&apos;un entier
     if (quantity % 1 === 0) {
@@ -3587,501 +3526,15 @@ function App() {
           )}
 
           {/* ONGLET COÛTS */}
-          {activeDashboardTab === "couts" && (
-            <div className="section-card">
-              <div className="section-title">
-                Analyse des Coûts {showDemoData && '(Données de Démo)'}
-                {selectedDateRange && (
-                  <span style={{ 
-                    fontSize: '12px', 
-                    color: 'var(--color-text-muted)',
-                    fontWeight: 'normal',
-                    marginLeft: 'var(--spacing-sm)'
-                  }}>
-                    - {selectedDateRange.label}
-                  </span>
-                )}
-              </div>
-
-              {/* Message d'info si pas de données */}
-              {filteredAnalytics.caTotal === 0 && (
-                <div style={{
-                  padding: '16px',
-                  textAlign: 'center',
-                  background: 'rgba(59, 130, 246, 0.1)',
-                  borderRadius: '8px',
-                  border: '1px solid var(--color-primary-blue)',
-                  marginBottom: '16px'
-                }}>
-                  <div style={{fontSize: '14px', color: 'var(--color-text-secondary)'}}>
-                    Aucune donnée de coûts pour la période sélectionnée. Importez des factures via OCR.
-                  </div>
-                </div>
-              )}
-
-              {/* KPIs des coûts totaux - TOUJOURS AFFICHÉS */}
-              <div className="kpi-grid">
-                <div className="kpi-card">
-                  <div className="icon">💸</div>
-                  <div className="title">Coûts Totaux</div>
-                  <div className="value">{Math.round(filteredAnalytics.caTotal * 0.35).toLocaleString('fr-FR')} €</div>
-                </div>
-                
-                <div className="kpi-card">
-                  <div className="icon">📈</div>
-                  <div className="title">Ratio Coûts/CA</div>
-                  <div className="value">35%</div>
-                </div>
-                
-                <div className="kpi-card">
-                  <div className="icon">📊</div>
-                  <div className="title">Comparatif Période Précédente</div>
-                  <div className="value positive">+{Math.round(filteredAnalytics.caTotal * 0.08).toLocaleString('fr-FR')} €</div>
-                  <div className="subtitle">{getPeriodComparison(selectedDateRange)}</div>
-                </div>
-              </div>
-
-              {/* Répartition par catégorie de productions */}
-              <div className="item-list">
-                <div className="section-title">Répartition des Coûts par Catégorie de Productions</div>
-                
-                <div className="item-row">
-                  <div className="item-info">
-                    <div className="item-name">Plats</div>
-                    <div className="item-details">42.3% des coûts totaux • 18 productions actives</div>
-                  </div>
-                  <div className="item-value">357 142 €</div>
-                </div>
-
-                <div className="item-row">
-                  <div className="item-info">
-                    <div className="item-name">Entrées</div>
-                    <div className="item-details">28.7% des coûts totaux • 12 productions actives</div>
-                  </div>
-                  <div className="item-value">242 568 €</div>
-                </div>
-
-                <div className="item-row">
-                  <div className="item-info">
-                    <div className="item-name">Bar</div>
-                    <div className="item-details">15.2% des coûts totaux • 8 productions actives</div>
-                  </div>
-                  <div className="item-value">128 463 €</div>
-                </div>
-
-                <div className="item-row">
-                  <div className="item-info">
-                    <div className="item-name">Desserts</div>
-                    <div className="item-details">10.1% des coûts totaux • 6 productions actives</div>
-                  </div>
-                  <div className="item-value">85 374 €</div>
-                </div>
-
-                <div className="item-row">
-                  <div className="item-info">
-                    <div className="item-name">Autres</div>
-                    <div className="item-details">3.7% des coûts totaux • 3 productions actives</div>
-                  </div>
-                  <div className="item-value">31 293 €</div>
-                </div>
-              </div>
-
-              {/* Répartition par catégorie de produits */}
-              <div className="item-list">
-                <div className="section-title">Répartition des Coûts par Catégorie de Produits</div>
-                
-                <div className="item-row">
-                  <div className="item-info">
-                    <div className="item-name">Viandes</div>
-                    <div className="item-details">38.5% des achats • Stock moyen: 287 kg</div>
-                  </div>
-                  <div className="item-value">326 235 €</div>
-                </div>
-
-                <div className="item-row">
-                  <div className="item-info">
-                    <div className="item-name">Poissons</div>
-                    <div className="item-details">24.1% des achats • Stock moyen: 156 kg</div>
-                  </div>
-                  <div className="item-value">204 187 €</div>
-                </div>
-
-                <div className="item-row">
-                  <div className="item-info">
-                    <div className="item-name">Légumes</div>
-                    <div className="item-details">18.7% des achats • Stock moyen: 423 kg</div>
-                  </div>
-                  <div className="item-value">158 463 €</div>
-                </div>
-
-                <div className="item-row">
-                  <div className="item-info">
-                    <div className="item-name">Crêmerie</div>
-                    <div className="item-details">12.3% des achats • Stock moyen: 89 kg</div>
-                  </div>
-                  <div className="item-value">104 187 €</div>
-                </div>
-
-                <div className="item-row">
-                  <div className="item-info">
-                    <div className="item-name">Épices & Aromates</div>
-                    <div className="item-details">7.8% des achats • Stock moyen: 23 kg</div>
-                  </div>
-                  <div className="item-value">66 096 €</div>
-                </div>
-              </div>
-
-              {/* Analyse pertes et déchets par produit */}
-              <div className="item-list">
-                <div className="section-title">Analyse Pertes & Déchets par Produit</div>
-                
-                <div className="item-row">
-                  <div className="item-info">
-                    <div className="item-name">Viandes</div>
-                    <div className="item-details">Perte: 15.2% • Parage et os • Impact: 18 productions</div>
-                  </div>
-                  <div className="item-actions">
-                    <span className="status-badge critical">Élevé</span>
-                    <div className="item-value critical">29 920 €</div>
-                  </div>
-                </div>
-
-                <div className="item-row">
-                  <div className="item-info">
-                    <div className="item-name">Légumes</div>
-                    <div className="item-details">Perte: 12.3% • Épluchures et fanes • Impact: 24 productions</div>
-                  </div>
-                  <div className="item-actions">
-                    <span className="status-badge warning">Normal</span>
-                    <div className="item-value warning">15 640 €</div>
-                  </div>
-                </div>
-
-                <div className="item-row">
-                  <div className="item-info">
-                    <div className="item-name">Poissons</div>
-                    <div className="item-details">Perte: 8.7% • Arêtes et parements • Impact: 8 productions</div>
-                  </div>
-                  <div className="item-actions">
-                    <span className="status-badge success">Optimisé</span>
-                    <div className="item-value">21 890 €</div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Analyse pertes et déchets par production */}
-              <div className="item-list">
-                <div className="section-title">Analyse Pertes & Déchets par Production</div>
-                
-                <div className="item-row">
-                  <div className="item-info">
-                    <div className="item-name">Côte de bœuf grillée</div>
-                    <div className="item-details">Perte: 18.5% • Principalement parage de viande</div>
-                  </div>
-                  <div className="item-actions">
-                    <span className="status-badge critical">À optimiser</span>
-                    <div className="item-value critical">8 240 €</div>
-                  </div>
-                </div>
-
-                <div className="item-row">
-                  <div className="item-info">
-                    <div className="item-name">Salade composée</div>
-                    <div className="item-details">Perte: 11.2% • Épluchage et préparation légumes</div>
-                  </div>
-                  <div className="item-actions">
-                    <span className="status-badge warning">Acceptable</span>
-                    <div className="item-value warning">3 870 €</div>
-                  </div>
-                </div>
-
-                <div className="item-row">
-                  <div className="item-info">
-                    <div className="item-name">Filet de saumon</div>
-                    <div className="item-details">Perte: 6.8% • Parage et désarêtage</div>
-                  </div>
-                  <div className="item-actions">
-                    <span className="status-badge success">Excellent</span>
-                    <div className="item-value">4 520 €</div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
+          {activeDashboardTab === 'couts' && <OperationalAnalytics mode="couts" products={produits} stocks={stocks} recipes={recettes} analytics={filteredAnalytics} />}
 
 
 
           {/* ONGLET RENTABILITÉ */}
-          {activeDashboardTab === "rentabilite" && (
-            <div className="section-card">
-              <div className="section-title">
-                Analyse de Rentabilité
-                {selectedDateRange && (
-                  <span style={{ 
-                    fontSize: '12px', 
-                    color: 'var(--color-text-muted)',
-                    fontWeight: 'normal',
-                    marginLeft: 'var(--spacing-sm)'
-                  }}>
-                    - {selectedDateRange.label}
-                  </span>
-                )}
-              </div>
-              
-              {/* Message si pas de données */}
-              {filteredAnalytics.caTotal === 0 && (
-                <div style={{
-                  padding: '40px',
-                  textAlign: 'center',
-                  background: 'var(--color-background-card-light)',
-                  borderRadius: '8px',
-                  border: '2px dashed var(--color-border)'
-                }}>
-                  <div style={{fontSize: '48px', marginBottom: '16px'}}>📈</div>
-                  <h3 style={{color: 'var(--color-text-primary)', marginBottom: '8px'}}>Aucune donnée de rentabilité disponible</h3>
-                  <p style={{color: 'var(--color-text-secondary)', fontSize: '14px', marginBottom: '16px'}}>
-                    L'analyse de rentabilité nécessite :
-                  </p>
-                  <ul style={{
-                    textAlign: 'left',
-                    display: 'inline-block',
-                    color: 'var(--color-text-secondary)',
-                    fontSize: '14px'
-                  }}>
-                    <li>Données de ventes (CA)</li>
-                    <li>Données de coûts (factures)</li>
-                    <li>Recettes avec coûts matière calculés</li>
-                  </ul>
-                </div>
-              )}
-              
-              {filteredAnalytics.caTotal > 0 && (
-                <>
-              <div className="kpi-grid">
-                <div className="kpi-card">
-                  <div className="icon">💹</div>
-                  <div className="title">Marge Globale</div>
-                  <div className="value positive">68,5%</div>
-                </div>
-                
-                <div className="kpi-card">
-                  <div className="icon">🎯</div>
-                  <div className="title">ROI Période</div>
-                  <div className="value positive">+{((filteredAnalytics.caTotal / 100000) * 12.3).toFixed(1)}%</div>
-                </div>
-                
-                <div className="kpi-card">
-                  <div className="icon">📊</div>
-                  <div className="title">Profit Net</div>
-                  <div className="value positive">{Math.round(filteredAnalytics.caTotal * 0.685).toLocaleString('fr-FR')} €</div>
-                </div>
-              </div>
-              
-              <div className="item-list">
-                <div className="section-title">Les meilleures ventes Rentables</div>
-                {filteredAnalytics.topProductions.slice(0, 4).map((production, index) => (
-                  <div key={index} className="item-row">
-                    <div className="item-info">
-                      <div className="item-name">
-                        {production.categorie === 'Entrée' ? '🥗' : 
-                         production.categorie === 'Plat' ? '🍽️' : 
-                         production.categorie === 'Dessert' ? '🍰' : 
-                         production.categorie === 'Bar' ? '🍹' : '📝'} {production.nom}
-                        <span className="category-badge" style={{
-                          marginLeft: '6px',
-                          padding: '2px 6px',
-                          borderRadius: '8px',
-                          fontSize: '10px',
-                          background: 'var(--color-success-green)',
-                          color: 'white'
-                        }}>
-                          {production.categorie}
-                        </span>
-                      </div>
-                      <div className="item-details">Coefficient Réel: {(2.5 + index * 0.15).toFixed(2)} • {production.portions} portions vendues</div>
-                    </div>
-                    <div className="item-value positive">{production.ventes.toLocaleString('fr-FR')} €</div>
-                  </div>
-                ))}
-              </div>
-
-              {/* Les moins vendues (nouvellement ajouté) */}
-              <div className="item-list">
-                <div className="section-title">Productions Moins Rentables</div>
-                {filteredAnalytics.flopProductions.slice(0, 4).map((production, index) => (
-                  <div key={index} className="item-row">
-                    <div className="item-info">
-                      <div className="item-name">
-                        {production.categorie === 'Entrée' ? '🥗' : 
-                         production.categorie === 'Plat' ? '🍽️' : 
-                         production.categorie === 'Dessert' ? '🍰' : 
-                         production.categorie === 'Bar' ? '🍹' : '📝'} {production.nom}
-                        <span className="category-badge" style={{
-                          marginLeft: '6px',
-                          padding: '2px 6px',
-                          borderRadius: '8px',
-                          fontSize: '10px',
-                          background: 'var(--color-critical-red)',
-                          color: 'white'
-                        }}>
-                          {production.categorie}
-                        </span>
-                      </div>
-                      <div className="item-details">Coefficient Réel: {(1.8 - index * 0.12).toFixed(2)} • {production.portions} portions vendues</div>
-                    </div>
-                    <div className="item-value critical">{production.ventes.toLocaleString('fr-FR')} €</div>
-                  </div>
-                ))}
-              </div>
-
-              {/* Analyse comparative selon la période */}
-              <div className="kpi-grid">
-                <div className="kpi-card">
-                  <div className="icon">💰</div>
-                  <div className="title">Revenus</div>
-                  <div className="value">{filteredAnalytics.caTotal.toLocaleString('fr-FR')} €</div>
-                </div>
-                
-                <div className="kpi-card">
-                  <div className="icon">💸</div>
-                  <div className="title">Charges</div>
-                  <div className="value">{Math.round(filteredAnalytics.caTotal * 0.315).toLocaleString('fr-FR')} €</div>
-                </div>
-                
-                <div className="kpi-card">
-                  <div className="icon">💵</div>
-                  <div className="title">Bénéfice</div>
-                  <div className="value positive">{Math.round(filteredAnalytics.caTotal * 0.685).toLocaleString('fr-FR')} €</div>
-                </div>
-              </div>
-                </>
-              )}
-            </div>
-          )}
+          {activeDashboardTab === 'rentabilite' && <OperationalAnalytics mode="rentabilite" products={produits} stocks={stocks} recipes={recettes} analytics={filteredAnalytics} />}
 
           {/* ONGLET PRÉVISIONNEL */}
-          {activeDashboardTab === "previsionnel" && (
-            <div className="section-card">
-              <div className="section-title">
-                Analyse Prévisionnelle
-                {selectedDateRange && (
-                  <span style={{ 
-                    fontSize: '14px', 
-                    color: 'var(--color-text-secondary)',
-                    fontWeight: 'normal',
-                    marginLeft: '10px'
-                  }}>
-                    - {selectedDateRange.label}
-                  </span>
-                )}
-              </div>
-
-              {/* KPIs prévisionnels modifiés */}
-              <div className="kpi-grid">
-                <div className="kpi-card">
-                  <div className="icon">📊</div>
-                  <div className="title">% Productions Possibles</div>
-                  <div className="value positive">
-                    {((stocksPrevisionnels.reduce((total, stock) => total + stock.productions_possibles.length, 0) / 12) * 100).toFixed(0)}%
-                  </div>
-                  <div className="subtitle">7 sur 12 possibles</div>
-                </div>
-                
-                <div className="kpi-card">
-                  <div className="icon">📅</div>
-                  <div className="title">Nombre de Jours Possibles</div>
-                  <div className="value">4.2</div>
-                  <div className="subtitle">Avec stocks actuels</div>
-                </div>
-                
-                <div className="kpi-card">
-                  <div className="icon">⚡</div>
-                  <div className="title">Max Portions</div>
-                  <div className="value">{stocksPrevisionnels.reduce((max, stock) => {
-                    const maxPortions = Math.max(...stock.productions_possibles.map(p => p.portions_possibles));
-                    return Math.max(max, maxPortions);
-                  }, 0)}</div>
-                  <div className="subtitle">Production optimale</div>
-                </div>
-              </div>
-
-              {/* Analyse des productions possibles avec filtre */}
-              <div className="item-list">
-                <div className="section-title">Productions Possibles avec Stocks Actuels</div>
-                
-                {/* Filtre par catégorie de production */}
-                <div className="filter-section" style={{marginBottom: '15px'}}>
-                  <div className="filter-group" style={{display: 'flex', alignItems: 'center', gap: '10px'}}>
-                    <label className="filter-label" style={{fontSize: '14px', minWidth: '60px'}}>Filtre :</label>
-                    <select 
-                      className="filter-select"
-                      value={selectedProductionCategory}
-                      onChange={(e) => setSelectedProductionCategory(e.target.value)}
-                      style={{
-                        padding: '6px 10px',
-                        borderRadius: '4px',
-                        border: '1px solid var(--color-border)',
-                        background: 'var(--color-background-card)',
-                        color: 'var(--color-text-primary)',
-                        fontSize: '13px',
-                        minWidth: '120px'
-                      }}
-                    >
-                      <option value="">Toutes productions</option>
-                      <option value="Entrée">Entrées</option>
-                      <option value="Plat">Plats</option>
-                      <option value="Dessert">Desserts</option>
-                      <option value="Bar">Bar</option>
-                      <option value="Autres">Autres</option>
-                    </select>
-                  </div>
-                </div>
-                
-                {/* Créer une liste plate de toutes les productions possibles avec filtre */}
-                {stocksPrevisionnels.flatMap(stock => 
-                  stock.productions_possibles.map(production => ({
-                    ...production,
-                    produit: stock.produit,
-                    stock_disponible: stock.stock_actuel,
-                    unite: stock.unite,
-                    stock_id: stock.id,
-                    categorie: production.categorie || 'Autres' // Ajouter une catégorie par défaut
-                  }))
-                ).filter(production => !selectedProductionCategory || production.categorie === selectedProductionCategory)
-                .map((production, index) => (
-                  <div key={index} className="item-row">
-                    <div className="item-info">
-                      <div className="item-name">
-                        {getCategoryIcon(production.categorie)} {production.nom}
-                        <span className="category-badge" style={{
-                          marginLeft: '6px',
-                          padding: '2px 6px',
-                          borderRadius: '8px',
-                          fontSize: '10px',
-                          background: getCategoryColor(production.categorie),
-                          color: 'white'
-                        }}>
-                          {production.categorie}
-                        </span>
-                      </div>
-                      <div className="item-details">
-                        Produit principal: {production.produit} • Stock: {production.stock_disponible} {production.unite} • 
-                        Max portions: {production.portions_possibles}
-                      </div>
-                    </div>
-                    <div className="item-actions">
-                      <button 
-                        className="button small" 
-                        onClick={() => alert(`Détails pour ${production.nom}:\n\nCatégorie: ${production.categorie}\nProduit: ${production.produit}\nBesoin: ${production.quantite_needed} ${production.unite} par portion\nStock disponible: ${production.stock_disponible} ${production.unite}\nPortions max: ${production.portions_possibles}`)}
-                      >
-                        Détails
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
+          {activeDashboardTab === 'previsionnel' && <OperationalAnalytics mode="previsionnel" products={produits} stocks={stocks} recipes={recettes} analytics={filteredAnalytics} />}
             </>
           )}
 
@@ -4137,7 +3590,7 @@ function App() {
                 {/* Actions rapides - MASQUÉ pour employé cuisine */}
                 {currentUser?.role !== 'employe_cuisine' && (
                   <div style={{display: 'flex', gap: '10px', marginBottom: '20px', flexWrap: 'wrap'}}>
-                    <button className="button" onClick={() => setShowProduitModal(true)}>Nouveau Produit</button>
+                    <button className="button" onClick={openNewProduit}>Nouveau Produit</button>
                   </div>
                 )}
 
@@ -4457,7 +3910,7 @@ function App() {
                                   </span>
                                 </div>
                                 <div className="item-details">
-                                  Coeff: {(production.coefficient || 0).toFixed(2)} • 
+                                  Coeff: {number(production.coefficient).toFixed(2)} •
                                   {production.ingredients ? production.ingredients.length : 0} ingrédient(s) • 
                                   Coût estimé: {production.ingredients ? (production.ingredients.reduce((sum, ing) => sum + ((ing.cout_unitaire || 0) * (ing.quantite_requise || 0)), 0)).toFixed(2) : '0.00'}€
                                 </div>
@@ -6484,7 +5937,7 @@ function App() {
           preparations={preparations}
           currentUser={currentUser}
           fetchArchives={fetchArchives}
-          setShowProduitModal={setShowProduitModal}
+          setShowProduitModal={value => value ? openNewProduit() : setShowProduitModal(false)}
           showCategoriesView={showCategoriesView}
           setShowCategoriesView={setShowCategoriesView}
           fetchProduitsParCategories={fetchProduitsParCategories}
@@ -6502,7 +5955,7 @@ function App() {
           produits={produits}
           fournisseurs={fournisseurs}
           produitsParCategories={produitsParCategories}
-          setShowFournisseurModal={setShowFournisseurModal}
+          setShowFournisseurModal={value => value ? openNewFournisseur() : setShowFournisseurModal(false)}
           showFournisseursCategoriesView={showFournisseursCategoriesView}
           setShowFournisseursCategoriesView={setShowFournisseursCategoriesView}
           restoreItem={restoreItem}
@@ -6510,7 +5963,7 @@ function App() {
           fetchHistoriqueProduction={fetchHistoriqueProduction}
           historiqueProduction={historiqueProduction}
           showRecetteModal={showRecetteModal}
-          setShowRecetteModal={setShowRecetteModal}
+          setShowRecetteModal={value => value ? openNewRecette() : setShowRecetteModal(false)}
           handleExportRecettes={handleExportRecettes}
           showRecettesCategoriesView={showRecettesCategoriesView}
           setShowRecettesCategoriesView={setShowRecettesCategoriesView}
@@ -6519,7 +5972,7 @@ function App() {
           loading={loading}
           handleCalculerCouts={handleCalculerCouts}
           showPreparationModal={showPreparationModal}
-          setShowPreparationModal={setShowPreparationModal}
+          setShowPreparationModal={value => value ? openNewPreparation() : setShowPreparationModal(false)}
           handleAutoGeneratePreparations={handleAutoGeneratePreparations}
           showPreparationsCategoriesView={showPreparationsCategoriesView}
           setShowPreparationsCategoriesView={setShowPreparationsCategoriesView}
