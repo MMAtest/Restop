@@ -6,3 +6,14 @@ test('converts mass and volume, refuses incompatible units',()=>{expect(convertQ
 test('capacity uses the limiting ingredient and recipe portion count',()=>{const row=recipeCapacity(recipe,products,stocks);expect(row.portions).toBe(2);expect(row.costPerPortion).toBeCloseTo(1.4);});
 test('shared ingredients are summed before subtracting available stock',()=>{const result=buildPurchaseDrafts([{...recipe,selectedQuantity:6},{...recipe,id:'r2',selectedQuantity:2}],products,stocks,[{id:'s1',nom:'Primeur'}]);expect(result.errors).toEqual([]);expect(result.orders[0].products.find(p=>p.productId==='tomato').quantity).toBe(1);expect(result.orders[0].total).toBeCloseTo(6.4);});
 test('missing or incompatible ingredients do not produce invented orders',()=>{const bad={...recipe,ingredients:[{produit_id:'unknown',quantite:2,unite:'kg'}]};expect(recipeCapacity(bad,products,stocks).portions).toBeNull();expect(buildPurchaseDrafts([{...bad,selectedQuantity:2}],products,stocks,[]).errors.length).toBe(1);});
+test('purchase drafts use the current purchase price before a reference benchmark',()=>{
+ const priced=products.map(p=>({...p,reference_price:1}));
+ const draft=buildPurchaseDrafts([{...recipe,selectedQuantity:8}],priced,stocks,[{id:'s1',nom:'Primeur'}]);
+ expect(draft.orders[0].total).toBeCloseTo(6.4);
+ expect(recipeCapacity(recipe,priced,stocks).costPerPortion).toBeCloseTo(1.4);
+});
+
+test('decimal stock quantities do not lose a portion through binary rounding',()=>{
+ const small={...recipe,portions:1,ingredients:[{produit_id:'tomato',quantite:0.1,unite:'kg'}]};
+ expect(recipeCapacity(small,products,[{produit_id:'tomato',quantite_actuelle:0.3}]).portions).toBe(3);
+});

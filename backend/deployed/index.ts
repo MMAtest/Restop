@@ -34,6 +34,12 @@ function json(data: unknown, status = 200) {
 function fail(detail: string, status = 400) {
   return json({ detail, message: detail }, status);
 }
+function batchStatus(expiryDate: string | null) {
+  if(!expiryDate)return 'good';
+  const expiry=String(expiryDate).slice(0,10),today=new Intl.DateTimeFormat('en-CA',{timeZone:'Europe/Paris',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());
+  const week=new Date(new Date(today+'T12:00:00Z').getTime()+7*86400000).toISOString().slice(0,10);
+  return expiry<today?'expired':expiry<=week?'critical':'good';
+}
 function cleanPath(req: Request) {
   let p = new URL(req.url).pathname;
   p = p.replace(/^\/functions\/v1\/restop-api/, "");
@@ -386,7 +392,17 @@ Deno.serve(async (req) => {
     const rid = c.restaurant_id;
     const role = c.profile.role;
     if (path.startsWith('/api/admin/') && !['patron','super_admin'].includes(role)) return fail('Accès réservé à la direction',403);
-    if (!['GET','OPTIONS'].includes(req.method) && !['patron','super_admin','chef_cuisine'].includes(role) && !path.startsWith('/api/missions/') && !path.startsWith('/api/notifications/')) return fail('Cette action nécessite un responsable',403);
+    const managers=['patron','super_admin','gerant','chef_cuisine'];
+    const stockAction=['/api/mouvements','/api/stock/advanced-adjustment'].includes(path) && req.method==='POST';
+    const staffStock=['employe_cuisine','barman'].includes(role) && stockAction;
+    const cashierAction=role==='caissier' && req.method==='POST' && (path==='/api/ocr/upload-document' || /^\/api\/ocr\/(process-z-report|analyze-ticket-z-ai)\//.test(path) || path==='/api/missions');
+    const barOrder=role==='barman' && path==='/api/orders' && req.method==='POST';
+    if (!['GET','OPTIONS'].includes(req.method) && !managers.includes(role) && !staffStock && !cashierAction && !barOrder && !path.startsWith('/api/missions/') && !path.startsWith('/api/notifications/')) return fail('Action non autorisée pour ce rôle',403);
+    if(role==='barman' && stockAction) {
+      const b:any=await body(req.clone()),id=b.produit_id || b.target_id;
+      const product=await service.from('restop_products').select('category').eq('restaurant_id',rid).eq('id',id).maybeSingle();if(product.error)throw product.error;
+      if(!product.data || !/bar|boisson|vin|alcool|soft/i.test(product.data.category || ''))return fail('Le barman peut ajuster uniquement les produits du bar',403);
+    }
 
     if (path === '/api/unites' && req.method === 'GET') return json({unites:[
       {code:'kg',label:'Kilogramme',type:'poids'},{code:'g',label:'Gramme',type:'poids'},
@@ -411,7 +427,7 @@ Deno.serve(async (req) => {
     if(batchMatch && req.method === 'GET') {
       const pq=await service.from('restop_products').select('*').eq('restaurant_id',rid).eq('id',batchMatch[1]).maybeSingle();if(pq.error)throw pq.error;if(!pq.data)return fail('Produit introuvable',404);
       const bq=await service.from('restop_product_batches').select('*').eq('restaurant_id',rid).eq('product_id',batchMatch[1]).eq('is_consumed',false);if(bq.error)throw bq.error;
-      const now=Date.now(),batches=(bq.data || []).map((b:any)=>({...b,quantity:Number(b.quantity),status:b.expiry_date && new Date(b.expiry_date).getTime()<now?'expired':b.expiry_date && new Date(b.expiry_date).getTime()<now+7*86400000?'critical':'good'}));
+      const now=Date.now(),batches=(bq.data || []).map((b:any)=>({...b,quantity:Number(b.quantity),status:batchStatus(b.expiry_date)}));
       return json({product_id:pq.data.id,product_name:pq.data.name,total_stock:Number(pq.data.current_stock),batches,expired_batches:batches.filter((b:any)=>b.status==='expired').length,critical_batches:batches.filter((b:any)=>b.status==='critical').length});
     }
 
@@ -693,7 +709,7 @@ Deno.serve(async (req) => {
     let mm = path.match(/^\/api\/missions\/([0-9a-f-]+)$/i);
     if (mm && req.method === "PUT") {
       const b: any = await body(req);
-      if (!['patron','super_admin','chef_cuisine'].includes(role)) {
+      if (!['patron','super_admin','gerant','chef_cuisine'].includes(role)) {
         const existing=await service.from('restop_missions').select('assigned_to_user_id,status').eq('restaurant_id',rid).eq('id',mm[1]).maybeSingle();
         if(existing.error)throw existing.error;
         if(!existing.data || existing.data.assigned_to_user_id!==c.user.id)return fail('Mission non attribuée à cet utilisateur',403);
@@ -712,7 +728,7 @@ Deno.serve(async (req) => {
     // RESTOP_FRONTEND_COMPAT_V2
     let mbu = path.match(/^\/api\/missions\/by-user\/([^/]+)$/i);
     if (mbu && req.method === "GET") {
-      if(!c.demo && !["patron","super_admin","chef_cuisine"].includes(role) && mbu[1]!==c.user.id)return fail("Accès interdit",403);
+      if(!c.demo && !["patron","super_admin","gerant","chef_cuisine"].includes(role) && mbu[1]!==c.user.id)return fail("Accès interdit",403);
       if (c.demo) {
         const q = await service.from("restop_missions").select("*").eq("restaurant_id", rid).order("created_at", {ascending:false});
         if (q.error) return fail(q.error.message,400);
@@ -802,7 +818,8 @@ Deno.serve(async (req) => {
       if(!items.length || items.some((i:any)=>!Number.isFinite(Number(i.quantity)) || Number(i.quantity)<=0 || !Number.isFinite(Number(i.unit_price)) || Number(i.unit_price)<0))return fail('Une commande doit contenir des quantités positives et des prix valides');
       const sq=await service.from('restop_suppliers').select('id').eq('restaurant_id',rid).eq('id',b.supplier_id).maybeSingle();if(sq.error || !sq.data)return fail('Fournisseur introuvable');
       const productIds=items.map((i:any)=>i.product_id);
-      const pq=await service.from('restop_products').select('id').eq('restaurant_id',rid).in('id',productIds);if(pq.error || items.some((i:any)=>!(pq.data || []).some((p:any)=>p.id===i.product_id)))return fail('Produit introuvable dans ce restaurant');
+      const pq=await service.from('restop_products').select('id,category').eq('restaurant_id',rid).in('id',productIds);if(pq.error || items.some((i:any)=>!(pq.data || []).some((p:any)=>p.id===i.product_id)))return fail('Produit introuvable dans ce restaurant');
+      if(role==='barman' && (pq.data || []).some((p:any)=>!/bar|boisson|vin|alcool|soft/i.test(p.category || '')))return fail('Le barman peut commander uniquement les produits du bar',403);
       const total = items.reduce((sum:number,i:any)=>sum+Number(i.quantity)*Number(i.unit_price),0);
       const orderNumber = "CMD-" + Date.now().toString().slice(-8);
       const oq = await service.from("restop_orders").insert({
@@ -844,7 +861,7 @@ Deno.serve(async (req) => {
     }
 
     if (path === '/api/admin/users' && req.method === 'POST' && !c.demo) {
-      const b:any=await body(req),allowedRoles=role==='super_admin'?['patron','chef_cuisine','employe_cuisine','super_admin']:['patron','chef_cuisine','employe_cuisine'];
+      const b:any=await body(req),allowedRoles=role==='super_admin'?['patron','gerant','chef_cuisine','barman','caissier','employe_cuisine','super_admin']:['patron','gerant','chef_cuisine','barman','caissier','employe_cuisine'];
       if(!allowedRoles.includes(b.role) || !String(b.email || '').includes('@') || String(b.password || '').length<8 || !String(b.username || '').trim())return fail('Email, identifiant, mot de passe de huit caractères et rôle valides requis');
       const uq=await service.auth.admin.createUser({email:b.email,password:b.password,email_confirm:true});if(uq.error)return fail(uq.error.message,400);
       const pq=await service.from('restop_profiles').insert({user_id:uq.data.user.id,restaurant_id:rid,email:b.email,username:b.username,full_name:b.full_name || b.username,role:b.role,is_active:b.is_active!==false}).select('*').single();
@@ -856,7 +873,7 @@ Deno.serve(async (req) => {
       if(uq.data.user_id===c.user.id)return fail('La modification de votre propre compte doit passer par la gestion du profil',403);
       if(uq.data.role==='super_admin' && role!=='super_admin')return fail('Accès réservé à un super administrateur',403);
       if(req.method === 'DELETE'){const result=await service.auth.admin.deleteUser(uq.data.user_id);if(result.error)return fail(result.error.message,400);await service.from('restop_profiles').delete().eq('restaurant_id',rid).eq('user_id',uq.data.user_id);return json({success:true});}
-      const b:any=await body(req),allowedRoles=role==='super_admin'?['patron','chef_cuisine','employe_cuisine','super_admin']:['patron','chef_cuisine','employe_cuisine'];
+      const b:any=await body(req),allowedRoles=role==='super_admin'?['patron','gerant','chef_cuisine','barman','caissier','employe_cuisine','super_admin']:['patron','gerant','chef_cuisine','barman','caissier','employe_cuisine'];
       if(b.role!==undefined && !allowedRoles.includes(b.role))return fail('Rôle non autorisé',403);
       if(b.email && b.email!==uq.data.email)return fail('Le changement d’email doit passer par la vérification du compte',422);
       if(b.password && String(b.password).length<8)return fail('Mot de passe trop court');
@@ -867,7 +884,7 @@ Deno.serve(async (req) => {
 
     if (path === "/api/admin/users" && req.method === "POST" && c.demo) {
       const b: any = await body(req);
-      if(!["patron","chef_cuisine","employe_cuisine"].includes(b.role))return fail("Rôle non autorisé",403);
+      if(!["patron","gerant","chef_cuisine","barman","caissier","employe_cuisine"].includes(b.role))return fail("Rôle non autorisé",403);
       const q = await service.from("restop_demo_users").insert({
         restaurant_id: rid,
         username: b.username,
@@ -928,9 +945,9 @@ Deno.serve(async (req) => {
     }
 
 
-    if(!c.demo && path === '/api/stock/batch-summary' && req.method === 'GET') {
+    if(path === '/api/stock/batch-summary' && req.method === 'GET') {
       const q=await service.from('restop_product_batches').select('*,restop_products(name,current_stock)').eq('restaurant_id',rid).eq('is_consumed',false);if(q.error)throw q.error;
-      const groups:any={},now=Date.now();for(const b of q.data || []) {const status=b.expiry_date && new Date(b.expiry_date).getTime()<now?'expired':b.expiry_date && new Date(b.expiry_date).getTime()<now+7*86400000?'critical':'good';const row=groups[b.product_id] ||= {product_id:b.product_id,product_name:b.restop_products?.name || '',total_stock:Number(b.restop_products?.current_stock || 0),critical_batches:0,expired_batches:0,batches:[]};if(status==='expired')row.expired_batches++;if(status==='critical')row.critical_batches++;row.batches.push({...b,quantity:Number(b.quantity),status});}return json(Object.values(groups));
+      const groups:any={},now=Date.now();for(const b of q.data || []) {const status=batchStatus(b.expiry_date);const row=groups[b.product_id] ||= {product_id:b.product_id,product_name:b.restop_products?.name || '',total_stock:Number(b.restop_products?.current_stock || 0),critical_batches:0,expired_batches:0,batches:[]};if(status==='expired')row.expired_batches++;if(status==='critical')row.critical_batches++;row.batches.push({...b,quantity:Number(b.quantity),status});}return json(Object.values(groups));
     }
 
     // DEMO_ANALYTICS_BLOCK
@@ -1014,46 +1031,13 @@ Deno.serve(async (req) => {
       })));
     }
 
-    if (c.demo && path === "/api/stock/batch-summary" && req.method === "GET") {
-      const now=Date.now();
-      const iso=(days:number)=>new Date(now+days*86400000).toISOString();
-      return json([
-        {product_id:"10000000-0000-4000-8000-000000002004",product_name:"Saumon frais",total_stock:6,critical_batches:1,expired_batches:0,batches:[
-          {id:"demo-batch-saumon-1",quantity:2.5,received_date:iso(-1),expiry_date:iso(2),batch_number:"SAU-0610",supplier_id:"10000000-0000-4000-8000-000000001002",status:"critical"},
-          {id:"demo-batch-saumon-2",quantity:3.5,received_date:iso(0),expiry_date:iso(5),batch_number:"SAU-0710",supplier_id:"10000000-0000-4000-8000-000000001002",status:"critical"}
-        ]},
-        {product_id:"10000000-0000-4000-8000-000000002014",product_name:"Burrata 125 g",total_stock:18,critical_batches:1,expired_batches:0,batches:[
-          {id:"demo-batch-burrata-1",quantity:8,received_date:iso(-2),expiry_date:iso(4),batch_number:"BUR-0410",supplier_id:"10000000-0000-4000-8000-000000001005",status:"critical"},
-          {id:"demo-batch-burrata-2",quantity:10,received_date:iso(0),expiry_date:iso(9),batch_number:"BUR-0610",supplier_id:"10000000-0000-4000-8000-000000001005",status:"good"}
-        ]},
-        {product_id:"10000000-0000-4000-8000-000000002002",product_name:"Moules de bouchot",total_stock:24,critical_batches:1,expired_batches:0,batches:[
-          {id:"demo-batch-moules-1",quantity:10,received_date:iso(-1),expiry_date:iso(1),batch_number:"MOU-0510",supplier_id:"10000000-0000-4000-8000-000000001002",status:"critical"},
-          {id:"demo-batch-moules-2",quantity:14,received_date:iso(0),expiry_date:iso(3),batch_number:"MOU-0610",supplier_id:"10000000-0000-4000-8000-000000001002",status:"critical"}
-        ]}
-      ]);
-    }
-
-    if (c.demo && path === "/api/stock/advanced-adjustment" && req.method === "POST") {
-      const b:any=await body(req);
-      const qty=Number(b.quantity_adjusted||0);
-      if(b.adjustment_type==="ingredient"){
-        const pq=await service.from("restop_products").select("*").eq("restaurant_id",rid).eq("id",b.target_id).maybeSingle();
-        if(!pq.data) return fail("Produit introuvable",404);
-        const newQty=Math.max(0,Number(pq.data.current_stock||0)+qty);
-        await service.from("restop_products").update({current_stock:newQty}).eq("id",b.target_id);
-        const mq=await service.from("restop_stock_movements").insert({
-          restaurant_id:rid,product_id:b.target_id,movement_type:qty>=0?"in":"out",quantity:Math.abs(qty),
-          unit:pq.data.unit,reason:"Ajustement avancé: "+(b.adjustment_reason||"Démo")
-        }).select("*").single();
-        return json({id:mq.data?.id||crypto.randomUUID(),adjustment_type:"ingredient",target_id:b.target_id,target_name:pq.data.name,
-          adjustment_reason:b.adjustment_reason||"Ajustement démo",quantity_adjusted:qty,user_name:b.user_name||"Gérant",
-          ingredient_deductions:[],created_at:new Date().toISOString()});
-      }
-      const rq=await service.from("restop_recipes").select("*").eq("restaurant_id",rid).eq("id",b.target_id).maybeSingle();
-      if(!rq.data) return fail("Recette introuvable",404);
-      return json({id:crypto.randomUUID(),adjustment_type:"prepared_dish",target_id:b.target_id,target_name:rq.data.name,
-        adjustment_reason:b.adjustment_reason||"Ajustement démo",quantity_adjusted:qty,user_name:b.user_name||"Gérant",
-        ingredient_deductions:[],created_at:new Date().toISOString()});
+    if(path === '/api/stock/advanced-adjustment' && req.method === 'POST') {
+      const b:any=await body(req),qty=Number(b.quantity_adjusted);
+      if(b.adjustment_type!=='ingredient')return fail('Le stock de plats préparés n’est pas disponible sur cette version',422);
+      if(!Number.isFinite(qty) || qty===0)return fail('Quantité d’ajustement invalide');
+      const result=await service.rpc('restop_record_movement',{p_restaurant_id:rid,p_user_id:c.user.id,p_payload:{produit_id:b.target_id,type:qty>0?'entree':'sortie',quantite:Math.abs(qty),commentaire:b.adjustment_reason || 'Ajustement de stock'}});
+      if(result.error)return fail(result.error.message,400);
+      return json({id:result.data.id,adjustment_type:'ingredient',target_id:b.target_id,target_name:result.data.produit_nom,adjustment_reason:b.adjustment_reason,quantity_adjusted:qty,user_name:c.profile.full_name,ingredient_deductions:[],created_at:result.data.date});
     }
 
     if (c.demo && /^\/api\/price-anomalies\/.+\/resolve$/.test(path) && req.method === "POST") {

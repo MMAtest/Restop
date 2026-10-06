@@ -13,11 +13,13 @@ La revue porte sur le frontend effectivement compilé et l’API Deno Supabase e
 - Recettes chargées mais absentes de la liste filtrée : synchronisation des filtres et des données.
 - Création après édition : réinitialisation de l’identité et du formulaire pour éviter une mise à jour involontaire.
 - Missions masquées par une différence de contrat tableau/objet : normalisation des missions attribuées et créées.
+- Résumé et détail des lots de démo alignés sur les mêmes lots enregistrés ; DLC valables jusqu’à la fin du jour du restaurant.
 - Alertes de stocks critiques masquées : prise en charge du tableau retourné par l’API.
 - Détails des lots, produits regroupés, unités et découpes : routes et contrats ajoutés. Libellés et identifiants de découpe normalisés ; formes Sauce et Frites conservées lors de l’édition.
 - Calculs de coûts, marges et prévisionnel fondés sur des valeurs fixes : remplacement par les stocks, recettes et ventes disponibles. Les données insuffisantes sont indiquées. La marge matière n’est pas présentée comme un bénéfice net ou un ROI.
 - Commandes automatiques utilisant des fournisseurs et produits fictifs : calcul réel, conversion des unités compatibles, agrégation des ingrédients partagés avant déduction du stock, regroupement par fournisseur réel.
 - Changement de fournisseur : panier vidé et réponses tardives ignorées. Modification du choix des recettes : suggestions invalidées.
+- Prix des suggestions d’achat et coûts matière : priorité au prix d’achat courant plutôt qu’au prix de référence historique.
 - Quantités invalides de commandes refusées. Totaux calculés par le serveur et produits/fournisseurs vérifiés dans le restaurant courant.
 - Montant et statut des commandes : utilisation de `total_amount`, `status` et `order_date`.
 - Faux succès PDF/email/validation : exports CSV utilisables et enregistrement réel des suggestions. Aucun email annoncé envoyé sans service d’envoi.
@@ -25,6 +27,7 @@ La revue porte sur le frontend effectivement compilé et l’API Deno Supabase e
 - Suppression dans les grilles : type de ressource issu de la ligne concernée, indépendant de la dernière sélection.
 - Conflit de thèmes AG Grid : thème legacy explicite.
 - Faux mot de passe partagé affiché pour chaque collaborateur : supprimé. Les mots de passe existants ne sont jamais récupérés.
+- Rôles gérant, barman, caissier et employé reconnus côté serveur ; ajustements d’ingrédients transactionnels pour les rôles autorisés, commandes du barman limitées au bar.
 - Droits d’administration et mutations contrôlés côté serveur ; validation de mission par un responsable, employés limités à leurs missions attribuées.
 - Création/édition des collaborateurs réels implémentées côté serveur, avec contrôle des rôles et du restaurant. Aucun compte réel créé ou supprimé pendant la vérification.
 - Coûts fournisseurs : lecture et sauvegarde, y compris la remise à zéro ; erreurs de sauvegarde non dissimulées.
@@ -36,10 +39,10 @@ La revue porte sur le frontend effectivement compilé et l’API Deno Supabase e
 
 ## Vérification
 
-- `cd frontend && npm test -- --watchAll=false --runInBand` : **16 tests réussis**.
+- `cd frontend && npm test -- --watchAll=false --runInBand` : **18 tests réussis**.
 - `cd frontend && npm run lint` : aucune erreur sur le code actif pour les identifiants inconnus, clés dupliquées et chaînes optionnelles dangereuses.
 - `cd frontend && npm run build` : compilation de production réussie.
-- `node backend/deployed/tests/routes.cjs` : **10 contrôles de routes et de droits réussis** sur le vrai fichier serveur avec client de base simulé.
+- `node backend/deployed/tests/routes.cjs` : **13 contrôles de routes et de droits réussis** sur le vrai fichier serveur avec client de base simulé.
 - Tests SQL exécutés dans des transactions annulées : création de recette, refus d’ingrédient étranger sans modification, refus de stock insuffisant sans mouvement, facture importée deux fois sans doublon, archivage/restauration des produits et des recettes sans perte d’ingrédients.
 - Contrôles HTTP de l’API déployée : unités, formes de découpe, catégories, regroupement des produits, archives et détail des lots.
 

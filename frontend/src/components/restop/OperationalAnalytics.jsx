@@ -5,7 +5,7 @@ import { recipeCapacity } from '../../utils/planning';
 const money = n => number(n).toLocaleString('fr-FR',{style:'currency',currency:'EUR'});
 export default function OperationalAnalytics({mode,products,stocks,recipes,analytics}) {
  const rows=recipes.map(r=>recipeCapacity(r,products,stocks));
- const inventory=stocks.reduce((sum,s)=>sum+number(s.quantite_actuelle)*number(products.find(p=>p.id===s.produit_id)?.reference_price ?? products.find(p=>p.id===s.produit_id)?.prix_achat),0);
+ const inventory=stocks.reduce((sum,s)=>sum+number(s.quantite_actuelle)*number(products.find(p=>p.id===s.produit_id)?.prix_achat ?? products.find(p=>p.id===s.produit_id)?.reference_price),0);
  const title={couts:'Coûts matière',rentabilite:'Marge matière des ventes',previsionnel:'Capacité de production'}[mode];
  const sales=analytics.topProductions || [];
  return <section className="section-card"><h2>{title}</h2>

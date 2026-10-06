@@ -21,5 +21,8 @@ const call=(path,method='GET',data,token='restop-demo-public-v1')=>handler(new R
  assert.equal((await call('/recettes','PUT',{nom:'x',portions:1})).status,501); // only resource IDs may be edited
  assert.equal((await call('/recettes/10000000-0000-4000-8000-000000000003','PUT',{nom:'x',portions:1,ingredients:[]})).status,400);
  assert.equal(rpcCalls,1); // PUT reaches the same atomic service path as POST
- console.log('10 backend route/security checks passed');
+ role='gerant';assert.equal((await call('/orders','POST',{items:[]},'user-token')).status,400);
+ role='employe_cuisine';assert.equal((await call('/mouvements','POST',{type:'sortie',quantite:-1},'user-token')).status,400);
+ role='caissier';assert.equal((await call('/orders','POST',{items:[]},'user-token')).status,403);
+ console.log('13 backend route/security checks passed');
 })().catch(e=>{console.error(e);process.exitCode=1;});

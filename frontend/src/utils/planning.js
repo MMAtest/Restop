@@ -18,8 +18,8 @@ export function recipeCapacity(recipe,products=[],stocks=[]) {
   const quantity=convertQuantity(ing.quantite,ing.unite,product.unite);
   if(quantity===null || quantity<=0 || batchSize<=0) {errors.push(`Quantité ou unité incompatible : ${product.nom}`);continue;}
   const perPortion=quantity/batchSize,stock=number(stocks.find(s=>s.produit_id===product.id)?.quantite_actuelle);
-  maximum=Math.min(maximum,Math.floor(Math.max(0,stock)/perPortion));
-  cost+=quantity*number(product.reference_price ?? product.prix_achat);
+  maximum=Math.min(maximum,Math.floor(Math.max(0,stock)/perPortion+1e-9));
+  cost+=quantity*number(product.prix_achat ?? product.reference_price);
   ingredients.push({product,perPortion,stock,quantity});
  }
  return {recipe,ingredients,errors,portions:errors.length || !Number.isFinite(maximum) ? null : maximum,costPerPortion:errors.length ? null : cost/batchSize};
@@ -41,7 +41,7 @@ export function buildPurchaseDrafts(recipes,products,stocks,suppliers) {
   const supplier=suppliers.find(s=>s.id===supplierId);
   if(!supplier){errors.push(`${product.nom} : fournisseur non renseigné`);continue;}
   const order=orders.get(supplierId) || {supplierId,supplierName:supplier.nom,products:[],total:0};
-  const price=number(product.reference_price ?? product.prix_achat);
+  const price=number(product.prix_achat ?? product.reference_price);
   order.products.push({productId:product.id,productName:product.nom,quantity,unit:product.unite,pricePerUnit:price,totalPrice:quantity*price});
   order.total+=quantity*price;orders.set(supplierId,order);
  }

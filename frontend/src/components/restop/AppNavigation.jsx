@@ -4,12 +4,12 @@ import Brand from './Brand';
 
 export default function AppNavigation({ activeTab, onNavigate, user, onLogout, onRefresh, loading, canOrders, onSuppliers }) {
   const [open, setOpen] = useState(false);
-  const manager = ['patron', 'super_admin'].includes(user?.role);
+  const manager = ['patron', 'super_admin','gerant'].includes(user?.role);
   const items = [
     ['overview', 'Vue d’ensemble', House], ['stocks', 'Stocks', Package],
     ...(canOrders ? [['orders', 'Achats', ShoppingCart]] : []),
-    ...(user?.role !== 'employe_cuisine' ? [['production', 'Production', ChefHat]] : []),
-    ...(manager ? [['dashboard', 'Ventes & analyses', ChartBar], ['users', 'Équipe', Users]] : [['dashboard', 'Mes missions', Users]]),
+    ...(['patron','super_admin','gerant','chef_cuisine'].includes(user?.role) ? [['production', 'Production', ChefHat]] : []),
+    ...(manager ? [['dashboard', 'Ventes & analyses', ChartBar], ...(user?.role !== 'gerant' ? [['users','Équipe',Users]] : [])] : [['dashboard', 'Mes missions', Users]]),
   ];
   const navigate = (id) => { onNavigate(id); setOpen(false); window.scrollTo({ top: 0 }); };
   const demo = user?.username === 'commercial_demo' || /demo|démo/i.test(user?.full_name || '');

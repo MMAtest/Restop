@@ -917,7 +917,7 @@ function App() {
     if (currentUser.role === 'super_admin') {
       // Super Admin peut assigner à tout le monde
       return availableUsers;
-    } else if (currentUser.role === 'patron') {
+    } else if ((currentUser.role === 'patron' || currentUser.role === 'gerant')) {
       // Patron peut assigner à tout le monde (sauf super admin)
       return availableUsers.filter(user => user.role !== 'super_admin');
     } else if (currentUser.role === 'chef_cuisine') {
@@ -949,7 +949,7 @@ function App() {
   };
 
   const canAccessOrders = () => {
-    return currentUser?.role === 'super_admin' || currentUser?.role === 'patron' || currentUser?.role === 'chef_cuisine' || currentUser?.role === 'barman';
+    return currentUser?.role === 'super_admin' || currentUser?.role === 'patron' || currentUser?.role === 'gerant' || currentUser?.role === 'chef_cuisine' || currentUser?.role === 'barman';
   };
 
   const isBarItem = (item) => {
@@ -2478,7 +2478,7 @@ function App() {
         onImport={currentUser?.role !== 'employe_cuisine' ? () => { setActiveTab('stocks'); setActiveStockTab('ocr'); setActiveOcrTab('factures'); setShowOcrModal(true); } : null} />}
 
       {/* Top Navigation Tabs (Analytics) - SUPER ADMIN et PATRON */}
-      {activeTab === "dashboard" && (currentUser?.role === 'super_admin' || currentUser?.role === 'patron') && (
+      {activeTab === "dashboard" && (currentUser?.role === 'super_admin' || currentUser?.role === 'patron' || currentUser?.role === 'gerant') && (
         <div className="top-nav-tabs">
           <button 
             className={`top-nav-tab ${activeDashboardTab === "ventes" ? "active" : ""}`}

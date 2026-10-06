@@ -1,6 +1,6 @@
 # API de production Restop
 
-`index.ts` est la source de la fonction Supabase `restop-api`, récupérée depuis la version 12 puis corrigée et déployée en version 13.
+`index.ts` est la source de la fonction Supabase `restop-api`, récupérée depuis la version 12 puis corrigée et déployée en version 15.
 
 L’authentification est implémentée dans la fonction. La configuration existante `verify_jwt=false` est conservée, car elle utilise aussi le jeton public de démonstration et les routes de connexion. Cela ne dispense pas les routes métier de leurs contrôles de session, de rôle et de restaurant.
 

@@ -966,7 +966,7 @@ const PurchaseOrderPage = ({ currentUser }) => {
                         style={{ background: 'var(--color-success-green)' }}
                       >
                         <span className="mr-2">📧</span>
-                        Envoyer tout par email
+                        Email indisponible
                       </button>
                     </div>
                   </div>
@@ -1014,7 +1014,7 @@ const PurchaseOrderPage = ({ currentUser }) => {
                               style={{ background: 'var(--color-primary-blue)' }}
                             >
                               <span className="mr-1">📄</span>
-                              Imprimer
+                              CSV
                             </button>
                             <button 
                               onClick={() => {
@@ -1024,7 +1024,7 @@ const PurchaseOrderPage = ({ currentUser }) => {
                               style={{ background: 'var(--color-success-green)' }}
                             >
                               <span className="mr-1">📧</span>
-                              Email
+                              Email indisponible
                             </button>
                             <button 
                               onClick={() => {
