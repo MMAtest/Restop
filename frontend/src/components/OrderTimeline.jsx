@@ -60,7 +60,7 @@ const OrderTimeline = ({ order }) => {
   return (
     <div className="bg-white border border-gray-200 rounded-lg p-6">
       {/* En-tête avec statut actuel */}
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex flex-wrap gap-3 items-center justify-between mb-6">
         <div className="flex items-center gap-3">
           <span className="text-3xl">{currentStatus.icon}</span>
           <div>

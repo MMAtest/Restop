@@ -4640,23 +4640,21 @@ function App() {
                             <div style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '10px'}}>
                               <div className="validation-card">
                                 <label>Date:</label>
-                                <input type="date" defaultValue={data.date} style={{width: '100%', padding: '4px'}} />
+                                <input readOnly type="date" defaultValue={data.date} style={{width: '100%', padding: '4px'}} />
                               </div>
                               <div className="validation-card">
                                 <label>Couverts:</label>
-                                <input type="number" defaultValue={data.covers} style={{width: '100%', padding: '4px'}} />
+                                <input readOnly type="number" defaultValue={data.covers} style={{width: '100%', padding: '4px'}} />
                               </div>
                               <div className="validation-card">
                                 <label>Total HT:</label>
-                                <input type="number" step="0.01" defaultValue={data.total_ht} style={{width: '100%', padding: '4px'}} />
+                                <input readOnly type="number" step="0.01" defaultValue={data.total_ht} style={{width: '100%', padding: '4px'}} />
                               </div>
                               <div className="validation-card">
                                 <label>Total TTC:</label>
-                                <input type="number" step="0.01" defaultValue={data.total_ttc} style={{width: '100%', padding: '4px'}} />
+                                <input readOnly type="number" step="0.01" defaultValue={data.total_ttc} style={{width: '100%', padding: '4px'}} />
                               </div>
-                              <button className="button small success" style={{gridColumn: 'span 2'}}>
-                                Valider les corrections
-                              </button>
+                              <p className="text-sm text-slate-600" style={{gridColumn: '1 / -1'}}>Données extraites du dernier ticket. Utilisez l’aperçu et les actions du document ci-dessous pour vérifier son intégration.</p>
                               <button 
                                 className="button small"
                                 onClick={async () => {
@@ -4672,7 +4670,7 @@ function App() {
                                   }
                                 }}
                                 style={{
-                                  gridColumn: 'span 2',
+                                  gridColumn: '1 / -1',
                                   background: 'linear-gradient(135deg, #10b981, #059669)',
                                   color: 'white'
                                 }}
@@ -5031,26 +5029,11 @@ function App() {
                           
                           const data = latestInvoice.donnees_extraites;
                           return (
-                            <div style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '10px'}}>
-                              <div className="validation-card">
-                                <label>Fournisseur:</label>
-                                <input type="text" defaultValue={data.fournisseur} style={{width: '100%', padding: '4px'}} />
-                              </div>
-                              <div className="validation-card">
-                                <label>Date:</label>
-                                <input type="date" defaultValue={data.date} style={{width: '100%', padding: '4px'}} />
-                              </div>
-                              <div className="validation-card">
-                                <label>N° Facture:</label>
-                                <input type="text" defaultValue={data.numero_facture} style={{width: '100%', padding: '4px'}} />
-                              </div>
-                              <div className="validation-card">
-                                <label>Total TTC:</label>
-                                <input type="number" step="0.01" defaultValue={data.total_ttc} style={{width: '100%', padding: '4px'}} />
-                              </div>
-                              <button className="button small success" style={{gridColumn: 'span 2'}}>
-                                Valider les corrections
-                              </button>
+                            <div className="space-y-3">
+                              <p className="text-sm">{data.fournisseur || 'Fournisseur non identifié'} · {data.total_ttc ?? 'Montant non identifié'} €</p>
+                              {latestInvoice.statut !== 'integre' ? <button className="button success" onClick={() => { setInvoiceToValidate(latestInvoice.id); setShowInvoiceValidation(true); }}>
+                                Vérifier les données de la facture
+                              </button> : <p className="text-sm">Facture déjà intégrée.</p>}
                             </div>
                           );
                         })()}
@@ -6734,7 +6717,7 @@ function App() {
                     <div className="form-group" style={{marginTop: '12px'}}>
                       <label className="form-label" style={{fontSize: '13px'}}>Heure limite de commande</label>
                       <select
-                        value={fournisseurForm.delivery_rules?.order_deadline_hour || 11}
+                        value={fournisseurForm.delivery_rules?.order_deadline_hour ?? 11}
                         onChange={(e) => setFournisseurForm({
                           ...fournisseurForm,
                           delivery_rules: { ...fournisseurForm.delivery_rules, order_deadline_hour: parseInt(e.target.value) }
@@ -6801,7 +6784,7 @@ function App() {
                           type="number"
                           min="0"
                           max="14"
-                          value={fournisseurForm.delivery_rules?.delivery_delay_days || 1}
+                          value={fournisseurForm.delivery_rules?.delivery_delay_days ?? 1}
                           onChange={(e) => setFournisseurForm({
                             ...fournisseurForm,
                             delivery_rules: { ...fournisseurForm.delivery_rules, delivery_delay_days: parseInt(e.target.value) }

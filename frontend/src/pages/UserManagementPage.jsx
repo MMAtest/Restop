@@ -5,6 +5,7 @@ import React, { useEffect, useState } from 'react';
 const UserManagementPage = ({ currentUser }) => {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
   const [showUserModal, setShowUserModal] = useState(false);
   const [editingUser, setEditingUser] = useState(null);
   const [userForm, setUserForm] = useState({
@@ -69,16 +70,17 @@ const UserManagementPage = ({ currentUser }) => {
 
   const fetchUsers = async () => {
     setLoading(true);
+    setError('');
     try {
       const response = await apiFetch(`${backendUrl}/api/admin/users`);
       if (response.ok) {
         const data = await response.json();
         setUsers(asList(data));
       } else {
-        console.error('Erreur lors du chargement des utilisateurs');
+        throw new Error('Chargement des utilisateurs impossible. Réessayez.');
       }
     } catch (error) {
-      console.error('Erreur lors du chargement des utilisateurs:', error);
+      setError(error.message || 'Chargement des utilisateurs impossible.');
     } finally {
       setLoading(false);
     }
@@ -265,13 +267,20 @@ const UserManagementPage = ({ currentUser }) => {
         </div>
 
         <div className="p-6">
+          {error && <p role="alert" className="text-red-600 mb-4">{error}</p>}
+          {!loading && !error && <div className="md:hidden space-y-3">{users.length === 0 ? <p>Aucun utilisateur trouvé</p> : users.map(user => <article key={user.id} className="border rounded-xl p-4 space-y-2 break-words">
+            <h4 className="font-semibold">{user.full_name || user.username}</h4><p className="text-sm text-gray-600">{user.email}</p><p className="text-sm">{getRoleInfo(user.role).name} · {user.is_active ? 'Actif' : 'Inactif'}</p>
+            <details><summary className="py-2 text-sm">Informations du compte</summary><p className="text-sm">Identifiant : {user.username}</p><p className="text-sm">Créé le {formatDateTime(user.created_at)}</p><p className="text-sm">{user.last_login ? `Dernière connexion : ${formatDateTime(user.last_login)}` : 'Jamais connecté'}</p></details>
+            <div className="flex flex-wrap gap-2">{(currentUser?.role === 'super_admin' || (currentUser?.role === 'patron' && user.role !== 'super_admin')) && <button className="button" onClick={()=>handleEditUser(user)}>Modifier</button>}
+            {user.role !== 'super_admin' && user.id !== currentUser?.id && <button className="button secondary" onClick={()=>handleDeleteUser(user.id,user.username)}>Supprimer</button>}</div>
+          </article>)}</div>}
           {loading ? (
             <div className="text-center py-8">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-500 mx-auto"></div>
               <p className="mt-2 text-gray-600">Chargement des utilisateurs...</p>
             </div>
           ) : (
-            <div className="overflow-x-auto">
+            <div className="hidden md:block overflow-x-auto">
               <table className="min-w-full">
                 <thead>
                   <tr className="border-b border-gray-200">

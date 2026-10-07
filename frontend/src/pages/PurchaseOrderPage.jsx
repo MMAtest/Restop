@@ -365,7 +365,7 @@ const PurchaseOrderPage = ({ currentUser }) => {
       </div>
 
       {/* Effectuer une commande */}
-      <div className="rounded-lg shadow-sm mb-8 mx-6" style={{ background: 'var(--color-background-card)', border: '1px solid var(--color-border)' }}>
+      <div className="rounded-lg shadow-sm mb-8 mx-0 sm:mx-6" style={{ background: 'var(--color-background-card)', border: '1px solid var(--color-border)' }}>
         <div className="p-6 border-b" style={{ borderColor: 'var(--color-border)' }}>
           <h2 className="text-xl font-semibold" style={{ color: 'var(--color-text-primary)' }}>Effectuer une Commande</h2>
           <p className="mt-1" style={{ color: 'var(--color-text-secondary)' }}>Créez vos commandes manuellement ou automatiquement</p>
@@ -373,7 +373,7 @@ const PurchaseOrderPage = ({ currentUser }) => {
         
         {/* Onglets avec surbrillance jaune */}
         <div className="p-4 border-b" style={{ borderColor: 'var(--color-border)' }}>
-          <div className="flex space-x-1">
+          <div className="flex flex-wrap gap-2">
           {/* Commandes Manuelle et Auto - MASQUÉES pour employé cuisine */}
           {currentUser?.role !== 'employe_cuisine' && (
             <>
@@ -1105,7 +1105,7 @@ const PurchaseOrderPage = ({ currentUser }) => {
                         <div className="flex justify-between items-start">
                           <div>
                             <h4 className="text-lg font-semibold" style={{ color: 'var(--color-text-primary)' }}>
-                              {order.supplier_name}
+                              {order.supplier_name || suppliers.find(s => s.id === order.supplier_id)?.nom || 'Fournisseur non identifié'}
                             </h4>
                             <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
                               Commande n°{order.order_number}

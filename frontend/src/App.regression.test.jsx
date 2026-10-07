@@ -49,3 +49,21 @@ test('creating after cancelling an edit does not retain the old recipe identity'
  expect(host.querySelector('.modal-overlay h3').textContent).toContain('Ajouter une recette');
  expect(host.querySelector('.modal-overlay input').value).toBe('');
 });
+test('invoice correction opens the working validation dialog',async()=>{
+ contracts['/ocr/documents']=[{id:'invoice',type_document:'facture_fournisseur',statut:'analyse',donnees_extraites:{fournisseur:'Test',date:'2026-10-07',total_ttc:10}}];
+ axios.get.mockImplementation(async url => ({data:url.includes('/ocr/documents') ? contracts['/ocr/documents'] : url.includes('/auth/session') ? {valid:true,user:{id:'demo-restop',role:'patron',full_name:'Démo'}} : []}));
+ await act(async()=>{root.unmount();});
+ root=createRoot(host);await act(async()=>{root.render(<App/>);});
+ await click('Stocks');await click('OCR');
+ axios.post.mockResolvedValue({data:{supplier_name:'Test',invoice_date:'2026-10-07',invoice_number:'TEST-01',total_ttc:10,products:[]}});
+ await click('Factures');
+ await click('Vérifier les données de la facture');
+ expect(host.textContent).toContain('Validation');
+ expect(host.querySelector('[role=dialog], .modal-overlay')).toBeTruthy();
+});
+test('the supplier form accepts a midnight order cutoff',async()=>{
+ await click('Production');await click('Fournisseurs');await click('Nouveau Fournisseur');await click('Configurer');
+ const select=[...host.querySelectorAll('.modal-overlay select')].find(s=>[...s.options].some(o=>o.textContent==='00:00 (Matin)'));
+ await act(async()=>{select.value='0';select.dispatchEvent(new Event('change',{bubbles:true}));});
+ expect(select.value).toBe('0');
+});

@@ -129,7 +129,7 @@ const DeliveryRulesConfig = ({ supplier, onSave, onCancel }) => {
           type="number"
           min="0"
           max="23"
-          value={rules.order_deadline_hour || 11}
+          value={rules.order_deadline_hour ?? 11}
           onChange={(e) => setRules({ ...rules, order_deadline_hour: parseInt(e.target.value) })}
           className="w-32 px-4 py-2 border border-gray-300 rounded-lg"
         />
@@ -168,7 +168,7 @@ const DeliveryRulesConfig = ({ supplier, onSave, onCancel }) => {
           type="number"
           min="0"
           max="14"
-          value={rules.delivery_delay_days || 1}
+          value={rules.delivery_delay_days ?? 1}
           onChange={(e) => setRules({ ...rules, delivery_delay_days: parseInt(e.target.value) })}
           className="w-32 px-4 py-2 border border-gray-300 rounded-lg"
         />
