@@ -72,7 +72,6 @@ const DataGrid = ({
         columnDefs={columns}
         gridOptions={gridOptions}
         onRowClicked={onRowClicked}
-        suppressCellFocus={true}
       />
     </div>
   );

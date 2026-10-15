@@ -1,3 +1,5 @@
+import { BACKEND_URL } from '../utils/api';
+import ActionNotice from '../components/restop/ActionNotice';
 import { apiFetch, responseJson } from '../utils/api';
 import { asList, number, recipe } from '../utils/contracts';
 import React, { useEffect, useState } from 'react';
@@ -17,8 +19,10 @@ const AdvancedStockPage = () => {
   });
   const [availableTargets, setAvailableTargets] = useState([]);
   const [selectedBatch, setSelectedBatch] = useState(null);
+  const [notice, setNotice] = useState(null);
+  const notify = (message, kind = 'info') => setNotice({ message:String(message), kind });
 
-  const backendUrl = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8001';
+  const backendUrl = BACKEND_URL;
 
   useEffect(() => {
     fetchData();
@@ -81,14 +85,14 @@ const AdvancedStockPage = () => {
           user_name: 'Gérant'
         });
         fetchData();
-        alert('Ajustement effectué avec succès!');
+        notify('Ajustement effectué avec succès!');
       } else {
         const error = await response.json();
-        alert(`Erreur: ${error.detail}`);
+        notify(`Erreur: ${error.detail}`, 'error');
       }
     } catch (error) {
       console.error('Erreur lors de l\'ajustement:', error);
-      alert('Erreur lors de l\'ajustement');
+      notify('Erreur lors de l\'ajustement', 'error');
     }
   };
 
@@ -120,7 +124,8 @@ const AdvancedStockPage = () => {
   };
 
   return (
-    <div className="p-6 bg-gradient-to-br from-gray-100 to-gray-200 min-h-screen">
+    <div className="rt-module-legacy p-6 bg-gradient-to-br from-gray-100 to-gray-200 min-h-screen">
+      <ActionNotice notice={notice} onDismiss={() => setNotice(null)} />
       {/* Header */}
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-800 mb-2">

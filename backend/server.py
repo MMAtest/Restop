@@ -1,4 +1,4 @@
-from fastapi import FastAPI, APIRouter, HTTPException, UploadFile, File, Form
+from fastapi import FastAPI, APIRouter, HTTPException, UploadFile, File, Form, Header, Depends
 from fastapi.responses import StreamingResponse
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
@@ -34,6 +34,8 @@ import asyncio
 
 # Parsers optimisés
 from parsers_optimized import parse_product_line_smart, optimize_parser_results, detect_product_category, detect_supplier_category
+from invoice_guard import (audit_invoice_totals, supplier_invoice_fingerprint,
+    reserve_invoice_for_import, transaction_topology_supported, run_stock_transaction)
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env', override=False)
@@ -111,6 +113,58 @@ client = AsyncIOMotorClient(mongo_url)
 # Utiliser DB_NAME de l'environnement (production) ou test_database par défaut (développement)
 db_name = os.environ.get('DB_NAME', 'test_database')
 db = client[db_name]
+
+
+async def require_active_user(authorization: Optional[str] = Header(default=None)):
+    """Authorize using the persisted session and the CURRENT user role, never a client role."""
+    if not authorization or not authorization.startswith("Bearer "):
+        raise HTTPException(status_code=401, detail="Authentification requise")
+    token = authorization[7:].strip()
+    if not token:
+        raise HTTPException(status_code=401, detail="Session manquante")
+    session = await db.user_sessions.find_one({"session_id": token})
+    if not session or not session.get("user_id"):
+        raise HTTPException(status_code=401, detail="Session invalide")
+    login_time = session.get("login_time")
+    if not isinstance(login_time, datetime) or (datetime.utcnow() - login_time) > timedelta(hours=12):
+        await db.user_sessions.delete_one({"session_id": token})
+        raise HTTPException(status_code=401, detail="Session expirée : reconnectez-vous")
+    user = await db.users.find_one({"id": session["user_id"], "is_active": True})
+    if not user:
+        raise HTTPException(status_code=401, detail="Compte introuvable ou désactivé")
+    return user
+
+
+async def require_user_manager(user=Depends(require_active_user)):
+    if user.get("role") not in {"super_admin", "patron"}:
+        raise HTTPException(status_code=403, detail="Accès réservé à la direction")
+    return user
+
+
+async def require_invoice_editor(user=Depends(require_active_user)):
+    """Role check specific to OCR stock integration."""
+    if user.get("role") not in {"super_admin", "patron", "gerant", "chef_cuisine"}:
+        raise HTTPException(status_code=403, detail="Rôle non autorisé à intégrer des factures en stock")
+    if user.get("restaurant_id"):
+        raise HTTPException(status_code=503,
+            detail="Accès OCR multi-établissement indisponible avant isolation des données")
+    return user
+
+
+async def require_legacy_ocr_access(user=Depends(require_active_user)):
+    """OCR legacy: role-gated; no cross-restaurant isolation exists yet."""
+    if user.get("restaurant_id"):
+        raise HTTPException(status_code=503,
+            detail="Accès OCR multi-établissement indisponible avant isolation des données")
+    if user.get("role") not in {"super_admin", "patron", "gerant", "chef_cuisine", "caissier"}:
+        raise HTTPException(status_code=403, detail="Rôle non autorisé à consulter les documents OCR")
+    return user
+
+
+async def require_ocr_uploader(user=Depends(require_legacy_ocr_access)):
+    """Caissier may upload/read Z reports but cannot confirm supplier stock imports."""
+    return user
+
 
 # Create the main app without a prefix
 app = FastAPI()
@@ -1886,18 +1940,21 @@ async def migrate_to_v3():
         # 4. Create default admin user if no users exist
         user_count = await db.users.count_documents({})
         if user_count == 0:
-            from passlib.context import CryptContext
-            pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-            
-            admin_user = User(
-                username="admin",
-                email="admin@restaurantla-table-augustine.fr",
-                password_hash=pwd_context.hash("RestaurantAdmin2025!"),
-                role="super_admin",
-                full_name="Administrateur Système"
-            )
-            await db.users.insert_one(admin_user.dict())
-            migration_results.append("Created default admin user (admin/RestaurantAdmin2025!)")
+            bootstrap_password = os.getenv("RESTOP_BOOTSTRAP_ADMIN_PASSWORD", "")
+            bootstrap_email = os.getenv("RESTOP_BOOTSTRAP_ADMIN_EMAIL", "")
+            if len(bootstrap_password) < 12 or not bootstrap_email:
+                migration_results.append("Admin initial non créé : variables RESTOP_BOOTSTRAP_ADMIN_EMAIL et RESTOP_BOOTSTRAP_ADMIN_PASSWORD requises")
+            else:
+                from passlib.context import CryptContext
+                admin_user = User(
+                    username="admin",
+                    email=bootstrap_email,
+                    password_hash=CryptContext(schemes=["bcrypt"], deprecated="auto").hash(bootstrap_password),
+                    role="super_admin",
+                    full_name="Administrateur Système"
+                )
+                await db.users.insert_one(admin_user.dict())
+                migration_results.append("Admin initial créé ; rotation de mot de passe recommandée")
         
         # Record migration
         migration_record = MigrationStatus(
@@ -1927,7 +1984,7 @@ async def migrate_to_v3():
 
 # User Management (Super Admin only)
 @api_router.post("/admin/users", response_model=UserResponse)
-async def create_user(user_create: UserCreate):
+async def create_user(user_create: UserCreate, editor=Depends(require_user_manager)):
     """Create a new user (Super Admin only)"""
     from passlib.context import CryptContext
     pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -1939,9 +1996,13 @@ async def create_user(user_create: UserCreate):
     if existing_user:
         raise HTTPException(status_code=400, detail="Username or email already exists")
     
-    # Validate role
+    # Validate role and password before hashing.
     if user_create.role not in ROLES:
         raise HTTPException(status_code=400, detail=f"Invalid role. Must be one of: {list(ROLES.keys())}")
+    if editor.get("role") != "super_admin" and user_create.role == "super_admin":
+        raise HTTPException(status_code=403, detail="Seul un Super Admin peut créer un Super Admin")
+    if len(user_create.password) < 12:
+        raise HTTPException(status_code=422, detail="Mot de passe : 12 caractères minimum")
     
     # Create user
     user_dict = user_create.dict()
@@ -2056,23 +2117,28 @@ def calculate_delivery_date(supplier: Fournisseur, order_date: datetime = None) 
     }
 
 @api_router.get("/admin/users", response_model=List[UserResponse])
-async def get_users():
+async def get_users(editor=Depends(require_user_manager)):
     """Get all users (Super Admin only)"""
     users = await db.users.find().to_list(1000)
     return [UserResponse(**user) for user in users]
 
 @api_router.delete("/admin/users/{user_id}")
-async def delete_user(user_id: str):
+async def delete_user(user_id: str, editor=Depends(require_user_manager)):
     """Delete a user (Super Admin only)"""
+    if editor.get("role") != "super_admin":
+        raise HTTPException(status_code=403, detail="Suppression réservée au Super Admin")
+    if editor.get("id") == user_id:
+        raise HTTPException(status_code=403, detail="Impossible de supprimer votre propre compte")
     result = await db.users.delete_one({"id": user_id})
     if result.deleted_count == 0:
         raise HTTPException(status_code=404, detail="User not found")
     return {"message": "User deleted successfully"}
 
 @api_router.put("/admin/users/{user_id}", response_model=UserResponse)
-async def update_user(user_id: str, user_update: UserUpdate, requester_role: str = "super_admin"):
+async def update_user(user_id: str, user_update: UserUpdate, editor=Depends(require_user_manager)):
     """Update a user (Patron or Super Admin)"""
     try:
+        requester_role = editor.get("role")
         # Vérifier les permissions du demandeur
         if requester_role not in ["super_admin", "patron"]:
              raise HTTPException(status_code=403, detail="Permission refusée. Seuls Patron et Super Admin peuvent modifier des utilisateurs.")
@@ -2091,8 +2157,10 @@ async def update_user(user_id: str, user_update: UserUpdate, requester_role: str
         
         # Si le mot de passe est vide, ne pas le mettre à jour
         if update_data.get("password"):
-            # Hash du nouveau mot de passe (pour l'instant simple, en production utiliser bcrypt)
-            update_data["password_hash"] = f"hashed_{update_data['password']}"
+            from passlib.context import CryptContext
+            if len(update_data["password"]) < 12:
+                raise HTTPException(status_code=422, detail="Mot de passe : 12 caractères minimum")
+            update_data["password_hash"] = CryptContext(schemes=["bcrypt"], deprecated="auto").hash(update_data['password'])
             update_data.pop("password", None)
         elif "password" in update_data:
             # Supprimer le champ password s'il est vide
@@ -2560,7 +2628,7 @@ async def consume_batch(batch_id: str, quantity_consumed: float):
 
 # ✅ Version 3 Feature #2 - Enhanced OCR API Endpoints
 
-@api_router.post("/ocr/parse-z-report-enhanced", response_model=StructuredZReportData)
+@api_router.post("/ocr/parse-z-report-enhanced", response_model=StructuredZReportData, dependencies=[Depends(require_legacy_ocr_access)])
 async def parse_z_report_enhanced_endpoint(document_id: str):
     """Parse Z report with enhanced structured extraction"""
     try:
@@ -2590,7 +2658,7 @@ async def parse_z_report_enhanced_endpoint(document_id: str):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Erreur lors du parsing: {str(e)}")
 
-@api_router.post("/ocr/calculate-stock-deductions", response_model=ZReportValidationResult)
+@api_router.post("/ocr/calculate-stock-deductions", response_model=ZReportValidationResult, dependencies=[Depends(require_legacy_ocr_access)])
 async def calculate_stock_deductions_endpoint(structured_data: StructuredZReportData):
     """Calculate proposed stock deductions based on structured Z report data"""
     try:
@@ -2599,7 +2667,7 @@ async def calculate_stock_deductions_endpoint(structured_data: StructuredZReport
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Erreur lors du calcul des déductions: {str(e)}")
 
-@api_router.post("/ocr/validate-z-report")
+@api_router.post("/ocr/validate-z-report", dependencies=[Depends(require_invoice_editor)])
 async def validate_z_report_endpoint(document_id: str, apply_deductions: bool = False):
     """Validate Z report and optionally apply stock deductions"""
     try:
@@ -2653,7 +2721,7 @@ async def validate_z_report_endpoint(document_id: str, apply_deductions: bool = 
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Erreur lors de la validation: {str(e)}")
 
-@api_router.get("/ocr/z-report-preview/{document_id}", response_model=dict)
+@api_router.get("/ocr/z-report-preview/{document_id}", response_model=dict, dependencies=[Depends(require_legacy_ocr_access)])
 async def get_z_report_preview(document_id: str):
     """Get a preview of structured Z report data without applying changes"""
     try:
@@ -6429,7 +6497,7 @@ async def get_missing_data_alerts():
     }
 
 # Routes pour le traitement OCR
-@api_router.post("/ocr/upload-document")  # No response_model to allow flexible multi-invoice responses
+@api_router.post("/ocr/upload-document", dependencies=[Depends(require_ocr_uploader)])  # No response_model to allow flexible multi-invoice responses
 async def upload_and_process_document(
     file: UploadFile = File(...),
     document_type: str = Form("z_report")  # "z_report" ou "facture_fournisseur" ou "mercuriale"
@@ -6456,13 +6524,35 @@ async def upload_and_process_document(
     
     try:
         # Lire le contenu du fichier
-        file_content = await file.read()
-        
+        # Limite stricte avant chargement complet : évite les uploads démesurés.
+        max_upload_bytes = 15 * 1024 * 1024
+        file_content = await file.read(max_upload_bytes + 1)
+        if not file_content:
+            raise HTTPException(status_code=400, detail="Le document est vide")
+        if len(file_content) > max_upload_bytes:
+            raise HTTPException(status_code=413, detail="Document trop volumineux (maximum 15 Mo)")
+        if file_type == 'pdf' and not file_content.startswith(b'%PDF-'):
+            raise HTTPException(status_code=400, detail="Le fichier PDF est invalide")
+        if file_type == 'image' and not (
+            file_content.startswith((b'\xff\xd8\xff', b'\x89PNG\r\n\x1a\n', b'GIF87a', b'GIF89a', b'BM', b'II*\x00', b'MM\x00*'))
+            or (file_content.startswith(b'RIFF') and file_content[8:12] == b'WEBP')
+        ):
+            raise HTTPException(status_code=400, detail="Format image invalide ou non pris en charge")
+
         # Extraire le texte selon le type de fichier
         if file_type == 'pdf':
             print(f"📄 Processing PDF file: {file.filename}")
-            # Use Google Vision API for PDF extraction (superior accuracy)
-            texte_extrait = extract_text_from_pdf_google_vision(file_content)
+            # Les PDF numériques sont extraits localement : plus rapide et sans coût Vision.
+            # Pour les PDF scannés ou incomplets, Google Vision reste le recours.
+            try:
+                with pdfplumber.open(io.BytesIO(file_content)) as pdf:
+                    page_texts = [(page.extract_text() or '').strip() for page in pdf.pages]
+                digital_pdf = bool(page_texts) and all(len(t) >= 80 for t in page_texts)
+                texte_extrait = "\n\n".join(page_texts) if digital_pdf else ""
+            except Exception:
+                texte_extrait = ""
+            if not texte_extrait:
+                texte_extrait = extract_text_from_pdf_google_vision(file_content)
             # Pour les PDF, on stocke le contenu comme base64 mais avec prefix PDF
             content_base64 = base64.b64encode(file_content).decode('utf-8')
             data_uri = f"data:application/pdf;base64,{content_base64}"
@@ -6644,7 +6734,7 @@ async def upload_and_process_document(
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Erreur lors du traitement: {str(e)}")
 
-@api_router.get("/ocr/documents")
+@api_router.get("/ocr/documents", dependencies=[Depends(require_legacy_ocr_access)])
 async def get_processed_documents(document_type: Optional[str] = None, limit: int = 50):
     """Récupérer l'historique des documents traités"""
     query = {}
@@ -6664,7 +6754,7 @@ async def get_processed_documents(document_type: Optional[str] = None, limit: in
     
     return documents
 
-@api_router.get("/ocr/document/{document_id}")
+@api_router.get("/ocr/document/{document_id}", dependencies=[Depends(require_legacy_ocr_access)])
 async def get_document_by_id(document_id: str):
     """Récupérer un document spécifique par son ID. Enrichit les prix manquants et ajoute l'analyse Z si absente."""
     document = await db.documents_ocr.find_one({"id": document_id})
@@ -6709,10 +6799,14 @@ async def get_document_by_id(document_id: str):
     
     return document
 
-@api_router.delete("/ocr/document/{document_id}")
+@api_router.delete("/ocr/document/{document_id}", dependencies=[Depends(require_user_manager), Depends(require_legacy_ocr_access)])
 async def delete_document(document_id: str):
-    """Supprimer un document OCR"""
-    result = await db.documents_ocr.delete_one({"id": document_id})
+    """Delete only a non-integrated OCR document (never an accounting trace)."""
+    document = await db.documents_ocr.find_one({"id": document_id})
+    if document and document.get("statut") in {"integre", "import_en_cours", "import_incomplet"}:
+        raise HTTPException(status_code=409,
+            detail="Document lié au stock : archivage contrôlé requis, suppression interdite")
+    result = await db.documents_ocr.delete_one({"id": document_id, "statut": {"$nin": ["integre", "import_en_cours", "import_incomplet"]}})
     if result.deleted_count == 0:
         raise HTTPException(status_code=404, detail="Document non trouvé")
     return {"message": "Document supprimé"}
@@ -6753,17 +6847,11 @@ async def delete_rapport_z(rapport_id: str):
         raise HTTPException(status_code=404, detail="Rapport non trouvé")
     return {"message": "Rapport supprimé"}
 
-@api_router.delete("/ocr/documents/all")
+@api_router.delete("/ocr/documents/all", dependencies=[Depends(require_user_manager), Depends(require_legacy_ocr_access)])
 async def delete_all_ocr_documents():
-    """Supprimer tous les documents OCR de l'historique"""
-    try:
-        result = await db.documents_ocr.delete_many({})
-        return {
-            "message": "Tous les documents OCR ont été supprimés",
-            "deleted_count": result.deleted_count
-        }
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Erreur lors de la suppression: {str(e)}")
+    """Destructive operation intentionally disabled; use audited retention workflow."""
+    raise HTTPException(status_code=410,
+        detail="Suppression globale désactivée pour préserver les documents de stock et la traçabilité")
 
 # ✅ Archive System Endpoints
 @api_router.post("/archive")
@@ -6986,12 +7074,23 @@ async def login(request: LoginRequest):
         if not user:
             return LoginResponse(success=False, message="Identifiant incorrect")
         
-        # Vérification simple du mot de passe (en production, utiliser bcrypt)
+        # Vérification bcrypt réelle ; les anciens comptes fictifs sans hash valide
+        # devront passer par une réinitialisation administrateur. Aucun mot de passe
+        # partagé ni repli silencieux en production.
+        from passlib.context import CryptContext
         user_obj = User(**user)
-        
-        # Accepter password OU password123 pour la démo
-        if request.password != "password123" and request.password != "password":
-            return LoginResponse(success=False, message="Mot de passe incorrect")
+        if not user_obj.is_active:
+            return LoginResponse(success=False, message="Identifiants invalides")
+        pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+        stored_hash = user_obj.password_hash or ""
+        if not stored_hash.startswith(("$2a$", "$2b$", "$2y$")):
+            return LoginResponse(success=False, message="Identifiants invalides. Contactez votre administrateur pour réinitialiser ce compte")
+        try:
+            password_valid = pwd_context.verify(request.password, stored_hash)
+        except (ValueError, TypeError):
+            password_valid = False
+        if not password_valid:
+            return LoginResponse(success=False, message="Identifiants invalides")
         
         # Créer une session
         session_id = str(uuid.uuid4())
@@ -7022,31 +7121,21 @@ async def login(request: LoginRequest):
         return LoginResponse(success=False, message=f"Erreur de connexion: {str(e)}")
 
 @api_router.post("/auth/logout")
-async def logout(session_id: str):
-    """Déconnexion"""
-    try:
-        await db.user_sessions.delete_one({"session_id": session_id})
-        return {"success": True, "message": "Déconnexion réussie"}
-    except Exception as e:
-        return {"success": False, "message": f"Erreur lors de la déconnexion: {str(e)}"}
+async def logout(authorization: Optional[str] = Header(default=None), editor=Depends(require_active_user)):
+    """Revoke caller's own session; token is never placed in URL parameters."""
+    token = authorization[7:].strip()
+    await db.user_sessions.delete_one({"session_id": token, "user_id": editor["id"]})
+    return {"success": True, "message": "Déconnexion réussie"}
+
+@api_router.get("/auth/session")
+async def get_current_session(editor=Depends(require_active_user)):
+    """Return the active user's current role to the authenticated SPA."""
+    return {"valid": True, "user": UserResponse(**editor)}
 
 @api_router.get("/auth/session/{session_id}")
-async def get_session(session_id: str):
-    """Vérifier une session"""
-    try:
-        session = await db.user_sessions.find_one({"session_id": session_id})
-        if not session:
-            return {"valid": False, "message": "Session expirée"}
-        
-        # Mettre à jour l'activité
-        await db.user_sessions.update_one(
-            {"session_id": session_id},
-            {"$set": {"last_activity": datetime.utcnow()}}
-        )
-        
-        return {"valid": True, "user": UserSession(**session)}
-    except Exception as e:
-        return {"valid": False, "message": f"Erreur session: {str(e)}"}
+async def get_legacy_session_disabled(session_id: str):
+    """Disable bearer secrets in URLs and unauthenticated session enumeration."""
+    raise HTTPException(status_code=410, detail="Ancienne vérification supprimée ; utiliser /auth/session avec Authorization")
 
 # ✅ Mission Management Endpoints
 @api_router.post("/missions", response_model=Mission)
@@ -8347,7 +8436,7 @@ async def execute_preparation(preparation_id: str, request: ExecutePreparationRe
 
 # ===== OCR PROCESSING ENDPOINTS - REAL DATA INTEGRATION =====
 
-@api_router.post("/ocr/process-z-report/{document_id}", response_model=ZReportProcessingResult)
+@api_router.post("/ocr/process-z-report/{document_id}", response_model=ZReportProcessingResult, dependencies=[Depends(require_ocr_uploader)])
 async def process_z_report_to_real_data(document_id: str):
     """
     Process a Z report document and integrate it into real system data:
@@ -8589,7 +8678,11 @@ async def process_z_report_to_real_data(document_id: str):
         raise HTTPException(status_code=500, detail=f"Erreur lors du traitement du ticket Z: {str(e)}")
 
 
-@api_router.post("/ocr/process-facture/{document_id}", response_model=FactureProcessingResult)
+# L'ancien endpoint OCR direct ne doit plus muter les stocks sans approbation.
+@api_router.post("/ocr/process-facture/{document_id}", dependencies=[Depends(require_active_user)])
+async def legacy_process_facture_disabled(document_id: str, editor=Depends(require_active_user)):
+    raise HTTPException(status_code=410,
+        detail="Ancien parcours désactivé : validez la facture par /ocr/confirm-import")
 
 # --------------------------------------------------------------------------------
 # ✅ NOUVEAU SYSTEME DE RECONCILIATION FACTURES (VALIDATION AVANT IMPORT)
@@ -8627,6 +8720,9 @@ class FactureAnalysisResult(BaseModel):
     items: List[FactureItemAnalysis]
     ai_powered: bool = False  # Nouveau champ pour indiquer si analysé par Gemini
     confiance_globale: float = 0.0  # Score de confiance global
+    audit_warnings: List[dict] = []  # Anomalies consultatives, sans modification de données
+    total_ht: Optional[float] = None
+    total_ttc: Optional[float] = None
 
 class ImportConfirmationRequest(BaseModel):
     document_id: str
@@ -8635,8 +8731,11 @@ class ImportConfirmationRequest(BaseModel):
     create_supplier: bool = False
     items: List[FactureItemAnalysis]
     supplier_category: str = "frais" # Default category
+    invoice_number: Optional[str] = None
+    invoice_date: Optional[str] = None
+    acknowledge_audit_warnings: bool = False
 
-@api_router.post("/ocr/analyze-facture/{document_id}", response_model=FactureAnalysisResult)
+@api_router.post("/ocr/analyze-facture/{document_id}", response_model=FactureAnalysisResult, dependencies=[Depends(require_legacy_ocr_access)])
 async def analyze_facture_for_review(document_id: str):
     """
     Step 1 of Reconciliation: Analyze invoice and return data for user validation.
@@ -8667,7 +8766,10 @@ async def analyze_facture_for_review(document_id: str):
             supplier_name=ocr_supplier_name,
             facture_date=donnees_parsees.get("date", datetime.utcnow().strftime("%d/%m/%Y")),
             numero_facture=donnees_parsees.get("numero_facture", "N/A"),
-            items=[]
+            items=[],
+            audit_warnings=audit_invoice_totals(donnees_parsees),
+            total_ht=donnees_parsees.get("total_ht"),
+            total_ttc=donnees_parsees.get("total_ttc")
         )
         
         if supplier_match and supplier_match["confidence"] >= 0.6:
@@ -8716,7 +8818,7 @@ async def analyze_facture_for_review(document_id: str):
         raise HTTPException(status_code=500, detail=f"Erreur d'analyse: {str(e)}")
 
 
-@api_router.post("/ocr/analyze-facture-ai/{document_id}", response_model=FactureAnalysisResult)
+@api_router.post("/ocr/analyze-facture-ai/{document_id}", response_model=FactureAnalysisResult, dependencies=[Depends(require_invoice_editor)])
 async def analyze_facture_with_ai_joker(document_id: str):
     """
     🤖 JOKER IA : Analyse avancée avec Gemini 2.0 Flash
@@ -8746,7 +8848,10 @@ async def analyze_facture_with_ai_joker(document_id: str):
             numero_facture=gemini_result.get("numero_facture", "N/A"),
             items=[],
             ai_powered=True,  # Indicateur que c'est analysé par IA
-            confiance_globale=gemini_result.get("confiance", 0.9)
+            confiance_globale=gemini_result.get("confiance", 0.9),
+            audit_warnings=audit_invoice_totals(gemini_result),
+            total_ht=gemini_result.get("total_ht"),
+            total_ttc=gemini_result.get("total_ttc")
         )
         
         # Vérifier si le fournisseur existe
@@ -8792,6 +8897,7 @@ async def analyze_facture_with_ai_joker(document_id: str):
             "fournisseur": gemini_result.get("fournisseur"),
             "date": gemini_result.get("date"),
             "numero_facture": gemini_result.get("numero_facture"),
+            "total_ht": gemini_result.get("total_ht"),
             "total_ttc": gemini_result.get("total_ttc"),
             "produits": [
                 {
@@ -8902,7 +9008,7 @@ RÈGLES :
         print(f"❌ Erreur Gemini Ticket Z : {str(e)}")
         raise HTTPException(status_code=500, detail=f"Erreur analyse Gemini : {str(e)}")
 
-@api_router.post("/ocr/analyze-ticket-z-ai/{document_id}")
+@api_router.post("/ocr/analyze-ticket-z-ai/{document_id}", dependencies=[Depends(require_ocr_uploader)])
 async def analyze_ticket_z_with_ai(document_id: str):
     """
     🤖 JOKER IA pour Tickets Z : Analyse avancée avec Gemini
@@ -8959,7 +9065,7 @@ async def analyze_ticket_z_with_ai(document_id: str):
 
 
 @api_router.post("/ocr/confirm-import", response_model=dict)
-async def confirm_import_facture(request: ImportConfirmationRequest):
+async def confirm_import_facture(request: ImportConfirmationRequest, editor=Depends(require_invoice_editor)):
     """
     Step 2 of Reconciliation: Apply validated data to system.
     Creates Products, Suppliers, Stock Movements, and BATCHES with DLC.
@@ -8970,7 +9076,7 @@ async def confirm_import_facture(request: ImportConfirmationRequest):
                     "supplier_id": result.supplier_id,
                     "ocr_raw_name": ocr_name
                 })
-                
+
                 if learned:
                     # On applique ce qu'on a appris !
                     mapped_product = await db.produits.find_one({"id": learned["final_product_id"]})
@@ -8980,174 +9086,315 @@ async def confirm_import_facture(request: ImportConfirmationRequest):
                         item_analysis.selected_product_id = mapped_product["id"]
                         item_analysis.confidence = 1.0 # Confiance absolue (c'est vous qui l'avez dit)
                         item_analysis.status = "matched"
-                        
+
                         # Si on a appris une correction de quantité (ex: 1 carton -> 10kg)
                         if learned.get("qty_multiplier") and learned["qty_multiplier"] != 1.0:
                             item_analysis.final_qty = item_analysis.ocr_qty * learned["qty_multiplier"]
                             item_analysis.final_unit = mapped_product.get("unite", "kg")
     """
     try:
-        # 1. Gérer le fournisseur
-        supplier_id = request.supplier_id
-        if request.create_supplier and not supplier_id:
-            # Détecter la catégorie basée sur le nom et les produits
-            product_names = [item.final_name or item.ocr_name for item in request.items]
-            auto_category = detect_supplier_category(request.supplier_name, product_names)
-            
-            # Utiliser la catégorie fournie ou la détection auto
-            supplier_category = request.supplier_category if request.supplier_category != 'frais' else auto_category
-            
-            # Créer nouveau fournisseur
-            new_supplier = Fournisseur(
-                nom=request.supplier_name,
-                categorie=supplier_category  # ✅ Catégorie intelligente !
-            )
-            await db.fournisseurs.insert_one(new_supplier.dict())
-            supplier_id = new_supplier.id
-            
-            print(f"🏢 Nouveau fournisseur créé: {request.supplier_name} → Catégorie: {supplier_category}")
-        
-        import_stats = {
-            "products_created": 0,
-            "stock_entries": 0,
-            "batches_created": 0
-        }
-        
-        # 2. Traiter chaque ligne validée
-        for item in request.items:
-            if item.final_qty <= 0:
-                continue
-                
-            product_id = item.selected_product_id
-            
-            # Création produit si nécessaire (Status 'new' ou 'matched' mais user a choisi 'Créer nouveau')
-            if not product_id:
-                # Détection automatique de la catégorie basée sur le nom
-                product_name = item.final_name or item.ocr_name
-                auto_category = detect_product_category(product_name)
-                
-                new_product = Produit(
-                    nom=product_name,
-                    categorie=auto_category,  # ✅ Catégorie auto-détectée !
-                    unite=item.final_unit or "kg",
-                    reference_price=item.ocr_price,
-                    main_supplier_id=supplier_id,
-                    fournisseur_id=supplier_id,
-                    fournisseur_nom=request.supplier_name
-                )
-                await db.produits.insert_one(new_product.dict())
-                product_id = new_product.id
-                import_stats["products_created"] += 1
-                
-                print(f"🎯 Nouveau produit créé: {product_name} → Catégorie auto: {auto_category}")
-                
-                # Créer stock initial
-                await db.stocks.insert_one(Stock(
-                    produit_id=product_id,
-                    produit_nom=new_product.nom,
-                    quantite_actuelle=0,
-                    quantite_min=0
-                ).dict())
-                
-                # Créer relation prix
-                await db.supplier_product_info.insert_one(SupplierProductInfo(
-                    supplier_id=supplier_id,
-                    product_id=product_id,
-                    price=item.ocr_price,
-                    is_preferred=True
-                ).dict())
-            else:
-                # Mise à jour prix existant
-                await db.supplier_product_info.update_one(
-                    {"supplier_id": supplier_id, "product_id": product_id},
-                    {"$set": {"price": item.ocr_price, "last_updated": datetime.utcnow()}},
-                    upsert=True
-                )
+        # Validation serveur obligatoire avant toute écriture stock.
+        # L'identifiant du document est la clé d'idempotence de cet import.
+        import math
+        document = await db.documents_ocr.find_one({"id": request.document_id})
+        if not document or document.get("type_document") != "facture_fournisseur":
+            raise HTTPException(status_code=404, detail="Facture OCR introuvable")
+        if document.get("statut") == "integre":
+            raise HTTPException(status_code=409, detail="Cette facture a déjà été intégrée au stock")
+        if await db.mouvements_stock.find_one({"reference": f"FACT-{request.document_id[:8]}"}):
+            raise HTTPException(status_code=409, detail="Des mouvements de stock existent déjà pour cette facture : vérification manuelle requise")
+        # Doublons inter-documents : même fournisseur et même numéro de facture déjà intégrée.
+        from re import escape as regex_escape
+        parsed = document.get("donnees_parsees") or {}
+        invoice_number = str(request.invoice_number or parsed.get("numero_facture") or "").strip()
+        invoice_supplier = str(parsed.get("fournisseur") or request.supplier_name or "").strip()
+        if invoice_number and invoice_number.lower() not in {"n/a", "inconnu", "unknown"} and invoice_supplier:
+            previous_invoice = await db.documents_ocr.find_one({
+                "id": {"$ne": request.document_id},
+                "type_document": "facture_fournisseur",
+                "statut": "integre",
+                "donnees_parsees.numero_facture": {"$regex": f"^{regex_escape(invoice_number)}$", "$options": "i"},
+                "donnees_parsees.fournisseur": {"$regex": f"^{regex_escape(invoice_supplier)}$", "$options": "i"},
+            })
+            if previous_invoice:
+                raise HTTPException(status_code=409, detail="Cette référence de facture fournisseur est déjà intégrée dans un autre document")
+        if not request.supplier_name.strip() or not request.items:
+            raise HTTPException(status_code=422, detail="Fournisseur et lignes de facture obligatoires")
+        for index, item in enumerate(request.items, 1):
+            qty = item.final_qty
+            price = item.ocr_price
+            if qty is None or not math.isfinite(qty) or qty <= 0:
+                raise HTTPException(status_code=422, detail=f"Ligne {index} : quantité positive requise")
+            if price is None or not math.isfinite(price) or price < 0:
+                raise HTTPException(status_code=422, detail=f"Ligne {index} : prix unitaire invalide")
+            if not item.selected_product_id and not (item.final_name or item.ocr_name).strip():
+                raise HTTPException(status_code=422, detail=f"Ligne {index} : nom du produit requis")
+        audit_warnings = audit_invoice_totals(parsed)
+        if audit_warnings and not request.acknowledge_audit_warnings:
+            raise HTTPException(status_code=422, detail="Anomalies de facture détectées : examinez les montants et confirmez leur prise en compte avant import.")
 
-            # 3. CRÉATION DU LOT (BATCH) AVEC DLC
-            # C'est ici que la magie opère grâce à la validation utilisateur
-            batch_data = {
-                "product_id": product_id,
-                "quantity": item.final_qty,
-                "quantity_brute": item.final_qty,
-                "expiry_date": item.dlc, # DLC validée par l'utilisateur
-                "batch_number": item.batch_number, # Lot saisi par l'utilisateur
-                "supplier_id": supplier_id,
-                "received_date": datetime.utcnow(),
-                "created_at": datetime.utcnow(),
-                "is_consumed": False
+        # Vérifier les références avant de créer le moindre lot ou mouvement.
+        # Sinon une ligne mal sélectionnée pouvait produire un mouvement orphelin.
+        if not request.create_supplier and not request.supplier_id:
+            raise HTTPException(status_code=422, detail="Choisissez un fournisseur existant ou créez-en un")
+        if request.supplier_id and not await db.fournisseurs.find_one({"id": request.supplier_id}):
+            raise HTTPException(status_code=422, detail="Le fournisseur sélectionné n'existe plus")
+        for product_id in {item.selected_product_id for item in request.items if item.selected_product_id}:
+            if not await db.produits.find_one({"id": product_id}):
+                raise HTTPException(status_code=422, detail="Produit introuvable dans les stocks : actualisez les produits")
+            if not await db.stocks.find_one({"produit_id": product_id}):
+                raise HTTPException(status_code=422, detail="Stock initial absent pour un produit existant : corrigez sa fiche avant import")
+
+        # Bloquer le mode multi-tenant tant que les collections ne sont pas isolées.
+        if editor.get("restaurant_id") or document.get("restaurant_id"):
+            raise HTTPException(status_code=503,
+                detail="Import OCR multi-établissement indisponible avant isolation des données")
+
+        # Exiger une topologie MongoDB garantissant les transactions.
+        try:
+            topology = await db.command("hello")
+        except Exception as exc:
+            logging.warning("Vérification MongoDB impossible (%s)", type(exc).__name__)
+            raise HTTPException(status_code=503, detail="Base de données indisponible pour un import atomique")
+        if not transaction_topology_supported(topology):
+            raise HTTPException(status_code=503,
+                detail="Import OCR suspendu : MongoDB replica set ou cluster requis")
+
+        # Réserver atomiquement le document : protège les requêtes simultanées.
+        # Aucun mouvement ou création de produit ne commence avant cette réservation.
+        previous_status = document.get("statut", "traite")
+        claim_created = False
+        claim_id = None
+        writing_started = False
+        import_reserved = await reserve_invoice_for_import(db.documents_ocr, request.document_id, datetime.utcnow())
+        if not import_reserved:
+            raise HTTPException(status_code=409, detail="Facture déjà intégrée, en cours d'import ou nécessitant une reprise manuelle")
+
+        # Empreinte partagée entre documents. _id est unique dans MongoDB même
+        # sans création d'index applicatif additionnel.
+        from pymongo.errors import DuplicateKeyError
+        supplier_for_claim = request.supplier_name
+        if request.supplier_id:
+            supplier_record = await db.fournisseurs.find_one({"id": request.supplier_id})
+            if supplier_record:
+                supplier_for_claim = supplier_record.get("nom") or supplier_for_claim
+        claim_id = supplier_invoice_fingerprint(supplier_for_claim, invoice_number)
+        if claim_id and document.get("restaurant_id"):
+            import hashlib
+            claim_id = hashlib.sha256((str(document["restaurant_id"]) + ":" + claim_id).encode()).hexdigest()
+        if claim_id:
+            try:
+                await db.invoice_import_claims.insert_one({
+                    "_id": claim_id, "document_id": request.document_id,
+                    "supplier": supplier_for_claim, "invoice_number": invoice_number,
+                    "created_at": datetime.utcnow()
+                })
+                claim_created = True
+            except DuplicateKeyError:
+                await db.documents_ocr.update_one(
+                    {"id": request.document_id, "statut": "import_en_cours"},
+                    {"$set": {"statut": previous_status}, "$unset": {"import_started_at": ""}}
+                )
+                raise HTTPException(status_code=409, detail="Cette référence fournisseur a déjà un import réservé ou intégré. Vérification nécessaire")
+
+        async def apply_atomic_invoice(mongo_session):
+            # 1. Gérer le fournisseur
+            supplier_id = request.supplier_id
+            if request.create_supplier and not supplier_id:
+                # Détecter la catégorie basée sur le nom et les produits
+                product_names = [item.final_name or item.ocr_name for item in request.items]
+                auto_category = detect_supplier_category(request.supplier_name, product_names)
+
+                # Utiliser la catégorie fournie ou la détection auto
+                supplier_category = request.supplier_category if request.supplier_category != 'frais' else auto_category
+
+                # Créer nouveau fournisseur
+                new_supplier = Fournisseur(
+                    nom=request.supplier_name,
+                    categorie=supplier_category  # ✅ Catégorie intelligente !
+                )
+                await db.fournisseurs.insert_one(new_supplier.dict(), session=mongo_session)
+                supplier_id = new_supplier.id
+
+                print(f"🏢 Nouveau fournisseur créé: {request.supplier_name} → Catégorie: {supplier_category}")
+
+            import_stats = {
+                "products_created": 0,
+                "stock_entries": 0,
+                "batches_created": 0
             }
-            
-            # Génération automatique numéro lot si vide
-            if not batch_data["batch_number"]:
-                date_str = datetime.utcnow().strftime('%Y%m%d')
-                batch_data["batch_number"] = f"REC-{date_str}-{str(uuid.uuid4())[:4]}"
-                
-            batch_obj = ProductBatch(**batch_data)
-            await db.product_batches.insert_one(batch_obj.dict())
-            import_stats["batches_created"] += 1
-            
-            # 4. Mouvement de Stock
-            mouvement = MouvementStock(
-                produit_id=product_id,
-                produit_nom=item.final_name or item.product_name,
-                type="entree",
-                quantite=item.final_qty,
-                reference=f"FACT-{request.document_id[:8]}",
-                fournisseur_id=supplier_id,
-                commentaire=f"Import Facture {request.document_id[:8]}"
-            )
-            await db.mouvements_stock.insert_one(mouvement.dict())
-            import_stats["stock_entries"] += 1
-            
-            # 5. Mise à jour Quantité Totale Stock
-            stock = await db.stocks.find_one({"produit_id": product_id})
-            if stock:
-                new_qty = round_stock_quantity(stock["quantite_actuelle"] + item.final_qty)
-                await db.stocks.update_one(
-                    {"produit_id": product_id},
-                    {"$set": {"quantite_actuelle": new_qty, "derniere_maj": datetime.utcnow()}}
-                )
-            # ✅ APPRENTISSAGE : On sauvegarde la correction pour la prochaine fois
-            # Si le nom OCR est différent du nom final, on apprend !
-            if item.ocr_name and product_id and supplier_id:
-                # Calcul du multiplicateur de quantité (si l'utilisateur a changé la quantité)
-                # Ex: OCR dit "1 carton", User dit "10 kg". Multiplier = 10.
-                qty_multiplier = 1.0
-                if item.ocr_qty > 0 and item.final_qty > 0:
-                    qty_multiplier = item.final_qty / item.ocr_qty
-                
-                await db.ocr_product_mappings.update_one(
-                    {
-                        "supplier_id": supplier_id,
-                        "ocr_raw_name": item.ocr_name
-                    },
-                    {
-                        "$set": {
-                            "final_product_id": product_id,
-                            "final_product_name": item.final_name,
-                            "qty_multiplier": qty_multiplier,
-                            "last_used": datetime.utcnow()
-                        }
-                    },
-                    upsert=True
-                )
 
-        # Marquer document comme traité
-        await db.documents_ocr.update_one(
-            {"id": request.document_id},
-            {"$set": {"statut": "integre", "date_traitement": datetime.utcnow()}}
-        )
-        
+            # 2. Traiter chaque ligne validée
+            for item in request.items:
+                if item.final_qty <= 0:
+                    continue
+
+                product_id = item.selected_product_id
+
+                # Création produit si nécessaire (Status 'new' ou 'matched' mais user a choisi 'Créer nouveau')
+                if not product_id:
+                    # Détection automatique de la catégorie basée sur le nom
+                    product_name = item.final_name or item.ocr_name
+                    auto_category = detect_product_category(product_name)
+
+                    new_product = Produit(
+                        nom=product_name,
+                        categorie=auto_category,  # ✅ Catégorie auto-détectée !
+                        unite=item.final_unit or "kg",
+                        reference_price=item.ocr_price,
+                        main_supplier_id=supplier_id,
+                        fournisseur_id=supplier_id,
+                        fournisseur_nom=request.supplier_name
+                    )
+                    await db.produits.insert_one(new_product.dict(), session=mongo_session)
+                    product_id = new_product.id
+                    import_stats["products_created"] += 1
+
+                    print(f"🎯 Nouveau produit créé: {product_name} → Catégorie auto: {auto_category}")
+
+                    # Créer stock initial
+                    await db.stocks.insert_one(Stock(
+                        produit_id=product_id,
+                        produit_nom=new_product.nom,
+                        quantite_actuelle=0,
+                        quantite_min=0
+                    ).dict(), session=mongo_session)
+
+                    # Créer relation prix
+                    await db.supplier_product_info.insert_one(SupplierProductInfo(
+                        supplier_id=supplier_id,
+                        product_id=product_id,
+                        price=item.ocr_price,
+                        is_preferred=True
+                    ).dict(), session=mongo_session)
+                else:
+                    # Mise à jour prix existant
+                    await db.supplier_product_info.update_one(
+                        {"supplier_id": supplier_id, "product_id": product_id},
+                        {"$set": {"price": item.ocr_price, "last_updated": datetime.utcnow()}},
+                        upsert=True, session=mongo_session
+                    )
+
+                # 3. CRÉATION DU LOT (BATCH) AVEC DLC
+                # C'est ici que la magie opère grâce à la validation utilisateur
+                batch_data = {
+                    "product_id": product_id,
+                    "quantity": item.final_qty,
+                    "quantity_brute": item.final_qty,
+                    "expiry_date": item.dlc, # DLC validée par l'utilisateur
+                    "batch_number": item.batch_number, # Lot saisi par l'utilisateur
+                    "supplier_id": supplier_id,
+                    "received_date": datetime.utcnow(),
+                    "created_at": datetime.utcnow(),
+                    "is_consumed": False
+                }
+
+                # Génération automatique numéro lot si vide
+                if not batch_data["batch_number"]:
+                    date_str = datetime.utcnow().strftime('%Y%m%d')
+                    batch_data["batch_number"] = f"REC-{date_str}-{str(uuid.uuid4())[:4]}"
+
+                batch_obj = ProductBatch(**batch_data)
+                await db.product_batches.insert_one(batch_obj.dict(), session=mongo_session)
+                import_stats["batches_created"] += 1
+
+                # 4. Mouvement de Stock
+                mouvement = MouvementStock(
+                    produit_id=product_id,
+                    produit_nom=item.final_name or item.product_name,
+                    type="entree",
+                    quantite=item.final_qty,
+                    reference=f"FACT-{request.document_id[:8]}",
+                    fournisseur_id=supplier_id,
+                    commentaire=f"Import Facture {request.document_id[:8]}"
+                )
+                await db.mouvements_stock.insert_one(mouvement.dict(), session=mongo_session)
+                import_stats["stock_entries"] += 1
+
+                # 5. Incrément atomique : deux réceptions ne doivent jamais écraser leurs stocks.
+                stock_update = await db.stocks.update_one(
+                    {"produit_id": product_id},
+                    {"$inc": {"quantite_actuelle": round_stock_quantity(item.final_qty)},
+                     "$set": {"derniere_maj": datetime.utcnow()}}, session=mongo_session
+                )
+                if stock_update.matched_count != 1:
+                    raise RuntimeError("Stock du produit introuvable pendant l'intégration")
+                # ✅ APPRENTISSAGE : On sauvegarde la correction pour la prochaine fois
+                # Si le nom OCR est différent du nom final, on apprend !
+                if item.ocr_name and product_id and supplier_id:
+                    # Calcul du multiplicateur de quantité (si l'utilisateur a changé la quantité)
+                    # Ex: OCR dit "1 carton", User dit "10 kg". Multiplier = 10.
+                    qty_multiplier = 1.0
+                    if item.ocr_qty > 0 and item.final_qty > 0:
+                        qty_multiplier = item.final_qty / item.ocr_qty
+
+                    await db.ocr_product_mappings.update_one(
+                        {
+                            "supplier_id": supplier_id,
+                            "ocr_raw_name": item.ocr_name
+                        },
+                        {
+                            "$set": {
+                                "final_product_id": product_id,
+                                "final_product_name": item.final_name,
+                                "qty_multiplier": qty_multiplier,
+                                "last_used": datetime.utcnow()
+                            }
+                        },
+                        upsert=True, session=mongo_session
+                    )
+
+            # Marquer document comme traité
+            completed_import = await db.documents_ocr.update_one(
+                {"id": request.document_id, "statut": "import_en_cours"},
+                {"$set": {"statut": "integre", "date_traitement": datetime.utcnow(),
+                          "donnees_parsees.numero_facture": invoice_number or parsed.get("numero_facture"),
+                          "donnees_parsees.date": request.invoice_date or parsed.get("date"),
+                          "donnees_parsees.fournisseur": supplier_for_claim,
+                          "imported_by": editor.get("id") if isinstance(editor, dict) else None},
+                 "$unset": {"import_started_at": ""}}, session=mongo_session
+            )
+            if completed_import.matched_count != 1:
+                raise RuntimeError("Réservation de facture perdue pendant l'intégration")
+
+            return import_stats
+
+        writing_started = True
+        import_stats = await run_stock_transaction(client, apply_atomic_invoice)
+
         return {
-            "success": True, 
+            "success": True,
             "message": "Import validé et stock mis à jour !",
             "stats": import_stats
         }
 
+    except HTTPException:
+        raise
     except Exception as e:
-        print(f"❌ Erreur confirmation import: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"Erreur confirmation: {str(e)}")
+        # Une écriture partielle est possible sur un MongoDB sans transactions.
+        # Ne jamais libérer automatiquement un document après tentative d'écriture.
+        if locals().get("import_reserved"):
+            if locals().get("writing_started"):
+                try:
+                    await db.documents_ocr.update_one(
+                        {"id": request.document_id, "statut": "import_en_cours"},
+                        {"$set": {"statut": "import_incomplet", "import_error_at": datetime.utcnow()}}
+                    )
+                except Exception:
+                    logging.exception("Impossible de signaler un import potentiellement partiel")
+                raise HTTPException(status_code=409,
+                    detail="Import interrompu : état du stock incertain. Ne réessayez pas sans contrôle manuel des mouvements et des lots.")
+            try:
+                await db.documents_ocr.update_one(
+                    {"id": request.document_id, "statut": "import_en_cours"},
+                    {"$set": {"statut": previous_status}, "$unset": {"import_started_at": ""}}
+                )
+                if claim_created and claim_id:
+                    await db.invoice_import_claims.delete_one({"_id": claim_id, "document_id": request.document_id})
+            except Exception:
+                logging.exception("Échec de libération de la réservation d'import")
+        logging.exception("Erreur confirmation facture")
+        raise HTTPException(status_code=500, detail="Import impossible ; vérifiez l'état du document avant une nouvelle tentative")
 
 
 async def process_facture_to_real_data(document_id: str):
@@ -9416,7 +9663,7 @@ async def process_facture_to_real_data(document_id: str):
         raise HTTPException(status_code=500, detail=f"Erreur lors du traitement de la facture: {str(e)}")
 
 
-@api_router.post("/ocr/process-mercuriale/{document_id}", response_model=MercurialeProcessingResult)
+@api_router.post("/ocr/process-mercuriale/{document_id}", response_model=MercurialeProcessingResult, dependencies=[Depends(require_invoice_editor)])
 async def process_mercuriale_to_real_data(document_id: str):
     """
     Process a supplier price list (mercuriale) and integrate it into real system data:
@@ -9583,11 +9830,15 @@ async def startup_db_client():
         # Vérifier si la base est vide (pas d'utilisateurs)
         user_count = await db.users.count_documents({})
         if user_count == 0:
-            print("🚀 Base de données vide détectée au démarrage. Initialisation des données de démonstration...")
-            await init_demo_missions_and_users()
-            print("✅ Données de démonstration initialisées automatiquement.")
+            # Jamais de comptes de démonstration à mots de passe prédictibles
+            # dans une base métier. Le seed est strictement opt-in et isolé.
+            if (os.getenv("RESTOP_ENABLE_DEMO_SEED") == "1" and "demo" in db_name.lower()):
+                await init_demo_missions_and_users()
+                logging.warning("Jeu de données de démonstration initialisé sur base dédiée")
+            else:
+                logging.warning("Aucun compte configuré : bootstrap administrateur sécurisé requis")
         else:
-            print(f"✅ Base de données déjà initialisée ({user_count} utilisateurs).")
+            logging.info("Base utilisateurs déjà initialisée")
     except Exception as e:
         print(f"⚠️ Erreur lors de l'initialisation automatique: {str(e)}")
 

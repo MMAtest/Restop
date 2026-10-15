@@ -1,3 +1,4 @@
+import ModuleTabs from './restop/ModuleTabs';
 import React from "react";
 import "../App.css";
 import axios from "axios";
@@ -28,95 +29,27 @@ const ProductionTab = (props) => {
 
   // Placeholder for props destructuring
   const NOW = Date.now();
-  const { activeTab, activeProductionTab, setActiveProductionTab, preparations, currentUser, fetchArchives, setShowProduitModal, showCategoriesView, setShowCategoriesView, fetchProduitsParCategories, setProduitsParCategories, categoriesExpanded, setCategoriesExpanded, canEditItems, handleEdit, canArchiveItems, archiveItem, handleDelete, selectedCategoryFilter, filteredProduits, filteredRecettes, produits, fournisseurs, produitsParCategories, setShowFournisseurModal, showFournisseursCategoriesView, setShowFournisseursCategoriesView, restoreItem, deleteArchivePermanently, fetchHistoriqueProduction, historiqueProduction, showRecetteModal, setShowRecetteModal, handleExportRecettes, showRecettesCategoriesView, setShowRecettesCategoriesView, filterRecettesByCategory, categoriesProduction, loading, handleCalculerCouts, showPreparationModal, setShowPreparationModal, handleAutoGeneratePreparations, showPreparationsCategoriesView, setShowPreparationsCategoriesView, preparationForm, handlePreparationSubmit, resetPreparationForm, calculatePerte, calculatePortions, formesDecoupe, stocksPreparations, mouvementsPreparations, showMovementPreparationModal, setShowMovementPreparationModal, movementPreparationForm, preparationsParCategories, categoriesPreparationsExpanded, handleMovementPreparation, archivedItems, selectedArchiveType, setSelectedArchiveType, filterProduitsByCategory, canCreateItems, recettes, setEditingItem, setPreparationForm, setMovementPreparationForm, setCategoriesPreparationsExpanded } = props;
+  const { activeTab, activeProductionTab, setActiveProductionTab, preparations, currentUser, fetchArchives, setShowProduitModal, showCategoriesView, setShowCategoriesView, fetchProduitsParCategories, setProduitsParCategories, categoriesExpanded, setCategoriesExpanded, canEditItems, handleEdit, canArchiveItems, archiveItem, handleDelete, selectedCategoryFilter, filteredProduits, filteredRecettes, produits, fournisseurs, produitsParCategories, setShowFournisseurModal, showFournisseursCategoriesView, setShowFournisseursCategoriesView, restoreItem, deleteArchivePermanently, fetchHistoriqueProduction, historiqueProduction, showRecetteModal, setShowRecetteModal, handleExportRecettes, showRecettesCategoriesView, setShowRecettesCategoriesView, filterRecettesByCategory, categoriesProduction, loading, handleCalculerCouts, showPreparationModal, setShowPreparationModal, handleAutoGeneratePreparations, showPreparationsCategoriesView, setShowPreparationsCategoriesView, preparationForm, handlePreparationSubmit, resetPreparationForm, calculatePerte, calculatePortions, formesDecoupe, stocksPreparations, mouvementsPreparations, showMovementPreparationModal, setShowMovementPreparationModal, movementPreparationForm, preparationsParCategories, categoriesPreparationsExpanded, handleMovementPreparation, archivedItems, selectedArchiveType, setSelectedArchiveType, filterProduitsByCategory, canCreateItems, recettes, setEditingItem, setPreparationForm, setMovementPreparationForm, setCategoriesPreparationsExpanded, askAction, showActionNotice } = props;
 
   return (
     <>
-              <div id="production" className={`wireframe-section ${activeTab === "production" ? "active" : ""}`}>
+              <div id="production" className={`wireframe-section rt-production-workspace ${activeTab === "production" ? "active" : ""}`}>
           <div className="section-card">
             <div className="section-title">Production & Historique</div>
             
-            {/* Sous-navigation Production */}
-            <div className="sub-nav-tabs">
-              <button 
-                className="button" 
-                onClick={() => setActiveProductionTab('produits')}
-                style={{
-                  background: activeProductionTab === 'produits' ? 'var(--color-primary-blue)' : 'var(--color-background-card-light)',
-                  color: activeProductionTab === 'produits' ? 'white' : 'var(--color-text-secondary)'
-                }}
-              >
-                Produits
-              </button>
-              <button 
-                className="button" 
-                onClick={() => setActiveProductionTab('fournisseurs')}
-                style={{
-                  background: activeProductionTab === 'fournisseurs' ? 'var(--color-primary-blue)' : 'var(--color-background-card-light)',
-                  color: activeProductionTab === 'fournisseurs' ? 'white' : 'var(--color-text-secondary)'
-                }}
-              >
-                Fournisseurs
-              </button>
-              <button 
-                className="button" 
-                onClick={() => setActiveProductionTab('preparations')}
-                style={{
-                  background: activeProductionTab === 'preparations' ? 'var(--color-primary-blue)' : 'var(--color-background-card-light)',
-                  color: activeProductionTab === 'preparations' ? 'white' : 'var(--color-text-secondary)'
-                }}
-              >
-                Préparations ({preparations.length})
-              </button>
-              <button 
-                className="button" 
-                onClick={() => setActiveProductionTab('recettes')}
-                style={{
-                  background: activeProductionTab === 'recettes' ? 'var(--color-primary-blue)' : 'var(--color-background-card-light)',
-                  color: activeProductionTab === 'recettes' ? 'white' : 'var(--color-text-secondary)'
-                }}
-              >
-                Productions
-              </button>
-              {/* Onglets réservés au super admin */}
-              {currentUser?.role === 'super_admin' && (
-                <>
-                  <button 
-                    className="button" 
-                    onClick={() => setActiveProductionTab('datagrids')}
-                    style={{
-                      background: activeProductionTab === 'datagrids' ? 'var(--color-primary-blue)' : 'var(--color-background-card-light)',
-                      color: activeProductionTab === 'datagrids' ? 'white' : 'var(--color-text-secondary)'
-                    }}
-                  >
-                    Grilles de données
-                  </button>
-                  <button 
-                    className="button" 
-                    onClick={() => setActiveProductionTab('historique')}
-                    style={{
-                      background: activeProductionTab === 'historique' ? 'var(--color-primary-blue)' : 'var(--color-background-card-light)',
-                      color: activeProductionTab === 'historique' ? 'white' : 'var(--color-text-secondary)'
-                    }}
-                  >
-                    Historique
-                  </button>
-                </>
-              )}
-              <button 
-                className="button" 
-                onClick={() => {
-                  setActiveProductionTab('archives');
-                  fetchArchives();
-                }}
-                style={{
-                  background: activeProductionTab === 'archives' ? 'var(--color-primary-blue)' : 'var(--color-background-card-light)',
-                  color: activeProductionTab === 'archives' ? 'white' : 'var(--color-text-secondary)'
-                }}
-              >
-                Archives
-              </button>
-            </div>
+            {/* Navigation unifiée : chaque onglet affiche son écran métier et conserve ses effets de chargement. */}
+            <ModuleTabs label="Rubriques de production" value={activeProductionTab} items={[
+              {id:'produits',label:'Produits'},
+              {id:'fournisseurs',label:'Fournisseurs'},
+              {id:'preparations',label:`Préparations (${preparations.length})`},
+              {id:'recettes',label:'Productions'},
+              {id:'datagrids',label:'Grilles',hidden:currentUser?.role!=='super_admin'},
+              {id:'historique',label:'Historique',hidden:currentUser?.role!=='super_admin'},
+              {id:'archives',label:'Archives'}
+            ]} onChange={id=>{
+              setActiveProductionTab(id);
+              if(id==='archives')fetchArchives();
+            }}/>
 
             {/* ONGLET PRODUITS */}
             {activeProductionTab === 'produits' && (
@@ -153,7 +86,8 @@ const ProductionTab = (props) => {
                     {/* Barre de recherche Produits */}
                     <div style={{marginBottom: '10px'}}>
                       <input
-                        type="text"
+                        aria-label="Rechercher un produit"
+                        type="search"
                         placeholder="Rechercher un produit..."
                         value={productSearch}
                         onChange={(e) => setProductSearch(e.target.value)}
@@ -320,16 +254,17 @@ const ProductionTab = (props) => {
                                     <button 
                                       className="button small warning"
                                     onClick={async () => {
-                                      const reason = window.prompt(`Raison de l'archivage de "${produit.nom}" (optionnel):`);
+                                      const decision = await askAction({title:`Archiver ${produit.nom} ?`,description:'Cet élément sera retiré des listes actives. Il pourra être restauré depuis les archives.',askReason:true,confirmLabel:'Archiver'});
+                                      const reason = decision.confirmed ? (decision.reason || '') : null;
                                       if (reason !== null) {
                                         const success = await archiveItem(produit.id, 'produit', reason || null);
                                         if (success) {
-                                          alert(`${produit.nom} archivé avec succès !`);
+                                          showActionNotice(`${produit.nom} archivé avec succès !`);
                                           // Recharger les données des catégories
                                           const data = await fetchProduitsParCategories();
                                           setProduitsParCategories(data);
                                         } else {
-                                          alert("Erreur lors de l'archivage");
+                                          showActionNotice("Erreur lors de l'archivage", 'error');
                                         }
                                       }
                                     }}
@@ -428,13 +363,14 @@ const ProductionTab = (props) => {
                           <button 
                             className="button small warning" 
                             onClick={async () => {
-                              const reason = window.prompt(`Raison de l'archivage de "${produit.nom}" (optionnel):`);
+                              const decision = await askAction({title:`Archiver ${produit.nom} ?`,description:'Cet élément sera retiré des listes actives. Il pourra être restauré depuis les archives.',askReason:true,confirmLabel:'Archiver'});
+                                      const reason = decision.confirmed ? (decision.reason || '') : null;
                               if (reason !== null) {
                                 const success = await archiveItem(produit.id, 'produit', reason || null);
                                 if (success) {
-                                  alert(`${produit.nom} archivé avec succès !`);
+                                  showActionNotice(`${produit.nom} archivé avec succès !`);
                                 } else {
-                                  alert("Erreur lors de l'archivage");
+                                  showActionNotice("Erreur lors de l'archivage", 'error');
                                 }
                               }
                             }}
@@ -492,7 +428,7 @@ const ProductionTab = (props) => {
                       
                       return Object.entries(fournisseursByCategorie).map(([categorie, fourns]) => (
                         <div key={categorie} style={{border: '1px solid var(--color-border)', borderRadius: '8px', overflow: 'hidden'}}>
-                          <div style={{padding: '16px', background: '#4CAF50', color: 'white', fontWeight: 'bold'}}>
+                          <div style={{padding: '16px', background: '#681b32', color: 'white', fontWeight: 'bold'}}>
                             <div style={{display: 'flex', alignItems: 'center', gap: '12px'}}>
                               <span style={{fontSize: '20px'}}>{getIcon(categorie)}</span>
                               <span>{categorie} ({fourns.length})</span>
@@ -522,8 +458,9 @@ const ProductionTab = (props) => {
                   {/* Barre de recherche Fournisseurs */}
                   <div style={{marginBottom: '15px'}}>
                     <input
-                      type="text"
-                      placeholder="Rechercher un fournisseur..."
+                      aria-label="Rechercher un fournisseur"
+                        type="search"
+                        placeholder="Rechercher un fournisseur..."
                       value={supplierSearch}
                       onChange={(e) => setSupplierSearch(e.target.value)}
                       className="form-input"
@@ -559,13 +496,14 @@ const ProductionTab = (props) => {
                       <button 
                         className="button small warning" 
                         onClick={async () => {
-                          const reason = window.prompt(`Raison de l'archivage de "${fournisseur.nom}" (optionnel):`);
+                          const decision = await askAction({title:`Archiver ${fournisseur.nom} ?`,description:'Cet élément sera retiré des listes actives. Il pourra être restauré depuis les archives.',askReason:true,confirmLabel:'Archiver'});
+                                      const reason = decision.confirmed ? (decision.reason || '') : null;
                           if (reason !== null) { // null = annulé, empty string = OK sans raison
                             const success = await archiveItem(fournisseur.id, 'fournisseur', reason || null);
                             if (success) {
-                              alert(`${fournisseur.nom} archivé avec succès !`);
+                              showActionNotice(`${fournisseur.nom} archivé avec succès !`);
                             } else {
-                              alert("Erreur lors de l'archivage");
+                              showActionNotice("Erreur lors de l'archivage", 'error');
                             }
                           }
                         }}
@@ -591,9 +529,9 @@ const ProductionTab = (props) => {
                     className="button secondary" 
                     onClick={handleAutoGeneratePreparations}
                     disabled={loading}
-                    style={{backgroundColor: '#10b981', color: 'white', border: 'none'}}
+                    aria-describedby="rt-auto-preparations-warning"
                   >
-                    🤖 {loading ? 'Génération...' : 'Auto-générer'}
+                    {loading ? 'Génération...' : preparations.length ? 'Remplacer les préparations' : 'Générer les préparations'}
                   </button>
                   <button 
                     className={`button ${showPreparationsCategoriesView ? 'secondary' : ''}`}
@@ -602,7 +540,10 @@ const ProductionTab = (props) => {
                   >
                     {showPreparationsCategoriesView ? 'Vue Liste' : 'Vue Catégories'}
                   </button>
-                  <div style={{fontSize: '14px', alignSelf: 'center', color: 'var(--color-text-secondary)'}}>
+                  <div id="rt-auto-preparations-warning" className="rt-destructive-action-warning" role="note">
+                    {preparations.length ? `Attention : la génération peut supprimer et remplacer vos ${preparations.length} préparation(s) actuelles. Confirmation obligatoire avant l’opération.` : 'La génération automatique crée des préparations à partir de vos produits. Vérifiez le résultat avant utilisation.'}
+                  </div>
+                  <div style={{fontSize: '14px', alignSelf: 'center', color: 'var(--color-text-secondary'}}>
                     L&apos;auto-génération crée 2-3 préparations par produit
                   </div>
                 </div>
@@ -635,7 +576,7 @@ const ProductionTab = (props) => {
                       
                       return Object.entries(prepsByForme).map(([forme, preps]) => (
                         <div key={forme} style={{border: '1px solid var(--color-border)', borderRadius: '8px', overflow: 'hidden'}}>
-                          <div style={{padding: '16px', background: '#4CAF50', color: 'white', fontWeight: 'bold', cursor: 'pointer'}}>
+                          <div style={{padding: '16px', background: '#681b32', color: 'white', fontWeight: 'bold', cursor: 'pointer'}}>
                             <div style={{display: 'flex', alignItems: 'center', gap: '12px'}}>
                               <span style={{fontSize: '20px'}}>🔪</span>
                               <span>{forme} ({preps.length})</span>
@@ -669,7 +610,8 @@ const ProductionTab = (props) => {
                     {/* Barre de recherche Préparations */}
                     <div style={{marginBottom: '10px'}}>
                       <input
-                        type="text"
+                        type="search"
+                        aria-label="Rechercher une préparation"
                         placeholder="Rechercher une préparation..."
                         value={preparationSearch}
                         onChange={(e) => setPreparationSearch(e.target.value)}
@@ -775,7 +717,8 @@ const ProductionTab = (props) => {
                     {/* Barre de recherche Recettes */}
                     <div style={{marginBottom: '10px'}}>
                       <input
-                        type="text"
+                        type="search"
+                        aria-label="Rechercher une production"
                         placeholder="Rechercher une production..."
                         value={recipeSearch}
                         onChange={(e) => setRecipeSearch(e.target.value)}
@@ -867,7 +810,7 @@ const ProductionTab = (props) => {
                       
                       return Object.entries(recettesByCategorie).map(([categorie, recs]) => (
                         <div key={categorie} style={{border: '1px solid var(--color-border)', borderRadius: '8px', overflow: 'hidden'}}>
-                          <div style={{padding: '16px', background: '#4CAF50', color: 'white', fontWeight: 'bold'}}>
+                          <div style={{padding: '16px', background: '#681b32', color: 'white', fontWeight: 'bold'}}>
                             <div style={{display: 'flex', alignItems: 'center', gap: '12px'}}>
                               <span style={{fontSize: '20px'}}>{getIcon(categorie)}</span>
                               <span>{categorie} ({recs.length})</span>
@@ -955,13 +898,14 @@ const ProductionTab = (props) => {
                           <button 
                             className="button small warning" 
                             onClick={async () => {
-                              const reason = window.prompt(`Raison de l'archivage de "${recette.nom}" (optionnel):`);
+                              const decision = await askAction({title:`Archiver ${recette.nom} ?`,description:'Cet élément sera retiré des listes actives. Il pourra être restauré depuis les archives.',askReason:true,confirmLabel:'Archiver'});
+                                      const reason = decision.confirmed ? (decision.reason || '') : null;
                               if (reason !== null) {
                                 const success = await archiveItem(recette.id, 'production', reason || null);
                                 if (success) {
-                                  alert(`${recette.nom} archivé avec succès !`);
+                                  showActionNotice(`${recette.nom} archivé avec succès !`);
                                 } else {
-                                  alert("Erreur lors de l'archivage");
+                                  showActionNotice("Erreur lors de l'archivage", 'error');
                                 }
                               }
                             }}
@@ -1064,12 +1008,12 @@ const ProductionTab = (props) => {
                             <button 
                               className="button small success"
                               onClick={async () => {
-                                if (window.confirm(`Restaurer ${archive.original_data.nom} ?`)) {
+                                if ((await askAction({title:`Restaurer ${archive.original_data.nom} ?`,description:'Cet élément sera replacé dans les listes actives.',confirmLabel:'Restaurer'})).confirmed) {
                                   const success = await restoreItem(archive.id);
                                   if (success) {
-                                    alert(`${archive.original_data.nom} restauré avec succès !`);
+                                    showActionNotice(`${archive.original_data.nom} restauré avec succès !`);
                                   } else {
-                                    alert("Erreur lors de la restauration");
+                                    showActionNotice("Erreur lors de la restauration", 'error');
                                   }
                                 }
                               }}
@@ -1079,12 +1023,12 @@ const ProductionTab = (props) => {
                             <button 
                               className="button small danger"
                               onClick={async () => {
-                                if (window.confirm(`Supprimer définitivement ${archive.original_data.nom} ?\n\nCette action est irréversible !`)) {
+                                if ((await askAction({title:`Supprimer définitivement ${archive.original_data.nom} ?`,description:'Cette suppression est irréversible, y compris depuis les archives. Vérifiez les dépendances existantes avant de continuer.',dangerous:true,requireText:'SUPPRIMER',confirmLabel:'Supprimer définitivement'})).confirmed) {
                                   const success = await deleteArchivePermanently(archive.id);
                                   if (success) {
-                                    alert(`${archive.original_data.nom} supprimé définitivement`);
+                                    showActionNotice(`${archive.original_data.nom} supprimé définitivement`);
                                   } else {
-                                    alert("Erreur lors de la suppression");
+                                    showActionNotice("Erreur lors de la suppression", 'error');
                                   }
                                 }
                               }}

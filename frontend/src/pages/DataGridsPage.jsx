@@ -1,3 +1,5 @@
+import { API } from '../utils/api';
+import ActionNotice from '../components/restop/ActionNotice';
 import { asList, recipe } from '../utils/contracts';
 import React, { useState, useEffect } from 'react';
 import ProductsDataGrid from '../components/ProductsDataGrid';
@@ -14,9 +16,9 @@ const DataGridsPage = () => {
   const [suppliers, setSuppliers] = useState([]);
   const [recipes, setRecipes] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [notice, setNotice] = useState(null);
+  const notify = (message, kind = 'info') => setNotice({ message:String(message), kind });
 
-  const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
-  const API = `${BACKEND_URL}/api`;
 
   // Charger les données au montage du composant
   useEffect(() => {
@@ -78,7 +80,7 @@ const DataGridsPage = () => {
   };
 
   const handleEdit = async (item) => {
-    alert('Pour modifier cet élément, ouvrez le module Production puis son bouton Modifier.');
+    notify('Pour modifier cet élément, ouvrez le module Production puis son bouton Modifier.');
     // Ici vous pouvez ouvrir un modal d'édition
     // Puis rafraîchir les données après modification
     await fetchAllData();
@@ -94,11 +96,11 @@ const DataGridsPage = () => {
         } else if (type === 'recipe') {
           await axios.delete(`${API}/recettes/${item.id}`);
         }
-        alert(`${item.nom} supprimé avec succès`);
+        notify(`${item.nom} supprimé avec succès`);
         await fetchAllData(); // Rafraîchir les données
       } catch (error) {
         console.error('Erreur lors de la suppression:', error);
-        alert('Erreur lors de la suppression');
+        notify('Erreur lors de la suppression', 'error');
       }
     }
   };
@@ -107,17 +109,18 @@ const DataGridsPage = () => {
     try {
       const response = await axios.get(`${API}/recettes/calculer-couts`);
       if (response.data.success) {
-        alert(`Coûts calculés avec succès !\n\nRésumé:\n- ${response.data.recettes_calculees} recettes mises à jour\n- Coût moyen: ${response.data.cout_moyen}€\n- Marge moyenne: ${response.data.marge_moyenne}%`);
+        notify(`Coûts calculés avec succès !\n\nRésumé:\n- ${response.data.recettes_calculees} recettes mises à jour\n- Coût moyen: ${response.data.cout_moyen}€\n- Marge moyenne: ${response.data.marge_moyenne}%`);
         await fetchRecipes(); // Rafraîchir les recettes
       }
     } catch (error) {
       console.error('Erreur lors du calcul des coûts:', error);
-      alert('Erreur lors du calcul des coûts');
+      notify('Erreur lors du calcul des coûts', 'error');
     }
   };
 
   return (
-    <div className="p-6 bg-gradient-to-br from-gray-100 to-gray-200 min-h-screen">
+    <div className="rt-module-legacy p-6 bg-gradient-to-br from-gray-100 to-gray-200 min-h-screen">
+      <ActionNotice notice={notice} onDismiss={() => setNotice(null)} />
       {/* Header */}
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-800 mb-2">

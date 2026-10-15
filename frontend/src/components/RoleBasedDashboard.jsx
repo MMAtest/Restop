@@ -191,7 +191,7 @@ const RoleBasedDashboard = ({ user, sessionId, onNavigateToPage, onCreateMission
       {(user.role === 'super_admin' && activeDashboardTab === 'ventes') || 
        (user.role !== 'super_admin') ? (
         <div style={{
-          background: 'linear-gradient(135deg, #059669 0%, #10b981 100%)',
+          background: 'linear-gradient(135deg, #681b32 0%, #92263d 100%)',
           borderRadius: '12px',
           padding: '20px',
           marginBottom: '20px',

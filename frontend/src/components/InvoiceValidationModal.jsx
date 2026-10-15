@@ -193,7 +193,7 @@ const MobileItemCard = ({ item, index, handleItemChange, handleDeleteItem, produ
   </div>
 );
 
-const InvoiceValidationModal = ({ documentId, onClose, onSuccess, onRefresh, produitsList = [], fournisseursList = [] }) => {
+const InvoiceValidationModal = ({ documentId, onClose, onSuccess, onRefresh, produitsList = [], fournisseursList = [], previewData = null }) => {
   const [loading, setLoading] = useState(true);
   const [analysis, setAnalysis] = useState(null);
   const [error, setError] = useState(null);
@@ -209,6 +209,12 @@ const InvoiceValidationModal = ({ documentId, onClose, onSuccess, onRefresh, pro
   const [newSupplierCategory, setNewSupplierCategory] = useState('frais');
   const [editableDate, setEditableDate] = useState('');
   const [editableNumero, setEditableNumero] = useState('');
+  const [wizardStep, setWizardStep] = useState(0);
+  const [wizardError, setWizardError] = useState('');
+  const [wizardNotice, setWizardNotice] = useState('');
+  const [acknowledged, setAcknowledged] = useState(false);
+  const [successStats, setSuccessStats] = useState(null);
+
 
   // Charger l'analyse au montage
   useEffect(() => {
@@ -217,9 +223,11 @@ const InvoiceValidationModal = ({ documentId, onClose, onSuccess, onRefresh, pro
       setShowProgressBar(true);
 
       try {
-        const response = await axios.post(`${API}/ocr/analyze-facture/${documentId}`);
+        const response = previewData ? { data: previewData } : await axios.post(`${API}/ocr/analyze-facture/${documentId}`);
         const data = response.data;
         setAnalysis(data);
+        setWizardNotice('Analyse reçue : commencez par vérifier le fournisseur et la référence de facture.');
+
         
         // Logique Fournisseur
         if (data.supplier_id) {
@@ -283,10 +291,16 @@ const InvoiceValidationModal = ({ documentId, onClose, onSuccess, onRefresh, pro
       }
     };
     fetchAnalysis();
-  }, [documentId]);
+  }, [documentId, previewData]);
 
   const handleReanalyzeWithAI = async () => {
+    if (previewData) {
+      setWizardNotice('La relecture IA est désactivée dans la démonstration. Aucun document n’est envoyé à un service externe.');
+      return;
+    }
     setLoading(true);
+    setWizardError('');
+    setWizardNotice('Nouvelle lecture OCR en cours. Vérifiez les résultats avant de poursuivre.');
     setShowProgressBar(true);
     setShowAiSuggestion(false);
     
@@ -347,13 +361,13 @@ const InvoiceValidationModal = ({ documentId, onClose, onSuccess, onRefresh, pro
       
       // Afficher un message de succès
       const matchedCount = initializedItems.filter(i => i.status === 'matched').length;
-      alert(`Analyse IA terminée !\n\n✅ ${matchedCount}/${initializedItems.length} produits automatiquement reconnus\nCoût estimé : ~0.003€`);
+      setWizardNotice(`Nouvelle lecture terminée : ${matchedCount} produit(s) rapproché(s) sur ${initializedItems.length}. Vérifiez chaque donnée avant import.`);
       
     } catch (err) {
       console.error("Erreur Joker IA:", err);
       setShowProgressBar(false);
       setLoading(false);
-      alert("Erreur lors de l'analyse IA : " + (err.response?.data?.detail || err.message));
+      setWizardError("Nouvelle lecture impossible : " + (err.response?.data?.detail || err.message));
     }
   };
 
@@ -380,6 +394,8 @@ const InvoiceValidationModal = ({ documentId, onClose, onSuccess, onRefresh, pro
         }
     }
     setItems(updatedItems);
+    setAcknowledged(false);
+    setWizardError('');
   };
 
   const handleDeleteItem = (index) => {
@@ -400,7 +416,54 @@ const InvoiceValidationModal = ({ documentId, onClose, onSuccess, onRefresh, pro
     }]);
   };
 
+  const lineWarnings = (currentItems = items) => currentItems.filter(item =>
+    Number(item.ocr_total) > 0 && Number(item.ocr_qty) > 0 &&
+    Math.abs(Number(item.ocr_total) - Number(item.ocr_qty) * Number(item.final_price)) > 0.05
+  );
+  const uncertainItems = items.filter(item => !item.selected_product_id || (item.confidence > 0 && item.confidence < 0.8));
+  const auditWarnings = Array.isArray(analysis?.audit_warnings) ? analysis.audit_warnings : [];
+  const hasWarnings = Boolean(uncertainItems.length || lineWarnings().length || auditWarnings.length);
+  const invoiceTotal = items.reduce((sum, item) => sum + Number(item.final_qty || 0) * Number(item.final_price || 0), 0);
+
+  const nextStep = () => {
+    setWizardError('');
+    if (wizardStep === 0) {
+      if (!selectedSupplierId || (selectedSupplierId === 'new' && !newSupplierName.trim())) {
+        setWizardError('Choisissez un fournisseur ou indiquez son nom pour continuer.');
+        return;
+      }
+      setWizardStep(1);
+      setWizardNotice('Vérifiez les produits : quantité, unité, prix, rapprochement et DLC. Rien n’est encore ajouté au stock.');
+      return;
+    }
+    if (wizardStep === 1) {
+      if (!items.length) {
+        setWizardError('Ajoutez au moins un produit à la facture pour continuer.');
+        return;
+      }
+      const invalidIndex = items.findIndex(item =>
+        !Number.isFinite(Number(item.final_qty)) || Number(item.final_qty) <= 0 ||
+        !Number.isFinite(Number(item.final_price)) || Number(item.final_price) < 0 ||
+        (!item.selected_product_id && !String(item.final_name || '').trim())
+      );
+      if (invalidIndex !== -1) {
+        setWizardError(`Ligne ${invalidIndex + 1} : renseignez un produit, une quantité positive et un prix valide.`);
+        return;
+      }
+      setAcknowledged(false);
+      setWizardStep(2);
+      setWizardNotice('Dernière vérification : contrôlez le récapitulatif puis confirmez l’import. Aucun stock n’a encore changé.');
+    }
+  };
+
   const handleValidate = async () => {
+    setWizardError('');
+    if (wizardStep !== 2) return;
+    if (hasWarnings && !acknowledged) {
+      setWizardError('Cochez la confirmation des points à contrôler avant d’intégrer la facture.');
+      return;
+    }
+    setWizardNotice('Import en cours : création des lots et mouvements de stock. Ne fermez pas cette fenêtre.');
     setLoading(true);
     try {
       let finalSupplierId = selectedSupplierId;
@@ -421,6 +484,9 @@ const InvoiceValidationModal = ({ documentId, onClose, onSuccess, onRefresh, pro
         supplier_name: finalSupplierName,
         create_supplier: createSupplier,
         supplier_category: newSupplierCategory,
+        invoice_number: editableNumero.trim(),
+        invoice_date: editableDate,
+        acknowledge_audit_warnings: auditWarnings.length > 0 && acknowledged,
         items: items.map(item => ({
             ...item,
             ocr_price: item.final_price,
@@ -429,23 +495,27 @@ const InvoiceValidationModal = ({ documentId, onClose, onSuccess, onRefresh, pro
         }))
       };
       
-      const response = await axios.post(`${API}/ocr/confirm-import`, payload);
-      alert(`Import réussi !\n${response.data.stats.stock_entries} entrées de stock créées.`);
-      onSuccess();
-      onClose();
+      const response = previewData
+        ? {data: {stats: {stock_entries:items.length,batches_created:items.length}}}
+        : await axios.post(`${API}/ocr/confirm-import`, payload);
+      setSuccessStats(response.data.stats || {stock_entries: items.length});
+      setWizardStep(3);
+      setWizardNotice(previewData ? 'Simulation réussie. Aucun stock ni document réel n’a été modifié.' : 'Import terminé : la facture a été intégrée au stock.');
+      setLoading(false);
+      if (onSuccess) onSuccess();
     } catch (err) {
-      alert("Erreur: " + (err.response?.data?.detail || err.message));
+      setWizardError("Import non confirmé : " + (err.response?.data?.detail || err.message) + ". Vérifiez l’état du document avant toute nouvelle tentative.");
+      setWizardNotice('L’import ne peut pas être considéré comme réussi.');
       setLoading(false);
     }
   };
 
-  if (loading) return (
-    <div className="modal-overlay" style={{zIndex: 99999}}>
-      <div className="modal-content" style={{padding: '40px', textAlign: 'center', maxWidth: '450px'}}>
-        <ProgressBar 
-          duration={20000}
-          message={showProgressBar ? "Analyse intelligente des produits..." : "Chargement..."}
-        />
+  if (loading && !analysis) return (
+    <div className="modal-overlay" role="dialog" aria-modal="true" aria-label="Analyse de la facture en cours" style={{zIndex: 99999}}>
+      <div className="modal-content rt-wizard-loading" role="status">
+        <div className="rt-wizard-spinner" aria-hidden="true" />
+        <strong>Lecture de la facture en cours</strong>
+        <p>Restop identifie les fournisseurs et les lignes. Vous pourrez tout vérifier avant l’entrée en stock.</p>
       </div>
     </div>
   );
@@ -461,7 +531,7 @@ const InvoiceValidationModal = ({ documentId, onClose, onSuccess, onRefresh, pro
   );
 
   return (
-    <div className="modal-overlay" style={{
+    <div className="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="rt-wizard-title" style={{
       padding: isMobile ? '0' : '20px'
     }}>
       <div className="modal-content large" style={{
@@ -476,12 +546,29 @@ const InvoiceValidationModal = ({ documentId, onClose, onSuccess, onRefresh, pro
         maxHeight: isMobile ? '100vh' : '95vh'
       }}>
         
-        {/* HEADER FIXE */}
-        <div style={{padding: isMobile ? '12px' : '20px', borderBottom: '1px solid #eee', background: '#fff'}}>
-          <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px'}}>
-            <h3 style={{margin: 0, fontSize: isMobile ? '16px' : '20px'}}>Validation Facture</h3>
-            <button onClick={onClose} style={{background: 'none', border: 'none', fontSize: '24px', cursor: 'pointer'}}>×</button>
-          </div>
+        {previewData && <div className="rt-wizard-demo-banner" role="status">Mode démonstration · Données fictives · Aucune écriture ni coût IA</div>}
+        <header className="rt-wizard-header">
+          <div className="rt-wizard-title"><div><p className="rt-wizard-eyebrow">Restop · Assistant de facture</p><h2 id="rt-wizard-title">Valider une facture fournisseur</h2></div>
+            <button type="button" aria-label="Fermer le guide de validation" onClick={onClose} disabled={loading}>×</button></div>
+          <ol className="rt-wizard-steps" aria-label="Étapes de validation">
+            {['Fournisseur', 'Produits', 'Récapitulatif'].map((label, index) =>
+              <li key={label} aria-current={wizardStep === index ? 'step' : undefined} className={wizardStep === index ? 'is-current' : wizardStep > index ? 'is-complete' : ''}>
+                <span>{wizardStep > index ? '✓' : index + 1}</span>{label}
+              </li>)}
+          </ol>
+          <p className="rt-wizard-explanation">{[
+            'Étape 1/3 — Confirmez le fournisseur, la date et le numéro de facture. Cela aide à repérer les doublons.',
+            'Étape 2/3 — Corrigez les quantités, prix, unités et correspondances produits. Une ligne incorrecte peut fausser le stock.',
+            'Étape 3/3 — Vérifiez les écarts et le résumé avant toute écriture. Vous gardez la décision finale.',
+            'Terminé — La facture a été enregistrée. Consultez le détail du stock pour vérifier les entrées.'
+          ][wizardStep]}</p>
+        </header>
+        {wizardNotice && <div className="rt-wizard-notice" role="status">{wizardNotice}</div>}
+        {wizardError && <div className="rt-wizard-error" role="alert">{wizardError}</div>}
+
+        {wizardStep === 0 && <div className="rt-wizard-step-panel">
+        {/* Identification et références du document */}
+        <div className="rt-wizard-supplier-fields" style={{padding: isMobile ? '12px' : '20px', borderBottom: '1px solid #eee', background: '#fff'}}>
           
           <div style={{
             display: 'flex', 
@@ -524,8 +611,8 @@ const InvoiceValidationModal = ({ documentId, onClose, onSuccess, onRefresh, pro
                   />
                   <div style={{
                     fontSize: '11px',
-                    color: '#059669',
-                    fontStyle: 'italic',
+                    color: '#681b32',
+                    fontStyle: 'normal',
                     width: isMobile ? '100%' : 'auto'
                   }}>
                     Nouveau fournisseur : Le système mémorisera vos corrections pour les prochaines factures
@@ -580,8 +667,22 @@ const InvoiceValidationModal = ({ documentId, onClose, onSuccess, onRefresh, pro
           </div>
         </div>
 
+        </div>}
+
+        {wizardStep === 1 && <div className="rt-wizard-step-panel rt-wizard-products">
+        {Array.isArray(analysis?.audit_warnings) && analysis.audit_warnings.length > 0 && (
+          <div className="rt-invoice-audit" role="alert">
+            <strong>Montants à contrôler avant import · {analysis.audit_warnings.length} anomalie(s)</strong>
+            <ul>{analysis.audit_warnings.slice(0, 6).map((warning, idx) =>
+              <li key={`${warning.code}-${idx}`}>{warning.message}</li>
+            )}</ul>
+            {analysis.audit_warnings.length > 6 && <p>Et {analysis.audit_warnings.length - 6} autre(s) point(s) à vérifier.</p>}
+            <small>Ces contrôles sont indicatifs : les remises, consignes et poids variables peuvent expliquer des écarts. Votre confirmation reste obligatoire.</small>
+          </div>
+        )}
+
         {/* SUGGESTION JOKER IA */}
-        {showAiSuggestion && (
+        {showAiSuggestion && !previewData && (
           <div style={{
             padding: isMobile ? '10px' : '15px',
             background: 'linear-gradient(135deg, #fef3c7, #fde68a)',
@@ -592,12 +693,12 @@ const InvoiceValidationModal = ({ documentId, onClose, onSuccess, onRefresh, pro
             gap: '10px'
           }}>
             <div style={{flex: 1, fontSize: isMobile ? '12px' : '14px'}}>
-              <strong>Amélioration IA disponible</strong> • Beaucoup de produits non reconnus. L&apos;analyse IA peut améliorer la précision jusqu&apos;à 90%.
+              <strong>Amélioration IA disponible</strong> • Beaucoup de produits non reconnus. Une seconde lecture IA peut aider sur les factures complexes, sans garantie de précision.
             </div>
             <button
               onClick={handleReanalyzeWithAI}
               style={{
-                background: '#10b981',
+                background: '#681b32',
                 color: 'white',
                 border: 'none',
                 padding: isMobile ? '8px 16px' : '10px 20px',
@@ -608,7 +709,7 @@ const InvoiceValidationModal = ({ documentId, onClose, onSuccess, onRefresh, pro
                 whiteSpace: 'nowrap'
               }}
             >
-              Améliorer avec IA (~0.003€)
+              Relire avec l’IA (coût variable)
             </button>
             <button
               onClick={() => setShowAiSuggestion(false)}
@@ -629,13 +730,13 @@ const InvoiceValidationModal = ({ documentId, onClose, onSuccess, onRefresh, pro
         {aiPowered && (
           <div style={{
             padding: '8px',
-            background: 'linear-gradient(135deg, #10b981, #059669)',
+            background: 'linear-gradient(135deg, #681b32, #92263d)',
             color: 'white',
             textAlign: 'center',
             fontSize: isMobile ? '11px' : '13px',
             fontWeight: 'bold'
           }}>
-            Analysé avec Gemini 2.0 Flash • Précision améliorée
+            Nouvelle lecture IA effectuée · Contrôlez les valeurs proposées
           </div>
         )}
 
@@ -786,9 +887,9 @@ const InvoiceValidationModal = ({ documentId, onClose, onSuccess, onRefresh, pro
               style={{
                   flex: 1,
                   padding: '10px 20px',
-                  background: '#e0f2fe',
-                  color: '#0284c7',
-                  border: '1px dashed #0284c7',
+                  background: '#fff5f7',
+                  color: '#681b32',
+                  border: '1px dashed #92263d',
                   borderRadius: '6px',
                   cursor: 'pointer',
                   fontWeight: 'bold',
@@ -798,20 +899,20 @@ const InvoiceValidationModal = ({ documentId, onClose, onSuccess, onRefresh, pro
               Ajouter une ligne
             </button>
             
-            {!aiPowered && (
+            {!aiPowered && !previewData && (
               <button 
                 onClick={handleReanalyzeWithAI}
                 style={{
                     flex: 1,
                     padding: '10px 20px',
-                    background: 'linear-gradient(135deg, #10b981, #059669)',
+                    background: 'linear-gradient(135deg, #681b32, #92263d)',
                     color: 'white',
                     border: 'none',
                     borderRadius: '6px',
                     cursor: 'pointer',
                     fontWeight: 'bold',
                     fontSize: isMobile ? '13px' : '14px',
-                    boxShadow: '0 2px 8px rgba(16, 185, 129, 0.3)'
+                    boxShadow: '0 2px 8px rgba(104, 27, 50, 0.15)'
                 }}
               >
                 Améliorer avec Gemini IA
@@ -820,31 +921,50 @@ const InvoiceValidationModal = ({ documentId, onClose, onSuccess, onRefresh, pro
           </div>
         </div>
 
-        {/* FOOTER FIXE */}
-        <div style={{
-          padding: isMobile ? '12px' : '20px',
-          borderTop: '1px solid #eee',
-          background: '#fff',
-          display: 'flex',
-          flexDirection: isMobile ? 'column' : 'row',
-          justifyContent: 'space-between',
-          alignItems: isMobile ? 'stretch' : 'center',
-          gap: '10px'
-        }}>
-          <div style={{fontSize: isMobile ? '14px' : '16px', textAlign: isMobile ? 'center' : 'left'}}>
-            <strong>Total Facture : </strong>
-            <span style={{color: '#059669', fontSize: isMobile ? '16px' : '18px'}}>
-                {items.reduce((acc, item) => acc + (item.final_qty * item.final_price), 0).toFixed(2)} €
-            </span>
-          </div>
-          <div style={{display: 'flex', gap: '10px', flexDirection: isMobile ? 'column' : 'row'}}>
-            <button className="button secondary" onClick={onClose} style={{padding: '12px 24px'}}>Annuler</button>
-            <button className="button success" onClick={handleValidate} style={{padding: '12px 24px', fontSize: '16px'}}>
-                Valider et Intégrer au Stock
-            </button>
-          </div>
-        </div>
+        </div>}
 
+        {wizardStep === 2 && <section className="rt-wizard-review" aria-labelledby="rt-review-title">
+          <h3 id="rt-review-title">Tout est prêt pour la dernière vérification</h3>
+          <p>{previewData ? 'Simulation : vous pouvez terminer le parcours sans créer aucun mouvement réel.' : 'Les données ci-dessous correspondent à vos corrections. Aucune modification du stock n’est réalisée avant validation.'}</p>
+          <dl className="rt-wizard-review-facts">
+            <div><dt>Fournisseur</dt><dd>{selectedSupplierId === 'new' ? newSupplierName : (fournisseursList.find(s => s.id === selectedSupplierId)?.nom || newSupplierName)}</dd></div>
+            <div><dt>Facture n°</dt><dd>{editableNumero || 'Non renseigné'}</dd></div>
+            <div><dt>Date</dt><dd>{editableDate || 'Non renseignée'}</dd></div>
+            <div><dt>Produits</dt><dd>{items.length} ligne(s)</dd></div>
+          </dl>
+          <div className="rt-wizard-review-scroll"><table><thead><tr><th>Produit</th><th>Quantité</th><th>Prix unitaire</th><th>Montant indicatif</th></tr></thead><tbody>
+            {items.map((item, index) => <tr key={index}><td>{item.final_name || item.ocr_name}</td><td>{item.final_qty} {item.final_unit || ''}</td><td>{Number(item.final_price).toFixed(2)} €</td><td>{(Number(item.final_qty) * Number(item.final_price)).toFixed(2)} €</td></tr>)}
+          </tbody></table></div>
+          <p className="rt-wizard-total">Sous-total indicatif des lignes : <strong>{invoiceTotal.toFixed(2)} €</strong></p>
+          <small>Le sous-total des lignes n’est pas forcément le TTC : TVA, remises, transport et consignes peuvent s’ajouter.</small>
+          {hasWarnings ? <div className="rt-wizard-review-warning">
+            <strong>Points à contrôler avant validation</strong>
+            <p>{uncertainItems.length} produit(s) sans correspondance certaine, {lineWarnings().length} écart(s) de ligne, {auditWarnings.length} anomalie(s) OCR.</p>
+            <ul>{auditWarnings.map((warning, idx) => <li key={`${warning.code}-${idx}`}>{warning.message}</li>)}</ul>
+            <label><input type="checkbox" checked={acknowledged} onChange={event => setAcknowledged(event.target.checked)} /> J’ai vérifié les anomalies et je confirme les quantités, les prix et les unités corrigés.</label>
+          </div> : <div className="rt-wizard-review-ok">Aucune anomalie automatique détectée. Vérifiez malgré tout les données avant import.</div>}
+        </section>}
+
+        {wizardStep === 3 && <section className="rt-wizard-success" role="status">
+          <div aria-hidden="true" className="rt-wizard-success-icon">✓</div>
+          <h3>{previewData ? 'Simulation terminée' : 'Facture intégrée au stock'}</h3>
+          <p>{previewData ? 'Parcours de démonstration terminé : aucune donnée n’a été enregistrée ni transmise.' : 'L’import est terminé. Les quantités et mouvements associés ont été enregistrés.'}</p>
+          <strong>{successStats?.stock_entries ?? 0} entrée(s) de stock · {successStats?.batches_created ?? 0} lot(s)</strong>
+          <p>Vous pouvez fermer cette fenêtre et consulter les mouvements dans l’onglet Stocks.</p>
+        </section>}
+
+        <footer className="rt-wizard-footer">
+          <p>{wizardStep === 3 ? 'Import finalisé' : `Étape ${wizardStep + 1} sur 3`} · {wizardStep === 0 ? 'Identification' : wizardStep === 1 ? `${items.length} produit(s) à contrôler` : wizardStep === 2 ? `${invoiceTotal.toFixed(2)} € de lignes (hors ajustements)` : 'Terminé'}</p>
+          <div className="rt-wizard-footer-buttons">
+            {wizardStep === 3 ? <button type="button" className="rt-wizard-primary" onClick={onClose}>Fermer et voir les stocks</button> : <>
+              <button type="button" className="rt-wizard-secondary" disabled={loading} onClick={wizardStep === 0 ? onClose : () => {setWizardError('');setWizardStep(step => step - 1);}}>{wizardStep === 0 ? 'Annuler' : 'Retour'}</button>
+              {wizardStep < 2 ? <button type="button" className="rt-wizard-primary" disabled={loading} onClick={nextStep}>Continuer →</button>
+                : <button type="button" className="rt-wizard-primary" onClick={handleValidate} disabled={loading}>
+                    {loading ? 'Intégration en cours…' : previewData ? 'Terminer la simulation' : 'Confirmer l’entrée en stock'}
+                  </button>}
+            </>}
+          </div>
+        </footer>
       </div>
     </div>
   );

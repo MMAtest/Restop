@@ -1,15 +1,22 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import "./App.css";
 import axios from "axios";
 import { useNavigate } from 'react-router-dom';
 import AppNavigation from './components/restop/AppNavigation';
+import ModuleTabs from './components/restop/ModuleTabs';
+import StockKpiBar from './components/restop/StockKpiBar';
+import ActionDialog from './components/restop/ActionDialog';
+import FormModal from './components/restop/FormModal';
+import ActionNotice from './components/restop/ActionNotice';
 import Overview from './components/restop/Overview';
 import OperationalAnalytics from './components/restop/OperationalAnalytics';
 import { recipeCapacity } from './utils/planning';
 import { aggregateReports } from './utils/analytics';
 import { restaurantDate, cutForms, cutFormCode, asList, number, categories, units, recipe, groupedProducts } from './utils/contracts';
 import { readSession, clearSession } from './utils/session';
+import { API } from './utils/api';
 import './styles/workspace.css';
+import './styles/application-system.css';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
 import { Pie } from 'react-chartjs-2';
 
@@ -29,8 +36,6 @@ import InvoiceValidationModal from "./components/InvoiceValidationModal";
 import ProgressBar from "./components/ProgressBar";
 
 import { getCategoryColor, getCategoryIcon } from "./utils/categoryHelpers";
-const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
-const API = `${BACKEND_URL}/api`;
 
 const restopDemoMode = false;
 
@@ -135,9 +140,27 @@ const getProductionCategoryIcon = (category) => {
 function App() {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("overview");
+  const [actionRequest,setActionRequest] = useState(null);
+  const actionResolver=useRef(null);
+  const [actionNotice,setActionNotice] = useState(null);
+  const askAction = useCallback(config=>new Promise(resolve=>{
+    // One decision at a time; never execute the resolver in a React state updater.
+    if(actionResolver.current){resolve({confirmed:false});return;}
+    actionResolver.current=resolve;
+    setActionRequest({config});
+  }),[]);
+  const resolveAction = useCallback(result=>{
+    const resolver=actionResolver.current;
+    actionResolver.current=null;
+    setActionRequest(null);
+    if(resolver)resolver(result);
+  },[]);
+
   const [sessionChecking, setSessionChecking] = useState(true);
   const [overviewLoading, setOverviewLoading] = useState(true);
   const [overviewError, setOverviewError] = useState('');
+  const [overviewAlerts, setOverviewAlerts] = useState(null);
+  const [overviewAlertError, setOverviewAlertError] = useState('');
   const [activeProductionTab, setActiveProductionTab] = useState("produits");
   const [activeHistoriqueTab, setActiveHistoriqueTab] = useState("ventes");
   const [activeStockTab, setActiveStockTab] = useState("stocks");
@@ -439,13 +462,26 @@ function App() {
     setOverviewLoading(true);
     setOverviewError('');
     try {
-      const [stockResult, documentResult] = await Promise.all([
-        axios.get(`${API}/stocks`), axios.get(`${API}/ocr/documents`)
+      const [stockResult, documentResult, alertsResult] = await Promise.allSettled([
+        axios.get(`${API}/stocks`), axios.get(`${API}/ocr/documents`),
+        ['patron', 'super_admin', 'gerant'].includes(currentUser?.role) ? axios.get(`${API}/analytics/alerts`) : Promise.resolve({data:null})
       ]);
-      setStocks(Array.isArray(stockResult.data) ? stockResult.data : []);
-      setDocumentsOcr(Array.isArray(documentResult.data) ? documentResult.data : []);
+      if (stockResult.status === 'fulfilled') setStocks(Array.isArray(stockResult.value.data) ? stockResult.value.data : []);
+      if (documentResult.status === 'fulfilled') setDocumentsOcr(Array.isArray(documentResult.value.data) ? documentResult.value.data : []);
+      if (stockResult.status !== 'fulfilled' || documentResult.status !== 'fulfilled') {
+        setOverviewError('Certaines données n’ont pas pu être chargées. Vérifiez la connexion puis réessayez.');
+      }
+      if (alertsResult.status === 'fulfilled' && alertsResult.value.data) {
+        setOverviewAlerts(alertsResult.value.data);
+        setOverviewAlertError('');
+      } else {
+        setOverviewAlerts(null);
+        setOverviewAlertError('Alertes indisponibles');
+      }
     } catch (_) {
       setOverviewError('Vos données n’ont pas pu être chargées. Vérifiez votre connexion puis réessayez.');
+      setOverviewAlerts(null);
+      setOverviewAlertError('Alertes indisponibles');
     } finally { setOverviewLoading(false); }
   };
 
@@ -559,39 +595,27 @@ function App() {
 
   // Auto-génération des préparations
   const handleAutoGeneratePreparations = async () => {
+    const choice = await askAction({
+      title:'Remplacer les préparations automatiquement ?',
+      description:'Cette opération peut supprimer les préparations existantes et créer 2 à 3 préparations par produit. Effectuez une sauvegarde avant de continuer. Aucun retour arrière automatique n’est disponible.',
+      dangerous:true,requireText:'REMPLACER',confirmLabel:'Lancer le remplacement'
+    });
+    if(!choice.confirmed)return;
     try {
       setLoading(true);
-      
-      const confirmation = window.confirm(
-        "AUTO-GÉNÉRATION DES PRÉPARATIONS\n\n" +
-        "Cette action va :\n" +
-        "• Analyser tous vos produits avec catégories\n" +
-        "• Créer 2-3 préparations cohérentes par produit\n" +
-        "• Supprimer les préparations existantes\n" +
-        "• Baser les préparations sur vos recettes existantes\n\n" +
-        "Continuer ?"
-      );
-      
-      if (!confirmation) return;
-      
+
       const response = await axios.post(`${API}/preparations/auto-generate`);
       
       if (response.data.success) {
-        alert(`AUTO-GÉNÉRATION RÉUSSIE !\n\n` +
-              `Résultats :\n` +
-              `• ${response.data.preparations_created} préparations créées\n` +
-              `• ${response.data.details.total_products_processed} produits traités\n` +
-              `• Catégories : ${response.data.details.categories_processed.join(', ')}\n\n` +
-              `Exemples créés :\n` +
-              `${response.data.details.sample_preparations.slice(0, 5).join('\n')}`);
+        setActionNotice({kind:'success',message:`${response.data.preparations_created || 0} préparations générées. Vérifiez les nouveaux résultats avant utilisation.`});
         
         fetchPreparations(); // Rafraîchir la liste
       } else {
-        alert(`ERREUR : ${response.data.message}`);
+        setActionNotice({kind:'error',message:response.data.message || 'Génération refusée par le serveur.'});
       }
     } catch (error) {
       console.error("Erreur lors de l&apos;auto-génération:", error);
-      alert(`Erreur lors de l&apos;auto-génération: ${error.response?.data?.detail || error.message}`);
+      setActionNotice({kind:'error',message:'Erreur de génération : '+(error.response?.data?.detail || error.message)});
     } finally {
       setLoading(false);
     }
@@ -666,6 +690,9 @@ function App() {
         const response = await axios.get(`${API}/auth/session`, { headers: { Authorization: `Bearer ${session.session_id}` } });
         
         if (response.data.valid) {
+          // Restored browser sessions must authorize all subsequent axios API calls.
+          // Previously only fresh logins populated this header.
+          axios.defaults.headers.common.Authorization = `Bearer ${session.session_id}`;
           setCurrentUser(response.data.user || session.user);
           setSessionId(session.session_id);
           setIsAuthenticated(true);
@@ -686,7 +713,7 @@ function App() {
   };
 
   const logout = async () => {
-    try { if (sessionId) await axios.post(`${API}/auth/logout?session_id=${encodeURIComponent(sessionId)}`); }
+    try { if (sessionId) await axios.post(`${API}/auth/logout`, null, {headers:{Authorization:`Bearer ${sessionId}`}}); }
     catch (_) { /* Always clear the local session, including when offline. */ }
     finally {
       clearSession();
@@ -1711,14 +1738,15 @@ function App() {
     }
   };
 
-  // Fonction de suppression
+  // Suppression irréversible : validation textuelle, sans boîtes bloquantes du navigateur.
   const handleDelete = async (id, type) => {
-    // Premier avertissement
-    if (!window.confirm("Êtes-vous sûr de vouloir supprimer cet élément ?")) return;
-    
-    // Deuxième avertissement de sécurité (Double vérification)
-    if (!window.confirm("ATTENTION : Cette action est IRRÉVERSIBLE !\n\nL'élément sera définitivement effacé de la base de données (pas d'archivage).\n\nConfirmer la suppression DÉFINITIVE ?")) return;
-
+    if (!['produit','fournisseur','recette','preparation'].includes(type)) return;
+    const choice = await askAction({
+      title: 'Supprimer définitivement cet élément ?',
+      description: `Vous allez supprimer ce ${type} de Restop, et non l’archiver. Vérifiez qu’il n’est pas utilisé par des recettes, commandes ou mouvements de stock.`,
+      dangerous: true, requireText: 'SUPPRIMER', confirmLabel: 'Supprimer définitivement'
+    });
+    if(!choice.confirmed)return;
     try {
       if (type === "produit") {
         await axios.delete(`${API}/produits/${id}`);
@@ -1735,10 +1763,10 @@ function App() {
         fetchPreparations();
       }
       fetchDashboardStats();
-      alert("Élément supprimé définitivement.");
+      setActionNotice({kind:'success',message:'Suppression définitive confirmée par le serveur.'});
     } catch (error) {
       console.error(`Erreur lors de la suppression du ${type}:`, error);
-      alert("Erreur lors de la suppression : " + (error.response?.data?.detail || error.message));
+      setActionNotice({kind:'error',message:'La suppression a échoué : '+(error.response?.data?.detail || error.message)});
     }
   };
 
@@ -2232,77 +2260,6 @@ function App() {
     }
   };
 
-  // Traitement Auto OCR
-  const handleTraitementAuto = async () => {
-    try {
-      setLoading(true);
-      // Cette fonctionnalité traiterait automatiquement tous les documents en attente
-      const documentsEnAttente = documentsOcr.filter(doc => !doc.donnees_parsees || Object.keys(doc.donnees_parsees).length === 0);
-      
-      if (documentsEnAttente.length === 0) {
-        alert("Tous les documents ont déjà été traités !");
-        return;
-      }
-
-      const confirmation = window.confirm(`TRAITEMENT AUTOMATIQUE:\n\nTraiter automatiquement ${documentsEnAttente.length} documents en attente ?\n\n(Cette opération peut prendre plusieurs minutes)`);
-      
-      if (confirmation) {
-        alert(`Traitement automatique démarré pour ${documentsEnAttente.length} documents.\n\nLe traitement se fait en arrière-plan.\nVous recevrez une notification à la fin.`);
-        
-        // Ici on pourrait lancer un traitement batch en arrière-plan
-        // Pour l'instant, on simule juste l'action
-        
-        setTimeout(() => {
-          alert("Traitement automatique terminé !\nConsultez l&apos;historique pour voir les résultats.");
-          fetchDocumentsOcr();
-        }, 2000);
-      }
-    } catch (error) {
-      console.error("Erreur traitement auto:", error);
-      alert("Erreur lors du traitement automatique");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Supprimer tous les documents OCR
-  const handleSupprimerTousDocumentsOcr = async () => {
-    try {
-      setLoading(true);
-      
-      if (documentsOcr.length === 0) {
-        alert("Aucun document à supprimer");
-        return;
-      }
-
-      const confirmation = window.confirm(`SUPPRESSION DE L'HISTORIQUE:\n\nÊtes-vous sûr de vouloir supprimer tous les ${documentsOcr.length} documents OCR ?\n\nCette action est irréversible !`);
-      
-      if (confirmation) {
-        const response = await axios.delete(`${API}/ocr/documents/all`);
-        
-        alert(`Historique vidé avec succès !\n\n${response.data.deleted_count} document(s) supprimé(s)`);
-        
-        // Rafraîchir la liste des documents ET réinitialiser les affichages
-        await fetchDocumentsOcr();
-        setSelectedDocument(null);
-        
-        // Forcer le rafraîchissement de tous les onglets OCR
-        if (window.location.hash) {
-          window.location.hash = '';
-        }
-        
-        // Réinitialiser les filtres et pages
-        setOcrCurrentPage(1);
-        setOcrSearchTerm('');
-      }
-    } catch (error) {
-      console.error("Erreur suppression documents OCR:", error);
-      alert("Erreur lors de la suppression de l&apos;historique");
-    } finally {
-      setLoading(false);
-    }
-  };
-
   // Sélectionner document dans l&apos;historique
   const handleSelectDocument = (doc) => {
     setSelectedDocument(doc);
@@ -2470,48 +2427,25 @@ function App() {
       <AppNavigation activeTab={activeTab} onNavigate={setActiveTab} user={currentUser}
         onLogout={logout} onRefresh={async () => { await refreshAllData(); await loadOverview(); }} loading={loading}
         canOrders={canAccessOrders()} onSuppliers={() => { setActiveTab('production'); setActiveProductionTab('fournisseurs'); }} />
-      {activeTab === 'overview' && <Overview stocks={stocks.map(s => ({...s, unite: s.unite || produits.find(p => p.id === s.produit_id)?.unite}))} documents={documentsOcr} user={currentUser}
+      <ActionNotice notice={actionNotice} onDismiss={()=>setActionNotice(null)}/>
+      <ActionDialog request={actionRequest} onResolve={resolveAction}/>
+      {activeTab === 'overview' && <Overview stocks={stocks.map(s => ({...s, unite: s.unite || produits.find(p => p.id === s.produit_id)?.unite}))} documents={documentsOcr} user={currentUser} alerts={overviewAlerts} alertsError={overviewAlertError}
+        onPriorityAction={action => {
+          setActiveTab('stocks');
+          if (action === 'factures') {setActiveStockTab('ocr'); setActiveOcrTab('factures');}
+          else {setActiveStockTab('stocks'); setStockFilter('all');}
+        }}
         loading={overviewLoading} error={overviewError} onRetry={loadOverview}
         onStocks={() => { setActiveTab('stocks'); setActiveStockTab('stocks'); setStockFilter('all'); }}
         onStockAlerts={() => { setActiveTab('stocks'); setActiveStockTab('stocks'); setStockFilter('critical'); }}
         onPurchases={() => { setActiveTab('stocks'); setActiveStockTab('ocr'); setActiveOcrTab('factures'); }}
-        onImport={currentUser?.role !== 'employe_cuisine' ? () => { setActiveTab('stocks'); setActiveStockTab('ocr'); setActiveOcrTab('factures'); setShowOcrModal(true); } : null} />}
+        onImport={['patron', 'super_admin', 'gerant', 'chef_cuisine'].includes(currentUser?.role) ? () => { setActiveTab('stocks'); setActiveStockTab('ocr'); setActiveOcrTab('factures'); setShowOcrModal(true); } : null} />}
 
-      {/* Top Navigation Tabs (Analytics) - SUPER ADMIN et PATRON */}
-      {activeTab === "dashboard" && (currentUser?.role === 'super_admin' || currentUser?.role === 'patron' || currentUser?.role === 'gerant') && (
-        <div className="top-nav-tabs">
-          <button 
-            className={`top-nav-tab ${activeDashboardTab === "ventes" ? "active" : ""}`}
-            onClick={() => setActiveDashboardTab("ventes")}
-          >
-            VENTES
-          </button>
-          <button 
-            className={`top-nav-tab ${activeDashboardTab === "alertes" ? "active" : ""}`}
-            onClick={() => setActiveDashboardTab("alertes")}
-          >
-            ALERTES
-          </button>
-          <button 
-            className={`top-nav-tab ${activeDashboardTab === "couts" ? "active" : ""}`}
-            onClick={() => setActiveDashboardTab("couts")}
-          >
-            COÛTS
-          </button>
-          <button 
-            className={`top-nav-tab ${activeDashboardTab === "rentabilite" ? "active" : ""}`}
-            onClick={() => setActiveDashboardTab("rentabilite")}
-          >
-            RENTABILITÉ
-          </button>
-          <button 
-            className={`top-nav-tab ${activeDashboardTab === "previsionnel" ? "active" : ""}`}
-            onClick={() => setActiveDashboardTab("previsionnel")}
-          >
-            PRÉVISIONNEL
-          </button>
-        </div>
-      )}
+      {activeTab==='dashboard' && ['super_admin','patron','gerant'].includes(currentUser?.role) &&
+        <div className="rt-dashboard-subnav"><ModuleTabs label="Rubriques des analyses" value={activeDashboardTab} onChange={setActiveDashboardTab} items={[
+          {id:'ventes',label:'Ventes'}, {id:'alertes',label:'Alertes'}, {id:'couts',label:'Coûts'},
+          {id:'rentabilite',label:'Rentabilité'}, {id:'previsionnel',label:'Prévisionnel'}
+        ]}/></div>}
 
       {/* Content Wrapper */}
       <div className="content-wrapper">
@@ -3545,42 +3479,12 @@ function App() {
           <div className="wireframe">
             <h2>Stocks & inventaires</h2>
             
-            {/* Sous-navigation Stocks */}
-            <div className="sub-nav-tabs">
-              <button 
-                className="button" 
-                onClick={() => setActiveStockTab('stocks')}
-                style={{
-                  background: activeStockTab === 'stocks' ? 'var(--color-primary-blue)' : 'var(--color-background-card-light)',
-                  color: activeStockTab === 'stocks' ? 'white' : 'var(--color-text-secondary)'
-                }}
-              >
-                Stocks & DLC
-              </button>
-              {/* Répartition - MASQUÉ pour employé cuisine ET barman */}
-              {canAccessRepartition() && (
-                <button 
-                  className="button" 
-                  onClick={() => setActiveStockTab('repartition')}
-                  style={{
-                    background: activeStockTab === 'repartition' ? 'var(--color-primary-blue)' : 'var(--color-background-card-light)',
-                    color: activeStockTab === 'repartition' ? 'white' : 'var(--color-text-secondary)'
-                  }}
-                >
-                  Répartition
-                </button>
-              )}
-              <button 
-                className="button" 
-                onClick={() => setActiveStockTab('ocr')}
-                style={{
-                  background: activeStockTab === 'ocr' ? 'var(--color-primary-blue)' : 'var(--color-background-card-light)',
-                  color: activeStockTab === 'ocr' ? 'white' : 'var(--color-text-secondary)'
-                }}
-              >
-                OCR
-              </button>
-            </div>
+            <p className="rt-module-subtitle">Suivez les quantités, lots et documents entrants, sans confondre les niveaux d’alerte avec les données réelles.</p>
+            <ModuleTabs label="Rubriques des stocks" value={activeStockTab} onChange={setActiveStockTab} items={[
+              {id:'stocks',label:'Stocks & DLC'},
+              {id:'repartition',label:'Répartition',hidden:!canAccessRepartition()},
+              {id:'ocr',label:'OCR'}
+            ]}/>
 
             {/* ONGLET STOCKS */}
             <div className={`production-tab ${activeStockTab === 'stocks' ? 'active' : ''}`}>
@@ -3594,122 +3498,21 @@ function App() {
                   </div>
                 )}
 
-                {/* KPIs Stocks - MASQUÉS pour employé cuisine */}
-                {currentUser?.role !== 'employe_cuisine' && (
-                  <div className="kpi-grid">
-                    <div 
-                      className="kpi-card"
-                      onClick={() => setStockFilter(stockFilter === 'all' ? 'all' : 'all')}
-                      style={{
-                        cursor: 'pointer',
-                        border: stockFilter === 'all' ? '2px solid var(--color-primary-blue)' : '1px solid var(--color-border)',
-                        transform: stockFilter === 'all' ? 'scale(1.02)' : 'scale(1)',
-                        transition: 'all 0.2s ease'
-                      }}
-                    >
-                      <div className="icon">📈</div>
-                      <div className="title">Stock Total</div>
-                      <div className="value">{stocks.length} produits</div>
-                    </div>
-                    
-                    <div 
-                      className="kpi-card"
-                      onClick={() => setStockFilter(stockFilter === 'critical' ? 'all' : 'critical')}
-                      style={{
-                        cursor: 'pointer',
-                        border: stockFilter === 'critical' ? '2px solid var(--color-warning-orange)' : '1px solid var(--color-border)',
-                        transform: stockFilter === 'critical' ? 'scale(1.02)' : 'scale(1)',
-                        transition: 'all 0.2s ease'
-                      }}
-                    >
-                      <div className="icon">⚠️</div>
-                      <div className="title">Stocks Critiques</div>
-                      <div className="value warning">
-                        {stocks.filter(s => s.quantite_actuelle <= s.quantite_min).length} alertes
-                      </div>
-                    </div>
-                    
-                    <div 
-                      className="kpi-card"
-                      onClick={() => setStockFilter(stockFilter === 'all' ? 'all' : 'all')}
-                      style={{
-                        cursor: 'pointer',
-                        border: stockFilter === 'all' ? '2px solid var(--color-primary-blue)' : '1px solid var(--color-border)',
-                        transform: stockFilter === 'all' ? 'scale(1.02)' : 'scale(1)',
-                        transition: 'all 0.2s ease'
-                      }}
-                    >
-                      <div className="icon">💰</div>
-                      <div className="title">Valeur Totale</div>
-                      <div className="value">
-                        {stocks.reduce((total, stock) => {
-                          const produit = produits.find(p => p.id === stock.produit_id);
-                          const prix = produit?.prix_achat || produit?.reference_price || 0;
-                          return total + (stock.quantite_actuelle * prix);
-                        }, 0).toLocaleString('fr-FR', {style: 'currency', currency: 'EUR'})}
-                      </div>
-                    </div>
-                    
-                    <div 
-                      className="kpi-card"
-                      onClick={() => {
-                        if (stockFilter === 'dlc') {
-                          setStockFilter('all');
-                        } else {
-                          // Basculer automatiquement vers les préparations car les DLC concernent les préparations
-                          setStockViewMode('preparations');
-                          fetchStocksPreparations();
-                          setStockFilter('dlc');
-                        }
-                      }}
-                      style={{
-                        cursor: 'pointer',
-                        border: stockFilter === 'dlc' ? '2px solid var(--color-danger-red)' : '1px solid var(--color-border)',
-                        transform: stockFilter === 'dlc' ? 'scale(1.02)' : 'scale(1)',
-                        transition: 'all 0.2s ease'
-                      }}
-                    >
-                      <div className="icon">⏰</div>
-                      <div className="title">DLC &lt; 3 jours</div>
-                      <div className="value" style={{color: 'var(--color-warning-orange)'}}>
-                        {stocksPreparations.filter(p => p.dlc && new Date(p.dlc) < new Date(Date.now() + 3 * 24 * 60 * 60 * 1000)).length} préparations
-                      </div>
-                    </div>
-                  </div>
-                )}
+                {currentUser?.role !== 'employe_cuisine' && <StockKpiBar
+                  stocks={stocks} products={produits} preparations={stocksPreparations} activeFilter={stockFilter}
+                  onAll={()=>{setStockFilter('all');setStockViewMode('produits');setStockCurrentPage(1);setStockFilterCategory('all');}}
+                  onCritical={()=>{setStockFilter(stockFilter==='critical'?'all':'critical');setStockViewMode('produits');setStockCurrentPage(1);setStockFilterCategory('all');}}
+                  onDlc={()=>{
+                    if(stockFilter==='dlc'){setStockFilter('all');setStockViewMode('produits');}
+                    else {setStockViewMode('preparations');setStockFilter('dlc');fetchStocksPreparations();}
+                    setStockCurrentPage(1);setStockFilterCategory('all');
+                  }}
+                />}
 
-                {/* Indicateur de filtre actif */}
-                {stockFilter !== 'all' && (
-                  <div style={{
-                    padding: '12px',
-                    background: stockFilter === 'critical' ? 'rgba(251, 146, 60, 0.1)' : 'rgba(220, 38, 38, 0.1)',
-                    borderLeft: `4px solid ${stockFilter === 'critical' ? 'var(--color-warning-orange)' : 'var(--color-danger-red)'}`,
-                    borderRadius: '6px',
-                    marginBottom: '16px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between'
-                  }}>
-                    <span style={{fontSize: '14px', fontWeight: '500'}}>
-                      {stockFilter === 'critical' && 'Filtre actif : Stocks critiques uniquement'}
-                      {stockFilter === 'dlc' && 'Filtre actif : DLC < 3 jours uniquement'}
-                    </span>
-                    <button
-                      onClick={() => setStockFilter('all')}
-                      style={{
-                        background: 'var(--color-primary-blue)',
-                        color: 'white',
-                        border: 'none',
-                        borderRadius: '4px',
-                        padding: '6px 12px',
-                        fontSize: '12px',
-                        cursor: 'pointer'
-                      }}
-                    >
-                      ✕ Supprimer le filtre
-                    </button>
-                  </div>
-                )}
+                {stockFilter!=='all'&&<div role="status" className="rt-stock-filter-feedback">
+                  <span>{stockFilter==='critical'?'Vue filtrée : références sous leur seuil.':'Vue filtrée : préparations à DLC proche ou dépassée.'}</span>
+                  <button type="button" onClick={()=>{setStockFilter('all');setStockViewMode('produits');setStockCurrentPage(1);setStockFilterCategory('all');}}>Effacer le filtre</button>
+                </div>}
 
                 {/* Liste des produits en stock avec recherche et filtres */}
                 <div className="item-list">
@@ -3718,55 +3521,13 @@ function App() {
                          stockViewMode === 'preparations' ? 'Préparations en Stock' : 
                          'Stock par Production'}
                     
-                    {/* Toggle View Mode */}
-                    <div style={{gap: '5px', marginLeft: '15px', display: 'inline-flex'}}>
-                      <button 
-                        className="button small"
-                        onClick={() => {
-                          setStockViewMode('produits');
-                          setStockFilterCategory('all'); // Reset filtre
-                        }}
-                        style={{
-                          background: stockViewMode === 'produits' ? 'var(--color-primary-blue)' : 'var(--color-background-card)',
-                          color: stockViewMode === 'produits' ? 'white' : 'var(--color-text-secondary)',
-                          padding: '4px 8px',
-                          fontSize: '12px'
-                        }}
-                      >
-                        Par Produit
-                      </button>
-                      <button 
-                        className="button small"
-                        onClick={() => {
-                          setStockViewMode('preparations');
-                          setStockFilterCategory('all'); // Reset filtre
-                          fetchStocksPreparations(); // Recharger les données des préparations
-                        }}
-                        style={{
-                          background: stockViewMode === 'preparations' ? 'var(--color-primary-blue)' : 'var(--color-background-card)',
-                          color: stockViewMode === 'preparations' ? 'white' : 'var(--color-text-secondary)',
-                          padding: '4px 8px',
-                          fontSize: '12px'
-                        }}
-                      >
-                        Par Préparation
-                      </button>
-                      <button 
-                        className="button small"
-                        onClick={() => {
-                          setStockViewMode('productions');
-                          setStockFilterCategory('all'); // Reset filtre
-                        }}
-                        style={{
-                          background: stockViewMode === 'productions' ? 'var(--color-primary-blue)' : 'var(--color-background-card)',
-                          color: stockViewMode === 'productions' ? 'white' : 'var(--color-text-secondary)',
-                          padding: '4px 8px',
-                          fontSize: '12px'
-                        }}
-                      >
-                        Par Production
-                      </button>
-                    </div>
+                    <ModuleTabs label="Mode d’affichage des stocks" value={stockViewMode} className="rt-stock-view-tabs" items={[
+                      {id:'produits',label:'Par produit'}, {id:'preparations',label:'Par préparation'}, {id:'productions',label:'Par production'}
+                    ]} onChange={mode=>{
+                      setStockViewMode(mode);setStockFilterCategory('all');setStockCurrentPage(1);
+                      if((stockFilter==='dlc'&&mode!=='preparations')||(stockFilter==='critical'&&mode!=='produits'))setStockFilter('all');
+                      if(mode==='preparations')fetchStocksPreparations();
+                    }}/>
                   </div>
                   
                   {/* Barre de recherche et filtres */}
@@ -3774,12 +3535,12 @@ function App() {
                     <div style={{display: 'flex', gap: '15px', alignItems: 'center', flexWrap: 'wrap'}}>
                       {/* Barre de recherche */}
                       <div style={{display: 'flex', alignItems: 'center', gap: '8px', flex: '1', minWidth: '200px'}}>
-                        <label className="filter-label" style={{fontSize: '14px', minWidth: '70px'}}>Recherche :</label>
+                        <label htmlFor="rt-stock-search" className="filter-label" style={{fontSize: '14px', minWidth: '70px'}}>Recherche :</label>
                         <input
-                          type="text"
+                          id="rt-stock-search" type="search"
                           placeholder={stockViewMode === 'produits' ? "Nom du produit..." : "Nom de la production..."}
                           value={stockSearchTerm}
-                          onChange={(e) => setStockSearchTerm(e.target.value)}
+                          onChange={(e) => {setStockSearchTerm(e.target.value);setStockCurrentPage(1);}}
                           style={{
                             padding: '6px 10px',
                             borderRadius: '4px',
@@ -3794,8 +3555,8 @@ function App() {
                       
                       {/* Filtre par catégorie */}
                       <div style={{display: 'flex', alignItems: 'center', gap: '8px'}}>
-                        <label className="filter-label" style={{fontSize: '14px', minWidth: '70px'}}>Catégorie :</label>
-                        <select 
+                        <label htmlFor="rt-stock-category" className="filter-label" style={{fontSize: '14px', minWidth: '70px'}}>Catégorie :</label>
+                        <select id="rt-stock-category"
                           className="filter-select"
                           value={stockFilterCategory}
                           onChange={(e) => {
@@ -3926,13 +3687,14 @@ function App() {
                                   <button 
                                     className="button small warning" 
                                     onClick={async () => {
-                                      const reason = window.prompt(`Raison de l&apos;archivage de "${production.nom}" (optionnel):`);
+                                      const decision = await askAction({title:`Archiver ${production.nom} ?`,description:'Cette référence sera retirée des listes actives et conservée dans les archives.',askReason:true,confirmLabel:'Archiver'});
+                                                      const reason = decision.confirmed ? (decision.reason||'') : null;
                                       if (reason !== null) {
                                         const success = await archiveItem(production.id, 'production', reason || null);
                                       if (success) {
-                                        alert(`${production.nom} archivé avec succès !`);
+                                        setActionNotice({kind:'success',message:`${production.nom} archivé avec succès.`});
                                       } else {
-                                        alert("Erreur lors de l&apos;archivage");
+                                        setActionNotice({kind:'error',message:'Erreur lors de l’archivage.'});
                                       }
                                     }
                                   }}
@@ -4265,14 +4027,15 @@ function App() {
                                                   onClick={async () => {
                                                     const preparation = preparations.find(p => p.id === stockPrep.preparation_id);
                                                     if (preparation) {
-                                                      const reason = window.prompt(`Raison de l&apos;archivage de "${preparation.nom}" (optionnel):`);
+                                                      const decision = await askAction({title:`Archiver ${preparation.nom} ?`,description:'Cette référence sera retirée des listes actives et conservée dans les archives.',askReason:true,confirmLabel:'Archiver'});
+                                                      const reason = decision.confirmed ? (decision.reason||'') : null;
                                                       if (reason !== null) {
                                                         const success = await archiveItem(preparation.id, 'preparation', reason || null);
                                                         if (success) {
-                                                          alert(`${preparation.nom} archivée avec succès !`);
+                                                          setActionNotice({kind:'success',message:`${preparation.nom} archivée avec succès.`});
                                                           fetchStocksPreparations(); // Recharger
                                                         } else {
-                                                          alert("Erreur lors de l&apos;archivage");
+                                                          setActionNotice({kind:'error',message:'Erreur lors de l’archivage.'});
                                                         }
                                                       }
                                                     }
@@ -4596,19 +4359,8 @@ function App() {
                       'Mercuriale'
                     }
                   </button>
-                  <button className="button" onClick={handleTraitementAuto} disabled={loading}>Traitement Auto</button>
-                  <button 
-                    className="button" 
-                    onClick={handleSupprimerTousDocumentsOcr} 
-                    disabled={loading}
-                    style={{
-                      background: 'linear-gradient(45deg, #ff6b6b, #ff8e8e)',
-                      border: 'none',
-                      color: 'white'
-                    }}
-                  >
-                    Vider l&apos;historique
-                  </button>
+                  <p className="rt-ocr-help-text">Après import, ouvrez le document et vérifiez les données avant intégration. Le traitement automatique en lot est désactivé pour éviter les erreurs de stock.</p>
+
                 </div>
 
                 {/* Contenu spécifique aux Tickets Z */}
@@ -5983,6 +5735,8 @@ function App() {
           setCategoriesPreparationsExpanded={setCategoriesPreparationsExpanded}
           recettes={recettes}
           setEditingItem={setEditingItem}
+          askAction={askAction}
+          showActionNotice={(message,kind='info')=>setActionNotice({kind,message})}
         />
 
 
@@ -6000,7 +5754,7 @@ function App() {
 
       {/* PURCHASE ORDERS */}
       <div id="orders" className={`wireframe-section ${activeTab === "orders" ? "active" : ""}`}>
-        {activeTab === 'orders' && <PurchaseOrderPage currentUser={currentUser} />}
+        {activeTab === 'orders' && <PurchaseOrderPage currentUser={currentUser} onSuppliers={() => {setActiveTab('production');setActiveProductionTab('fournisseurs');}} />}
       </div>
 
       {/* OCR */}
@@ -6011,19 +5765,8 @@ function App() {
             <div className="sidebar">
               <h3 style={{color: '#d4af37', marginBottom: '15px'}}>Actions</h3>
               <button className="button" onClick={() => setShowOcrModal(true)}>Importer Document</button>
-              <button className="button" onClick={handleTraitementAuto} disabled={loading}>Traitement Auto</button>
-              <button 
-                className="button" 
-                onClick={handleSupprimerTousDocumentsOcr} 
-                disabled={loading}
-                style={{
-                  background: 'linear-gradient(45deg, #ff6b6b, #ff8e8e)',
-                  border: 'none',
-                  color: 'white'
-                }}
-              >
-                Vider l&apos;historique
-              </button>
+              <p className="rt-ocr-help-text">Consultez une facture pour contrôler ses données. Les imports automatiques et suppressions globales sont désactivés.</p>
+
               <h4 style={{color: '#d4af37', margin: '20px 0 10px'}}>Historique (Cliquez pour détails)</h4>
               <div style={{fontSize: '0.9rem'}}>
                 {documentsOcr.slice(0, 5).map((doc, index) => (
@@ -6358,8 +6101,7 @@ function App() {
 
       {/* Modal Produit */}
       {showProduitModal && (
-        <div className="modal-overlay">
-          <div className="modal-content">
+        <FormModal title={editingItem ? 'Modifier le produit' : 'Ajouter un produit'} onClose={()=>{setShowProduitModal(false);setEditingItem(null);setProduitForm({nom:'',description:'',categorie:'',unite:'',prix_achat:'',fournisseur_id:''});}}>
             <h3 className="modal-header">
               {editingItem ? "Modifier le produit" : "Ajouter un produit"}
             </h3>
@@ -6463,14 +6205,12 @@ function App() {
                 </button>
               </div>
             </form>
-          </div>
-        </div>
+        </FormModal>
       )}
 
       {/* Modal Fournisseur */}
       {showFournisseurModal && (
-        <div className="modal-overlay">
-          <div className="modal-content">
+        <FormModal title={editingItem ? 'Modifier le fournisseur' : 'Ajouter un fournisseur'} onClose={()=>{setShowFournisseurModal(false);setEditingItem(null);setShowDeliveryRulesConfig(false);}} wide>
             <h3 className="modal-header">
               {editingItem ? "Modifier le fournisseur" : "Ajouter un fournisseur"}
             </h3>
@@ -6850,14 +6590,12 @@ function App() {
                 </button>
               </div>
             </form>
-          </div>
-        </div>
+        </FormModal>
       )}
 
       {/* Modal Mouvement */}
       {showMouvementModal && (
-        <div className="modal-overlay">
-          <div className="modal-content">
+        <FormModal title={mouvementForm.type === 'ajustement' ? 'Ajuster le stock' : 'Nouveau mouvement de stock'} onClose={()=>{setShowMouvementModal(false);}}>
             <h3 className="modal-header">
               {mouvementForm.type === 'ajustement' ? 'Ajuster le stock' : 'Nouveau mouvement de stock'}
             </h3>
@@ -6987,8 +6725,7 @@ function App() {
                 </button>
               </div>
             </form>
-          </div>
-        </div>
+        </FormModal>
       )}
 
       {/* Modal Mouvement Préparation */}
@@ -7486,8 +7223,7 @@ function App() {
 
       {/* Modal Préparation */}
       {showPreparationModal && (
-        <div className="modal-overlay">
-          <div className="modal-content" style={{maxWidth: '800px'}}>
+        <FormModal title={editingItem ? 'Modifier la préparation' : 'Nouvelle préparation'} onClose={()=>{setShowPreparationModal(false);setEditingItem(null);resetPreparationForm();}} wide>
             <h3 className="modal-header">
               {editingItem ? "Modifier la préparation" : "Nouvelle préparation"}
             </h3>
@@ -7723,14 +7459,12 @@ function App() {
                 </button>
               </div>
             </form>
-          </div>
-        </div>
+        </FormModal>
       )}
 
       {/* Modal Recette */}
       {showRecetteModal && (
-        <div className="modal-overlay">
-          <div className="modal-content">
+        <FormModal title={editingItem ? 'Modifier la recette' : 'Ajouter une recette'} onClose={()=>{setShowRecetteModal(false);setEditingItem(null);}} wide>
             <h3 className="modal-header">
               {editingItem ? "Modifier la recette" : "Ajouter une recette"}
             </h3>
@@ -7959,8 +7693,7 @@ function App() {
                 </button>
               </div>
             </form>
-          </div>
-        </div>
+        </FormModal>
       )}
 
       {/* Modal OCR */}
