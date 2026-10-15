@@ -117,6 +117,24 @@ class LegacyGuardTests(unittest.TestCase):
                     self.assertIn("require_legacy_restaurant_manager", name)
         self.assertGreaterEqual(len(seen), 90)
 
+    def test_every_api_route_requires_server_auth_except_login_and_disabled_legacy_endpoint(self):
+        public = {"/auth/login", "/auth/session/{session_id}"}
+        seen = 0
+        for node in TREE.body:
+            if not isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
+                continue
+            for deco in node.decorator_list:
+                path = decorator_path(deco)
+                if path is None:
+                    continue
+                seen += 1
+                if path in public:
+                    continue
+                # Dependencies can be declared at the route or signature level.
+                protected = bool(decorated_guard(deco)) or ("id='Depends'" in ast.dump(node.args))
+                self.assertTrue(protected, "Missing authentication dependency: " + path)
+        self.assertGreaterEqual(seen, 110)
+
     def test_owner_checks_present_on_sensitive_mission_routes(self):
         functions = {
             node.name: ast.dump(node)
