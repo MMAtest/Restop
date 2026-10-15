@@ -2495,7 +2495,7 @@ function App() {
         onStocks={() => { setActiveTab('stocks'); setActiveStockTab('stocks'); setStockFilter('all'); }}
         onStockAlerts={() => { setActiveTab('stocks'); setActiveStockTab('stocks'); setStockFilter('critical'); }}
         onPurchases={() => { setActiveTab('stocks'); setActiveStockTab('ocr'); setActiveOcrTab('factures'); }}
-        onImport={currentUser?.role !== 'employe_cuisine' ? () => { setActiveTab('stocks'); setActiveStockTab('ocr'); setActiveOcrTab('factures'); setShowOcrModal(true); } : null} />}
+        onImport={['patron', 'super_admin', 'gerant', 'chef_cuisine'].includes(currentUser?.role) ? () => { setActiveTab('stocks'); setActiveStockTab('ocr'); setActiveOcrTab('factures'); setShowOcrModal(true); } : null} />}
 
       {/* Top Navigation Tabs (Analytics) - SUPER ADMIN et PATRON */}
       {activeTab === "dashboard" && (currentUser?.role === 'super_admin' || currentUser?.role === 'patron' || currentUser?.role === 'gerant') && (

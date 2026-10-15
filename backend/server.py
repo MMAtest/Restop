@@ -1,4 +1,4 @@
-from fastapi import FastAPI, APIRouter, HTTPException, UploadFile, File, Form
+from fastapi import FastAPI, APIRouter, HTTPException, UploadFile, File, Form, Header, Depends
 from fastapi.responses import StreamingResponse
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
@@ -34,6 +34,7 @@ import asyncio
 
 # Parsers optimisés
 from parsers_optimized import parse_product_line_smart, optimize_parser_results, detect_product_category, detect_supplier_category
+from invoice_guard import audit_invoice_totals, supplier_invoice_fingerprint, reserve_invoice_for_import
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env', override=False)
@@ -111,6 +112,29 @@ client = AsyncIOMotorClient(mongo_url)
 # Utiliser DB_NAME de l'environnement (production) ou test_database par défaut (développement)
 db_name = os.environ.get('DB_NAME', 'test_database')
 db = client[db_name]
+
+
+async def require_active_user(authorization: Optional[str] = Header(default=None)):
+    """Authorize using the persisted session and the CURRENT user role, never a client role."""
+    if not authorization or not authorization.startswith("Bearer "):
+        raise HTTPException(status_code=401, detail="Authentification requise")
+    token = authorization[7:].strip()
+    if not token:
+        raise HTTPException(status_code=401, detail="Session manquante")
+    session = await db.user_sessions.find_one({"session_id": token})
+    if not session or not session.get("user_id"):
+        raise HTTPException(status_code=401, detail="Session invalide")
+    user = await db.users.find_one({"id": session["user_id"], "is_active": True})
+    if not user:
+        raise HTTPException(status_code=401, detail="Compte introuvable ou désactivé")
+    return user
+
+
+async def require_user_manager(user=Depends(require_active_user)):
+    if user.get("role") not in {"super_admin", "patron"}:
+        raise HTTPException(status_code=403, detail="Accès réservé à la direction")
+    return user
+
 
 # Create the main app without a prefix
 app = FastAPI()
@@ -1886,18 +1910,21 @@ async def migrate_to_v3():
         # 4. Create default admin user if no users exist
         user_count = await db.users.count_documents({})
         if user_count == 0:
-            from passlib.context import CryptContext
-            pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-            
-            admin_user = User(
-                username="admin",
-                email="admin@restaurantla-table-augustine.fr",
-                password_hash=pwd_context.hash("RestaurantAdmin2025!"),
-                role="super_admin",
-                full_name="Administrateur Système"
-            )
-            await db.users.insert_one(admin_user.dict())
-            migration_results.append("Created default admin user (admin/RestaurantAdmin2025!)")
+            bootstrap_password = os.getenv("RESTOP_BOOTSTRAP_ADMIN_PASSWORD", "")
+            bootstrap_email = os.getenv("RESTOP_BOOTSTRAP_ADMIN_EMAIL", "")
+            if len(bootstrap_password) < 12 or not bootstrap_email:
+                migration_results.append("Admin initial non créé : variables RESTOP_BOOTSTRAP_ADMIN_EMAIL et RESTOP_BOOTSTRAP_ADMIN_PASSWORD requises")
+            else:
+                from passlib.context import CryptContext
+                admin_user = User(
+                    username="admin",
+                    email=bootstrap_email,
+                    password_hash=CryptContext(schemes=["bcrypt"], deprecated="auto").hash(bootstrap_password),
+                    role="super_admin",
+                    full_name="Administrateur Système"
+                )
+                await db.users.insert_one(admin_user.dict())
+                migration_results.append("Admin initial créé ; rotation de mot de passe recommandée")
         
         # Record migration
         migration_record = MigrationStatus(
@@ -1927,7 +1954,7 @@ async def migrate_to_v3():
 
 # User Management (Super Admin only)
 @api_router.post("/admin/users", response_model=UserResponse)
-async def create_user(user_create: UserCreate):
+async def create_user(user_create: UserCreate, editor=Depends(require_user_manager)):
     """Create a new user (Super Admin only)"""
     from passlib.context import CryptContext
     pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -1939,9 +1966,13 @@ async def create_user(user_create: UserCreate):
     if existing_user:
         raise HTTPException(status_code=400, detail="Username or email already exists")
     
-    # Validate role
+    # Validate role and password before hashing.
     if user_create.role not in ROLES:
         raise HTTPException(status_code=400, detail=f"Invalid role. Must be one of: {list(ROLES.keys())}")
+    if editor.get("role") != "super_admin" and user_create.role == "super_admin":
+        raise HTTPException(status_code=403, detail="Seul un Super Admin peut créer un Super Admin")
+    if len(user_create.password) < 12:
+        raise HTTPException(status_code=422, detail="Mot de passe : 12 caractères minimum")
     
     # Create user
     user_dict = user_create.dict()
@@ -2056,23 +2087,28 @@ def calculate_delivery_date(supplier: Fournisseur, order_date: datetime = None) 
     }
 
 @api_router.get("/admin/users", response_model=List[UserResponse])
-async def get_users():
+async def get_users(editor=Depends(require_user_manager)):
     """Get all users (Super Admin only)"""
     users = await db.users.find().to_list(1000)
     return [UserResponse(**user) for user in users]
 
 @api_router.delete("/admin/users/{user_id}")
-async def delete_user(user_id: str):
+async def delete_user(user_id: str, editor=Depends(require_user_manager)):
     """Delete a user (Super Admin only)"""
+    if editor.get("role") != "super_admin":
+        raise HTTPException(status_code=403, detail="Suppression réservée au Super Admin")
+    if editor.get("id") == user_id:
+        raise HTTPException(status_code=403, detail="Impossible de supprimer votre propre compte")
     result = await db.users.delete_one({"id": user_id})
     if result.deleted_count == 0:
         raise HTTPException(status_code=404, detail="User not found")
     return {"message": "User deleted successfully"}
 
 @api_router.put("/admin/users/{user_id}", response_model=UserResponse)
-async def update_user(user_id: str, user_update: UserUpdate, requester_role: str = "super_admin"):
+async def update_user(user_id: str, user_update: UserUpdate, editor=Depends(require_user_manager)):
     """Update a user (Patron or Super Admin)"""
     try:
+        requester_role = editor.get("role")
         # Vérifier les permissions du demandeur
         if requester_role not in ["super_admin", "patron"]:
              raise HTTPException(status_code=403, detail="Permission refusée. Seuls Patron et Super Admin peuvent modifier des utilisateurs.")
@@ -2091,8 +2127,10 @@ async def update_user(user_id: str, user_update: UserUpdate, requester_role: str
         
         # Si le mot de passe est vide, ne pas le mettre à jour
         if update_data.get("password"):
-            # Hash du nouveau mot de passe (pour l'instant simple, en production utiliser bcrypt)
-            update_data["password_hash"] = f"hashed_{update_data['password']}"
+            from passlib.context import CryptContext
+            if len(update_data["password"]) < 12:
+                raise HTTPException(status_code=422, detail="Mot de passe : 12 caractères minimum")
+            update_data["password_hash"] = CryptContext(schemes=["bcrypt"], deprecated="auto").hash(update_data['password'])
             update_data.pop("password", None)
         elif "password" in update_data:
             # Supprimer le champ password s'il est vide
@@ -7008,12 +7046,23 @@ async def login(request: LoginRequest):
         if not user:
             return LoginResponse(success=False, message="Identifiant incorrect")
         
-        # Vérification simple du mot de passe (en production, utiliser bcrypt)
+        # Vérification bcrypt réelle ; les anciens comptes fictifs sans hash valide
+        # devront passer par une réinitialisation administrateur. Aucun mot de passe
+        # partagé ni repli silencieux en production.
+        from passlib.context import CryptContext
         user_obj = User(**user)
-        
-        # Accepter password OU password123 pour la démo
-        if request.password != "password123" and request.password != "password":
-            return LoginResponse(success=False, message="Mot de passe incorrect")
+        if not user_obj.is_active:
+            return LoginResponse(success=False, message="Identifiants invalides")
+        pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+        stored_hash = user_obj.password_hash or ""
+        if not stored_hash.startswith(("$2a$", "$2b$", "$2y$")):
+            return LoginResponse(success=False, message="Identifiants invalides. Contactez votre administrateur pour réinitialiser ce compte")
+        try:
+            password_valid = pwd_context.verify(request.password, stored_hash)
+        except (ValueError, TypeError):
+            password_valid = False
+        if not password_valid:
+            return LoginResponse(success=False, message="Identifiants invalides")
         
         # Créer une session
         session_id = str(uuid.uuid4())
@@ -8649,6 +8698,9 @@ class FactureAnalysisResult(BaseModel):
     items: List[FactureItemAnalysis]
     ai_powered: bool = False  # Nouveau champ pour indiquer si analysé par Gemini
     confiance_globale: float = 0.0  # Score de confiance global
+    audit_warnings: List[dict] = []  # Anomalies consultatives, sans modification de données
+    total_ht: Optional[float] = None
+    total_ttc: Optional[float] = None
 
 class ImportConfirmationRequest(BaseModel):
     document_id: str
@@ -8657,6 +8709,9 @@ class ImportConfirmationRequest(BaseModel):
     create_supplier: bool = False
     items: List[FactureItemAnalysis]
     supplier_category: str = "frais" # Default category
+    invoice_number: Optional[str] = None
+    invoice_date: Optional[str] = None
+    acknowledge_audit_warnings: bool = False
 
 @api_router.post("/ocr/analyze-facture/{document_id}", response_model=FactureAnalysisResult)
 async def analyze_facture_for_review(document_id: str):
@@ -8689,7 +8744,10 @@ async def analyze_facture_for_review(document_id: str):
             supplier_name=ocr_supplier_name,
             facture_date=donnees_parsees.get("date", datetime.utcnow().strftime("%d/%m/%Y")),
             numero_facture=donnees_parsees.get("numero_facture", "N/A"),
-            items=[]
+            items=[],
+            audit_warnings=audit_invoice_totals(donnees_parsees),
+            total_ht=donnees_parsees.get("total_ht"),
+            total_ttc=donnees_parsees.get("total_ttc")
         )
         
         if supplier_match and supplier_match["confidence"] >= 0.6:
@@ -8768,7 +8826,10 @@ async def analyze_facture_with_ai_joker(document_id: str):
             numero_facture=gemini_result.get("numero_facture", "N/A"),
             items=[],
             ai_powered=True,  # Indicateur que c'est analysé par IA
-            confiance_globale=gemini_result.get("confiance", 0.9)
+            confiance_globale=gemini_result.get("confiance", 0.9),
+            audit_warnings=audit_invoice_totals(gemini_result),
+            total_ht=gemini_result.get("total_ht"),
+            total_ttc=gemini_result.get("total_ttc")
         )
         
         # Vérifier si le fournisseur existe
@@ -8814,6 +8875,7 @@ async def analyze_facture_with_ai_joker(document_id: str):
             "fournisseur": gemini_result.get("fournisseur"),
             "date": gemini_result.get("date"),
             "numero_facture": gemini_result.get("numero_facture"),
+            "total_ht": gemini_result.get("total_ht"),
             "total_ttc": gemini_result.get("total_ttc"),
             "produits": [
                 {
@@ -8980,8 +9042,15 @@ async def analyze_ticket_z_with_ai(document_id: str):
 
 
 
+async def require_invoice_editor(user=Depends(require_active_user)):
+    """Role check specific to OCR stock integration."""
+    if user.get("role") not in {"super_admin", "patron", "gerant", "chef_cuisine"}:
+        raise HTTPException(status_code=403, detail="Rôle non autorisé à intégrer des factures en stock")
+    return user
+
+
 @api_router.post("/ocr/confirm-import", response_model=dict)
-async def confirm_import_facture(request: ImportConfirmationRequest):
+async def confirm_import_facture(request: ImportConfirmationRequest, editor=Depends(require_invoice_editor)):
     """
     Step 2 of Reconciliation: Apply validated data to system.
     Creates Products, Suppliers, Stock Movements, and BATCHES with DLC.
@@ -9022,7 +9091,7 @@ async def confirm_import_facture(request: ImportConfirmationRequest):
         # Doublons inter-documents : même fournisseur et même numéro de facture déjà intégrée.
         from re import escape as regex_escape
         parsed = document.get("donnees_parsees") or {}
-        invoice_number = str(parsed.get("numero_facture") or "").strip()
+        invoice_number = str(request.invoice_number or parsed.get("numero_facture") or "").strip()
         invoice_supplier = str(parsed.get("fournisseur") or request.supplier_name or "").strip()
         if invoice_number and invoice_number.lower() not in {"n/a", "inconnu", "unknown"} and invoice_supplier:
             previous_invoice = await db.documents_ocr.find_one({
@@ -9045,8 +9114,62 @@ async def confirm_import_facture(request: ImportConfirmationRequest):
                 raise HTTPException(status_code=422, detail=f"Ligne {index} : prix unitaire invalide")
             if not item.selected_product_id and not (item.final_name or item.ocr_name).strip():
                 raise HTTPException(status_code=422, detail=f"Ligne {index} : nom du produit requis")
+        audit_warnings = audit_invoice_totals(parsed)
+        if audit_warnings and not request.acknowledge_audit_warnings:
+            raise HTTPException(status_code=422, detail="Anomalies de facture détectées : examinez les montants et confirmez leur prise en compte avant import.")
+
+        # Vérifier les références avant de créer le moindre lot ou mouvement.
+        # Sinon une ligne mal sélectionnée pouvait produire un mouvement orphelin.
+        if not request.create_supplier and not request.supplier_id:
+            raise HTTPException(status_code=422, detail="Choisissez un fournisseur existant ou créez-en un")
+        if request.supplier_id and not await db.fournisseurs.find_one({"id": request.supplier_id}):
+            raise HTTPException(status_code=422, detail="Le fournisseur sélectionné n'existe plus")
+        for product_id in {item.selected_product_id for item in request.items if item.selected_product_id}:
+            if not await db.produits.find_one({"id": product_id}):
+                raise HTTPException(status_code=422, detail="Produit introuvable dans les stocks : actualisez les produits")
+            if not await db.stocks.find_one({"produit_id": product_id}):
+                raise HTTPException(status_code=422, detail="Stock initial absent pour un produit existant : corrigez sa fiche avant import")
+
+        # Réserver atomiquement le document : protège les requêtes simultanées.
+        # Aucun mouvement ou création de produit ne commence avant cette réservation.
+        previous_status = document.get("statut", "traite")
+        claim_created = False
+        claim_id = None
+        writing_started = False
+        import_reserved = await reserve_invoice_for_import(db.documents_ocr, request.document_id, datetime.utcnow())
+        if not import_reserved:
+            raise HTTPException(status_code=409, detail="Facture déjà intégrée, en cours d'import ou nécessitant une reprise manuelle")
+
+        # Empreinte partagée entre documents. _id est unique dans MongoDB même
+        # sans création d'index applicatif additionnel.
+        from pymongo.errors import DuplicateKeyError
+        supplier_for_claim = request.supplier_name
+        if request.supplier_id:
+            supplier_record = await db.fournisseurs.find_one({"id": request.supplier_id})
+            if supplier_record:
+                supplier_for_claim = supplier_record.get("nom") or supplier_for_claim
+        claim_id = supplier_invoice_fingerprint(supplier_for_claim, invoice_number)
+        if claim_id and document.get("restaurant_id"):
+            import hashlib
+            claim_id = hashlib.sha256((str(document["restaurant_id"]) + ":" + claim_id).encode()).hexdigest()
+        if claim_id:
+            try:
+                await db.invoice_import_claims.insert_one({
+                    "_id": claim_id, "document_id": request.document_id,
+                    "supplier": supplier_for_claim, "invoice_number": invoice_number,
+                    "created_at": datetime.utcnow()
+                })
+                claim_created = True
+            except DuplicateKeyError:
+                await db.documents_ocr.update_one(
+                    {"id": request.document_id, "statut": "import_en_cours"},
+                    {"$set": {"statut": previous_status}, "$unset": {"import_started_at": ""}}
+                )
+                raise HTTPException(status_code=409, detail="Cette référence fournisseur a déjà un import réservé ou intégré. Vérification nécessaire")
+
         # 1. Gérer le fournisseur
         supplier_id = request.supplier_id
+        writing_started = True
         if request.create_supplier and not supplier_id:
             # Détecter la catégorie basée sur le nom et les produits
             product_names = [item.final_name or item.ocr_name for item in request.items]
@@ -9158,14 +9281,14 @@ async def confirm_import_facture(request: ImportConfirmationRequest):
             await db.mouvements_stock.insert_one(mouvement.dict())
             import_stats["stock_entries"] += 1
             
-            # 5. Mise à jour Quantité Totale Stock
-            stock = await db.stocks.find_one({"produit_id": product_id})
-            if stock:
-                new_qty = round_stock_quantity(stock["quantite_actuelle"] + item.final_qty)
-                await db.stocks.update_one(
-                    {"produit_id": product_id},
-                    {"$set": {"quantite_actuelle": new_qty, "derniere_maj": datetime.utcnow()}}
-                )
+            # 5. Incrément atomique : deux réceptions ne doivent jamais écraser leurs stocks.
+            stock_update = await db.stocks.update_one(
+                {"produit_id": product_id},
+                {"$inc": {"quantite_actuelle": round_stock_quantity(item.final_qty)},
+                 "$set": {"derniere_maj": datetime.utcnow()}}
+            )
+            if stock_update.matched_count != 1:
+                raise RuntimeError("Stock du produit introuvable pendant l'intégration")
             # ✅ APPRENTISSAGE : On sauvegarde la correction pour la prochaine fois
             # Si le nom OCR est différent du nom final, on apprend !
             if item.ocr_name and product_id and supplier_id:
@@ -9192,10 +9315,17 @@ async def confirm_import_facture(request: ImportConfirmationRequest):
                 )
 
         # Marquer document comme traité
-        await db.documents_ocr.update_one(
-            {"id": request.document_id},
-            {"$set": {"statut": "integre", "date_traitement": datetime.utcnow()}}
+        completed_import = await db.documents_ocr.update_one(
+            {"id": request.document_id, "statut": "import_en_cours"},
+            {"$set": {"statut": "integre", "date_traitement": datetime.utcnow(),
+                      "donnees_parsees.numero_facture": invoice_number or parsed.get("numero_facture"),
+                      "donnees_parsees.date": request.invoice_date or parsed.get("date"),
+                      "donnees_parsees.fournisseur": supplier_for_claim,
+                      "imported_by": editor.get("id") if isinstance(editor, dict) else None},
+             "$unset": {"import_started_at": ""}}
         )
+        if completed_import.matched_count != 1:
+            raise RuntimeError("Réservation de facture perdue pendant l'intégration")
         
         return {
             "success": True, 
@@ -9206,8 +9336,30 @@ async def confirm_import_facture(request: ImportConfirmationRequest):
     except HTTPException:
         raise
     except Exception as e:
-        print(f"❌ Erreur confirmation import: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"Erreur confirmation: {str(e)}")
+        # Une écriture partielle est possible sur un MongoDB sans transactions.
+        # Ne jamais libérer automatiquement un document après tentative d'écriture.
+        if locals().get("import_reserved"):
+            if locals().get("writing_started"):
+                try:
+                    await db.documents_ocr.update_one(
+                        {"id": request.document_id, "statut": "import_en_cours"},
+                        {"$set": {"statut": "import_incomplet", "import_error_at": datetime.utcnow()}}
+                    )
+                except Exception:
+                    logging.exception("Impossible de signaler un import potentiellement partiel")
+                raise HTTPException(status_code=409,
+                    detail="Import interrompu : état du stock incertain. Ne réessayez pas sans contrôle manuel des mouvements et des lots.")
+            try:
+                await db.documents_ocr.update_one(
+                    {"id": request.document_id, "statut": "import_en_cours"},
+                    {"$set": {"statut": previous_status}, "$unset": {"import_started_at": ""}}
+                )
+                if claim_created and claim_id:
+                    await db.invoice_import_claims.delete_one({"_id": claim_id, "document_id": request.document_id})
+            except Exception:
+                logging.exception("Échec de libération de la réservation d'import")
+        logging.exception("Erreur confirmation facture")
+        raise HTTPException(status_code=500, detail="Import impossible ; vérifiez l'état du document avant une nouvelle tentative")
 
 
 async def process_facture_to_real_data(document_id: str):
@@ -9643,11 +9795,15 @@ async def startup_db_client():
         # Vérifier si la base est vide (pas d'utilisateurs)
         user_count = await db.users.count_documents({})
         if user_count == 0:
-            print("🚀 Base de données vide détectée au démarrage. Initialisation des données de démonstration...")
-            await init_demo_missions_and_users()
-            print("✅ Données de démonstration initialisées automatiquement.")
+            # Jamais de comptes de démonstration à mots de passe prédictibles
+            # dans une base métier. Le seed est strictement opt-in et isolé.
+            if (os.getenv("RESTOP_ENABLE_DEMO_SEED") == "1" and "demo" in db_name.lower()):
+                await init_demo_missions_and_users()
+                logging.warning("Jeu de données de démonstration initialisé sur base dédiée")
+            else:
+                logging.warning("Aucun compte configuré : bootstrap administrateur sécurisé requis")
         else:
-            print(f"✅ Base de données déjà initialisée ({user_count} utilisateurs).")
+            logging.info("Base utilisateurs déjà initialisée")
     except Exception as e:
         print(f"⚠️ Erreur lors de l'initialisation automatique: {str(e)}")
 

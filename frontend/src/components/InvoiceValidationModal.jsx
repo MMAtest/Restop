@@ -420,8 +420,9 @@ const InvoiceValidationModal = ({ documentId, onClose, onSuccess, onRefresh, pro
       Number(item.ocr_total) > 0 && Number(item.ocr_qty) > 0 &&
       Math.abs(Number(item.ocr_total) - Number(item.ocr_qty) * Number(item.final_price)) > 0.05
     );
-    if ((uncertain.length || discrepancies.length) && !window.confirm(
-      `${uncertain.length} ligne(s) sans correspondance certaine ; ${discrepancies.length} écart(s) prix × quantité.\nVérifiez les données et confirmez-vous l'import ?`
+    const auditWarnings = Array.isArray(analysis?.audit_warnings) ? analysis.audit_warnings : [];
+    if ((uncertain.length || discrepancies.length || auditWarnings.length) && !window.confirm(
+      `${uncertain.length} ligne(s) sans correspondance certaine ; ${discrepancies.length} écart(s) de ligne ; ${auditWarnings.length} anomalie(s) détectée(s) sur la facture.\nVérifiez les données et confirmez-vous l'import après examen ?`
     )) return;
     setLoading(true);
     try {
@@ -443,6 +444,9 @@ const InvoiceValidationModal = ({ documentId, onClose, onSuccess, onRefresh, pro
         supplier_name: finalSupplierName,
         create_supplier: createSupplier,
         supplier_category: newSupplierCategory,
+        invoice_number: editableNumero.trim(),
+        invoice_date: editableDate,
+        acknowledge_audit_warnings: auditWarnings.length > 0,
         items: items.map(item => ({
             ...item,
             ocr_price: item.final_price,
@@ -546,8 +550,8 @@ const InvoiceValidationModal = ({ documentId, onClose, onSuccess, onRefresh, pro
                   />
                   <div style={{
                     fontSize: '11px',
-                    color: '#059669',
-                    fontStyle: 'italic',
+                    color: '#681b32',
+                    fontStyle: 'normal',
                     width: isMobile ? '100%' : 'auto'
                   }}>
                     Nouveau fournisseur : Le système mémorisera vos corrections pour les prochaines factures
@@ -602,6 +606,17 @@ const InvoiceValidationModal = ({ documentId, onClose, onSuccess, onRefresh, pro
           </div>
         </div>
 
+        {Array.isArray(analysis?.audit_warnings) && analysis.audit_warnings.length > 0 && (
+          <div className="rt-invoice-audit" role="alert">
+            <strong>Montants à contrôler avant import · {analysis.audit_warnings.length} anomalie(s)</strong>
+            <ul>{analysis.audit_warnings.slice(0, 6).map((warning, idx) =>
+              <li key={`${warning.code}-${idx}`}>{warning.message}</li>
+            )}</ul>
+            {analysis.audit_warnings.length > 6 && <p>Et {analysis.audit_warnings.length - 6} autre(s) point(s) à vérifier.</p>}
+            <small>Ces contrôles sont indicatifs : les remises, consignes et poids variables peuvent expliquer des écarts. Votre confirmation reste obligatoire.</small>
+          </div>
+        )}
+
         {/* SUGGESTION JOKER IA */}
         {showAiSuggestion && (
           <div style={{
@@ -614,12 +629,12 @@ const InvoiceValidationModal = ({ documentId, onClose, onSuccess, onRefresh, pro
             gap: '10px'
           }}>
             <div style={{flex: 1, fontSize: isMobile ? '12px' : '14px'}}>
-              <strong>Amélioration IA disponible</strong> • Beaucoup de produits non reconnus. L&apos;analyse IA peut améliorer la précision jusqu&apos;à 90%.
+              <strong>Amélioration IA disponible</strong> • Beaucoup de produits non reconnus. Une seconde lecture IA peut aider sur les factures complexes, sans garantie de précision.
             </div>
             <button
               onClick={handleReanalyzeWithAI}
               style={{
-                background: '#10b981',
+                background: '#681b32',
                 color: 'white',
                 border: 'none',
                 padding: isMobile ? '8px 16px' : '10px 20px',
@@ -630,7 +645,7 @@ const InvoiceValidationModal = ({ documentId, onClose, onSuccess, onRefresh, pro
                 whiteSpace: 'nowrap'
               }}
             >
-              Améliorer avec IA (~0.003€)
+              Relire avec l’IA (coût variable)
             </button>
             <button
               onClick={() => setShowAiSuggestion(false)}
