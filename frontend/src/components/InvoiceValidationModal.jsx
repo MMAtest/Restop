@@ -401,6 +401,28 @@ const InvoiceValidationModal = ({ documentId, onClose, onSuccess, onRefresh, pro
   };
 
   const handleValidate = async () => {
+    // Vérifier les valeurs corrigées avant l'appel d'import.
+    const invalidRow = items.findIndex(item =>
+      !Number.isFinite(Number(item.final_qty)) || Number(item.final_qty) <= 0 ||
+      !Number.isFinite(Number(item.final_price)) || Number(item.final_price) < 0 ||
+      (!item.selected_product_id && !String(item.final_name || '').trim())
+    );
+    if (invalidRow !== -1) {
+      alert(`Vérifiez la ligne ${invalidRow + 1} : produit, quantité positive et prix valide obligatoires.`);
+      return;
+    }
+    if (!items.length) {
+      alert('Ajoutez au moins une ligne produit avant de confirmer.');
+      return;
+    }
+    const uncertain = items.filter(item => !item.selected_product_id || (item.confidence > 0 && item.confidence < 0.8));
+    const discrepancies = items.filter(item =>
+      Number(item.ocr_total) > 0 && Number(item.ocr_qty) > 0 &&
+      Math.abs(Number(item.ocr_total) - Number(item.ocr_qty) * Number(item.final_price)) > 0.05
+    );
+    if ((uncertain.length || discrepancies.length) && !window.confirm(
+      `${uncertain.length} ligne(s) sans correspondance certaine ; ${discrepancies.length} écart(s) prix × quantité.\nVérifiez les données et confirmez-vous l'import ?`
+    )) return;
     setLoading(true);
     try {
       let finalSupplierId = selectedSupplierId;

@@ -9009,6 +9009,27 @@ async def confirm_import_facture(request: ImportConfirmationRequest):
                             item_analysis.final_unit = mapped_product.get("unite", "kg")
     """
     try:
+        # Validation serveur obligatoire avant toute écriture stock.
+        # L'identifiant du document est la clé d'idempotence de cet import.
+        import math
+        document = await db.documents_ocr.find_one({"id": request.document_id})
+        if not document or document.get("type_document") != "facture_fournisseur":
+            raise HTTPException(status_code=404, detail="Facture OCR introuvable")
+        if document.get("statut") == "integre":
+            raise HTTPException(status_code=409, detail="Cette facture a déjà été intégrée au stock")
+        if await db.mouvements_stock.find_one({"reference": f"FACT-{request.document_id[:8]}"}):
+            raise HTTPException(status_code=409, detail="Des mouvements de stock existent déjà pour cette facture : vérification manuelle requise")
+        if not request.supplier_name.strip() or not request.items:
+            raise HTTPException(status_code=422, detail="Fournisseur et lignes de facture obligatoires")
+        for index, item in enumerate(request.items, 1):
+            qty = item.final_qty
+            price = item.ocr_price
+            if qty is None or not math.isfinite(qty) or qty <= 0:
+                raise HTTPException(status_code=422, detail=f"Ligne {index} : quantité positive requise")
+            if price is None or not math.isfinite(price) or price < 0:
+                raise HTTPException(status_code=422, detail=f"Ligne {index} : prix unitaire invalide")
+            if not item.selected_product_id and not (item.final_name or item.ocr_name).strip():
+                raise HTTPException(status_code=422, detail=f"Ligne {index} : nom du produit requis")
         # 1. Gérer le fournisseur
         supplier_id = request.supplier_id
         if request.create_supplier and not supplier_id:
@@ -9167,6 +9188,8 @@ async def confirm_import_facture(request: ImportConfirmationRequest):
             "stats": import_stats
         }
 
+    except HTTPException:
+        raise
     except Exception as e:
         print(f"❌ Erreur confirmation import: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Erreur confirmation: {str(e)}")
