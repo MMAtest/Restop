@@ -27,3 +27,61 @@ body{background:var(--rt-paper);font-family:Inter,sans-serif;font-size:14px}.App
 .rt-invoice-audit ul{margin:4px 0 6px;padding-left:20px}
 .rt-invoice-audit li{margin:3px 0}
 .rt-invoice-audit small{color:#785b62}
+
+/* Restop — facture OCR : wizard de validation visible et accessible */
+.rt-wizard-header{padding:20px 24px 13px;background:#fffaf9;border-bottom:1px solid #ead4dc;color:#3e1624;flex-shrink:0}
+.rt-wizard-title{display:flex;align-items:center;justify-content:space-between;gap:15px}
+.rt-wizard-title h2{margin:4px 0 12px;font-size:22px;line-height:1.25;font-weight:500;letter-spacing:-.5px;color:#3e1624}
+.rt-wizard-title button{background:transparent;border:1px solid #e9d2d9;border-radius:8px;color:#681b32;width:35px;height:35px;font-size:26px;line-height:1}
+.rt-wizard-eyebrow{font-size:10px;letter-spacing:.13em;text-transform:uppercase;color:#92263d;font-weight:600;margin:0}
+.rt-wizard-steps{display:flex;align-items:center;gap:12px;list-style:none;padding:0;margin:5px 0 10px;flex-wrap:wrap}
+.rt-wizard-steps li{display:inline-flex;align-items:center;gap:7px;color:#8b777e;font-size:12px;font-weight:500}
+.rt-wizard-steps li span{display:flex;align-items:center;justify-content:center;width:26px;height:26px;border:1px solid #e4cad4;background:#fff;color:#681b32;border-radius:50%;flex-shrink:0;font-size:11px}
+.rt-wizard-steps li.is-current{color:#681b32;font-weight:700}
+.rt-wizard-steps li.is-current span,.rt-wizard-steps li.is-complete span{background:#681b32;color:#fff;border-color:#681b32}
+.rt-wizard-explanation{font-size:12px;line-height:1.6;color:#6f5962;margin:3px 0 0;max-width:780px}
+.rt-wizard-notice,.rt-wizard-error{font-size:12px;line-height:1.6;padding:12px 20px;margin:12px 20px 0;border-radius:8px}
+.rt-wizard-notice{color:#681b32;background:#fbedf1;border:1px solid #ebd5de}
+.rt-wizard-error{color:#842431;background:#fff1ee;border:1px solid #d88389;font-weight:600}
+.rt-wizard-step-panel{overflow:auto;flex:1;min-height:0}
+.rt-wizard-products{display:flex;flex-direction:column}
+.rt-wizard-products>div[style*="overflow-y"],.rt-wizard-products>div[style*="overflowY"]{flex:1}
+.rt-wizard-review{flex:1;overflow:auto;padding:23px 25px;color:#3e1624}
+.rt-wizard-review h3{font-weight:500;font-size:21px;margin:0 0 8px}
+.rt-wizard-review>p{font-size:13px;line-height:1.6;color:#725e65}
+.rt-wizard-review-facts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:21px 0}
+.rt-wizard-review-facts div{background:#fff9f9;border:1px solid #ecd9df;padding:12px;border-radius:9px;min-width:0}
+.rt-wizard-review-facts dt{font-size:11px;color:#836a73}
+.rt-wizard-review-facts dd{font-size:14px;font-weight:500;color:#3e1624;margin:5px 0 0;overflow-wrap:anywhere}
+.rt-wizard-review-scroll{overflow-x:auto}
+.rt-wizard-review-scroll table{width:100%;border-collapse:collapse;font-size:12px;min-width:490px}
+.rt-wizard-review-scroll th,.rt-wizard-review-scroll td{border-bottom:1px solid #efdee3;padding:12px 8px;text-align:left}
+.rt-wizard-review-scroll th{color:#681b32;background:#fcf4f6}
+.rt-wizard-total{display:flex;justify-content:space-between;gap:14px;padding:16px 0;border-bottom:1px solid #efdee3}
+.rt-wizard-review-warning{padding:17px;margin:18px 0;background:#fff4ee;border:1px solid #e5b3b6;border-radius:10px}
+.rt-wizard-review-warning strong{color:#842431}
+.rt-wizard-review-warning p,.rt-wizard-review-warning li{font-size:12px;line-height:1.55}
+.rt-wizard-review-warning label{display:flex;align-items:flex-start;gap:10px;line-height:1.5;font-size:13px;margin-top:15px;cursor:pointer}
+.rt-wizard-review-warning input[type=checkbox]{width:19px;height:19px;flex-shrink:0;accent-color:#681b32}
+.rt-wizard-review-ok{padding:14px;background:#f6f0f2;border-radius:8px;font-size:12px;margin-top:18px}
+.rt-wizard-success{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:30px 25px;gap:10px;color:#3e1624}
+.rt-wizard-success h3{font-size:23px;font-weight:500;margin:0}
+.rt-wizard-success p{font-size:13px;line-height:1.6;max-width:480px}
+.rt-wizard-success-icon{width:50px;height:50px;background:#681b32;color:#fff;font-size:31px;border-radius:50%;display:grid;place-items:center}
+.rt-wizard-footer{display:flex;justify-content:space-between;align-items:center;gap:16px;padding:15px 23px;flex-shrink:0;border-top:1px solid #ead4dc;background:#fff}
+.rt-wizard-footer p{color:#755c66;font-size:12px;margin:0}
+.rt-wizard-footer-buttons{display:flex;gap:9px;flex-wrap:wrap}
+.rt-wizard-primary,.rt-wizard-secondary{border-radius:9px;padding:12px 17px;font-size:12px;font-weight:600;min-height:43px;cursor:pointer}
+.rt-wizard-primary{background:#681b32;color:#fff;border:1px solid #681b32}
+.rt-wizard-primary:hover{background:#92263d}
+.rt-wizard-secondary{background:#fff;color:#681b32;border:1px solid #d6b4bf}
+.rt-wizard-primary:disabled{opacity:.55;cursor:not-allowed}
+.rt-wizard-primary:focus-visible,.rt-wizard-secondary:focus-visible,.rt-wizard-title button:focus-visible{outline:3px solid #c43748;outline-offset:2px}
+.rt-wizard-loading{max-width:460px;text-align:center;padding:40px;display:flex;flex-direction:column;align-items:center;gap:10px;color:#3e1624}
+.rt-wizard-loading p{font-size:13px;line-height:1.6}
+.rt-wizard-spinner{height:32px;width:32px;border:3px solid #ead4dc;border-top-color:#681b32;border-radius:50%;animation:rt-wizard-spin 1s linear infinite}
+@keyframes rt-wizard-spin{to{transform:rotate(360deg)}}
+@media(max-width:768px){.rt-wizard-header{padding:15px}.rt-wizard-title h2{font-size:17px}.rt-wizard-steps{gap:8px}.rt-wizard-steps li{font-size:10px}.rt-wizard-steps li span{width:23px;height:23px}.rt-wizard-notice,.rt-wizard-error{margin:9px 12px 0;padding:10px}.rt-wizard-review{padding:15px}.rt-wizard-review-facts{grid-template-columns:1fr 1fr}.rt-wizard-footer{flex-direction:column;align-items:stretch;padding:12px;gap:10px}.rt-wizard-footer-buttons{width:100%}.rt-wizard-footer-buttons button{flex:1}.rt-wizard-success{padding:25px 15px}}
+@media(prefers-reduced-motion:reduce){.rt-wizard-spinner{animation:none}}
+
+.rt-wizard-title button:disabled,.rt-wizard-secondary:disabled{opacity:.5;cursor:not-allowed}

@@ -51,3 +51,13 @@ Bloquer la fusion jusqu'à résolution des points 1–4 au minimum. Les changeme
 - Un **test d'intégration MongoDB** facultatif a été ajouté : `backend/test_invoice_transaction_mongo_integration.py`. Le lancer uniquement sur un cluster **isolé** avec `RESTOP_TEST_MONGO_URI` et `RESTOP_INTEGRATION_TEST_ACK=isolated`. Il crée puis efface une base temporaire. **Non exécuté sur la base réelle à ce jour.**
 
 Restent bloquants : audit complet de l'API, réelle séparation restaurant et migration des comptes, validation sur base MongoDB de test, récupération manuelle des imports historiques partiels, restauration et tests de non-régression OCR sur documents réels anonymisés.
+
+## Tests Docker et wizard — 15 octobre 2026 (Mac local)
+
+Docker Desktop était accessible sur `skan.lan`. Un MongoDB 7 temporaire a été créé sur le réseau Docker isolé `restop-test-isolated-20261015`, comme replica set `rs0`. Aucun accès réseau externe à ce MongoDB et aucun volume de production n'ont été montés. Le conteneur Python 3.11 a exécuté le test d'intégration `test_invoice_transaction_mongo_integration` en plus des tests unitaires : **18 tests sur 18 réussis** après adaptation du test AST pour Python 3.11.
+
+Ce test réel a vérifié : rollback après erreur, commit d'écritures sur plusieurs collections, réservation concurrente d'une facture. Il n'implique aucune facture client réelle ; il crée puis supprime sa propre base temporaire `restop_txn_ci_*`. Il ne valide pas encore toute l'API FastAPI, l'authentification en situation, ni les cas extrêmes de commit Mongo ambigu.
+
+**Wizard OCR corrigé** : trois étapes nommées (`Fournisseur`, `Produits`, `Récapitulatif`) avec explication à chaque étape ; messages internes persistants au lieu de boîtes `alert()` ; confirmation humaine des risques ; résumé explicite avant toute écriture ; écran de réussite qui reste ouvert jusqu'à fermeture volontaire ; erreur backend affichée dans la fenêtre avec consigne de contrôle des imports potentiellement incomplets. Les tests Jest du wizard couvrent progression, corrections invalides, alertes et accusé de réception, échec backend et affichage mobile. Les 28 tests React passent.
+
+**Reste à tester manuellement dans un vrai navigateur** : apparence, scroll sur mobile, accessibilité clavier et lecteur d'écran, et chaîne complète avec un backend Restop démarré sur une base non productive et factures anonymisées. Le fait que les tests jsdom passent ne démontre pas à lui seul la qualité de l'interface à l'écran.

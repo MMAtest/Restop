@@ -37,7 +37,7 @@ def load_guards():
         'Optional': Optional, 'HTTPException': FakeHTTPException, 'Header': lambda default=None: default,
         'Depends': lambda func: None, 'db': DB,
     }
-    exec(compile(ast.Module(body=selected), 'server.guards', 'exec'), namespace)
+    exec(compile(ast.Module(body=selected, type_ignores=[]), 'server.guards', 'exec'), namespace)
     return namespace
 
 
