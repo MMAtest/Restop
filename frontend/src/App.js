@@ -138,6 +138,8 @@ function App() {
   const [sessionChecking, setSessionChecking] = useState(true);
   const [overviewLoading, setOverviewLoading] = useState(true);
   const [overviewError, setOverviewError] = useState('');
+  const [overviewAlerts, setOverviewAlerts] = useState(null);
+  const [overviewAlertError, setOverviewAlertError] = useState('');
   const [activeProductionTab, setActiveProductionTab] = useState("produits");
   const [activeHistoriqueTab, setActiveHistoriqueTab] = useState("ventes");
   const [activeStockTab, setActiveStockTab] = useState("stocks");
@@ -439,13 +441,26 @@ function App() {
     setOverviewLoading(true);
     setOverviewError('');
     try {
-      const [stockResult, documentResult] = await Promise.all([
-        axios.get(`${API}/stocks`), axios.get(`${API}/ocr/documents`)
+      const [stockResult, documentResult, alertsResult] = await Promise.allSettled([
+        axios.get(`${API}/stocks`), axios.get(`${API}/ocr/documents`),
+        ['patron', 'super_admin', 'gerant'].includes(currentUser?.role) ? axios.get(`${API}/analytics/alerts`) : Promise.resolve({data:null})
       ]);
-      setStocks(Array.isArray(stockResult.data) ? stockResult.data : []);
-      setDocumentsOcr(Array.isArray(documentResult.data) ? documentResult.data : []);
+      if (stockResult.status === 'fulfilled') setStocks(Array.isArray(stockResult.value.data) ? stockResult.value.data : []);
+      if (documentResult.status === 'fulfilled') setDocumentsOcr(Array.isArray(documentResult.value.data) ? documentResult.value.data : []);
+      if (stockResult.status !== 'fulfilled' || documentResult.status !== 'fulfilled') {
+        setOverviewError('Certaines données n’ont pas pu être chargées. Vérifiez la connexion puis réessayez.');
+      }
+      if (alertsResult.status === 'fulfilled' && alertsResult.value.data) {
+        setOverviewAlerts(alertsResult.value.data);
+        setOverviewAlertError('');
+      } else {
+        setOverviewAlerts(null);
+        setOverviewAlertError('Alertes indisponibles');
+      }
     } catch (_) {
       setOverviewError('Vos données n’ont pas pu être chargées. Vérifiez votre connexion puis réessayez.');
+      setOverviewAlerts(null);
+      setOverviewAlertError('Alertes indisponibles');
     } finally { setOverviewLoading(false); }
   };
 
@@ -2470,7 +2485,12 @@ function App() {
       <AppNavigation activeTab={activeTab} onNavigate={setActiveTab} user={currentUser}
         onLogout={logout} onRefresh={async () => { await refreshAllData(); await loadOverview(); }} loading={loading}
         canOrders={canAccessOrders()} onSuppliers={() => { setActiveTab('production'); setActiveProductionTab('fournisseurs'); }} />
-      {activeTab === 'overview' && <Overview stocks={stocks.map(s => ({...s, unite: s.unite || produits.find(p => p.id === s.produit_id)?.unite}))} documents={documentsOcr} user={currentUser}
+      {activeTab === 'overview' && <Overview stocks={stocks.map(s => ({...s, unite: s.unite || produits.find(p => p.id === s.produit_id)?.unite}))} documents={documentsOcr} user={currentUser} alerts={overviewAlerts} alertsError={overviewAlertError}
+        onPriorityAction={action => {
+          setActiveTab('stocks');
+          if (action === 'factures') {setActiveStockTab('ocr'); setActiveOcrTab('factures');}
+          else {setActiveStockTab('stocks'); setStockFilter('all');}
+        }}
         loading={overviewLoading} error={overviewError} onRetry={loadOverview}
         onStocks={() => { setActiveTab('stocks'); setActiveStockTab('stocks'); setStockFilter('all'); }}
         onStockAlerts={() => { setActiveTab('stocks'); setActiveStockTab('stocks'); setStockFilter('critical'); }}

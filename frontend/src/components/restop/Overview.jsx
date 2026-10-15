@@ -1,4 +1,6 @@
 import React from 'react';
+import OperationalPriorities from './OperationalPriorities';
+import {pendingSupplierInvoices} from '../../utils/operationalBrief.mjs';
 import { ArrowRight, Package, UploadSimple, ShoppingCart, CheckCircle } from '@phosphor-icons/react';
 
 export const previewStocks = [
@@ -7,10 +9,10 @@ export const previewStocks = [
   { image: 'restop-basil.webp', produit_id: 'basilic', produit_nom: 'Basilic frais', quantite_actuelle: 200, quantite_min: 1000, unite: 'g' },
 ];
 
-export default function Overview({ stocks = [], documents = [], user, onStocks, onStockAlerts, onImport, onPurchases, loading = false, error = '', onRetry, preview = false }) {
+export default function Overview({ stocks = [], documents = [], user, onStocks, onStockAlerts, onImport, onPurchases, loading = false, error = '', onRetry, preview = false, alerts = null, alertsError = '', onPriorityAction }) {
   const Heading = preview ? 'h2' : 'h1';
-  const lowStocks = stocks.filter(s => Number(s.quantite_actuelle) <= Number(s.quantite_min));
-  const pending = documents.filter(d => !['validated', 'valide', 'validé', 'traite', 'processed'].includes(d.statut || d.status));
+  const lowStocks = stocks.filter(s => Number(s.quantite_min) > 0 && Number(s.quantite_actuelle) <= Number(s.quantite_min));
+  const pending = pendingSupplierInvoices(documents);
   const firstName = (user?.full_name || 'à vous').split(' ')[0];
   return <section className="rt-overview" aria-labelledby={preview ? 'preview-title' : 'overview-title'}>
     <div className="rt-page-heading">
@@ -18,6 +20,7 @@ export default function Overview({ stocks = [], documents = [], user, onStocks, 
       {onImport && <button className="rt-button rt-peach" onClick={onImport}><UploadSimple size={20} />Importer une facture</button>}
     </div>
     {error ? <div className="rt-feedback" role="alert">{error} <button className="rt-text-link" onClick={onRetry}>Réessayer</button></div> : loading ? <p role="status" className="rt-empty">Chargement de vos données…</p> : <>
+      {!preview && onPriorityAction && ['patron', 'super_admin', 'gerant'].includes(user?.role) && <OperationalPriorities alerts={alerts} documents={documents} error={alertsError} onAction={onPriorityAction} />}
       <div className="rt-summary">
         <button onClick={onPurchases} className="rt-summary-item"><span className="rt-icon-circle"><ShoppingCart size={25} /></span><span><span className="rt-summary-label">Documents à vérifier</span><strong>{preview ? 2 : pending.length}</strong><small>avant validation</small></span><ArrowRight size={18} /></button>
         <button onClick={onStockAlerts || onStocks} className="rt-summary-item"><span className="rt-icon-circle"><Package size={25} /></span><span><span className="rt-summary-label">Produits à surveiller</span><strong>{lowStocks.length}</strong><small>sous le seuil de stock</small></span><ArrowRight size={18} /></button>
