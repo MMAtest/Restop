@@ -9,7 +9,13 @@ export async function apiFetch(input, init = {}) {
  const url = typeof input === 'string' ? input : input.url;
  const headers = new Headers(init.headers || (typeof input !== 'string' ? input.headers : undefined));
  const session = readSession();
- if (BACKEND_URL && url.startsWith(`${BACKEND_URL}/`) && session) headers.set('Authorization', `Bearer ${session.session_id}`);
+ // Same-origin /api calls must also carry the session (when no backend URL is set).
+ // Never attach credentials to unrelated external URLs.
+ const target = new URL(url, window.location.origin);
+ const configured = new URL(BACKEND_URL || window.location.origin, window.location.origin);
+ if (session && target.origin === configured.origin && target.pathname.startsWith('/api/')) {
+  headers.set('Authorization', `Bearer ${session.session_id}`);
+ }
  const controller = new AbortController();
  const timer = setTimeout(() => controller.abort(), 25000);
  try {

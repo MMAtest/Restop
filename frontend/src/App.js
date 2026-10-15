@@ -9,7 +9,9 @@ import { recipeCapacity } from './utils/planning';
 import { aggregateReports } from './utils/analytics';
 import { restaurantDate, cutForms, cutFormCode, asList, number, categories, units, recipe, groupedProducts } from './utils/contracts';
 import { readSession, clearSession } from './utils/session';
+import { API } from './utils/api';
 import './styles/workspace.css';
+import './styles/application-system.css';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
 import { Pie } from 'react-chartjs-2';
 
@@ -29,8 +31,6 @@ import InvoiceValidationModal from "./components/InvoiceValidationModal";
 import ProgressBar from "./components/ProgressBar";
 
 import { getCategoryColor, getCategoryIcon } from "./utils/categoryHelpers";
-const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
-const API = `${BACKEND_URL}/api`;
 
 const restopDemoMode = false;
 
@@ -681,6 +681,9 @@ function App() {
         const response = await axios.get(`${API}/auth/session`, { headers: { Authorization: `Bearer ${session.session_id}` } });
         
         if (response.data.valid) {
+          // Restored browser sessions must authorize all subsequent axios API calls.
+          // Previously only fresh logins populated this header.
+          axios.defaults.headers.common.Authorization = `Bearer ${session.session_id}`;
           setCurrentUser(response.data.user || session.user);
           setSessionId(session.session_id);
           setIsAuthenticated(true);
@@ -2242,77 +2245,6 @@ function App() {
     } catch (error) {
       console.error('Erreur lors du traitement du rapport Z:', error);
       alert(`Erreur: ${error.response?.data?.detail || 'Erreur lors du traitement'}`);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Traitement Auto OCR
-  const handleTraitementAuto = async () => {
-    try {
-      setLoading(true);
-      // Cette fonctionnalité traiterait automatiquement tous les documents en attente
-      const documentsEnAttente = documentsOcr.filter(doc => !doc.donnees_parsees || Object.keys(doc.donnees_parsees).length === 0);
-      
-      if (documentsEnAttente.length === 0) {
-        alert("Tous les documents ont déjà été traités !");
-        return;
-      }
-
-      const confirmation = window.confirm(`TRAITEMENT AUTOMATIQUE:\n\nTraiter automatiquement ${documentsEnAttente.length} documents en attente ?\n\n(Cette opération peut prendre plusieurs minutes)`);
-      
-      if (confirmation) {
-        alert(`Traitement automatique démarré pour ${documentsEnAttente.length} documents.\n\nLe traitement se fait en arrière-plan.\nVous recevrez une notification à la fin.`);
-        
-        // Ici on pourrait lancer un traitement batch en arrière-plan
-        // Pour l'instant, on simule juste l'action
-        
-        setTimeout(() => {
-          alert("Traitement automatique terminé !\nConsultez l&apos;historique pour voir les résultats.");
-          fetchDocumentsOcr();
-        }, 2000);
-      }
-    } catch (error) {
-      console.error("Erreur traitement auto:", error);
-      alert("Erreur lors du traitement automatique");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Supprimer tous les documents OCR
-  const handleSupprimerTousDocumentsOcr = async () => {
-    try {
-      setLoading(true);
-      
-      if (documentsOcr.length === 0) {
-        alert("Aucun document à supprimer");
-        return;
-      }
-
-      const confirmation = window.confirm(`SUPPRESSION DE L'HISTORIQUE:\n\nÊtes-vous sûr de vouloir supprimer tous les ${documentsOcr.length} documents OCR ?\n\nCette action est irréversible !`);
-      
-      if (confirmation) {
-        const response = await axios.delete(`${API}/ocr/documents/all`);
-        
-        alert(`Historique vidé avec succès !\n\n${response.data.deleted_count} document(s) supprimé(s)`);
-        
-        // Rafraîchir la liste des documents ET réinitialiser les affichages
-        await fetchDocumentsOcr();
-        setSelectedDocument(null);
-        
-        // Forcer le rafraîchissement de tous les onglets OCR
-        if (window.location.hash) {
-          window.location.hash = '';
-        }
-        
-        // Réinitialiser les filtres et pages
-        setOcrCurrentPage(1);
-        setOcrSearchTerm('');
-      }
-    } catch (error) {
-      console.error("Erreur suppression documents OCR:", error);
-      alert("Erreur lors de la suppression de l&apos;historique");
     } finally {
       setLoading(false);
     }
@@ -4616,19 +4548,8 @@ function App() {
                       'Mercuriale'
                     }
                   </button>
-                  <button className="button" onClick={handleTraitementAuto} disabled={loading}>Traitement Auto</button>
-                  <button 
-                    className="button" 
-                    onClick={handleSupprimerTousDocumentsOcr} 
-                    disabled={loading}
-                    style={{
-                      background: 'linear-gradient(45deg, #ff6b6b, #ff8e8e)',
-                      border: 'none',
-                      color: 'white'
-                    }}
-                  >
-                    Vider l&apos;historique
-                  </button>
+                  <p className="rt-ocr-help-text">Après import, ouvrez le document et vérifiez les données avant intégration. Le traitement automatique en lot est désactivé pour éviter les erreurs de stock.</p>
+
                 </div>
 
                 {/* Contenu spécifique aux Tickets Z */}
@@ -6020,7 +5941,7 @@ function App() {
 
       {/* PURCHASE ORDERS */}
       <div id="orders" className={`wireframe-section ${activeTab === "orders" ? "active" : ""}`}>
-        {activeTab === 'orders' && <PurchaseOrderPage currentUser={currentUser} />}
+        {activeTab === 'orders' && <PurchaseOrderPage currentUser={currentUser} onSuppliers={() => {setActiveTab('production');setActiveProductionTab('fournisseurs');}} />}
       </div>
 
       {/* OCR */}
@@ -6031,19 +5952,8 @@ function App() {
             <div className="sidebar">
               <h3 style={{color: '#d4af37', marginBottom: '15px'}}>Actions</h3>
               <button className="button" onClick={() => setShowOcrModal(true)}>Importer Document</button>
-              <button className="button" onClick={handleTraitementAuto} disabled={loading}>Traitement Auto</button>
-              <button 
-                className="button" 
-                onClick={handleSupprimerTousDocumentsOcr} 
-                disabled={loading}
-                style={{
-                  background: 'linear-gradient(45deg, #ff6b6b, #ff8e8e)',
-                  border: 'none',
-                  color: 'white'
-                }}
-              >
-                Vider l&apos;historique
-              </button>
+              <p className="rt-ocr-help-text">Consultez une facture pour contrôler ses données. Les imports automatiques et suppressions globales sont désactivés.</p>
+
               <h4 style={{color: '#d4af37', margin: '20px 0 10px'}}>Historique (Cliquez pour détails)</h4>
               <div style={{fontSize: '0.9rem'}}>
                 {documentsOcr.slice(0, 5).map((doc, index) => (

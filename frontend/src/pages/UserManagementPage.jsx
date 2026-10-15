@@ -1,3 +1,5 @@
+import { BACKEND_URL } from '../utils/api';
+import ActionNotice from '../components/restop/ActionNotice';
 import { apiFetch, responseJson } from '../utils/api';
 import { asList, number, recipe } from '../utils/contracts';
 import React, { useEffect, useState } from 'react';
@@ -6,6 +8,8 @@ const UserManagementPage = ({ currentUser }) => {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [notice, setNotice] = useState(null);
+  const notify = (message, kind = 'info') => setNotice({ message:String(message), kind });
   const [showUserModal, setShowUserModal] = useState(false);
   const [editingUser, setEditingUser] = useState(null);
   const [userForm, setUserForm] = useState({
@@ -16,7 +20,7 @@ const UserManagementPage = ({ currentUser }) => {
     full_name: ''
   });
 
-  const backendUrl = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8001';
+  const backendUrl = BACKEND_URL;
 
   // Available roles with descriptions
   const roles = {
@@ -120,18 +124,18 @@ const UserManagementPage = ({ currentUser }) => {
           ? `Utilisateur "${userForm.full_name || userForm.username}" modifié avec succès !`
           : `Utilisateur "${userForm.full_name || userForm.username}" créé avec succès !`;
         
-        alert(message);
+        notify(message);
         
         console.log('Utilisateur sauvegardé avec succès');
       } else {
         const errorData = await response.json();
         const errorMessage = errorData.detail || errorData.message || `Erreur HTTP ${response.status}`;
-        alert(`Erreur lors de la sauvegarde: ${errorMessage}`);
+        notify(`Erreur lors de la sauvegarde: ${errorMessage}`, 'error');
         console.error('Erreur sauvegarde:', errorData);
       }
     } catch (error) {
       console.error('Erreur lors de la sauvegarde:', error);
-      alert(`Erreur de connexion: ${error.message}`);
+      notify(`Erreur de connexion: ${error.message}`, 'error');
     } finally {
       setLoading(false);
     }
@@ -158,14 +162,14 @@ const UserManagementPage = ({ currentUser }) => {
 
         if (response.ok) {
           fetchUsers();
-          alert('Utilisateur supprimé avec succès!');
+          notify('Utilisateur supprimé avec succès!');
         } else {
           const error = await response.json();
-          alert(`Erreur: ${error.detail}`);
+          notify(`Erreur: ${error.detail}`, 'error');
         }
       } catch (error) {
         console.error('Erreur lors de la suppression:', error);
-        alert('Erreur lors de la suppression');
+        notify('Erreur lors de la suppression', 'error');
       }
     }
   };
@@ -200,13 +204,14 @@ const UserManagementPage = ({ currentUser }) => {
   };
 
   return (
-    <div className="p-6 bg-gradient-to-br from-gray-100 to-gray-200 min-h-screen">
+    <div className="rt-module-legacy p-6 bg-gradient-to-br from-gray-100 to-gray-200 min-h-screen">
+      <ActionNotice notice={notice} onDismiss={() => setNotice(null)} />
       {/* Header */}
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-800 mb-2">
-          Gestion des Utilisateurs
+          Gestion de l’équipe
         </h1>
-        <p className="text-gray-600">Panneau d&apos;administration pour la gestion des comptes utilisateurs et des rôles</p>
+        <p className="text-gray-600">Gérez les accès, les rôles et les membres de votre établissement.</p>
       </div>
 
       {/* Stats Cards */}
@@ -214,7 +219,7 @@ const UserManagementPage = ({ currentUser }) => {
         <div className="bg-white p-6 rounded-lg shadow-sm">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">Total Utilisateurs</p>
+              <p className="text-sm font-medium text-gray-600">Comptes enregistrés</p>
               <p className="text-2xl font-bold text-blue-600">{users.length}</p>
             </div>
             <div className="text-3xl text-blue-500">👥</div>
@@ -254,7 +259,7 @@ const UserManagementPage = ({ currentUser }) => {
           <div className="flex justify-between items-center">
             <h3 className="text-lg font-semibold flex items-center">
               <span className="mr-2">👥</span>
-              Utilisateurs du Système
+              Membres de l’équipe
             </h3>
             <button
               onClick={fetchUsers}
@@ -286,7 +291,6 @@ const UserManagementPage = ({ currentUser }) => {
                   <tr className="border-b border-gray-200">
                     <th className="text-left py-3 px-4 font-semibold text-gray-700">Utilisateur</th>
                     <th className="text-left py-3 px-4 font-semibold text-gray-700">Email</th>
-                    <th className="text-left py-3 px-4 font-semibold text-gray-700">Mot de passe</th>
                     <th className="text-left py-3 px-4 font-semibold text-gray-700">Rôle</th>
                     <th className="text-left py-3 px-4 font-semibold text-gray-700">Statut</th>
                     <th className="text-left py-3 px-4 font-semibold text-gray-700">Créé le</th>
@@ -308,9 +312,6 @@ const UserManagementPage = ({ currentUser }) => {
                           </div>
                         </td>
                         <td className="py-3 px-4 text-sm text-gray-600">{user.email}</td>
-                        <td className="py-3 px-4">
-                          <span>Non accessible</span>
-                        </td>
                         <td className="py-3 px-4">
                           <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${roleInfo.color}`}>
                             <span className="mr-1">{roleInfo.icon}</span>

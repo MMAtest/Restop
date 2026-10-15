@@ -1,3 +1,4 @@
+import { BACKEND_URL } from '../utils/api';
 import { apiFetch, responseJson } from '../utils/api';
 import { asList, number, recipe } from '../utils/contracts';
 import React, { useEffect, useState } from 'react';
@@ -11,7 +12,7 @@ const AnalyticsPage = () => {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('overview');
 
-  const backendUrl = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8001';
+  const backendUrl = BACKEND_URL;
 
   useEffect(() => {
     fetchAnalyticsData();
@@ -93,7 +94,7 @@ const AnalyticsPage = () => {
   }
 
   return (
-    <div className="p-6 bg-gradient-to-br from-gray-100 to-gray-200 min-h-screen">
+    <div className="rt-module-legacy p-6 bg-gradient-to-br from-gray-100 to-gray-200 min-h-screen">
       {error && <div role="alert">{error} <button onClick={fetchAnalyticsData}>Réessayer</button></div>}
       {/* Header */}
       <div className="mb-8">

@@ -1,11 +1,14 @@
+import { BACKEND_URL } from '../utils/api';
+import ActionNotice from '../components/restop/ActionNotice';
 import { buildPurchaseDrafts } from '../utils/planning';
 import { downloadCsv } from '../utils/export';
 import { apiFetch, responseJson } from '../utils/api';
 import { asList, number, recipe } from '../utils/contracts';
 import React, { useState, useEffect, useRef } from 'react';
+import {Hand,Robot,ClockCounterClockwise,Storefront,Package,ShoppingCart,Truck,Phone,EnvelopeSimple,Receipt} from '@phosphor-icons/react';
 import OrderTimeline from '../components/OrderTimeline';
 
-const PurchaseOrderPage = ({ currentUser }) => {
+const PurchaseOrderPage = ({ currentUser, onSuppliers }) => {
   const [suppliers, setSuppliers] = useState([]);
   const [selectedSupplier, setSelectedSupplier] = useState(null);
   const [supplierProducts, setSupplierProducts] = useState([]);
@@ -27,8 +30,10 @@ const PurchaseOrderPage = ({ currentUser }) => {
   const [error, setError] = useState('');
   const [orders, setOrders] = useState([]);
   const [deliveryEstimate, setDeliveryEstimate] = useState(null);
+  const [notice, setNotice] = useState(null);
+  const notify = (message, kind = 'info') => setNotice({ message:String(message), kind });
 
-  const backendUrl = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8001';
+  const backendUrl = BACKEND_URL;
 
   useEffect(() => {
     fetchSuppliers();
@@ -150,12 +155,12 @@ const PurchaseOrderPage = ({ currentUser }) => {
 
   const handleCreateOrder = async () => {
     if (orderItems.length === 0) {
-      alert('Veuillez ajouter des produits à la commande');
+      notify('Veuillez ajouter des produits à la commande');
       return;
     }
     
     if (!selectedSupplier) {
-      alert('Veuillez sélectionner un fournisseur');
+      notify('Veuillez sélectionner un fournisseur');
       return;
     }
     
@@ -181,7 +186,7 @@ const PurchaseOrderPage = ({ currentUser }) => {
       
       if (response.ok) {
         const order = await response.json();
-        alert(`Commande créée avec succès!\n\nN° ${order.order_number}\nLivraison estimée: ${new Date(order.estimated_delivery_date).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' })}`);
+        notify(`Commande créée avec succès!\n\nN° ${order.order_number}\nLivraison estimée: ${new Date(order.estimated_delivery_date).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' })}`);
         
         // Réinitialiser
         setOrderItems([]);
@@ -195,11 +200,11 @@ const PurchaseOrderPage = ({ currentUser }) => {
         setActiveOrderTab('history');
       } else {
         const error = await response.json();
-        alert('Erreur lors de la création: ' + (error.detail || 'Erreur inconnue'));
+        notify('Erreur lors de la création: ' + (error.detail || 'Erreur inconnue'), 'error');
       }
     } catch (error) {
       console.error('Erreur:', error);
-      alert('Erreur lors de la création de la commande');
+      notify('Erreur lors de la création de la commande', 'error');
     } finally {
       setLoading(false);
     }
@@ -212,20 +217,20 @@ const PurchaseOrderPage = ({ currentUser }) => {
       });
       
       if (response.ok) {
-        alert(`Statut mis à jour: ${newStatus}`);
+        notify(`Statut mis à jour: ${newStatus}`);
         fetchOrders();
       } else {
-        alert('Erreur lors de la mise à jour du statut');
+        notify('Erreur lors de la mise à jour du statut', 'error');
       }
     } catch (error) {
       console.error('Erreur:', error);
-      alert('Erreur de connexion');
+      notify('Erreur de connexion', 'error');
     }
   };
 
   const calculateAutoOrder = async () => {
     if (selectedRecipes.length === 0) {
-      alert('Veuillez sélectionner au moins une production');
+      notify('Veuillez sélectionner au moins une production');
       return;
     }
 
@@ -258,8 +263,9 @@ const PurchaseOrderPage = ({ currentUser }) => {
   };
 
   return (
-    <div className="min-h-screen" style={{ background: 'var(--color-background-dark)', color: 'var(--color-text-primary)' }}>
+    <div className="rt-module-legacy rt-orders-legacy min-h-screen" style={{ background: 'var(--color-background-dark)', color: 'var(--color-text-primary)' }}>
       {error && <div role="alert" className="p-4 mx-6 mb-4">{error}</div>}
+      <ActionNotice notice={notice} onDismiss={() => setNotice(null)} />
       {/* Header */}
       <div className="mb-8 px-6 orders-page-header">
         <h1 className="text-3xl font-bold mb-2" style={{ color: 'var(--color-text-primary)' }}>
@@ -348,7 +354,7 @@ const PurchaseOrderPage = ({ currentUser }) => {
           style={{ background: 'var(--color-background-card)', border: '1px solid var(--color-border)' }}
           onClick={() => {
             if (currentUser?.role === 'patron' || currentUser?.role === 'super_admin' || currentUser?.role === 'chef_cuisine') {
-              window.location.href = '/app?tab=production&subtab=fournisseurs';
+              if (onSuppliers) onSuppliers();
             }
           }}
         >
@@ -379,26 +385,16 @@ const PurchaseOrderPage = ({ currentUser }) => {
             <>
               <button
                 onClick={() => setActiveOrderTab('manual')}
-                className={`flex items-center px-4 py-2 rounded-md text-sm font-medium transition-all`}
-                style={{
-                  background: activeOrderTab === 'manual' ? 'var(--color-accent-gold)' : 'transparent',
-                  color: activeOrderTab === 'manual' ? '#1a1a1a' : 'var(--color-text-secondary)',
-                  fontWeight: activeOrderTab === 'manual' ? 'bold' : 'normal'
-                }}
+                className={`rt-order-tab ${activeOrderTab === 'manual' ? 'is-active' : ''}`} aria-pressed={activeOrderTab === 'manual'}
               >
-                <span className="mr-2">✋</span>
+                <Hand size={18}/>
                 Commande Manuelle
               </button>
               <button
                 onClick={() => setActiveOrderTab('auto')}
-                className={`flex items-center px-4 py-2 rounded-md text-sm font-medium transition-all`}
-                style={{
-                  background: activeOrderTab === 'auto' ? 'var(--color-accent-gold)' : 'transparent',
-                  color: activeOrderTab === 'auto' ? '#1a1a1a' : 'var(--color-text-secondary)',
-                  fontWeight: activeOrderTab === 'auto' ? 'bold' : 'normal'
-                }}
+                className={`rt-order-tab ${activeOrderTab === 'auto' ? 'is-active' : ''}`} aria-pressed={activeOrderTab === 'auto'}
               >
-                <span className="mr-2">🤖</span>
+                <Robot size={18}/>
                 Commande Automatique
               </button>
             </>
@@ -407,14 +403,9 @@ const PurchaseOrderPage = ({ currentUser }) => {
           {/* Onglet Historique - Accessible à tous */}
           <button
             onClick={() => setActiveOrderTab('history')}
-            className={`flex items-center px-4 py-2 rounded-md text-sm font-medium transition-all`}
-            style={{
-              background: activeOrderTab === 'history' ? 'var(--color-accent-gold)' : 'transparent',
-              color: activeOrderTab === 'history' ? '#1a1a1a' : 'var(--color-text-secondary)',
-              fontWeight: activeOrderTab === 'history' ? 'bold' : 'normal'
-            }}
+            className={`rt-order-tab ${activeOrderTab === 'history' ? 'is-active' : ''}`} aria-pressed={activeOrderTab === 'history'}
           >
-            <span className="mr-2">📋</span>
+            <ClockCounterClockwise size={18}/>
             Historique ({orders.length})
           </button>
           </div>
@@ -423,24 +414,25 @@ const PurchaseOrderPage = ({ currentUser }) => {
         {/* Contenu des onglets */}
         <div className="p-6">
           {activeOrderTab === 'manual' && (
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="rt-order-workflow grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Supplier Selection */}
           <div className="rounded-lg shadow-sm" style={{ background: 'var(--color-background-card-light)', border: '1px solid var(--color-border)' }}>
           <div className="p-6 border-b" style={{ borderColor: 'var(--color-border)' }}>
             <h3 className="text-lg font-semibold flex items-center" style={{ color: 'var(--color-text-primary)' }}>
-              <span className="mr-2">🏢</span>
+              <Storefront size={20} className="mr-2"/>
               1. Sélectionner le Fournisseur
             </h3>
           </div>
           <div className="p-6">
             <div className="space-y-3 max-h-96 overflow-y-auto">
               {suppliers.map((supplier) => (
-                <div
+                <button
+                  type="button"
                   key={supplier.id}
-                  className={`p-3 border rounded-lg cursor-pointer transition-all`}
+                  className={`rt-order-supplier-choice p-3 border rounded-lg cursor-pointer transition-all`}
                   style={{
                     borderColor: selectedSupplier?.id === supplier.id ? 'var(--color-primary-blue)' : 'var(--color-border)',
-                    background: selectedSupplier?.id === supplier.id ? 'rgba(59, 130, 246, 0.1)' : 'var(--color-background-card)',
+                    background: selectedSupplier?.id === supplier.id ? '#faedf2' : 'var(--color-background-card)',
                   }}
                   onClick={() => handleSupplierSelect(supplier)}
                 >
@@ -470,7 +462,7 @@ const PurchaseOrderPage = ({ currentUser }) => {
                       Spécialités: {supplier.specialites}
                     </div>
                   )}
-                </div>
+                </button>
               ))}
             </div>
           </div>
@@ -480,7 +472,7 @@ const PurchaseOrderPage = ({ currentUser }) => {
         <div className="rounded-lg shadow-sm" style={{ background: 'var(--color-background-card-light)', border: '1px solid var(--color-border)' }}>
           <div className="p-6 border-b" style={{ borderColor: 'var(--color-border)' }}>
             <h3 className="text-lg font-semibold flex items-center" style={{ color: 'var(--color-text-primary)' }}>
-              <span className="mr-2">📦</span>
+              <Package size={20} className="mr-2"/>
               2. Produits Disponibles
             </h3>
             {selectedSupplier && (
@@ -590,7 +582,7 @@ const PurchaseOrderPage = ({ currentUser }) => {
         <div className="rounded-lg shadow-sm" style={{ background: 'var(--color-background-card-light)', border: '1px solid var(--color-border)' }}>
           <div className="p-6 border-b" style={{ borderColor: 'var(--color-border)' }}>
             <h3 className="text-lg font-semibold flex items-center" style={{ color: 'var(--color-text-primary)' }}>
-              <span className="mr-2">🛒</span>
+              <ShoppingCart size={20} className="mr-2"/>
               3. Panier de Commande
             </h3>
             <p className="text-sm mt-1" style={{ color: 'var(--color-text-secondary)' }}>
