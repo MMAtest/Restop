@@ -38,3 +38,16 @@ Date : 15 octobre 2026. Cette branche est un chantier **non déployé**. Ne pas 
 ## Priorité
 
 Bloquer la fusion jusqu'à résolution des points 1–4 au minimum. Les changements de login rendent les anciens comptes fictifs intentionnellement inutilisables ; un jeu de tests locaux ne vaut pas validation de l'authentification sur la base déployée.
+
+## Mise à jour du 15/10/2026 — transactions et accès OCR (branche, pas production)
+
+- Le parcours `/ocr/confirm-import` exécute désormais **produits, lots, mouvements, prix fournisseurs, stock et statut de facture au sein d'une seule transaction MongoDB** (session transmise à chaque écriture). Une réservation avant transaction sérialise les imports du même document et protège contre les doublons fournisseur/numéro. En cas d'échec, la réservation reste conservatrice (`import_incomplet`) pour forcer une réconciliation explicite ; une erreur de commit ambiguë ne provoque jamais un réimport aveugle.
+- L'import refuse volontairement les MongoDB standalone (absence de replica set ou cluster), **HTTP 503 avant la réservation**. Il ne faut pas désactiver cette protection pour débloquer des démos.
+- L'ancienne route `/ocr/process-facture/{document_id}` ne doit plus permettre de contourner la validation et répond 410.
+- Les routes du sous-ensemble OCR ont un contrôle de session et de rôle. Les anciens utilisateurs employés/barmans n'accèdent plus aux factures ; caissier reste autorisé aux parcours Z, sans être autorisé à confirmer une facture fournisseur dans le stock. **Ce contrôle ne couvre pas encore toutes les routes API**, ni une isolation multi-établissements.
+- La suppression massive des documents OCR est désactivée (410). La suppression unitaire est refusée pour des documents intégrés, en cours d'import ou à réconcilier.
+- Les appels d'import sont volontairement bloqués lorsque le compte ou le document indique `restaurant_id`, tant que l'isolation par établissement n'est pas implémentée de bout en bout.
+- Tests unitaires / simulations : `cd backend && python3 -m unittest test_invoice_guard test_invoice_reservation test_auth_guard test_invoice_transaction test_ocr_route_security -v`.
+- Un **test d'intégration MongoDB** facultatif a été ajouté : `backend/test_invoice_transaction_mongo_integration.py`. Le lancer uniquement sur un cluster **isolé** avec `RESTOP_TEST_MONGO_URI` et `RESTOP_INTEGRATION_TEST_ACK=isolated`. Il crée puis efface une base temporaire. **Non exécuté sur la base réelle à ce jour.**
+
+Restent bloquants : audit complet de l'API, réelle séparation restaurant et migration des comptes, validation sur base MongoDB de test, récupération manuelle des imports historiques partiels, restauration et tests de non-régression OCR sur documents réels anonymisés.

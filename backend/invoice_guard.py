@@ -92,3 +92,21 @@ async def reserve_invoice_for_import(documents_collection, document_id, now):
          "statut": {"$nin": ["integre", "import_en_cours", "import_incomplet"]}},
         {"$set": {"statut": "import_en_cours", "import_started_at": now}}
     )
+
+
+def transaction_topology_supported(hello):
+    """Fail closed for standalone servers: they cannot guarantee multi-collection atomicity."""
+    if not isinstance(hello, dict):
+        return False
+    return bool(hello.get('setName') or hello.get('msg') == 'isdbgrid') and hello.get('logicalSessionTimeoutMinutes') is not None
+
+
+async def run_stock_transaction(mongo_client, apply):
+    """Run ALL invoice mutations in one MongoDB transaction.
+
+    Requires a replica set or sharded cluster. Does not silently downgrade to
+    nontransactional writes when the server is missing that capability.
+    """
+    async with await mongo_client.start_session() as session:
+        async with session.start_transaction():
+            return await apply(session)

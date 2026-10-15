@@ -34,7 +34,8 @@ import asyncio
 
 # Parsers optimisés
 from parsers_optimized import parse_product_line_smart, optimize_parser_results, detect_product_category, detect_supplier_category
-from invoice_guard import audit_invoice_totals, supplier_invoice_fingerprint, reserve_invoice_for_import
+from invoice_guard import (audit_invoice_totals, supplier_invoice_fingerprint,
+    reserve_invoice_for_import, transaction_topology_supported, run_stock_transaction)
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env', override=False)
@@ -133,6 +134,31 @@ async def require_active_user(authorization: Optional[str] = Header(default=None
 async def require_user_manager(user=Depends(require_active_user)):
     if user.get("role") not in {"super_admin", "patron"}:
         raise HTTPException(status_code=403, detail="Accès réservé à la direction")
+    return user
+
+
+async def require_invoice_editor(user=Depends(require_active_user)):
+    """Role check specific to OCR stock integration."""
+    if user.get("role") not in {"super_admin", "patron", "gerant", "chef_cuisine"}:
+        raise HTTPException(status_code=403, detail="Rôle non autorisé à intégrer des factures en stock")
+    if user.get("restaurant_id"):
+        raise HTTPException(status_code=503,
+            detail="Accès OCR multi-établissement indisponible avant isolation des données")
+    return user
+
+
+async def require_legacy_ocr_access(user=Depends(require_active_user)):
+    """OCR legacy: role-gated; no cross-restaurant isolation exists yet."""
+    if user.get("restaurant_id"):
+        raise HTTPException(status_code=503,
+            detail="Accès OCR multi-établissement indisponible avant isolation des données")
+    if user.get("role") not in {"super_admin", "patron", "gerant", "chef_cuisine", "caissier"}:
+        raise HTTPException(status_code=403, detail="Rôle non autorisé à consulter les documents OCR")
+    return user
+
+
+async def require_ocr_uploader(user=Depends(require_legacy_ocr_access)):
+    """Caissier may upload/read Z reports but cannot confirm supplier stock imports."""
     return user
 
 
@@ -2598,7 +2624,7 @@ async def consume_batch(batch_id: str, quantity_consumed: float):
 
 # ✅ Version 3 Feature #2 - Enhanced OCR API Endpoints
 
-@api_router.post("/ocr/parse-z-report-enhanced", response_model=StructuredZReportData)
+@api_router.post("/ocr/parse-z-report-enhanced", response_model=StructuredZReportData, dependencies=[Depends(require_legacy_ocr_access)])
 async def parse_z_report_enhanced_endpoint(document_id: str):
     """Parse Z report with enhanced structured extraction"""
     try:
@@ -2628,7 +2654,7 @@ async def parse_z_report_enhanced_endpoint(document_id: str):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Erreur lors du parsing: {str(e)}")
 
-@api_router.post("/ocr/calculate-stock-deductions", response_model=ZReportValidationResult)
+@api_router.post("/ocr/calculate-stock-deductions", response_model=ZReportValidationResult, dependencies=[Depends(require_legacy_ocr_access)])
 async def calculate_stock_deductions_endpoint(structured_data: StructuredZReportData):
     """Calculate proposed stock deductions based on structured Z report data"""
     try:
@@ -2637,7 +2663,7 @@ async def calculate_stock_deductions_endpoint(structured_data: StructuredZReport
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Erreur lors du calcul des déductions: {str(e)}")
 
-@api_router.post("/ocr/validate-z-report")
+@api_router.post("/ocr/validate-z-report", dependencies=[Depends(require_invoice_editor)])
 async def validate_z_report_endpoint(document_id: str, apply_deductions: bool = False):
     """Validate Z report and optionally apply stock deductions"""
     try:
@@ -2691,7 +2717,7 @@ async def validate_z_report_endpoint(document_id: str, apply_deductions: bool = 
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Erreur lors de la validation: {str(e)}")
 
-@api_router.get("/ocr/z-report-preview/{document_id}", response_model=dict)
+@api_router.get("/ocr/z-report-preview/{document_id}", response_model=dict, dependencies=[Depends(require_legacy_ocr_access)])
 async def get_z_report_preview(document_id: str):
     """Get a preview of structured Z report data without applying changes"""
     try:
@@ -6467,7 +6493,7 @@ async def get_missing_data_alerts():
     }
 
 # Routes pour le traitement OCR
-@api_router.post("/ocr/upload-document")  # No response_model to allow flexible multi-invoice responses
+@api_router.post("/ocr/upload-document", dependencies=[Depends(require_ocr_uploader)])  # No response_model to allow flexible multi-invoice responses
 async def upload_and_process_document(
     file: UploadFile = File(...),
     document_type: str = Form("z_report")  # "z_report" ou "facture_fournisseur" ou "mercuriale"
@@ -6704,7 +6730,7 @@ async def upload_and_process_document(
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Erreur lors du traitement: {str(e)}")
 
-@api_router.get("/ocr/documents")
+@api_router.get("/ocr/documents", dependencies=[Depends(require_legacy_ocr_access)])
 async def get_processed_documents(document_type: Optional[str] = None, limit: int = 50):
     """Récupérer l'historique des documents traités"""
     query = {}
@@ -6724,7 +6750,7 @@ async def get_processed_documents(document_type: Optional[str] = None, limit: in
     
     return documents
 
-@api_router.get("/ocr/document/{document_id}")
+@api_router.get("/ocr/document/{document_id}", dependencies=[Depends(require_legacy_ocr_access)])
 async def get_document_by_id(document_id: str):
     """Récupérer un document spécifique par son ID. Enrichit les prix manquants et ajoute l'analyse Z si absente."""
     document = await db.documents_ocr.find_one({"id": document_id})
@@ -6769,10 +6795,14 @@ async def get_document_by_id(document_id: str):
     
     return document
 
-@api_router.delete("/ocr/document/{document_id}")
+@api_router.delete("/ocr/document/{document_id}", dependencies=[Depends(require_user_manager), Depends(require_legacy_ocr_access)])
 async def delete_document(document_id: str):
-    """Supprimer un document OCR"""
-    result = await db.documents_ocr.delete_one({"id": document_id})
+    """Delete only a non-integrated OCR document (never an accounting trace)."""
+    document = await db.documents_ocr.find_one({"id": document_id})
+    if document and document.get("statut") in {"integre", "import_en_cours", "import_incomplet"}:
+        raise HTTPException(status_code=409,
+            detail="Document lié au stock : archivage contrôlé requis, suppression interdite")
+    result = await db.documents_ocr.delete_one({"id": document_id, "statut": {"$nin": ["integre", "import_en_cours", "import_incomplet"]}})
     if result.deleted_count == 0:
         raise HTTPException(status_code=404, detail="Document non trouvé")
     return {"message": "Document supprimé"}
@@ -6813,17 +6843,11 @@ async def delete_rapport_z(rapport_id: str):
         raise HTTPException(status_code=404, detail="Rapport non trouvé")
     return {"message": "Rapport supprimé"}
 
-@api_router.delete("/ocr/documents/all")
+@api_router.delete("/ocr/documents/all", dependencies=[Depends(require_user_manager), Depends(require_legacy_ocr_access)])
 async def delete_all_ocr_documents():
-    """Supprimer tous les documents OCR de l'historique"""
-    try:
-        result = await db.documents_ocr.delete_many({})
-        return {
-            "message": "Tous les documents OCR ont été supprimés",
-            "deleted_count": result.deleted_count
-        }
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Erreur lors de la suppression: {str(e)}")
+    """Destructive operation intentionally disabled; use audited retention workflow."""
+    raise HTTPException(status_code=410,
+        detail="Suppression globale désactivée pour préserver les documents de stock et la traçabilité")
 
 # ✅ Archive System Endpoints
 @api_router.post("/archive")
@@ -8418,7 +8442,7 @@ async def execute_preparation(preparation_id: str, request: ExecutePreparationRe
 
 # ===== OCR PROCESSING ENDPOINTS - REAL DATA INTEGRATION =====
 
-@api_router.post("/ocr/process-z-report/{document_id}", response_model=ZReportProcessingResult)
+@api_router.post("/ocr/process-z-report/{document_id}", response_model=ZReportProcessingResult, dependencies=[Depends(require_ocr_uploader)])
 async def process_z_report_to_real_data(document_id: str):
     """
     Process a Z report document and integrate it into real system data:
@@ -8660,7 +8684,11 @@ async def process_z_report_to_real_data(document_id: str):
         raise HTTPException(status_code=500, detail=f"Erreur lors du traitement du ticket Z: {str(e)}")
 
 
-@api_router.post("/ocr/process-facture/{document_id}", response_model=FactureProcessingResult)
+# L'ancien endpoint OCR direct ne doit plus muter les stocks sans approbation.
+@api_router.post("/ocr/process-facture/{document_id}", dependencies=[Depends(require_active_user)])
+async def legacy_process_facture_disabled(document_id: str, editor=Depends(require_active_user)):
+    raise HTTPException(status_code=410,
+        detail="Ancien parcours désactivé : validez la facture par /ocr/confirm-import")
 
 # --------------------------------------------------------------------------------
 # ✅ NOUVEAU SYSTEME DE RECONCILIATION FACTURES (VALIDATION AVANT IMPORT)
@@ -8713,7 +8741,7 @@ class ImportConfirmationRequest(BaseModel):
     invoice_date: Optional[str] = None
     acknowledge_audit_warnings: bool = False
 
-@api_router.post("/ocr/analyze-facture/{document_id}", response_model=FactureAnalysisResult)
+@api_router.post("/ocr/analyze-facture/{document_id}", response_model=FactureAnalysisResult, dependencies=[Depends(require_legacy_ocr_access)])
 async def analyze_facture_for_review(document_id: str):
     """
     Step 1 of Reconciliation: Analyze invoice and return data for user validation.
@@ -8796,7 +8824,7 @@ async def analyze_facture_for_review(document_id: str):
         raise HTTPException(status_code=500, detail=f"Erreur d'analyse: {str(e)}")
 
 
-@api_router.post("/ocr/analyze-facture-ai/{document_id}", response_model=FactureAnalysisResult)
+@api_router.post("/ocr/analyze-facture-ai/{document_id}", response_model=FactureAnalysisResult, dependencies=[Depends(require_invoice_editor)])
 async def analyze_facture_with_ai_joker(document_id: str):
     """
     🤖 JOKER IA : Analyse avancée avec Gemini 2.0 Flash
@@ -8986,7 +9014,7 @@ RÈGLES :
         print(f"❌ Erreur Gemini Ticket Z : {str(e)}")
         raise HTTPException(status_code=500, detail=f"Erreur analyse Gemini : {str(e)}")
 
-@api_router.post("/ocr/analyze-ticket-z-ai/{document_id}")
+@api_router.post("/ocr/analyze-ticket-z-ai/{document_id}", dependencies=[Depends(require_ocr_uploader)])
 async def analyze_ticket_z_with_ai(document_id: str):
     """
     🤖 JOKER IA pour Tickets Z : Analyse avancée avec Gemini
@@ -9042,13 +9070,6 @@ async def analyze_ticket_z_with_ai(document_id: str):
 
 
 
-async def require_invoice_editor(user=Depends(require_active_user)):
-    """Role check specific to OCR stock integration."""
-    if user.get("role") not in {"super_admin", "patron", "gerant", "chef_cuisine"}:
-        raise HTTPException(status_code=403, detail="Rôle non autorisé à intégrer des factures en stock")
-    return user
-
-
 @api_router.post("/ocr/confirm-import", response_model=dict)
 async def confirm_import_facture(request: ImportConfirmationRequest, editor=Depends(require_invoice_editor)):
     """
@@ -9061,7 +9082,7 @@ async def confirm_import_facture(request: ImportConfirmationRequest, editor=Depe
                     "supplier_id": result.supplier_id,
                     "ocr_raw_name": ocr_name
                 })
-                
+
                 if learned:
                     # On applique ce qu'on a appris !
                     mapped_product = await db.produits.find_one({"id": learned["final_product_id"]})
@@ -9071,7 +9092,7 @@ async def confirm_import_facture(request: ImportConfirmationRequest, editor=Depe
                         item_analysis.selected_product_id = mapped_product["id"]
                         item_analysis.confidence = 1.0 # Confiance absolue (c'est vous qui l'avez dit)
                         item_analysis.status = "matched"
-                        
+
                         # Si on a appris une correction de quantité (ex: 1 carton -> 10kg)
                         if learned.get("qty_multiplier") and learned["qty_multiplier"] != 1.0:
                             item_analysis.final_qty = item_analysis.ocr_qty * learned["qty_multiplier"]
@@ -9130,6 +9151,21 @@ async def confirm_import_facture(request: ImportConfirmationRequest, editor=Depe
             if not await db.stocks.find_one({"produit_id": product_id}):
                 raise HTTPException(status_code=422, detail="Stock initial absent pour un produit existant : corrigez sa fiche avant import")
 
+        # Bloquer le mode multi-tenant tant que les collections ne sont pas isolées.
+        if editor.get("restaurant_id") or document.get("restaurant_id"):
+            raise HTTPException(status_code=503,
+                detail="Import OCR multi-établissement indisponible avant isolation des données")
+
+        # Exiger une topologie MongoDB garantissant les transactions.
+        try:
+            topology = await db.command("hello")
+        except Exception as exc:
+            logging.warning("Vérification MongoDB impossible (%s)", type(exc).__name__)
+            raise HTTPException(status_code=503, detail="Base de données indisponible pour un import atomique")
+        if not transaction_topology_supported(topology):
+            raise HTTPException(status_code=503,
+                detail="Import OCR suspendu : MongoDB replica set ou cluster requis")
+
         # Réserver atomiquement le document : protège les requêtes simultanées.
         # Aucun mouvement ou création de produit ne commence avant cette réservation.
         previous_status = document.get("statut", "traite")
@@ -9167,168 +9203,173 @@ async def confirm_import_facture(request: ImportConfirmationRequest, editor=Depe
                 )
                 raise HTTPException(status_code=409, detail="Cette référence fournisseur a déjà un import réservé ou intégré. Vérification nécessaire")
 
-        # 1. Gérer le fournisseur
-        supplier_id = request.supplier_id
-        writing_started = True
-        if request.create_supplier and not supplier_id:
-            # Détecter la catégorie basée sur le nom et les produits
-            product_names = [item.final_name or item.ocr_name for item in request.items]
-            auto_category = detect_supplier_category(request.supplier_name, product_names)
-            
-            # Utiliser la catégorie fournie ou la détection auto
-            supplier_category = request.supplier_category if request.supplier_category != 'frais' else auto_category
-            
-            # Créer nouveau fournisseur
-            new_supplier = Fournisseur(
-                nom=request.supplier_name,
-                categorie=supplier_category  # ✅ Catégorie intelligente !
-            )
-            await db.fournisseurs.insert_one(new_supplier.dict())
-            supplier_id = new_supplier.id
-            
-            print(f"🏢 Nouveau fournisseur créé: {request.supplier_name} → Catégorie: {supplier_category}")
-        
-        import_stats = {
-            "products_created": 0,
-            "stock_entries": 0,
-            "batches_created": 0
-        }
-        
-        # 2. Traiter chaque ligne validée
-        for item in request.items:
-            if item.final_qty <= 0:
-                continue
-                
-            product_id = item.selected_product_id
-            
-            # Création produit si nécessaire (Status 'new' ou 'matched' mais user a choisi 'Créer nouveau')
-            if not product_id:
-                # Détection automatique de la catégorie basée sur le nom
-                product_name = item.final_name or item.ocr_name
-                auto_category = detect_product_category(product_name)
-                
-                new_product = Produit(
-                    nom=product_name,
-                    categorie=auto_category,  # ✅ Catégorie auto-détectée !
-                    unite=item.final_unit or "kg",
-                    reference_price=item.ocr_price,
-                    main_supplier_id=supplier_id,
-                    fournisseur_id=supplier_id,
-                    fournisseur_nom=request.supplier_name
-                )
-                await db.produits.insert_one(new_product.dict())
-                product_id = new_product.id
-                import_stats["products_created"] += 1
-                
-                print(f"🎯 Nouveau produit créé: {product_name} → Catégorie auto: {auto_category}")
-                
-                # Créer stock initial
-                await db.stocks.insert_one(Stock(
-                    produit_id=product_id,
-                    produit_nom=new_product.nom,
-                    quantite_actuelle=0,
-                    quantite_min=0
-                ).dict())
-                
-                # Créer relation prix
-                await db.supplier_product_info.insert_one(SupplierProductInfo(
-                    supplier_id=supplier_id,
-                    product_id=product_id,
-                    price=item.ocr_price,
-                    is_preferred=True
-                ).dict())
-            else:
-                # Mise à jour prix existant
-                await db.supplier_product_info.update_one(
-                    {"supplier_id": supplier_id, "product_id": product_id},
-                    {"$set": {"price": item.ocr_price, "last_updated": datetime.utcnow()}},
-                    upsert=True
-                )
+        async def apply_atomic_invoice(mongo_session):
+            # 1. Gérer le fournisseur
+            supplier_id = request.supplier_id
+            if request.create_supplier and not supplier_id:
+                # Détecter la catégorie basée sur le nom et les produits
+                product_names = [item.final_name or item.ocr_name for item in request.items]
+                auto_category = detect_supplier_category(request.supplier_name, product_names)
 
-            # 3. CRÉATION DU LOT (BATCH) AVEC DLC
-            # C'est ici que la magie opère grâce à la validation utilisateur
-            batch_data = {
-                "product_id": product_id,
-                "quantity": item.final_qty,
-                "quantity_brute": item.final_qty,
-                "expiry_date": item.dlc, # DLC validée par l'utilisateur
-                "batch_number": item.batch_number, # Lot saisi par l'utilisateur
-                "supplier_id": supplier_id,
-                "received_date": datetime.utcnow(),
-                "created_at": datetime.utcnow(),
-                "is_consumed": False
+                # Utiliser la catégorie fournie ou la détection auto
+                supplier_category = request.supplier_category if request.supplier_category != 'frais' else auto_category
+
+                # Créer nouveau fournisseur
+                new_supplier = Fournisseur(
+                    nom=request.supplier_name,
+                    categorie=supplier_category  # ✅ Catégorie intelligente !
+                )
+                await db.fournisseurs.insert_one(new_supplier.dict(), session=mongo_session)
+                supplier_id = new_supplier.id
+
+                print(f"🏢 Nouveau fournisseur créé: {request.supplier_name} → Catégorie: {supplier_category}")
+
+            import_stats = {
+                "products_created": 0,
+                "stock_entries": 0,
+                "batches_created": 0
             }
-            
-            # Génération automatique numéro lot si vide
-            if not batch_data["batch_number"]:
-                date_str = datetime.utcnow().strftime('%Y%m%d')
-                batch_data["batch_number"] = f"REC-{date_str}-{str(uuid.uuid4())[:4]}"
-                
-            batch_obj = ProductBatch(**batch_data)
-            await db.product_batches.insert_one(batch_obj.dict())
-            import_stats["batches_created"] += 1
-            
-            # 4. Mouvement de Stock
-            mouvement = MouvementStock(
-                produit_id=product_id,
-                produit_nom=item.final_name or item.product_name,
-                type="entree",
-                quantite=item.final_qty,
-                reference=f"FACT-{request.document_id[:8]}",
-                fournisseur_id=supplier_id,
-                commentaire=f"Import Facture {request.document_id[:8]}"
-            )
-            await db.mouvements_stock.insert_one(mouvement.dict())
-            import_stats["stock_entries"] += 1
-            
-            # 5. Incrément atomique : deux réceptions ne doivent jamais écraser leurs stocks.
-            stock_update = await db.stocks.update_one(
-                {"produit_id": product_id},
-                {"$inc": {"quantite_actuelle": round_stock_quantity(item.final_qty)},
-                 "$set": {"derniere_maj": datetime.utcnow()}}
-            )
-            if stock_update.matched_count != 1:
-                raise RuntimeError("Stock du produit introuvable pendant l'intégration")
-            # ✅ APPRENTISSAGE : On sauvegarde la correction pour la prochaine fois
-            # Si le nom OCR est différent du nom final, on apprend !
-            if item.ocr_name and product_id and supplier_id:
-                # Calcul du multiplicateur de quantité (si l'utilisateur a changé la quantité)
-                # Ex: OCR dit "1 carton", User dit "10 kg". Multiplier = 10.
-                qty_multiplier = 1.0
-                if item.ocr_qty > 0 and item.final_qty > 0:
-                    qty_multiplier = item.final_qty / item.ocr_qty
-                
-                await db.ocr_product_mappings.update_one(
-                    {
-                        "supplier_id": supplier_id,
-                        "ocr_raw_name": item.ocr_name
-                    },
-                    {
-                        "$set": {
-                            "final_product_id": product_id,
-                            "final_product_name": item.final_name,
-                            "qty_multiplier": qty_multiplier,
-                            "last_used": datetime.utcnow()
-                        }
-                    },
-                    upsert=True
-                )
 
-        # Marquer document comme traité
-        completed_import = await db.documents_ocr.update_one(
-            {"id": request.document_id, "statut": "import_en_cours"},
-            {"$set": {"statut": "integre", "date_traitement": datetime.utcnow(),
-                      "donnees_parsees.numero_facture": invoice_number or parsed.get("numero_facture"),
-                      "donnees_parsees.date": request.invoice_date or parsed.get("date"),
-                      "donnees_parsees.fournisseur": supplier_for_claim,
-                      "imported_by": editor.get("id") if isinstance(editor, dict) else None},
-             "$unset": {"import_started_at": ""}}
-        )
-        if completed_import.matched_count != 1:
-            raise RuntimeError("Réservation de facture perdue pendant l'intégration")
-        
+            # 2. Traiter chaque ligne validée
+            for item in request.items:
+                if item.final_qty <= 0:
+                    continue
+
+                product_id = item.selected_product_id
+
+                # Création produit si nécessaire (Status 'new' ou 'matched' mais user a choisi 'Créer nouveau')
+                if not product_id:
+                    # Détection automatique de la catégorie basée sur le nom
+                    product_name = item.final_name or item.ocr_name
+                    auto_category = detect_product_category(product_name)
+
+                    new_product = Produit(
+                        nom=product_name,
+                        categorie=auto_category,  # ✅ Catégorie auto-détectée !
+                        unite=item.final_unit or "kg",
+                        reference_price=item.ocr_price,
+                        main_supplier_id=supplier_id,
+                        fournisseur_id=supplier_id,
+                        fournisseur_nom=request.supplier_name
+                    )
+                    await db.produits.insert_one(new_product.dict(), session=mongo_session)
+                    product_id = new_product.id
+                    import_stats["products_created"] += 1
+
+                    print(f"🎯 Nouveau produit créé: {product_name} → Catégorie auto: {auto_category}")
+
+                    # Créer stock initial
+                    await db.stocks.insert_one(Stock(
+                        produit_id=product_id,
+                        produit_nom=new_product.nom,
+                        quantite_actuelle=0,
+                        quantite_min=0
+                    ).dict(), session=mongo_session)
+
+                    # Créer relation prix
+                    await db.supplier_product_info.insert_one(SupplierProductInfo(
+                        supplier_id=supplier_id,
+                        product_id=product_id,
+                        price=item.ocr_price,
+                        is_preferred=True
+                    ).dict(), session=mongo_session)
+                else:
+                    # Mise à jour prix existant
+                    await db.supplier_product_info.update_one(
+                        {"supplier_id": supplier_id, "product_id": product_id},
+                        {"$set": {"price": item.ocr_price, "last_updated": datetime.utcnow()}},
+                        upsert=True, session=mongo_session
+                    )
+
+                # 3. CRÉATION DU LOT (BATCH) AVEC DLC
+                # C'est ici que la magie opère grâce à la validation utilisateur
+                batch_data = {
+                    "product_id": product_id,
+                    "quantity": item.final_qty,
+                    "quantity_brute": item.final_qty,
+                    "expiry_date": item.dlc, # DLC validée par l'utilisateur
+                    "batch_number": item.batch_number, # Lot saisi par l'utilisateur
+                    "supplier_id": supplier_id,
+                    "received_date": datetime.utcnow(),
+                    "created_at": datetime.utcnow(),
+                    "is_consumed": False
+                }
+
+                # Génération automatique numéro lot si vide
+                if not batch_data["batch_number"]:
+                    date_str = datetime.utcnow().strftime('%Y%m%d')
+                    batch_data["batch_number"] = f"REC-{date_str}-{str(uuid.uuid4())[:4]}"
+
+                batch_obj = ProductBatch(**batch_data)
+                await db.product_batches.insert_one(batch_obj.dict(), session=mongo_session)
+                import_stats["batches_created"] += 1
+
+                # 4. Mouvement de Stock
+                mouvement = MouvementStock(
+                    produit_id=product_id,
+                    produit_nom=item.final_name or item.product_name,
+                    type="entree",
+                    quantite=item.final_qty,
+                    reference=f"FACT-{request.document_id[:8]}",
+                    fournisseur_id=supplier_id,
+                    commentaire=f"Import Facture {request.document_id[:8]}"
+                )
+                await db.mouvements_stock.insert_one(mouvement.dict(), session=mongo_session)
+                import_stats["stock_entries"] += 1
+
+                # 5. Incrément atomique : deux réceptions ne doivent jamais écraser leurs stocks.
+                stock_update = await db.stocks.update_one(
+                    {"produit_id": product_id},
+                    {"$inc": {"quantite_actuelle": round_stock_quantity(item.final_qty)},
+                     "$set": {"derniere_maj": datetime.utcnow()}}, session=mongo_session
+                )
+                if stock_update.matched_count != 1:
+                    raise RuntimeError("Stock du produit introuvable pendant l'intégration")
+                # ✅ APPRENTISSAGE : On sauvegarde la correction pour la prochaine fois
+                # Si le nom OCR est différent du nom final, on apprend !
+                if item.ocr_name and product_id and supplier_id:
+                    # Calcul du multiplicateur de quantité (si l'utilisateur a changé la quantité)
+                    # Ex: OCR dit "1 carton", User dit "10 kg". Multiplier = 10.
+                    qty_multiplier = 1.0
+                    if item.ocr_qty > 0 and item.final_qty > 0:
+                        qty_multiplier = item.final_qty / item.ocr_qty
+
+                    await db.ocr_product_mappings.update_one(
+                        {
+                            "supplier_id": supplier_id,
+                            "ocr_raw_name": item.ocr_name
+                        },
+                        {
+                            "$set": {
+                                "final_product_id": product_id,
+                                "final_product_name": item.final_name,
+                                "qty_multiplier": qty_multiplier,
+                                "last_used": datetime.utcnow()
+                            }
+                        },
+                        upsert=True, session=mongo_session
+                    )
+
+            # Marquer document comme traité
+            completed_import = await db.documents_ocr.update_one(
+                {"id": request.document_id, "statut": "import_en_cours"},
+                {"$set": {"statut": "integre", "date_traitement": datetime.utcnow(),
+                          "donnees_parsees.numero_facture": invoice_number or parsed.get("numero_facture"),
+                          "donnees_parsees.date": request.invoice_date or parsed.get("date"),
+                          "donnees_parsees.fournisseur": supplier_for_claim,
+                          "imported_by": editor.get("id") if isinstance(editor, dict) else None},
+                 "$unset": {"import_started_at": ""}}, session=mongo_session
+            )
+            if completed_import.matched_count != 1:
+                raise RuntimeError("Réservation de facture perdue pendant l'intégration")
+
+            return import_stats
+
+        writing_started = True
+        import_stats = await run_stock_transaction(client, apply_atomic_invoice)
+
         return {
-            "success": True, 
+            "success": True,
             "message": "Import validé et stock mis à jour !",
             "stats": import_stats
         }
@@ -9628,7 +9669,7 @@ async def process_facture_to_real_data(document_id: str):
         raise HTTPException(status_code=500, detail=f"Erreur lors du traitement de la facture: {str(e)}")
 
 
-@api_router.post("/ocr/process-mercuriale/{document_id}", response_model=MercurialeProcessingResult)
+@api_router.post("/ocr/process-mercuriale/{document_id}", response_model=MercurialeProcessingResult, dependencies=[Depends(require_invoice_editor)])
 async def process_mercuriale_to_real_data(document_id: str):
     """
     Process a supplier price list (mercuriale) and integrate it into real system data:
