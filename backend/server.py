@@ -165,6 +165,34 @@ async def require_ocr_uploader(user=Depends(require_legacy_ocr_access)):
     """Caissier may upload/read Z reports but cannot confirm supplier stock imports."""
     return user
 
+# The legacy collections are currently global (no restaurant_id partition).
+# Restrict them to authenticated legacy accounts. Restaurant-linked accounts
+# fail closed until the associated collections and indexes are tenant-scoped.
+async def require_legacy_restaurant_reader(user=Depends(require_active_user)):
+    if user.get("restaurant_id"):
+        raise HTTPException(
+            status_code=503,
+            detail="Module indisponible avant isolation des données par établissement")
+    return user
+
+
+async def require_legacy_restaurant_editor(user=Depends(require_legacy_restaurant_reader)):
+    if user.get("role") not in {"super_admin", "patron", "gerant", "chef_cuisine"}:
+        raise HTTPException(status_code=403, detail="Modification réservée aux responsables")
+    return user
+
+
+async def require_legacy_restaurant_manager(user=Depends(require_legacy_restaurant_reader)):
+    if user.get("role") not in {"super_admin", "patron", "gerant"}:
+        raise HTTPException(status_code=403, detail="Action réservée à la direction")
+    return user
+
+
+async def require_legacy_restaurant_cashier(user=Depends(require_legacy_restaurant_reader)):
+    if user.get("role") not in {"super_admin", "patron", "gerant", "caissier"}:
+        raise HTTPException(status_code=403, detail="Accès réservé à la caisse et à la direction")
+    return user
+
 
 # Create the main app without a prefix
 app = FastAPI()
@@ -2211,7 +2239,7 @@ async def update_user(user_id: str, user_update: UserUpdate, editor=Depends(requ
         raise HTTPException(status_code=500, detail=f"Erreur lors de la mise à jour: {str(e)}")
 
 # Supplier-Product Relations
-@api_router.post("/supplier-product-info", response_model=SupplierProductInfo)
+@api_router.post("/supplier-product-info", response_model=SupplierProductInfo, dependencies=[Depends(require_legacy_restaurant_editor)])
 async def create_supplier_product_info(info: SupplierProductInfoCreate):
     """Create supplier-product pricing information"""
     # Validate supplier and product exist
@@ -2235,14 +2263,14 @@ async def create_supplier_product_info(info: SupplierProductInfoCreate):
     await db.supplier_product_info.insert_one(info_obj.dict())
     return info_obj
 
-@api_router.get("/supplier-product-info/{supplier_id}", response_model=List[SupplierProductInfo])
+@api_router.get("/supplier-product-info/{supplier_id}", response_model=List[SupplierProductInfo], dependencies=[Depends(require_legacy_restaurant_reader)])
 async def get_supplier_products(supplier_id: str):
     """Get all products available from a specific supplier with pricing"""
     relations = await db.supplier_product_info.find({"supplier_id": supplier_id}).to_list(1000)
     return [SupplierProductInfo(**rel) for rel in relations]
 
 # Product Batch Management
-@api_router.post("/product-batches", response_model=ProductBatch)
+@api_router.post("/product-batches", response_model=ProductBatch, dependencies=[Depends(require_legacy_restaurant_editor)])
 async def create_product_batch(batch: ProductBatchCreate):
     """Create a new product batch"""
     # Validate product exists
@@ -2265,20 +2293,20 @@ async def create_product_batch(batch: ProductBatchCreate):
     
     return batch_obj
 
-@api_router.get("/product-batches/{product_id}", response_model=List[ProductBatch])
+@api_router.get("/product-batches/{product_id}", response_model=List[ProductBatch], dependencies=[Depends(require_legacy_restaurant_reader)])
 async def get_product_batches(product_id: str):
     """Get all batches for a specific product"""
     batches = await db.product_batches.find({"product_id": product_id, "is_consumed": False}).to_list(1000)
     return [ProductBatch(**batch) for batch in batches]
 
 # Price Anomaly Alerts
-@api_router.get("/price-anomalies", response_model=List[PriceAnomalyAlert])
+@api_router.get("/price-anomalies", response_model=List[PriceAnomalyAlert], dependencies=[Depends(require_legacy_restaurant_reader)])
 async def get_price_anomalies():
     """Get all unresolved price anomaly alerts"""
     alerts = await db.price_anomaly_alerts.find({"is_resolved": False}).to_list(1000)
     return [PriceAnomalyAlert(**alert) for alert in alerts]
 
-@api_router.post("/price-anomalies/{alert_id}/resolve")
+@api_router.post("/price-anomalies/{alert_id}/resolve", dependencies=[Depends(require_legacy_restaurant_editor)])
 async def resolve_price_anomaly(alert_id: str, resolution_note: str = ""):
     """Mark a price anomaly as resolved"""
     result = await db.price_anomaly_alerts.update_one(
@@ -2353,7 +2381,7 @@ class BatchStockInfo(BaseModel):
 
 # ✅ Version 3 Feature #3 - Advanced Stock Management API Endpoints
 
-@api_router.post("/stock/advanced-adjustment", response_model=AdvancedStockAdjustment)
+@api_router.post("/stock/advanced-adjustment", response_model=AdvancedStockAdjustment, dependencies=[Depends(require_legacy_restaurant_editor)])
 async def create_advanced_stock_adjustment(adjustment: StockAdjustmentRequest):
     """Create advanced stock adjustment - ingredient or prepared dish"""
     try:
@@ -2469,7 +2497,7 @@ async def create_advanced_stock_adjustment(adjustment: StockAdjustmentRequest):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Erreur lors de l'ajustement: {str(e)}")
 
-@api_router.get("/stock/adjustments-history", response_model=List[AdvancedStockAdjustment])
+@api_router.get("/stock/adjustments-history", response_model=List[AdvancedStockAdjustment], dependencies=[Depends(require_legacy_restaurant_reader)])
 async def get_stock_adjustments_history():
     """Get history of all stock adjustments"""
     try:
@@ -2478,7 +2506,7 @@ async def get_stock_adjustments_history():
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Erreur lors de la récupération: {str(e)}")
 
-@api_router.get("/stock/batch-info/{product_id}", response_model=BatchStockInfo)
+@api_router.get("/stock/batch-info/{product_id}", response_model=BatchStockInfo, dependencies=[Depends(require_legacy_restaurant_reader)])
 async def get_product_batch_info(product_id: str):
     """Get batch information for a specific product"""
     try:
@@ -2538,7 +2566,7 @@ async def get_product_batch_info(product_id: str):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Erreur lors de la récupération des lots: {str(e)}")
 
-@api_router.get("/stock/batch-summary", response_model=List[BatchStockInfo])
+@api_router.get("/stock/batch-summary", response_model=List[BatchStockInfo], dependencies=[Depends(require_legacy_restaurant_reader)])
 async def get_batch_summary():
     """Get batch summary for all products with batches"""
     try:
@@ -2574,7 +2602,7 @@ async def get_batch_summary():
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Erreur lors du résumé des lots: {str(e)}")
 
-@api_router.put("/stock/consume-batch/{batch_id}")
+@api_router.put("/stock/consume-batch/{batch_id}", dependencies=[Depends(require_legacy_restaurant_editor)])
 async def consume_batch(batch_id: str, quantity_consumed: float):
     """Mark a batch as partially or fully consumed"""
     try:
@@ -2753,7 +2781,7 @@ async def get_z_report_preview(document_id: str):
 
 # ✅ Version 3 - Analytics & Profitability API Endpoints
 
-@api_router.get("/analytics/profitability", response_model=List[RecipeProfitability])
+@api_router.get("/analytics/profitability", response_model=List[RecipeProfitability], dependencies=[Depends(require_legacy_restaurant_reader)])
 async def get_recipe_profitability():
     """Calculate profitability for all recipes"""
     recipes = await db.recettes.find().to_list(1000)
@@ -2806,7 +2834,7 @@ async def get_recipe_profitability():
     profitability_data.sort(key=lambda x: x.profit_percentage, reverse=True)
     return profitability_data
 
-@api_router.get("/analytics/sales-performance", response_model=SalesPerformance)
+@api_router.get("/analytics/sales-performance", response_model=SalesPerformance, dependencies=[Depends(require_legacy_restaurant_reader)])
 async def get_sales_performance(period: str = "monthly"):
     """Get sales performance analysis"""
     # Get all Rapports Z
@@ -2869,7 +2897,7 @@ async def get_sales_performance(period: str = "monthly"):
         sales_by_category=category_sales
     )
 
-@api_router.get("/analytics/alerts", response_model=AlertCenter)
+@api_router.get("/analytics/alerts", response_model=AlertCenter, dependencies=[Depends(require_legacy_restaurant_reader)])
 async def get_alert_center():
     """Get all alerts for management dashboard"""
     alerts = AlertCenter(
@@ -2949,7 +2977,7 @@ async def get_alert_center():
     
     return alerts
 
-@api_router.get("/analytics/cost-analysis", response_model=CostAnalysis)
+@api_router.get("/analytics/cost-analysis", response_model=CostAnalysis, dependencies=[Depends(require_legacy_restaurant_reader)])
 async def get_cost_analysis():
     """Get comprehensive cost analysis"""
     # Calculate total inventory value
@@ -4795,7 +4823,7 @@ def parse_mercuriale_fournisseur(texte_ocr: str, fournisseur_id: str = None) -> 
         }
 
 # Routes pour les fournisseurs
-@api_router.post("/fournisseurs", response_model=Fournisseur)
+@api_router.post("/fournisseurs", response_model=Fournisseur, dependencies=[Depends(require_legacy_restaurant_editor)])
 async def create_fournisseur(fournisseur: FournisseurCreate):
     # Valider la catégorie si fournie
     if fournisseur.categorie and fournisseur.categorie not in CATEGORIES_FOURNISSEURS:
@@ -4810,19 +4838,19 @@ async def create_fournisseur(fournisseur: FournisseurCreate):
     
     return fournisseur_obj
 
-@api_router.get("/fournisseurs", response_model=List[Fournisseur])
+@api_router.get("/fournisseurs", response_model=List[Fournisseur], dependencies=[Depends(require_legacy_restaurant_reader)])
 async def get_fournisseurs():
     fournisseurs = await db.fournisseurs.find().to_list(1000)
     return [Fournisseur(**f) for f in fournisseurs]
 
-@api_router.get("/fournisseurs/{fournisseur_id}", response_model=Fournisseur)
+@api_router.get("/fournisseurs/{fournisseur_id}", response_model=Fournisseur, dependencies=[Depends(require_legacy_restaurant_reader)])
 async def get_fournisseur(fournisseur_id: str):
     fournisseur = await db.fournisseurs.find_one({"id": fournisseur_id})
     if not fournisseur:
         raise HTTPException(status_code=404, detail="Fournisseur non trouvé")
     return Fournisseur(**fournisseur)
 
-@api_router.put("/fournisseurs/{fournisseur_id}", response_model=Fournisseur)
+@api_router.put("/fournisseurs/{fournisseur_id}", response_model=Fournisseur, dependencies=[Depends(require_legacy_restaurant_editor)])
 async def update_fournisseur(fournisseur_id: str, fournisseur: FournisseurCreate):
     result = await db.fournisseurs.update_one(
         {"id": fournisseur_id},
@@ -4834,7 +4862,7 @@ async def update_fournisseur(fournisseur_id: str, fournisseur: FournisseurCreate
     updated_fournisseur = await db.fournisseurs.find_one({"id": fournisseur_id})
     return Fournisseur(**updated_fournisseur)
 
-@api_router.delete("/fournisseurs/{fournisseur_id}")
+@api_router.delete("/fournisseurs/{fournisseur_id}", dependencies=[Depends(require_legacy_restaurant_manager)])
 async def delete_fournisseur(fournisseur_id: str):
     result = await db.fournisseurs.delete_one({"id": fournisseur_id})
     if result.deleted_count == 0:
@@ -4898,13 +4926,13 @@ async def create_supplier_cost_products(supplier_id: str, supplier_name: str):
         print(f"⚠️ Erreur création produits de coûts pour {supplier_name}: {str(e)}")
 
 # Routes pour les catégories de fournisseurs
-@api_router.get("/fournisseurs-categories")
+@api_router.get("/fournisseurs-categories", dependencies=[Depends(require_legacy_restaurant_reader)])
 async def get_fournisseurs_categories():
     """Obtenir la liste des catégories de fournisseurs disponibles"""
     return {"categories": CATEGORIES_FOURNISSEURS}
 
 # Routes pour la configuration des coûts fournisseurs
-@api_router.post("/supplier-cost-config", response_model=SupplierCostConfig)
+@api_router.post("/supplier-cost-config", response_model=SupplierCostConfig, dependencies=[Depends(require_legacy_restaurant_editor)])
 async def create_supplier_cost_config(config: SupplierCostConfigCreate):
     # Vérifier que le fournisseur existe
     supplier = await db.fournisseurs.find_one({"id": config.supplier_id})
@@ -4920,14 +4948,14 @@ async def create_supplier_cost_config(config: SupplierCostConfigCreate):
     await db.supplier_cost_configs.insert_one(config_obj.dict())
     return config_obj
 
-@api_router.get("/supplier-cost-config/{supplier_id}", response_model=SupplierCostConfig)
+@api_router.get("/supplier-cost-config/{supplier_id}", response_model=SupplierCostConfig, dependencies=[Depends(require_legacy_restaurant_reader)])
 async def get_supplier_cost_config(supplier_id: str):
     config = await db.supplier_cost_configs.find_one({"supplier_id": supplier_id})
     if not config:
         raise HTTPException(status_code=404, detail="Configuration non trouvée")
     return SupplierCostConfig(**config)
 
-@api_router.put("/supplier-cost-config/{supplier_id}", response_model=SupplierCostConfig)
+@api_router.put("/supplier-cost-config/{supplier_id}", response_model=SupplierCostConfig, dependencies=[Depends(require_legacy_restaurant_editor)])
 async def update_supplier_cost_config(supplier_id: str, config: SupplierCostConfigCreate):
     result = await db.supplier_cost_configs.update_one(
         {"supplier_id": supplier_id},
@@ -4940,7 +4968,7 @@ async def update_supplier_cost_config(supplier_id: str, config: SupplierCostConf
     return SupplierCostConfig(**updated_config)
 
 # Routes pour les commandes (Orders)
-@api_router.post("/orders", response_model=Order)
+@api_router.post("/orders", response_model=Order, dependencies=[Depends(require_legacy_restaurant_editor)])
 async def create_order(order_data: OrderCreate):
     """Créer une nouvelle commande"""
     # Récupérer le fournisseur
@@ -4975,7 +5003,7 @@ async def create_order(order_data: OrderCreate):
     
     return order
 
-@api_router.get("/orders", response_model=List[Order])
+@api_router.get("/orders", response_model=List[Order], dependencies=[Depends(require_legacy_restaurant_reader)])
 async def get_orders(status: Optional[str] = None, supplier_id: Optional[str] = None):
     """Récupérer les commandes avec filtres optionnels"""
     query = {}
@@ -4987,7 +5015,7 @@ async def get_orders(status: Optional[str] = None, supplier_id: Optional[str] = 
     orders = await db.orders.find(query).sort("order_date", -1).to_list(1000)
     return [Order(**order) for order in orders]
 
-@api_router.get("/orders/{order_id}", response_model=Order)
+@api_router.get("/orders/{order_id}", response_model=Order, dependencies=[Depends(require_legacy_restaurant_reader)])
 async def get_order(order_id: str):
     """Récupérer une commande spécifique"""
     order = await db.orders.find_one({"id": order_id})
@@ -4995,7 +5023,7 @@ async def get_order(order_id: str):
         raise HTTPException(status_code=404, detail="Commande non trouvée")
     return Order(**order)
 
-@api_router.put("/orders/{order_id}/status")
+@api_router.put("/orders/{order_id}/status", dependencies=[Depends(require_legacy_restaurant_editor)])
 async def update_order_status(order_id: str, status: str, actual_delivery_date: Optional[str] = None):
     """Mettre à jour le statut d'une commande"""
     valid_statuses = ["pending", "confirmed", "in_transit", "delivered", "cancelled"]
@@ -5020,7 +5048,7 @@ async def update_order_status(order_id: str, status: str, actual_delivery_date: 
     
     return {"message": "Statut mis à jour", "status": status}
 
-@api_router.delete("/orders/clear-history")
+@api_router.delete("/orders/clear-history", dependencies=[Depends(require_legacy_restaurant_manager)])
 async def clear_orders_history():
     """Vider l'historique des commandes"""
     result = await db.orders.delete_many({})
@@ -5050,7 +5078,7 @@ async def get_delivery_estimate(supplier_id: str):
     }
 
 # Routes pour les Préparations
-@api_router.post("/preparations", response_model=Preparation)
+@api_router.post("/preparations", response_model=Preparation, dependencies=[Depends(require_legacy_restaurant_editor)])
 async def create_preparation(prep_data: PreparationCreate):
     """Créer une nouvelle préparation"""
     # Récupérer le produit pour avoir son nom
@@ -5067,7 +5095,7 @@ async def create_preparation(prep_data: PreparationCreate):
     await db.preparations.insert_one(preparation.dict())
     return preparation
 
-@api_router.get("/preparations", response_model=List[Preparation])
+@api_router.get("/preparations", response_model=List[Preparation], dependencies=[Depends(require_legacy_restaurant_reader)])
 async def get_preparations(produit_id: Optional[str] = None):
     """Récupérer toutes les préparations avec filtre optionnel par produit"""
     query = {}
@@ -5077,7 +5105,7 @@ async def get_preparations(produit_id: Optional[str] = None):
     preparations = await db.preparations.find(query).sort("date_preparation", -1).to_list(1000)
     return [Preparation(**prep) for prep in preparations]
 
-@api_router.get("/preparations/{preparation_id}", response_model=Preparation)
+@api_router.get("/preparations/{preparation_id}", response_model=Preparation, dependencies=[Depends(require_legacy_restaurant_reader)])
 async def get_preparation(preparation_id: str):
     """Récupérer une préparation spécifique"""
     preparation = await db.preparations.find_one({"id": preparation_id})
@@ -5085,7 +5113,7 @@ async def get_preparation(preparation_id: str):
         raise HTTPException(status_code=404, detail="Préparation non trouvée")
     return Preparation(**preparation)
 
-@api_router.put("/preparations/{preparation_id}", response_model=Preparation)
+@api_router.put("/preparations/{preparation_id}", response_model=Preparation, dependencies=[Depends(require_legacy_restaurant_editor)])
 async def update_preparation(preparation_id: str, prep_data: PreparationCreate):
     """Mettre à jour une préparation"""
     try:
@@ -5125,7 +5153,7 @@ async def update_preparation(preparation_id: str, prep_data: PreparationCreate):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Erreur lors de la mise à jour: {str(e)}")
 
-@api_router.delete("/preparations/{preparation_id}")
+@api_router.delete("/preparations/{preparation_id}", dependencies=[Depends(require_legacy_restaurant_manager)])
 async def delete_preparation(preparation_id: str):
     """Supprimer une préparation"""
     result = await db.preparations.delete_one({"id": preparation_id})
@@ -5133,7 +5161,7 @@ async def delete_preparation(preparation_id: str):
         raise HTTPException(status_code=404, detail="Préparation non trouvée")
     return {"message": "Préparation supprimée"}
 
-@api_router.get("/preparations/dlc/alerts")
+@api_router.get("/preparations/dlc/alerts", dependencies=[Depends(require_legacy_restaurant_reader)])
 async def get_preparations_dlc_alerts(days: int = 3):
     """Récupérer les préparations dont la DLC expire bientôt"""
     limit_date = datetime.utcnow() + timedelta(days=days)
@@ -5144,7 +5172,7 @@ async def get_preparations_dlc_alerts(days: int = 3):
     return [Preparation(**prep) for prep in preparations]
 
 # Routes pour les formes de découpe personnalisées
-@api_router.get("/formes-decoupe")
+@api_router.get("/formes-decoupe", dependencies=[Depends(require_legacy_restaurant_reader)])
 async def get_formes_decoupe():
     """Récupérer toutes les formes de découpe (prédéfinies + custom)"""
     predefined = [
@@ -5169,7 +5197,7 @@ async def get_formes_decoupe():
     
     return {"predefined": predefined, "custom": custom}
 
-@api_router.post("/formes-decoupe")
+@api_router.post("/formes-decoupe", dependencies=[Depends(require_legacy_restaurant_editor)])
 async def create_forme_decoupe_custom(nom: str, description: Optional[str] = None):
     """Créer une forme de découpe personnalisée"""
     forme = FormeDecoupeCustom(nom=nom, description=description)
@@ -5177,7 +5205,7 @@ async def create_forme_decoupe_custom(nom: str, description: Optional[str] = Non
     return forme
 
 # ✅ Auto-generation des préparations intelligentes
-@api_router.post("/preparations/auto-generate")
+@api_router.post("/preparations/auto-generate", dependencies=[Depends(require_legacy_restaurant_manager)])
 async def auto_generate_preparations():
     """Génère automatiquement 2-3 préparations cohérentes pour chaque produit avec catégorie"""
     try:
@@ -5304,7 +5332,7 @@ async def auto_generate_preparations():
         }
 
 # Routes pour les produits
-@api_router.post("/produits", response_model=Produit)
+@api_router.post("/produits", response_model=Produit, dependencies=[Depends(require_legacy_restaurant_editor)])
 async def create_produit(produit: ProduitCreate):
     produit_dict = produit.dict()
     
@@ -5327,12 +5355,12 @@ async def create_produit(produit: ProduitCreate):
     
     return produit_obj
 
-@api_router.get("/produits", response_model=List[Produit])
+@api_router.get("/produits", response_model=List[Produit], dependencies=[Depends(require_legacy_restaurant_reader)])
 async def get_produits():
     produits = await db.produits.find().to_list(1000)
     return [Produit(**p) for p in produits]
 
-@api_router.get("/produits/by-categories")
+@api_router.get("/produits/by-categories", dependencies=[Depends(require_legacy_restaurant_reader)])
 async def get_produits_by_categories():
     """Récupérer les produits regroupés par catégories pour affichage accordéon"""
     produits = await db.produits.find().to_list(1000)
@@ -5382,14 +5410,14 @@ def get_category_icon(category: str) -> str:
     }
     return icons.get(category, "📦")
 
-@api_router.get("/produits/{produit_id}", response_model=Produit)
+@api_router.get("/produits/{produit_id}", response_model=Produit, dependencies=[Depends(require_legacy_restaurant_reader)])
 async def get_produit(produit_id: str):
     produit = await db.produits.find_one({"id": produit_id})
     if not produit:
         raise HTTPException(status_code=404, detail="Produit non trouvé")
     return Produit(**produit)
 
-@api_router.put("/produits/{produit_id}", response_model=Produit)
+@api_router.put("/produits/{produit_id}", response_model=Produit, dependencies=[Depends(require_legacy_restaurant_editor)])
 async def update_produit(produit_id: str, produit: ProduitCreate):
     try:
         # Vérifier que le produit existe
@@ -5437,7 +5465,7 @@ async def update_produit(produit_id: str, produit: ProduitCreate):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Erreur lors de la mise à jour: {str(e)}")
 
-@api_router.delete("/produits/{produit_id}")
+@api_router.delete("/produits/{produit_id}", dependencies=[Depends(require_legacy_restaurant_manager)])
 async def delete_produit(produit_id: str):
     # Supprimer aussi le stock associé
     await db.stocks.delete_one({"produit_id": produit_id})
@@ -5449,19 +5477,19 @@ async def delete_produit(produit_id: str):
     return {"message": "Produit supprimé"}
 
 # Routes pour les stocks
-@api_router.get("/stocks", response_model=List[Stock])
+@api_router.get("/stocks", response_model=List[Stock], dependencies=[Depends(require_legacy_restaurant_reader)])
 async def get_stocks():
     stocks = await db.stocks.find().to_list(1000)
     return [Stock(**s) for s in stocks]
 
-@api_router.get("/stocks/{produit_id}", response_model=Stock)
+@api_router.get("/stocks/{produit_id}", response_model=Stock, dependencies=[Depends(require_legacy_restaurant_reader)])
 async def get_stock(produit_id: str):
     stock = await db.stocks.find_one({"produit_id": produit_id})
     if not stock:
         raise HTTPException(status_code=404, detail="Stock non trouvé")
     return Stock(**stock)
 
-@api_router.get("/stocks/critiques/produits")
+@api_router.get("/stocks/critiques/produits", dependencies=[Depends(require_legacy_restaurant_reader)])
 async def get_stocks_critiques():
     """Récupère les produits en rupture de stock ou stock critique"""
     stocks = await db.stocks.find({}, {"_id": 0}).to_list(1000)
@@ -5490,7 +5518,7 @@ async def get_stocks_critiques():
     }
 
 
-@api_router.put("/stocks/{produit_id}", response_model=Stock)
+@api_router.put("/stocks/{produit_id}", response_model=Stock, dependencies=[Depends(require_legacy_restaurant_editor)])
 async def update_stock(produit_id: str, stock_update: StockUpdate):
     update_dict = {k: v for k, v in stock_update.dict().items() if v is not None}
     update_dict["derniere_maj"] = datetime.utcnow()
@@ -5506,7 +5534,7 @@ async def update_stock(produit_id: str, stock_update: StockUpdate):
     return Stock(**updated_stock)
 
 # Routes pour les mouvements de stock
-@api_router.post("/mouvements", response_model=MouvementStock)
+@api_router.post("/mouvements", response_model=MouvementStock, dependencies=[Depends(require_legacy_restaurant_editor)])
 async def create_mouvement(mouvement: MouvementCreate):
     mouvement_dict = mouvement.dict()
     
@@ -5607,19 +5635,19 @@ async def create_mouvement(mouvement: MouvementCreate):
     
     return mouvement_obj
 
-@api_router.get("/mouvements", response_model=List[MouvementStock])
+@api_router.get("/mouvements", response_model=List[MouvementStock], dependencies=[Depends(require_legacy_restaurant_reader)])
 async def get_mouvements():
     mouvements = await db.mouvements_stock.find().sort("date", -1).to_list(1000)
     return [MouvementStock(**m) for m in mouvements]
 
 # Routes pour les recettes (Productions)
-@api_router.get("/categories-production")
+@api_router.get("/categories-production", dependencies=[Depends(require_legacy_restaurant_reader)])
 async def get_categories_production():
     """Récupère les catégories de production disponibles"""
     return {"categories": CATEGORIES_PRODUCTION}
 
 
-@api_router.get("/unites")
+@api_router.get("/unites", dependencies=[Depends(require_legacy_restaurant_reader)])
 async def get_unites():
     """Récupère la liste des unités standardisées disponibles"""
     unites_list = []
@@ -5631,7 +5659,7 @@ async def get_unites():
         })
     return {"unites": unites_list}
 
-@api_router.post("/convert-unite")
+@api_router.post("/convert-unite", dependencies=[Depends(require_legacy_restaurant_editor)])
 async def convert_unite(quantite: float, unite_source: str, unite_cible: str):
     """Convertit une quantité d'une unité à une autre"""
     try:
@@ -5645,7 +5673,7 @@ async def convert_unite(quantite: float, unite_source: str, unite_cible: str):
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
 
-@api_router.post("/recettes", response_model=Recette)
+@api_router.post("/recettes", response_model=Recette, dependencies=[Depends(require_legacy_restaurant_editor)])
 async def create_recette(recette: RecetteCreate):
     # Enrichir les ingrédients avec les noms des produits
     enriched_ingredients = []
@@ -5665,7 +5693,7 @@ async def create_recette(recette: RecetteCreate):
     await db.recettes.insert_one(recette_obj.dict())
     return recette_obj
 
-@api_router.get("/recettes", response_model=List[Recette])
+@api_router.get("/recettes", response_model=List[Recette], dependencies=[Depends(require_legacy_restaurant_reader)])
 async def get_recettes(categorie: Optional[str] = None):
     """Récupère les recettes avec filtre optionnel par catégorie"""
     query = {}
@@ -5675,14 +5703,14 @@ async def get_recettes(categorie: Optional[str] = None):
     recettes = await db.recettes.find(query).to_list(1000)
     return [Recette(**r) for r in recettes]
 
-@api_router.get("/recettes/{recette_id}", response_model=Recette)
+@api_router.get("/recettes/{recette_id}", response_model=Recette, dependencies=[Depends(require_legacy_restaurant_reader)])
 async def get_recette(recette_id: str):
     recette = await db.recettes.find_one({"id": recette_id})
     if not recette:
         raise HTTPException(status_code=404, detail="Recette non trouvée")
     return Recette(**recette)
 
-@api_router.put("/recettes/{recette_id}", response_model=Recette)
+@api_router.put("/recettes/{recette_id}", response_model=Recette, dependencies=[Depends(require_legacy_restaurant_editor)])
 async def update_recette(recette_id: str, recette_update: RecetteUpdate):
     update_dict = {k: v for k, v in recette_update.dict().items() if v is not None}
     
@@ -5713,7 +5741,7 @@ async def update_recette(recette_id: str, recette_update: RecetteUpdate):
     updated_recette = await db.recettes.find_one({"id": recette_id})
     return Recette(**updated_recette)
 
-@api_router.delete("/recettes/{recette_id}")
+@api_router.delete("/recettes/{recette_id}", dependencies=[Depends(require_legacy_restaurant_manager)])
 async def delete_recette(recette_id: str):
     result = await db.recettes.delete_one({"id": recette_id})
     if result.deleted_count == 0:
@@ -5721,7 +5749,7 @@ async def delete_recette(recette_id: str):
     return {"message": "Recette supprimée"}
 
 # Calculateur de production de recettes
-@api_router.get("/recettes/{recette_id}/production-capacity")
+@api_router.get("/recettes/{recette_id}/production-capacity", dependencies=[Depends(require_legacy_restaurant_reader)])
 async def get_recipe_production_capacity(recette_id: str):
     """Calculer combien de portions peuvent être produites avec le stock actuel"""
     recette = await db.recettes.find_one({"id": recette_id})
@@ -5775,7 +5803,7 @@ async def get_recipe_production_capacity(recette_id: str):
     }
 
 # Routes pour l'export/import Excel
-@api_router.get("/export/stocks")
+@api_router.get("/export/stocks", dependencies=[Depends(require_legacy_restaurant_reader)])
 async def export_stocks():
     # Récupérer toutes les données
     stocks = await db.stocks.find().to_list(1000)
@@ -5823,7 +5851,7 @@ async def export_stocks():
         headers=headers
     )
 
-@api_router.post("/import/stocks")
+@api_router.post("/import/stocks", dependencies=[Depends(require_legacy_restaurant_editor)])
 async def import_stocks(file: UploadFile = File(...)):
     if not file.filename.endswith(('.xlsx', '.xls')):
         raise HTTPException(status_code=400, detail="Format de fichier non supporté. Utilisez .xlsx ou .xls")
@@ -5876,7 +5904,7 @@ async def import_stocks(file: UploadFile = File(...)):
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Erreur lors de l'import: {str(e)}")
 
-@api_router.post("/import/global-excel")
+@api_router.post("/import/global-excel", dependencies=[Depends(require_legacy_restaurant_editor)])
 async def import_global_excel(file: UploadFile = File(...)):
     """
     Import Massif Multi-Onglets (La Bible des Produits)
@@ -6006,7 +6034,7 @@ async def import_global_excel(file: UploadFile = File(...)):
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Erreur lors de la lecture du fichier: {str(e)}")
 
-@api_router.post("/import/recettes")
+@api_router.post("/import/recettes", dependencies=[Depends(require_legacy_restaurant_editor)])
 async def import_recettes(file: UploadFile = File(...)):
     """Import de recettes depuis Excel
     Format attendu: Nom Recette | Description | Catégorie | Portions | Temps Préparation | Prix Vente | Produit ID | Quantité | Unité
@@ -6091,7 +6119,7 @@ async def import_recettes(file: UploadFile = File(...)):
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Erreur lors de la lecture du fichier: {str(e)}")
 
-@api_router.get("/export/recettes")
+@api_router.get("/export/recettes", dependencies=[Depends(require_legacy_restaurant_reader)])
 async def export_recettes():
     """Export des recettes vers Excel"""
     # Récupérer toutes les recettes
@@ -6148,7 +6176,7 @@ async def export_recettes():
     )
 
 # Dashboard stats
-@api_router.get("/dashboard/stats")
+@api_router.get("/dashboard/stats", dependencies=[Depends(require_legacy_restaurant_reader)])
 async def get_dashboard_stats():
     total_produits = await db.produits.count_documents({})
     total_fournisseurs = await db.fournisseurs.count_documents({})
@@ -6179,7 +6207,7 @@ async def get_dashboard_stats():
         "stocks_recents": stocks_recents
     }
 
-@api_router.get("/dashboard/analytics")
+@api_router.get("/dashboard/analytics", dependencies=[Depends(require_legacy_restaurant_reader)])
 async def get_dashboard_analytics():
     """
     Obtenir les analytics réelles du dashboard basées sur les rapports Z et ventes
@@ -6321,7 +6349,7 @@ async def get_dashboard_analytics():
     }
 
 
-@api_router.get("/dashboard/missing-data-alerts")
+@api_router.get("/dashboard/missing-data-alerts", dependencies=[Depends(require_legacy_restaurant_reader)])
 async def get_missing_data_alerts():
     """
     Détecte les données manquantes ou incomplètes dans l'application
@@ -6812,13 +6840,13 @@ async def delete_document(document_id: str):
     return {"message": "Document supprimé"}
 
 # ✅ Endpoints Rapports Z
-@api_router.post("/rapports_z")
+@api_router.post("/rapports_z", dependencies=[Depends(require_legacy_restaurant_cashier)])
 async def create_rapport_z(data: RapportZ):
     """Créer un nouveau rapport Z"""
     await db.rapports_z.insert_one(data.dict())
     return {"status": "ok", "id": data.id}
 
-@api_router.get("/rapports_z")
+@api_router.get("/rapports_z", dependencies=[Depends(require_legacy_restaurant_reader)])
 async def list_rapports_z():
     """Lister tous les rapports Z"""
     docs = await db.rapports_z.find().sort("date", -1).to_list(100)  # Tri par date décroissante
@@ -6828,7 +6856,7 @@ async def list_rapports_z():
             del doc["_id"]
     return docs
 
-@api_router.get("/rapports_z/{rapport_id}")
+@api_router.get("/rapports_z/{rapport_id}", dependencies=[Depends(require_legacy_restaurant_reader)])
 async def get_rapport_z(rapport_id: str):
     """Obtenir un rapport Z spécifique"""
     doc = await db.rapports_z.find_one({"id": rapport_id})
@@ -6839,7 +6867,7 @@ async def get_rapport_z(rapport_id: str):
         del doc["_id"]
     return doc
 
-@api_router.delete("/rapports_z/{rapport_id}")
+@api_router.delete("/rapports_z/{rapport_id}", dependencies=[Depends(require_legacy_restaurant_manager)])
 async def delete_rapport_z(rapport_id: str):
     """Supprimer un rapport Z"""
     result = await db.rapports_z.delete_one({"id": rapport_id})
@@ -6854,7 +6882,7 @@ async def delete_all_ocr_documents():
         detail="Suppression globale désactivée pour préserver les documents de stock et la traçabilité")
 
 # ✅ Archive System Endpoints
-@api_router.post("/archive")
+@api_router.post("/archive", dependencies=[Depends(require_legacy_restaurant_editor)])
 async def archive_item(request: ArchiveRequest):
     """Archiver un produit, production ou fournisseur"""
     # Obtenir les données originales selon le type
@@ -6870,6 +6898,9 @@ async def archive_item(request: ArchiveRequest):
     elif request.item_type == "fournisseur":
         collection_name = "fournisseurs" 
         original_data = await db.fournisseurs.find_one({"id": request.item_id})
+    elif request.item_type == "preparation":
+        collection_name = "preparations"
+        original_data = await db.preparations.find_one({"id": request.item_id})
     else:
         raise HTTPException(status_code=400, detail="Type d'élément invalide")
     
@@ -6896,7 +6927,7 @@ async def archive_item(request: ArchiveRequest):
     
     return {"message": f"{request.item_type.capitalize()} archivé avec succès", "archive_id": archived_item.id}
 
-@api_router.get("/archives", response_model=List[ArchivedItem])
+@api_router.get("/archives", response_model=List[ArchivedItem], dependencies=[Depends(require_legacy_restaurant_reader)])
 async def get_archives(item_type: Optional[str] = None):
     """Obtenir la liste des éléments archivés"""
     query = {}
@@ -6906,7 +6937,7 @@ async def get_archives(item_type: Optional[str] = None):
     archives = await db.archived_items.find(query).sort("archived_at", -1).to_list(1000)
     return [ArchivedItem(**archive) for archive in archives]
 
-@api_router.post("/restore/{archive_id}")
+@api_router.post("/restore/{archive_id}", dependencies=[Depends(require_legacy_restaurant_editor)])
 async def restore_item(archive_id: str):
     """Restaurer un élément archivé"""
     # Trouver l'archive
@@ -6924,6 +6955,10 @@ async def restore_item(archive_id: str):
         collection_name = "recettes"
     elif archived_item.item_type == "fournisseur":
         collection_name = "fournisseurs"
+    elif archived_item.item_type == "preparation":
+        collection_name = "preparations"
+    else:
+        raise HTTPException(status_code=400, detail="Type d'archive invalide")
     
     # Vérifier que l'élément n'existe pas déjà
     collection = getattr(db, collection_name)
@@ -6939,7 +6974,7 @@ async def restore_item(archive_id: str):
     
     return {"message": f"{archived_item.item_type.capitalize()} restauré avec succès"}
 
-@api_router.delete("/archives/{archive_id}")
+@api_router.delete("/archives/{archive_id}", dependencies=[Depends(require_legacy_restaurant_manager)])
 async def delete_archive(archive_id: str):
     """Supprimer définitivement une archive (sans restauration)"""
     result = await db.archived_items.delete_one({"id": archive_id})
@@ -6948,7 +6983,7 @@ async def delete_archive(archive_id: str):
     
     return {"message": "Archive supprimée définitivement"}
 
-@api_router.post("/archive/diagnostic")
+@api_router.post("/archive/diagnostic", dependencies=[Depends(require_legacy_restaurant_manager)])
 async def diagnostic_archive_system():
     """Diagnostique et test du système d'archivage"""
     try:
@@ -7138,10 +7173,12 @@ async def get_legacy_session_disabled(session_id: str):
     raise HTTPException(status_code=410, detail="Ancienne vérification supprimée ; utiliser /auth/session avec Authorization")
 
 # ✅ Mission Management Endpoints
-@api_router.post("/missions", response_model=Mission)
-async def create_mission(mission: MissionCreate, assigned_by_user_id: str):
+@api_router.post("/missions", response_model=Mission, dependencies=[Depends(require_legacy_restaurant_editor)])
+async def create_mission(mission: MissionCreate, assigned_by_user_id: str, editor=Depends(require_legacy_restaurant_editor)):
     """Créer une nouvelle mission"""
     try:
+        if assigned_by_user_id != editor["id"]:
+            raise HTTPException(status_code=403, detail="Impossible de créer une mission au nom d'un autre utilisateur")
         # Récupérer les noms des utilisateurs
         assigned_to_user = await db.users.find_one({"id": mission.assigned_to_user_id})
         assigned_by_user = await db.users.find_one({"id": assigned_by_user_id})
@@ -7173,14 +7210,20 @@ async def create_mission(mission: MissionCreate, assigned_by_user_id: str):
         
         return mission_obj
         
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Erreur lors de la création: {str(e)}")
 
-@api_router.get("/missions", response_model=List[Mission])
-async def get_missions(user_id: Optional[str] = None, status: Optional[str] = None):
+@api_router.get("/missions", response_model=List[Mission], dependencies=[Depends(require_legacy_restaurant_reader)])
+async def get_missions(user_id: Optional[str] = None, status: Optional[str] = None, editor=Depends(require_legacy_restaurant_reader)):
     """Récupérer les missions"""
     query = {}
-    if user_id:
+    if editor.get("role") not in {"super_admin", "patron", "gerant", "chef_cuisine"}:
+        if user_id and user_id != editor["id"]:
+            raise HTTPException(status_code=403, detail="Missions d'un autre utilisateur interdites")
+        query["assigned_to_user_id"] = editor["id"]
+    elif user_id:
         query["assigned_to_user_id"] = user_id
     if status:
         query["status"] = status
@@ -7188,9 +7231,11 @@ async def get_missions(user_id: Optional[str] = None, status: Optional[str] = No
     missions = await db.missions.find(query).sort("assigned_date", -1).to_list(1000)
     return [Mission(**m) for m in missions]
 
-@api_router.get("/missions/by-user/{user_id}")
-async def get_missions_by_user(user_id: str):
+@api_router.get("/missions/by-user/{user_id}", dependencies=[Depends(require_legacy_restaurant_reader)])
+async def get_missions_by_user(user_id: str, editor=Depends(require_legacy_restaurant_reader)):
     """Récupérer toutes les missions pour un utilisateur (assignées à lui ET créées par lui)"""
+    if editor.get("role") not in {"super_admin", "patron", "gerant", "chef_cuisine"} and user_id != editor["id"]:
+        raise HTTPException(status_code=403, detail="Missions d'un autre utilisateur interdites")
     assigned_to_missions = await db.missions.find({"assigned_to_user_id": user_id}).sort("assigned_date", -1).to_list(1000)
     created_by_missions = await db.missions.find({"assigned_by_user_id": user_id}).sort("assigned_date", -1).to_list(1000)
     
@@ -7201,15 +7246,24 @@ async def get_missions_by_user(user_id: str):
         "total_created": len(created_by_missions)
     }
 
-@api_router.put("/missions/{mission_id}", response_model=Mission)
-async def update_mission(mission_id: str, update: MissionUpdate, user_id: str):
+@api_router.put("/missions/{mission_id}", response_model=Mission, dependencies=[Depends(require_legacy_restaurant_reader)])
+async def update_mission(mission_id: str, update: MissionUpdate, user_id: str, editor=Depends(require_legacy_restaurant_reader)):
     """Mettre à jour une mission"""
     try:
         mission = await db.missions.find_one({"id": mission_id})
         if not mission:
             raise HTTPException(status_code=404, detail="Mission non trouvée")
         
+        if user_id != editor["id"]:
+            raise HTTPException(status_code=403, detail="Identité de mise à jour incorrecte")
+        manager = editor.get("role") in {"super_admin", "patron", "gerant", "chef_cuisine"}
+        if mission["assigned_to_user_id"] != editor["id"] and not manager:
+            raise HTTPException(status_code=403, detail="Mission non attribuée à cet utilisateur")
         update_data = update.dict(exclude_unset=True)
+        if not manager and any(field != "status" for field in update_data):
+            raise HTTPException(status_code=403, detail="Modification réservée à la direction")
+        if not manager and update_data.get("status") != "terminee_attente":
+            raise HTTPException(status_code=403, detail="Seul l'achèvement de sa mission est autorisé")
         
         # Si l'employé marque comme terminée
         if update_data.get("status") == "terminee_attente":
@@ -7248,10 +7302,12 @@ async def update_mission(mission_id: str, update: MissionUpdate, user_id: str):
         updated_mission = await db.missions.find_one({"id": mission_id})
         return Mission(**updated_mission)
         
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Erreur mise à jour: {str(e)}")
 
-@api_router.delete("/missions/{mission_id}")
+@api_router.delete("/missions/{mission_id}", dependencies=[Depends(require_legacy_restaurant_manager)])
 async def delete_mission(mission_id: str):
     """Supprimer une mission"""
     result = await db.missions.delete_one({"id": mission_id})
@@ -7263,17 +7319,20 @@ async def delete_mission(mission_id: str):
     
     return {"message": "Mission supprimée"}
 
-@api_router.get("/notifications/{user_id}")
-async def get_user_notifications(user_id: str, limit: int = 50):
+@api_router.get("/notifications/{user_id}", dependencies=[Depends(require_legacy_restaurant_reader)])
+async def get_user_notifications(user_id: str, limit: int = 50, editor=Depends(require_legacy_restaurant_reader)):
     """Récupérer les notifications d'un utilisateur"""
+    if user_id != editor["id"]:
+        raise HTTPException(status_code=403, detail="Notifications personnelles uniquement")
+    limit = max(1, min(limit, 100))
     notifications = await db.notifications.find({"user_id": user_id}).sort("created_at", -1).limit(limit).to_list(limit)
     return [Notification(**n) for n in notifications]
 
-@api_router.put("/notifications/{notification_id}/read")
-async def mark_notification_read(notification_id: str):
+@api_router.put("/notifications/{notification_id}/read", dependencies=[Depends(require_legacy_restaurant_reader)])
+async def mark_notification_read(notification_id: str, editor=Depends(require_legacy_restaurant_reader)):
     """Marquer une notification comme lue"""
     result = await db.notifications.update_one(
-        {"id": notification_id},
+        {"id": notification_id, "user_id": editor["id"]},
         {"$set": {"read": True, "read_at": datetime.utcnow()}}
     )
     if result.matched_count == 0:
@@ -7282,7 +7341,7 @@ async def mark_notification_read(notification_id: str):
     return {"message": "Notification marquée comme lue"}
 
 # ✅ Demo Data Creation for Missions System
-@api_router.post("/demo/clean-duplicates")
+@api_router.post("/demo/clean-duplicates", dependencies=[Depends(require_legacy_restaurant_manager)])
 async def clean_duplicates():
     """Supprimer les doublons dans toutes les collections"""
     try:
@@ -7359,7 +7418,7 @@ async def clean_duplicates():
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=f"Erreur: {str(e)}")
 
-@api_router.api_route("/demo/init-real-restaurant-data", methods=["GET", "POST"])
+@api_router.api_route("/demo/init-real-restaurant-data", methods=["GET", "POST"], dependencies=[Depends(require_legacy_restaurant_manager)])
 async def init_real_restaurant_data():
     """Initialiser uniquement les vraies données du restaurant (fournisseurs, produits, préparations, recettes)"""
     try:
@@ -7526,7 +7585,7 @@ async def init_real_restaurant_data():
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=f"Erreur: {str(e)}")
 
-@api_router.api_route("/demo/init-missions-users", methods=["GET", "POST"])
+@api_router.api_route("/demo/init-missions-users", methods=["GET", "POST"], dependencies=[Depends(require_legacy_restaurant_manager)])
 async def init_demo_missions_and_users():
     """Créer les utilisateurs test et missions de démonstration"""
     try:
@@ -7820,7 +7879,7 @@ async def init_demo_missions_and_users():
         }
 
 # ✅ Import nouvelle carte et création automatique
-@api_router.post("/demo/import-nouvelle-carte")
+@api_router.post("/demo/import-nouvelle-carte", dependencies=[Depends(require_legacy_restaurant_manager)])
 async def import_nouvelle_carte():
     """Importer la nouvelle carte de La Table d'Augustine et créer productions/préparations"""
     try:
@@ -8095,7 +8154,7 @@ async def import_nouvelle_carte():
             "preparations_created": 0
         }
 
-@api_router.post("/demo/update-ingredients-from-carte")
+@api_router.post("/demo/update-ingredients-from-carte", dependencies=[Depends(require_legacy_restaurant_manager)])
 async def update_ingredients_from_carte():
     """Archiver anciens ingrédients et créer nouveaux selon nouvelle carte"""
     try:
@@ -8219,7 +8278,7 @@ async def update_ingredients_from_carte():
         }
 # ===== STOCK PREPARATIONS ENDPOINTS =====
 
-@api_router.get("/stock-preparations")
+@api_router.get("/stock-preparations", dependencies=[Depends(require_legacy_restaurant_reader)])
 async def list_stock_preparations():
     """Lister tous les stocks de préparations"""
     stocks = await db.stock_preparations.find().to_list(1000)
@@ -8229,7 +8288,7 @@ async def list_stock_preparations():
             del stock["_id"]
     return stocks
 
-@api_router.get("/stock-preparations/{stock_id}")
+@api_router.get("/stock-preparations/{stock_id}", dependencies=[Depends(require_legacy_restaurant_reader)])
 async def get_stock_preparation(stock_id: str):
     """Obtenir un stock de préparation spécifique"""
     stock = await db.stock_preparations.find_one({"id": stock_id})
@@ -8239,7 +8298,7 @@ async def get_stock_preparation(stock_id: str):
         del stock["_id"]
     return stock
 
-@api_router.post("/stock-preparations")
+@api_router.post("/stock-preparations", dependencies=[Depends(require_legacy_restaurant_editor)])
 async def create_stock_preparation(stock_data: StockPreparationCreate):
     """Créer un nouveau stock de préparation"""
     # Vérifier que la préparation existe
@@ -8260,7 +8319,7 @@ async def create_stock_preparation(stock_data: StockPreparationCreate):
     await db.stock_preparations.insert_one(stock.dict())
     return {"status": "ok", "id": stock.id}
 
-@api_router.put("/stock-preparations/{stock_id}")
+@api_router.put("/stock-preparations/{stock_id}", dependencies=[Depends(require_legacy_restaurant_editor)])
 async def update_stock_preparation(stock_id: str, update_data: StockPreparationUpdate):
     """Mettre à jour un stock de préparation"""
     update_dict = {k: v for k, v in update_data.dict().items() if v is not None}
@@ -8276,7 +8335,7 @@ async def update_stock_preparation(stock_id: str, update_data: StockPreparationU
     
     return {"status": "updated"}
 
-@api_router.delete("/stock-preparations/{stock_id}")
+@api_router.delete("/stock-preparations/{stock_id}", dependencies=[Depends(require_legacy_restaurant_manager)])
 async def delete_stock_preparation(stock_id: str):
     """Supprimer un stock de préparation"""
     result = await db.stock_preparations.delete_one({"id": stock_id})
@@ -8284,7 +8343,7 @@ async def delete_stock_preparation(stock_id: str):
         raise HTTPException(status_code=404, detail="Stock de préparation non trouvé")
     return {"message": "Stock de préparation supprimé"}
 
-@api_router.post("/preparations/{preparation_id}/execute", response_model=ExecutePreparationResult)
+@api_router.post("/preparations/{preparation_id}/execute", response_model=ExecutePreparationResult, dependencies=[Depends(require_legacy_restaurant_editor)])
 async def execute_preparation(preparation_id: str, request: ExecutePreparationRequest):
     """
     Exécuter une préparation : transformer des produits bruts en préparation
