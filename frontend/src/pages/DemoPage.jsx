@@ -3,7 +3,6 @@ import {Link} from 'react-router-dom';
 import {ArrowLeft, ArrowRight, Receipt, ShieldCheck, Sparkle, Package} from '@phosphor-icons/react';
 import Brand from '../components/restop/Brand';
 import Overview, {previewStocks} from '../components/restop/Overview';
-import OperationalPriorities from '../components/restop/OperationalPriorities';
 import InvoiceValidationModal from '../components/InvoiceValidationModal';
 import '../styles/workspace.css';
 import '../styles/demo.css';
@@ -56,10 +55,7 @@ export default function DemoPage() {
         <div className="rt-demo-panel" id="demo-stocks">
           <div className="rt-demo-section-head"><span><Package size={20}/> Vue d'ensemble</span><small>Simulation d'un établissement indépendant</small></div>
           {stockNotice && <div className="rt-demo-stock-notice" role="status">Stocks fictifs : ce tableau montre des seuils d’alerte et des quantités de démonstration, sans modification possible.</div>}
-          <Overview stocks={previewStocks} documents={DEMO_DOCS} user={{role:'patron',full_name:'Camille'}} onStocks={openStocks} onStockAlerts={openStocks} onImport={openWizard} onPurchases={openWizard}/>
-        </div>
-        <div className="rt-demo-panel rt-demo-panel-brief">
-          <OperationalPriorities alerts={DEMO_ALERTS} documents={DEMO_DOCS} onAction={onPriorityAction}/>
+          <Overview stocks={previewStocks} documents={DEMO_DOCS} user={{role:'patron',full_name:'Camille'}} onStocks={openStocks} onStockAlerts={openStocks} onImport={openWizard} onPurchases={openWizard} alerts={DEMO_ALERTS} onPriorityAction={onPriorityAction}/>
         </div>
       </div>
       <section className="rt-demo-explain" aria-label="Comment tester le wizard">
