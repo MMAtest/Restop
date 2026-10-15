@@ -29,7 +29,7 @@ const ProductionTab = (props) => {
 
   // Placeholder for props destructuring
   const NOW = Date.now();
-  const { activeTab, activeProductionTab, setActiveProductionTab, preparations, currentUser, fetchArchives, setShowProduitModal, showCategoriesView, setShowCategoriesView, fetchProduitsParCategories, setProduitsParCategories, categoriesExpanded, setCategoriesExpanded, canEditItems, handleEdit, canArchiveItems, archiveItem, handleDelete, selectedCategoryFilter, filteredProduits, filteredRecettes, produits, fournisseurs, produitsParCategories, setShowFournisseurModal, showFournisseursCategoriesView, setShowFournisseursCategoriesView, restoreItem, deleteArchivePermanently, fetchHistoriqueProduction, historiqueProduction, showRecetteModal, setShowRecetteModal, handleExportRecettes, showRecettesCategoriesView, setShowRecettesCategoriesView, filterRecettesByCategory, categoriesProduction, loading, handleCalculerCouts, showPreparationModal, setShowPreparationModal, handleAutoGeneratePreparations, showPreparationsCategoriesView, setShowPreparationsCategoriesView, preparationForm, handlePreparationSubmit, resetPreparationForm, calculatePerte, calculatePortions, formesDecoupe, stocksPreparations, mouvementsPreparations, showMovementPreparationModal, setShowMovementPreparationModal, movementPreparationForm, preparationsParCategories, categoriesPreparationsExpanded, handleMovementPreparation, archivedItems, selectedArchiveType, setSelectedArchiveType, filterProduitsByCategory, canCreateItems, recettes, setEditingItem, setPreparationForm, setMovementPreparationForm, setCategoriesPreparationsExpanded } = props;
+  const { activeTab, activeProductionTab, setActiveProductionTab, preparations, currentUser, fetchArchives, setShowProduitModal, showCategoriesView, setShowCategoriesView, fetchProduitsParCategories, setProduitsParCategories, categoriesExpanded, setCategoriesExpanded, canEditItems, handleEdit, canArchiveItems, archiveItem, handleDelete, selectedCategoryFilter, filteredProduits, filteredRecettes, produits, fournisseurs, produitsParCategories, setShowFournisseurModal, showFournisseursCategoriesView, setShowFournisseursCategoriesView, restoreItem, deleteArchivePermanently, fetchHistoriqueProduction, historiqueProduction, showRecetteModal, setShowRecetteModal, handleExportRecettes, showRecettesCategoriesView, setShowRecettesCategoriesView, filterRecettesByCategory, categoriesProduction, loading, handleCalculerCouts, showPreparationModal, setShowPreparationModal, handleAutoGeneratePreparations, showPreparationsCategoriesView, setShowPreparationsCategoriesView, preparationForm, handlePreparationSubmit, resetPreparationForm, calculatePerte, calculatePortions, formesDecoupe, stocksPreparations, mouvementsPreparations, showMovementPreparationModal, setShowMovementPreparationModal, movementPreparationForm, preparationsParCategories, categoriesPreparationsExpanded, handleMovementPreparation, archivedItems, selectedArchiveType, setSelectedArchiveType, filterProduitsByCategory, canCreateItems, recettes, setEditingItem, setPreparationForm, setMovementPreparationForm, setCategoriesPreparationsExpanded, askAction, showActionNotice } = props;
 
   return (
     <>
@@ -254,16 +254,17 @@ const ProductionTab = (props) => {
                                     <button 
                                       className="button small warning"
                                     onClick={async () => {
-                                      const reason = window.prompt(`Raison de l'archivage de "${produit.nom}" (optionnel):`);
+                                      const decision = await askAction({title:`Archiver ${produit.nom} ?`,description:'Cet élément sera retiré des listes actives. Il pourra être restauré depuis les archives.',askReason:true,confirmLabel:'Archiver'});
+                                      const reason = decision.confirmed ? (decision.reason || '') : null;
                                       if (reason !== null) {
                                         const success = await archiveItem(produit.id, 'produit', reason || null);
                                         if (success) {
-                                          alert(`${produit.nom} archivé avec succès !`);
+                                          showActionNotice(`${produit.nom} archivé avec succès !`);
                                           // Recharger les données des catégories
                                           const data = await fetchProduitsParCategories();
                                           setProduitsParCategories(data);
                                         } else {
-                                          alert("Erreur lors de l'archivage");
+                                          showActionNotice("Erreur lors de l'archivage", 'error');
                                         }
                                       }
                                     }}
@@ -362,13 +363,14 @@ const ProductionTab = (props) => {
                           <button 
                             className="button small warning" 
                             onClick={async () => {
-                              const reason = window.prompt(`Raison de l'archivage de "${produit.nom}" (optionnel):`);
+                              const decision = await askAction({title:`Archiver ${produit.nom} ?`,description:'Cet élément sera retiré des listes actives. Il pourra être restauré depuis les archives.',askReason:true,confirmLabel:'Archiver'});
+                                      const reason = decision.confirmed ? (decision.reason || '') : null;
                               if (reason !== null) {
                                 const success = await archiveItem(produit.id, 'produit', reason || null);
                                 if (success) {
-                                  alert(`${produit.nom} archivé avec succès !`);
+                                  showActionNotice(`${produit.nom} archivé avec succès !`);
                                 } else {
-                                  alert("Erreur lors de l'archivage");
+                                  showActionNotice("Erreur lors de l'archivage", 'error');
                                 }
                               }
                             }}
@@ -494,13 +496,14 @@ const ProductionTab = (props) => {
                       <button 
                         className="button small warning" 
                         onClick={async () => {
-                          const reason = window.prompt(`Raison de l'archivage de "${fournisseur.nom}" (optionnel):`);
+                          const decision = await askAction({title:`Archiver ${fournisseur.nom} ?`,description:'Cet élément sera retiré des listes actives. Il pourra être restauré depuis les archives.',askReason:true,confirmLabel:'Archiver'});
+                                      const reason = decision.confirmed ? (decision.reason || '') : null;
                           if (reason !== null) { // null = annulé, empty string = OK sans raison
                             const success = await archiveItem(fournisseur.id, 'fournisseur', reason || null);
                             if (success) {
-                              alert(`${fournisseur.nom} archivé avec succès !`);
+                              showActionNotice(`${fournisseur.nom} archivé avec succès !`);
                             } else {
-                              alert("Erreur lors de l'archivage");
+                              showActionNotice("Erreur lors de l'archivage", 'error');
                             }
                           }
                         }}
@@ -895,13 +898,14 @@ const ProductionTab = (props) => {
                           <button 
                             className="button small warning" 
                             onClick={async () => {
-                              const reason = window.prompt(`Raison de l'archivage de "${recette.nom}" (optionnel):`);
+                              const decision = await askAction({title:`Archiver ${recette.nom} ?`,description:'Cet élément sera retiré des listes actives. Il pourra être restauré depuis les archives.',askReason:true,confirmLabel:'Archiver'});
+                                      const reason = decision.confirmed ? (decision.reason || '') : null;
                               if (reason !== null) {
                                 const success = await archiveItem(recette.id, 'production', reason || null);
                                 if (success) {
-                                  alert(`${recette.nom} archivé avec succès !`);
+                                  showActionNotice(`${recette.nom} archivé avec succès !`);
                                 } else {
-                                  alert("Erreur lors de l'archivage");
+                                  showActionNotice("Erreur lors de l'archivage", 'error');
                                 }
                               }
                             }}
@@ -1004,12 +1008,12 @@ const ProductionTab = (props) => {
                             <button 
                               className="button small success"
                               onClick={async () => {
-                                if (window.confirm(`Restaurer ${archive.original_data.nom} ?`)) {
+                                if ((await askAction({title:`Restaurer ${archive.original_data.nom} ?`,description:'Cet élément sera replacé dans les listes actives.',confirmLabel:'Restaurer'})).confirmed) {
                                   const success = await restoreItem(archive.id);
                                   if (success) {
-                                    alert(`${archive.original_data.nom} restauré avec succès !`);
+                                    showActionNotice(`${archive.original_data.nom} restauré avec succès !`);
                                   } else {
-                                    alert("Erreur lors de la restauration");
+                                    showActionNotice("Erreur lors de la restauration", 'error');
                                   }
                                 }
                               }}
@@ -1019,12 +1023,12 @@ const ProductionTab = (props) => {
                             <button 
                               className="button small danger"
                               onClick={async () => {
-                                if (window.confirm(`Supprimer définitivement ${archive.original_data.nom} ?\n\nCette action est irréversible !`)) {
+                                if ((await askAction({title:`Supprimer définitivement ${archive.original_data.nom} ?`,description:'Cette suppression est irréversible, y compris depuis les archives. Vérifiez les dépendances existantes avant de continuer.',dangerous:true,requireText:'SUPPRIMER',confirmLabel:'Supprimer définitivement'})).confirmed) {
                                   const success = await deleteArchivePermanently(archive.id);
                                   if (success) {
-                                    alert(`${archive.original_data.nom} supprimé définitivement`);
+                                    showActionNotice(`${archive.original_data.nom} supprimé définitivement`);
                                   } else {
-                                    alert("Erreur lors de la suppression");
+                                    showActionNotice("Erreur lors de la suppression", 'error');
                                   }
                                 }
                               }}

@@ -1,10 +1,13 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import "./App.css";
 import axios from "axios";
 import { useNavigate } from 'react-router-dom';
 import AppNavigation from './components/restop/AppNavigation';
 import ModuleTabs from './components/restop/ModuleTabs';
 import StockKpiBar from './components/restop/StockKpiBar';
+import ActionDialog from './components/restop/ActionDialog';
+import FormModal from './components/restop/FormModal';
+import ActionNotice from './components/restop/ActionNotice';
 import Overview from './components/restop/Overview';
 import OperationalAnalytics from './components/restop/OperationalAnalytics';
 import { recipeCapacity } from './utils/planning';
@@ -137,6 +140,22 @@ const getProductionCategoryIcon = (category) => {
 function App() {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("overview");
+  const [actionRequest,setActionRequest] = useState(null);
+  const actionResolver=useRef(null);
+  const [actionNotice,setActionNotice] = useState(null);
+  const askAction = useCallback(config=>new Promise(resolve=>{
+    // One decision at a time; never execute the resolver in a React state updater.
+    if(actionResolver.current){resolve({confirmed:false});return;}
+    actionResolver.current=resolve;
+    setActionRequest({config});
+  }),[]);
+  const resolveAction = useCallback(result=>{
+    const resolver=actionResolver.current;
+    actionResolver.current=null;
+    setActionRequest(null);
+    if(resolver)resolver(result);
+  },[]);
+
   const [sessionChecking, setSessionChecking] = useState(true);
   const [overviewLoading, setOverviewLoading] = useState(true);
   const [overviewError, setOverviewError] = useState('');
@@ -576,39 +595,27 @@ function App() {
 
   // Auto-génération des préparations
   const handleAutoGeneratePreparations = async () => {
+    const choice = await askAction({
+      title:'Remplacer les préparations automatiquement ?',
+      description:'Cette opération peut supprimer les préparations existantes et créer 2 à 3 préparations par produit. Effectuez une sauvegarde avant de continuer. Aucun retour arrière automatique n’est disponible.',
+      dangerous:true,requireText:'REMPLACER',confirmLabel:'Lancer le remplacement'
+    });
+    if(!choice.confirmed)return;
     try {
       setLoading(true);
-      
-      const confirmation = window.confirm(
-        "AUTO-GÉNÉRATION DES PRÉPARATIONS\n\n" +
-        "Cette action va :\n" +
-        "• Analyser tous vos produits avec catégories\n" +
-        "• Créer 2-3 préparations cohérentes par produit\n" +
-        "• Supprimer les préparations existantes\n" +
-        "• Baser les préparations sur vos recettes existantes\n\n" +
-        "Continuer ?"
-      );
-      
-      if (!confirmation) return;
-      
+
       const response = await axios.post(`${API}/preparations/auto-generate`);
       
       if (response.data.success) {
-        alert(`AUTO-GÉNÉRATION RÉUSSIE !\n\n` +
-              `Résultats :\n` +
-              `• ${response.data.preparations_created} préparations créées\n` +
-              `• ${response.data.details.total_products_processed} produits traités\n` +
-              `• Catégories : ${response.data.details.categories_processed.join(', ')}\n\n` +
-              `Exemples créés :\n` +
-              `${response.data.details.sample_preparations.slice(0, 5).join('\n')}`);
+        setActionNotice({kind:'success',message:`${response.data.preparations_created || 0} préparations générées. Vérifiez les nouveaux résultats avant utilisation.`});
         
         fetchPreparations(); // Rafraîchir la liste
       } else {
-        alert(`ERREUR : ${response.data.message}`);
+        setActionNotice({kind:'error',message:response.data.message || 'Génération refusée par le serveur.'});
       }
     } catch (error) {
       console.error("Erreur lors de l&apos;auto-génération:", error);
-      alert(`Erreur lors de l&apos;auto-génération: ${error.response?.data?.detail || error.message}`);
+      setActionNotice({kind:'error',message:'Erreur de génération : '+(error.response?.data?.detail || error.message)});
     } finally {
       setLoading(false);
     }
@@ -1731,14 +1738,15 @@ function App() {
     }
   };
 
-  // Fonction de suppression
+  // Suppression irréversible : validation textuelle, sans boîtes bloquantes du navigateur.
   const handleDelete = async (id, type) => {
-    // Premier avertissement
-    if (!window.confirm("Êtes-vous sûr de vouloir supprimer cet élément ?")) return;
-    
-    // Deuxième avertissement de sécurité (Double vérification)
-    if (!window.confirm("ATTENTION : Cette action est IRRÉVERSIBLE !\n\nL'élément sera définitivement effacé de la base de données (pas d'archivage).\n\nConfirmer la suppression DÉFINITIVE ?")) return;
-
+    if (!['produit','fournisseur','recette','preparation'].includes(type)) return;
+    const choice = await askAction({
+      title: 'Supprimer définitivement cet élément ?',
+      description: `Vous allez supprimer ce ${type} de Restop, et non l’archiver. Vérifiez qu’il n’est pas utilisé par des recettes, commandes ou mouvements de stock.`,
+      dangerous: true, requireText: 'SUPPRIMER', confirmLabel: 'Supprimer définitivement'
+    });
+    if(!choice.confirmed)return;
     try {
       if (type === "produit") {
         await axios.delete(`${API}/produits/${id}`);
@@ -1755,10 +1763,10 @@ function App() {
         fetchPreparations();
       }
       fetchDashboardStats();
-      alert("Élément supprimé définitivement.");
+      setActionNotice({kind:'success',message:'Suppression définitive confirmée par le serveur.'});
     } catch (error) {
       console.error(`Erreur lors de la suppression du ${type}:`, error);
-      alert("Erreur lors de la suppression : " + (error.response?.data?.detail || error.message));
+      setActionNotice({kind:'error',message:'La suppression a échoué : '+(error.response?.data?.detail || error.message)});
     }
   };
 
@@ -2419,6 +2427,8 @@ function App() {
       <AppNavigation activeTab={activeTab} onNavigate={setActiveTab} user={currentUser}
         onLogout={logout} onRefresh={async () => { await refreshAllData(); await loadOverview(); }} loading={loading}
         canOrders={canAccessOrders()} onSuppliers={() => { setActiveTab('production'); setActiveProductionTab('fournisseurs'); }} />
+      <ActionNotice notice={actionNotice} onDismiss={()=>setActionNotice(null)}/>
+      <ActionDialog request={actionRequest} onResolve={resolveAction}/>
       {activeTab === 'overview' && <Overview stocks={stocks.map(s => ({...s, unite: s.unite || produits.find(p => p.id === s.produit_id)?.unite}))} documents={documentsOcr} user={currentUser} alerts={overviewAlerts} alertsError={overviewAlertError}
         onPriorityAction={action => {
           setActiveTab('stocks');
@@ -3677,13 +3687,14 @@ function App() {
                                   <button 
                                     className="button small warning" 
                                     onClick={async () => {
-                                      const reason = window.prompt(`Raison de l&apos;archivage de "${production.nom}" (optionnel):`);
+                                      const decision = await askAction({title:`Archiver ${production.nom} ?`,description:'Cette référence sera retirée des listes actives et conservée dans les archives.',askReason:true,confirmLabel:'Archiver'});
+                                                      const reason = decision.confirmed ? (decision.reason||'') : null;
                                       if (reason !== null) {
                                         const success = await archiveItem(production.id, 'production', reason || null);
                                       if (success) {
-                                        alert(`${production.nom} archivé avec succès !`);
+                                        setActionNotice({kind:'success',message:`${production.nom} archivé avec succès.`});
                                       } else {
-                                        alert("Erreur lors de l&apos;archivage");
+                                        setActionNotice({kind:'error',message:'Erreur lors de l’archivage.'});
                                       }
                                     }
                                   }}
@@ -4016,14 +4027,15 @@ function App() {
                                                   onClick={async () => {
                                                     const preparation = preparations.find(p => p.id === stockPrep.preparation_id);
                                                     if (preparation) {
-                                                      const reason = window.prompt(`Raison de l&apos;archivage de "${preparation.nom}" (optionnel):`);
+                                                      const decision = await askAction({title:`Archiver ${preparation.nom} ?`,description:'Cette référence sera retirée des listes actives et conservée dans les archives.',askReason:true,confirmLabel:'Archiver'});
+                                                      const reason = decision.confirmed ? (decision.reason||'') : null;
                                                       if (reason !== null) {
                                                         const success = await archiveItem(preparation.id, 'preparation', reason || null);
                                                         if (success) {
-                                                          alert(`${preparation.nom} archivée avec succès !`);
+                                                          setActionNotice({kind:'success',message:`${preparation.nom} archivée avec succès.`});
                                                           fetchStocksPreparations(); // Recharger
                                                         } else {
-                                                          alert("Erreur lors de l&apos;archivage");
+                                                          setActionNotice({kind:'error',message:'Erreur lors de l’archivage.'});
                                                         }
                                                       }
                                                     }
@@ -5723,6 +5735,8 @@ function App() {
           setCategoriesPreparationsExpanded={setCategoriesPreparationsExpanded}
           recettes={recettes}
           setEditingItem={setEditingItem}
+          askAction={askAction}
+          showActionNotice={(message,kind='info')=>setActionNotice({kind,message})}
         />
 
 
@@ -6087,8 +6101,7 @@ function App() {
 
       {/* Modal Produit */}
       {showProduitModal && (
-        <div className="modal-overlay">
-          <div className="modal-content">
+        <FormModal title={editingItem ? 'Modifier le produit' : 'Ajouter un produit'} onClose={()=>{setShowProduitModal(false);setEditingItem(null);setProduitForm({nom:'',description:'',categorie:'',unite:'',prix_achat:'',fournisseur_id:''});}}>
             <h3 className="modal-header">
               {editingItem ? "Modifier le produit" : "Ajouter un produit"}
             </h3>
@@ -6192,14 +6205,12 @@ function App() {
                 </button>
               </div>
             </form>
-          </div>
-        </div>
+        </FormModal>
       )}
 
       {/* Modal Fournisseur */}
       {showFournisseurModal && (
-        <div className="modal-overlay">
-          <div className="modal-content">
+        <FormModal title={editingItem ? 'Modifier le fournisseur' : 'Ajouter un fournisseur'} onClose={()=>{setShowFournisseurModal(false);setEditingItem(null);setShowDeliveryRulesConfig(false);}} wide>
             <h3 className="modal-header">
               {editingItem ? "Modifier le fournisseur" : "Ajouter un fournisseur"}
             </h3>
@@ -6579,14 +6590,12 @@ function App() {
                 </button>
               </div>
             </form>
-          </div>
-        </div>
+        </FormModal>
       )}
 
       {/* Modal Mouvement */}
       {showMouvementModal && (
-        <div className="modal-overlay">
-          <div className="modal-content">
+        <FormModal title={mouvementForm.type === 'ajustement' ? 'Ajuster le stock' : 'Nouveau mouvement de stock'} onClose={()=>{setShowMouvementModal(false);}}>
             <h3 className="modal-header">
               {mouvementForm.type === 'ajustement' ? 'Ajuster le stock' : 'Nouveau mouvement de stock'}
             </h3>
@@ -6716,8 +6725,7 @@ function App() {
                 </button>
               </div>
             </form>
-          </div>
-        </div>
+        </FormModal>
       )}
 
       {/* Modal Mouvement Préparation */}
@@ -7215,8 +7223,7 @@ function App() {
 
       {/* Modal Préparation */}
       {showPreparationModal && (
-        <div className="modal-overlay">
-          <div className="modal-content" style={{maxWidth: '800px'}}>
+        <FormModal title={editingItem ? 'Modifier la préparation' : 'Nouvelle préparation'} onClose={()=>{setShowPreparationModal(false);setEditingItem(null);resetPreparationForm();}} wide>
             <h3 className="modal-header">
               {editingItem ? "Modifier la préparation" : "Nouvelle préparation"}
             </h3>
@@ -7452,14 +7459,12 @@ function App() {
                 </button>
               </div>
             </form>
-          </div>
-        </div>
+        </FormModal>
       )}
 
       {/* Modal Recette */}
       {showRecetteModal && (
-        <div className="modal-overlay">
-          <div className="modal-content">
+        <FormModal title={editingItem ? 'Modifier la recette' : 'Ajouter une recette'} onClose={()=>{setShowRecetteModal(false);setEditingItem(null);}} wide>
             <h3 className="modal-header">
               {editingItem ? "Modifier la recette" : "Ajouter une recette"}
             </h3>
@@ -7688,8 +7693,7 @@ function App() {
                 </button>
               </div>
             </form>
-          </div>
-        </div>
+        </FormModal>
       )}
 
       {/* Modal OCR */}
