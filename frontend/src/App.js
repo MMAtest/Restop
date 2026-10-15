@@ -3,6 +3,8 @@ import "./App.css";
 import axios from "axios";
 import { useNavigate } from 'react-router-dom';
 import AppNavigation from './components/restop/AppNavigation';
+import ModuleTabs from './components/restop/ModuleTabs';
+import StockKpiBar from './components/restop/StockKpiBar';
 import Overview from './components/restop/Overview';
 import OperationalAnalytics from './components/restop/OperationalAnalytics';
 import { recipeCapacity } from './utils/planning';
@@ -2429,41 +2431,11 @@ function App() {
         onPurchases={() => { setActiveTab('stocks'); setActiveStockTab('ocr'); setActiveOcrTab('factures'); }}
         onImport={['patron', 'super_admin', 'gerant', 'chef_cuisine'].includes(currentUser?.role) ? () => { setActiveTab('stocks'); setActiveStockTab('ocr'); setActiveOcrTab('factures'); setShowOcrModal(true); } : null} />}
 
-      {/* Top Navigation Tabs (Analytics) - SUPER ADMIN et PATRON */}
-      {activeTab === "dashboard" && (currentUser?.role === 'super_admin' || currentUser?.role === 'patron' || currentUser?.role === 'gerant') && (
-        <div className="top-nav-tabs">
-          <button 
-            className={`top-nav-tab ${activeDashboardTab === "ventes" ? "active" : ""}`}
-            onClick={() => setActiveDashboardTab("ventes")}
-          >
-            VENTES
-          </button>
-          <button 
-            className={`top-nav-tab ${activeDashboardTab === "alertes" ? "active" : ""}`}
-            onClick={() => setActiveDashboardTab("alertes")}
-          >
-            ALERTES
-          </button>
-          <button 
-            className={`top-nav-tab ${activeDashboardTab === "couts" ? "active" : ""}`}
-            onClick={() => setActiveDashboardTab("couts")}
-          >
-            COÛTS
-          </button>
-          <button 
-            className={`top-nav-tab ${activeDashboardTab === "rentabilite" ? "active" : ""}`}
-            onClick={() => setActiveDashboardTab("rentabilite")}
-          >
-            RENTABILITÉ
-          </button>
-          <button 
-            className={`top-nav-tab ${activeDashboardTab === "previsionnel" ? "active" : ""}`}
-            onClick={() => setActiveDashboardTab("previsionnel")}
-          >
-            PRÉVISIONNEL
-          </button>
-        </div>
-      )}
+      {activeTab==='dashboard' && ['super_admin','patron','gerant'].includes(currentUser?.role) &&
+        <div className="rt-dashboard-subnav"><ModuleTabs label="Rubriques des analyses" value={activeDashboardTab} onChange={setActiveDashboardTab} items={[
+          {id:'ventes',label:'Ventes'}, {id:'alertes',label:'Alertes'}, {id:'couts',label:'Coûts'},
+          {id:'rentabilite',label:'Rentabilité'}, {id:'previsionnel',label:'Prévisionnel'}
+        ]}/></div>}
 
       {/* Content Wrapper */}
       <div className="content-wrapper">
@@ -3497,42 +3469,12 @@ function App() {
           <div className="wireframe">
             <h2>Stocks & inventaires</h2>
             
-            {/* Sous-navigation Stocks */}
-            <div className="sub-nav-tabs">
-              <button 
-                className="button" 
-                onClick={() => setActiveStockTab('stocks')}
-                style={{
-                  background: activeStockTab === 'stocks' ? 'var(--color-primary-blue)' : 'var(--color-background-card-light)',
-                  color: activeStockTab === 'stocks' ? 'white' : 'var(--color-text-secondary)'
-                }}
-              >
-                Stocks & DLC
-              </button>
-              {/* Répartition - MASQUÉ pour employé cuisine ET barman */}
-              {canAccessRepartition() && (
-                <button 
-                  className="button" 
-                  onClick={() => setActiveStockTab('repartition')}
-                  style={{
-                    background: activeStockTab === 'repartition' ? 'var(--color-primary-blue)' : 'var(--color-background-card-light)',
-                    color: activeStockTab === 'repartition' ? 'white' : 'var(--color-text-secondary)'
-                  }}
-                >
-                  Répartition
-                </button>
-              )}
-              <button 
-                className="button" 
-                onClick={() => setActiveStockTab('ocr')}
-                style={{
-                  background: activeStockTab === 'ocr' ? 'var(--color-primary-blue)' : 'var(--color-background-card-light)',
-                  color: activeStockTab === 'ocr' ? 'white' : 'var(--color-text-secondary)'
-                }}
-              >
-                OCR
-              </button>
-            </div>
+            <p className="rt-module-subtitle">Suivez les quantités, lots et documents entrants, sans confondre les niveaux d’alerte avec les données réelles.</p>
+            <ModuleTabs label="Rubriques des stocks" value={activeStockTab} onChange={setActiveStockTab} items={[
+              {id:'stocks',label:'Stocks & DLC'},
+              {id:'repartition',label:'Répartition',hidden:!canAccessRepartition()},
+              {id:'ocr',label:'OCR'}
+            ]}/>
 
             {/* ONGLET STOCKS */}
             <div className={`production-tab ${activeStockTab === 'stocks' ? 'active' : ''}`}>
@@ -3546,122 +3488,21 @@ function App() {
                   </div>
                 )}
 
-                {/* KPIs Stocks - MASQUÉS pour employé cuisine */}
-                {currentUser?.role !== 'employe_cuisine' && (
-                  <div className="kpi-grid">
-                    <div 
-                      className="kpi-card"
-                      onClick={() => setStockFilter(stockFilter === 'all' ? 'all' : 'all')}
-                      style={{
-                        cursor: 'pointer',
-                        border: stockFilter === 'all' ? '2px solid var(--color-primary-blue)' : '1px solid var(--color-border)',
-                        transform: stockFilter === 'all' ? 'scale(1.02)' : 'scale(1)',
-                        transition: 'all 0.2s ease'
-                      }}
-                    >
-                      <div className="icon">📈</div>
-                      <div className="title">Stock Total</div>
-                      <div className="value">{stocks.length} produits</div>
-                    </div>
-                    
-                    <div 
-                      className="kpi-card"
-                      onClick={() => setStockFilter(stockFilter === 'critical' ? 'all' : 'critical')}
-                      style={{
-                        cursor: 'pointer',
-                        border: stockFilter === 'critical' ? '2px solid var(--color-warning-orange)' : '1px solid var(--color-border)',
-                        transform: stockFilter === 'critical' ? 'scale(1.02)' : 'scale(1)',
-                        transition: 'all 0.2s ease'
-                      }}
-                    >
-                      <div className="icon">⚠️</div>
-                      <div className="title">Stocks Critiques</div>
-                      <div className="value warning">
-                        {stocks.filter(s => s.quantite_actuelle <= s.quantite_min).length} alertes
-                      </div>
-                    </div>
-                    
-                    <div 
-                      className="kpi-card"
-                      onClick={() => setStockFilter(stockFilter === 'all' ? 'all' : 'all')}
-                      style={{
-                        cursor: 'pointer',
-                        border: stockFilter === 'all' ? '2px solid var(--color-primary-blue)' : '1px solid var(--color-border)',
-                        transform: stockFilter === 'all' ? 'scale(1.02)' : 'scale(1)',
-                        transition: 'all 0.2s ease'
-                      }}
-                    >
-                      <div className="icon">💰</div>
-                      <div className="title">Valeur Totale</div>
-                      <div className="value">
-                        {stocks.reduce((total, stock) => {
-                          const produit = produits.find(p => p.id === stock.produit_id);
-                          const prix = produit?.prix_achat || produit?.reference_price || 0;
-                          return total + (stock.quantite_actuelle * prix);
-                        }, 0).toLocaleString('fr-FR', {style: 'currency', currency: 'EUR'})}
-                      </div>
-                    </div>
-                    
-                    <div 
-                      className="kpi-card"
-                      onClick={() => {
-                        if (stockFilter === 'dlc') {
-                          setStockFilter('all');
-                        } else {
-                          // Basculer automatiquement vers les préparations car les DLC concernent les préparations
-                          setStockViewMode('preparations');
-                          fetchStocksPreparations();
-                          setStockFilter('dlc');
-                        }
-                      }}
-                      style={{
-                        cursor: 'pointer',
-                        border: stockFilter === 'dlc' ? '2px solid var(--color-danger-red)' : '1px solid var(--color-border)',
-                        transform: stockFilter === 'dlc' ? 'scale(1.02)' : 'scale(1)',
-                        transition: 'all 0.2s ease'
-                      }}
-                    >
-                      <div className="icon">⏰</div>
-                      <div className="title">DLC &lt; 3 jours</div>
-                      <div className="value" style={{color: 'var(--color-warning-orange)'}}>
-                        {stocksPreparations.filter(p => p.dlc && new Date(p.dlc) < new Date(Date.now() + 3 * 24 * 60 * 60 * 1000)).length} préparations
-                      </div>
-                    </div>
-                  </div>
-                )}
+                {currentUser?.role !== 'employe_cuisine' && <StockKpiBar
+                  stocks={stocks} products={produits} preparations={stocksPreparations} activeFilter={stockFilter}
+                  onAll={()=>{setStockFilter('all');setStockViewMode('produits');setStockCurrentPage(1);setStockFilterCategory('all');}}
+                  onCritical={()=>{setStockFilter(stockFilter==='critical'?'all':'critical');setStockViewMode('produits');setStockCurrentPage(1);setStockFilterCategory('all');}}
+                  onDlc={()=>{
+                    if(stockFilter==='dlc'){setStockFilter('all');setStockViewMode('produits');}
+                    else {setStockViewMode('preparations');setStockFilter('dlc');fetchStocksPreparations();}
+                    setStockCurrentPage(1);setStockFilterCategory('all');
+                  }}
+                />}
 
-                {/* Indicateur de filtre actif */}
-                {stockFilter !== 'all' && (
-                  <div style={{
-                    padding: '12px',
-                    background: stockFilter === 'critical' ? 'rgba(251, 146, 60, 0.1)' : 'rgba(220, 38, 38, 0.1)',
-                    borderLeft: `4px solid ${stockFilter === 'critical' ? 'var(--color-warning-orange)' : 'var(--color-danger-red)'}`,
-                    borderRadius: '6px',
-                    marginBottom: '16px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between'
-                  }}>
-                    <span style={{fontSize: '14px', fontWeight: '500'}}>
-                      {stockFilter === 'critical' && 'Filtre actif : Stocks critiques uniquement'}
-                      {stockFilter === 'dlc' && 'Filtre actif : DLC < 3 jours uniquement'}
-                    </span>
-                    <button
-                      onClick={() => setStockFilter('all')}
-                      style={{
-                        background: 'var(--color-primary-blue)',
-                        color: 'white',
-                        border: 'none',
-                        borderRadius: '4px',
-                        padding: '6px 12px',
-                        fontSize: '12px',
-                        cursor: 'pointer'
-                      }}
-                    >
-                      ✕ Supprimer le filtre
-                    </button>
-                  </div>
-                )}
+                {stockFilter!=='all'&&<div role="status" className="rt-stock-filter-feedback">
+                  <span>{stockFilter==='critical'?'Vue filtrée : références sous leur seuil.':'Vue filtrée : préparations à DLC proche ou dépassée.'}</span>
+                  <button type="button" onClick={()=>{setStockFilter('all');setStockViewMode('produits');setStockCurrentPage(1);setStockFilterCategory('all');}}>Effacer le filtre</button>
+                </div>}
 
                 {/* Liste des produits en stock avec recherche et filtres */}
                 <div className="item-list">
@@ -3670,55 +3511,13 @@ function App() {
                          stockViewMode === 'preparations' ? 'Préparations en Stock' : 
                          'Stock par Production'}
                     
-                    {/* Toggle View Mode */}
-                    <div style={{gap: '5px', marginLeft: '15px', display: 'inline-flex'}}>
-                      <button 
-                        className="button small"
-                        onClick={() => {
-                          setStockViewMode('produits');
-                          setStockFilterCategory('all'); // Reset filtre
-                        }}
-                        style={{
-                          background: stockViewMode === 'produits' ? 'var(--color-primary-blue)' : 'var(--color-background-card)',
-                          color: stockViewMode === 'produits' ? 'white' : 'var(--color-text-secondary)',
-                          padding: '4px 8px',
-                          fontSize: '12px'
-                        }}
-                      >
-                        Par Produit
-                      </button>
-                      <button 
-                        className="button small"
-                        onClick={() => {
-                          setStockViewMode('preparations');
-                          setStockFilterCategory('all'); // Reset filtre
-                          fetchStocksPreparations(); // Recharger les données des préparations
-                        }}
-                        style={{
-                          background: stockViewMode === 'preparations' ? 'var(--color-primary-blue)' : 'var(--color-background-card)',
-                          color: stockViewMode === 'preparations' ? 'white' : 'var(--color-text-secondary)',
-                          padding: '4px 8px',
-                          fontSize: '12px'
-                        }}
-                      >
-                        Par Préparation
-                      </button>
-                      <button 
-                        className="button small"
-                        onClick={() => {
-                          setStockViewMode('productions');
-                          setStockFilterCategory('all'); // Reset filtre
-                        }}
-                        style={{
-                          background: stockViewMode === 'productions' ? 'var(--color-primary-blue)' : 'var(--color-background-card)',
-                          color: stockViewMode === 'productions' ? 'white' : 'var(--color-text-secondary)',
-                          padding: '4px 8px',
-                          fontSize: '12px'
-                        }}
-                      >
-                        Par Production
-                      </button>
-                    </div>
+                    <ModuleTabs label="Mode d’affichage des stocks" value={stockViewMode} className="rt-stock-view-tabs" items={[
+                      {id:'produits',label:'Par produit'}, {id:'preparations',label:'Par préparation'}, {id:'productions',label:'Par production'}
+                    ]} onChange={mode=>{
+                      setStockViewMode(mode);setStockFilterCategory('all');setStockCurrentPage(1);
+                      if((stockFilter==='dlc'&&mode!=='preparations')||(stockFilter==='critical'&&mode!=='produits'))setStockFilter('all');
+                      if(mode==='preparations')fetchStocksPreparations();
+                    }}/>
                   </div>
                   
                   {/* Barre de recherche et filtres */}
@@ -3726,12 +3525,12 @@ function App() {
                     <div style={{display: 'flex', gap: '15px', alignItems: 'center', flexWrap: 'wrap'}}>
                       {/* Barre de recherche */}
                       <div style={{display: 'flex', alignItems: 'center', gap: '8px', flex: '1', minWidth: '200px'}}>
-                        <label className="filter-label" style={{fontSize: '14px', minWidth: '70px'}}>Recherche :</label>
+                        <label htmlFor="rt-stock-search" className="filter-label" style={{fontSize: '14px', minWidth: '70px'}}>Recherche :</label>
                         <input
-                          type="text"
+                          id="rt-stock-search" type="search"
                           placeholder={stockViewMode === 'produits' ? "Nom du produit..." : "Nom de la production..."}
                           value={stockSearchTerm}
-                          onChange={(e) => setStockSearchTerm(e.target.value)}
+                          onChange={(e) => {setStockSearchTerm(e.target.value);setStockCurrentPage(1);}}
                           style={{
                             padding: '6px 10px',
                             borderRadius: '4px',
@@ -3746,8 +3545,8 @@ function App() {
                       
                       {/* Filtre par catégorie */}
                       <div style={{display: 'flex', alignItems: 'center', gap: '8px'}}>
-                        <label className="filter-label" style={{fontSize: '14px', minWidth: '70px'}}>Catégorie :</label>
-                        <select 
+                        <label htmlFor="rt-stock-category" className="filter-label" style={{fontSize: '14px', minWidth: '70px'}}>Catégorie :</label>
+                        <select id="rt-stock-category"
                           className="filter-select"
                           value={stockFilterCategory}
                           onChange={(e) => {
