@@ -5058,7 +5058,7 @@ async def clear_orders_history():
     }
 
 
-@api_router.get("/suppliers/{supplier_id}/delivery-estimate")
+@api_router.get("/suppliers/{supplier_id}/delivery-estimate", dependencies=[Depends(require_legacy_restaurant_reader)])
 async def get_delivery_estimate(supplier_id: str):
     """Calculer la date de livraison estimée pour un fournisseur"""
     supplier = await db.fournisseurs.find_one({"id": supplier_id})
