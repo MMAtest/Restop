@@ -124,6 +124,12 @@ class LegacyGuardTests(unittest.TestCase):
             if not isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
                 continue
             for deco in node.decorator_list:
+                # /health and the public landing are app-level routes, not API routes.
+                if not isinstance(deco, ast.Call) or not isinstance(deco.func, ast.Attribute):
+                    continue
+                owner = deco.func.value
+                if not isinstance(owner, ast.Name) or owner.id != "api_router":
+                    continue
                 path = decorator_path(deco)
                 if path is None:
                     continue
