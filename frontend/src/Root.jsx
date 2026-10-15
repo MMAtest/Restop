@@ -9,6 +9,7 @@ import '@fontsource/dm-serif-display/400.css';
 import './styles/restop.css';
 
 const App = lazy(() => import('./App'));
+const DemoPage = lazy(() => import('./pages/DemoPage'));
 export default function Root() {
-  return <ErrorBoundary><BrowserRouter><Suspense fallback={<div className="rt-loading" role="status">Ouverture de votre espace…</div>}><Routes><Route path="/" element={<LandingPage />} /><Route path="/connexion" element={<App />} /><Route path="/app/*" element={<App />} /><Route path="*" element={<div className="rt-loading"><h1>Cette page n’existe pas.</h1><a href="/">Revenir à l’accueil</a></div>} /></Routes></Suspense></BrowserRouter></ErrorBoundary>;
+  return <ErrorBoundary><BrowserRouter><Suspense fallback={<div className="rt-loading" role="status">Ouverture de votre espace…</div>}><Routes><Route path="/" element={<LandingPage />} /><Route path="/demo" element={<DemoPage />} /><Route path="/connexion" element={<App />} /><Route path="/app/*" element={<App />} /><Route path="*" element={<div className="rt-loading"><h1>Cette page n’existe pas.</h1><a href="/">Revenir à l’accueil</a></div>} /></Routes></Suspense></BrowserRouter></ErrorBoundary>;
 }

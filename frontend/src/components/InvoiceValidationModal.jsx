@@ -193,7 +193,7 @@ const MobileItemCard = ({ item, index, handleItemChange, handleDeleteItem, produ
   </div>
 );
 
-const InvoiceValidationModal = ({ documentId, onClose, onSuccess, onRefresh, produitsList = [], fournisseursList = [] }) => {
+const InvoiceValidationModal = ({ documentId, onClose, onSuccess, onRefresh, produitsList = [], fournisseursList = [], previewData = null }) => {
   const [loading, setLoading] = useState(true);
   const [analysis, setAnalysis] = useState(null);
   const [error, setError] = useState(null);
@@ -223,7 +223,7 @@ const InvoiceValidationModal = ({ documentId, onClose, onSuccess, onRefresh, pro
       setShowProgressBar(true);
 
       try {
-        const response = await axios.post(`${API}/ocr/analyze-facture/${documentId}`);
+        const response = previewData ? { data: previewData } : await axios.post(`${API}/ocr/analyze-facture/${documentId}`);
         const data = response.data;
         setAnalysis(data);
         setWizardNotice('Analyse reçue : commencez par vérifier le fournisseur et la référence de facture.');
@@ -291,9 +291,13 @@ const InvoiceValidationModal = ({ documentId, onClose, onSuccess, onRefresh, pro
       }
     };
     fetchAnalysis();
-  }, [documentId]);
+  }, [documentId, previewData]);
 
   const handleReanalyzeWithAI = async () => {
+    if (previewData) {
+      setWizardNotice('La relecture IA est désactivée dans la démonstration. Aucun document n’est envoyé à un service externe.');
+      return;
+    }
     setLoading(true);
     setWizardError('');
     setWizardNotice('Nouvelle lecture OCR en cours. Vérifiez les résultats avant de poursuivre.');
@@ -491,10 +495,12 @@ const InvoiceValidationModal = ({ documentId, onClose, onSuccess, onRefresh, pro
         }))
       };
       
-      const response = await axios.post(`${API}/ocr/confirm-import`, payload);
+      const response = previewData
+        ? {data: {stats: {stock_entries:items.length,batches_created:items.length}}}
+        : await axios.post(`${API}/ocr/confirm-import`, payload);
       setSuccessStats(response.data.stats || {stock_entries: items.length});
       setWizardStep(3);
-      setWizardNotice('Import terminé : la facture a été intégrée au stock.');
+      setWizardNotice(previewData ? 'Simulation réussie. Aucun stock ni document réel n’a été modifié.' : 'Import terminé : la facture a été intégrée au stock.');
       setLoading(false);
       if (onSuccess) onSuccess();
     } catch (err) {
@@ -540,6 +546,7 @@ const InvoiceValidationModal = ({ documentId, onClose, onSuccess, onRefresh, pro
         maxHeight: isMobile ? '100vh' : '95vh'
       }}>
         
+        {previewData && <div className="rt-wizard-demo-banner" role="status">Mode démonstration · Données fictives · Aucune écriture ni coût IA</div>}
         <header className="rt-wizard-header">
           <div className="rt-wizard-title"><div><p className="rt-wizard-eyebrow">Restop · Assistant de facture</p><h2 id="rt-wizard-title">Valider une facture fournisseur</h2></div>
             <button type="button" aria-label="Fermer le guide de validation" onClick={onClose} disabled={loading}>×</button></div>
@@ -675,7 +682,7 @@ const InvoiceValidationModal = ({ documentId, onClose, onSuccess, onRefresh, pro
         )}
 
         {/* SUGGESTION JOKER IA */}
-        {showAiSuggestion && (
+        {showAiSuggestion && !previewData && (
           <div style={{
             padding: isMobile ? '10px' : '15px',
             background: 'linear-gradient(135deg, #fef3c7, #fde68a)',
@@ -892,7 +899,7 @@ const InvoiceValidationModal = ({ documentId, onClose, onSuccess, onRefresh, pro
               Ajouter une ligne
             </button>
             
-            {!aiPowered && (
+            {!aiPowered && !previewData && (
               <button 
                 onClick={handleReanalyzeWithAI}
                 style={{
@@ -918,7 +925,7 @@ const InvoiceValidationModal = ({ documentId, onClose, onSuccess, onRefresh, pro
 
         {wizardStep === 2 && <section className="rt-wizard-review" aria-labelledby="rt-review-title">
           <h3 id="rt-review-title">Tout est prêt pour la dernière vérification</h3>
-          <p>Les données ci-dessous correspondent à vos corrections. Aucune modification du stock n’est réalisée avant validation.</p>
+          <p>{previewData ? 'Simulation : vous pouvez terminer le parcours sans créer aucun mouvement réel.' : 'Les données ci-dessous correspondent à vos corrections. Aucune modification du stock n’est réalisée avant validation.'}</p>
           <dl className="rt-wizard-review-facts">
             <div><dt>Fournisseur</dt><dd>{selectedSupplierId === 'new' ? newSupplierName : (fournisseursList.find(s => s.id === selectedSupplierId)?.nom || newSupplierName)}</dd></div>
             <div><dt>Facture n°</dt><dd>{editableNumero || 'Non renseigné'}</dd></div>
@@ -940,8 +947,8 @@ const InvoiceValidationModal = ({ documentId, onClose, onSuccess, onRefresh, pro
 
         {wizardStep === 3 && <section className="rt-wizard-success" role="status">
           <div aria-hidden="true" className="rt-wizard-success-icon">✓</div>
-          <h3>Facture intégrée au stock</h3>
-          <p>L’import est terminé. Les quantités et mouvements associés ont été enregistrés.</p>
+          <h3>{previewData ? 'Simulation terminée' : 'Facture intégrée au stock'}</h3>
+          <p>{previewData ? 'Parcours de démonstration terminé : aucune donnée n’a été enregistrée ni transmise.' : 'L’import est terminé. Les quantités et mouvements associés ont été enregistrés.'}</p>
           <strong>{successStats?.stock_entries ?? 0} entrée(s) de stock · {successStats?.batches_created ?? 0} lot(s)</strong>
           <p>Vous pouvez fermer cette fenêtre et consulter les mouvements dans l’onglet Stocks.</p>
         </section>}
@@ -953,7 +960,7 @@ const InvoiceValidationModal = ({ documentId, onClose, onSuccess, onRefresh, pro
               <button type="button" className="rt-wizard-secondary" disabled={loading} onClick={wizardStep === 0 ? onClose : () => {setWizardError('');setWizardStep(step => step - 1);}}>{wizardStep === 0 ? 'Annuler' : 'Retour'}</button>
               {wizardStep < 2 ? <button type="button" className="rt-wizard-primary" disabled={loading} onClick={nextStep}>Continuer →</button>
                 : <button type="button" className="rt-wizard-primary" onClick={handleValidate} disabled={loading}>
-                    {loading ? 'Intégration en cours…' : 'Confirmer l’entrée en stock'}
+                    {loading ? 'Intégration en cours…' : previewData ? 'Terminer la simulation' : 'Confirmer l’entrée en stock'}
                   </button>}
             </>}
           </div>

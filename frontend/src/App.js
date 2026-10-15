@@ -701,7 +701,7 @@ function App() {
   };
 
   const logout = async () => {
-    try { if (sessionId) await axios.post(`${API}/auth/logout?session_id=${encodeURIComponent(sessionId)}`); }
+    try { if (sessionId) await axios.post(`${API}/auth/logout`, null, {headers:{Authorization:`Bearer ${sessionId}`}}); }
     catch (_) { /* Always clear the local session, including when offline. */ }
     finally {
       clearSession();

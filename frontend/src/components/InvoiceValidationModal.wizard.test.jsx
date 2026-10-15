@@ -101,3 +101,19 @@ test('affiche des instructions et les contrôles du wizard sur mobile',async()=>
   expect(host.textContent).toContain('Une ligne incorrecte peut fausser le stock');
   expect(host.querySelectorAll('input').length).toBeGreaterThan(0);
 });
+
+test('simulation isolée : aucun appel réseau et message de réussite sans stock réel',async()=>{
+  axios.post.mockClear();
+  await act(async()=>root.unmount());
+  root=createRoot(host);
+  await act(async()=>root.render(<InvoiceValidationModal documentId="sim" previewData={sample}
+    onClose={onClose} onSuccess={onSuccess} produitsList={[]} fournisseursList={[{id:'s-demo',nom:'Primeur du Port'}]}/>));
+  expect(host.textContent).toContain('Mode démonstration');
+  expect(axios.post).not.toHaveBeenCalled();
+  await click('Continuer');await click('Continuer');
+  await act(async()=>host.querySelector('input[type=checkbox]').click());
+  await click('Terminer la simulation');
+  expect(host.textContent).toContain('Simulation terminée');
+  expect(host.textContent).toContain('aucune donnée');
+  expect(axios.post).not.toHaveBeenCalled();
+});

@@ -1,6 +1,7 @@
 """Regression contract for session and role checks without external dependencies."""
 import ast
 import asyncio
+from datetime import datetime, timedelta
 from pathlib import Path
 import unittest
 from typing import Optional
@@ -17,6 +18,9 @@ class Collection:
     def __init__(self, records):
         self.records = records
 
+    async def delete_one(self, query):
+        self.records = [record for record in self.records if any(record.get(key) != val for key,val in query.items())]
+
     async def find_one(self, query):
         for record in self.records:
             if all(record.get(key) == val for key, val in query.items()):
@@ -25,7 +29,7 @@ class Collection:
 
 
 class DB:
-    user_sessions = Collection([{'session_id':'safe-token','user_id':'1'}])
+    user_sessions = Collection([{'session_id':'safe-token','user_id':'1','login_time':datetime.utcnow()}])
     users = Collection([{'id':'1','is_active':True,'role':'patron'}, {'id':'2','is_active':False,'role':'super_admin'}])
 
 
@@ -35,7 +39,7 @@ def load_guards():
                 ('require_active_user', 'require_user_manager', 'require_invoice_editor')]
     namespace = {
         'Optional': Optional, 'HTTPException': FakeHTTPException, 'Header': lambda default=None: default,
-        'Depends': lambda func: None, 'db': DB,
+        'Depends': lambda func: None, 'db': DB, 'datetime':datetime, 'timedelta':timedelta,
     }
     exec(compile(ast.Module(body=selected, type_ignores=[]), 'server.guards', 'exec'), namespace)
     return namespace
@@ -63,3 +67,16 @@ class AuthGuardTests(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
+
+class ExpiryTests(unittest.TestCase):
+    def test_old_session_is_rejected_and_revoked(self):
+        guards = load_guards()
+        original = DB.user_sessions.records
+        DB.user_sessions.records = [{'session_id':'old-token','user_id':'1','login_time':datetime.utcnow()-timedelta(hours=13)}]
+        try:
+            with self.assertRaises(FakeHTTPException) as error:
+                asyncio.run(guards['require_active_user']('Bearer old-token'))
+            self.assertEqual(error.exception.status_code, 401)
+            self.assertEqual(DB.user_sessions.records, [])
+        finally:
+            DB.user_sessions.records = original

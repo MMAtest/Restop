@@ -125,6 +125,10 @@ async def require_active_user(authorization: Optional[str] = Header(default=None
     session = await db.user_sessions.find_one({"session_id": token})
     if not session or not session.get("user_id"):
         raise HTTPException(status_code=401, detail="Session invalide")
+    login_time = session.get("login_time")
+    if not isinstance(login_time, datetime) or (datetime.utcnow() - login_time) > timedelta(hours=12):
+        await db.user_sessions.delete_one({"session_id": token})
+        raise HTTPException(status_code=401, detail="Session expirée : reconnectez-vous")
     user = await db.users.find_one({"id": session["user_id"], "is_active": True})
     if not user:
         raise HTTPException(status_code=401, detail="Compte introuvable ou désactivé")
@@ -7117,31 +7121,21 @@ async def login(request: LoginRequest):
         return LoginResponse(success=False, message=f"Erreur de connexion: {str(e)}")
 
 @api_router.post("/auth/logout")
-async def logout(session_id: str):
-    """Déconnexion"""
-    try:
-        await db.user_sessions.delete_one({"session_id": session_id})
-        return {"success": True, "message": "Déconnexion réussie"}
-    except Exception as e:
-        return {"success": False, "message": f"Erreur lors de la déconnexion: {str(e)}"}
+async def logout(authorization: Optional[str] = Header(default=None), editor=Depends(require_active_user)):
+    """Revoke caller's own session; token is never placed in URL parameters."""
+    token = authorization[7:].strip()
+    await db.user_sessions.delete_one({"session_id": token, "user_id": editor["id"]})
+    return {"success": True, "message": "Déconnexion réussie"}
+
+@api_router.get("/auth/session")
+async def get_current_session(editor=Depends(require_active_user)):
+    """Return the active user's current role to the authenticated SPA."""
+    return {"valid": True, "user": UserResponse(**editor)}
 
 @api_router.get("/auth/session/{session_id}")
-async def get_session(session_id: str):
-    """Vérifier une session"""
-    try:
-        session = await db.user_sessions.find_one({"session_id": session_id})
-        if not session:
-            return {"valid": False, "message": "Session expirée"}
-        
-        # Mettre à jour l'activité
-        await db.user_sessions.update_one(
-            {"session_id": session_id},
-            {"$set": {"last_activity": datetime.utcnow()}}
-        )
-        
-        return {"valid": True, "user": UserSession(**session)}
-    except Exception as e:
-        return {"valid": False, "message": f"Erreur session: {str(e)}"}
+async def get_legacy_session_disabled(session_id: str):
+    """Disable bearer secrets in URLs and unauthenticated session enumeration."""
+    raise HTTPException(status_code=410, detail="Ancienne vérification supprimée ; utiliser /auth/session avec Authorization")
 
 # ✅ Mission Management Endpoints
 @api_router.post("/missions", response_model=Mission)
