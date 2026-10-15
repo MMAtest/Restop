@@ -15,7 +15,7 @@ TREE = ast.parse(SOURCE)
 PREFIXES = (
     "/supplier-product-info", "/product-batches", "/price-anomalies", "/stock/",
     "/stock-preparations", "/stocks", "/analytics", "/fournisseurs",
-    "/supplier-cost-config", "/orders", "/preparations", "/produits",
+    "/supplier-cost-config", "/suppliers/", "/orders", "/preparations", "/produits",
     "/mouvements", "/recettes", "/rapports_z", "/archive", "/archives",
     "/restore", "/missions", "/notifications", "/dashboard",
     "/formes-decoupe", "/categories-production", "/unites", "/convert-unite",
