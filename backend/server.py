@@ -9019,6 +9019,21 @@ async def confirm_import_facture(request: ImportConfirmationRequest):
             raise HTTPException(status_code=409, detail="Cette facture a déjà été intégrée au stock")
         if await db.mouvements_stock.find_one({"reference": f"FACT-{request.document_id[:8]}"}):
             raise HTTPException(status_code=409, detail="Des mouvements de stock existent déjà pour cette facture : vérification manuelle requise")
+        # Doublons inter-documents : même fournisseur et même numéro de facture déjà intégrée.
+        from re import escape as regex_escape
+        parsed = document.get("donnees_parsees") or {}
+        invoice_number = str(parsed.get("numero_facture") or "").strip()
+        invoice_supplier = str(parsed.get("fournisseur") or request.supplier_name or "").strip()
+        if invoice_number and invoice_number.lower() not in {"n/a", "inconnu", "unknown"} and invoice_supplier:
+            previous_invoice = await db.documents_ocr.find_one({
+                "id": {"$ne": request.document_id},
+                "type_document": "facture_fournisseur",
+                "statut": "integre",
+                "donnees_parsees.numero_facture": {"$regex": f"^{regex_escape(invoice_number)}$", "$options": "i"},
+                "donnees_parsees.fournisseur": {"$regex": f"^{regex_escape(invoice_supplier)}$", "$options": "i"},
+            })
+            if previous_invoice:
+                raise HTTPException(status_code=409, detail="Cette référence de facture fournisseur est déjà intégrée dans un autre document")
         if not request.supplier_name.strip() or not request.items:
             raise HTTPException(status_code=422, detail="Fournisseur et lignes de facture obligatoires")
         for index, item in enumerate(request.items, 1):
