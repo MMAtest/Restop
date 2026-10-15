@@ -6456,13 +6456,35 @@ async def upload_and_process_document(
     
     try:
         # Lire le contenu du fichier
-        file_content = await file.read()
-        
+        # Limite stricte avant chargement complet : évite les uploads démesurés.
+        max_upload_bytes = 15 * 1024 * 1024
+        file_content = await file.read(max_upload_bytes + 1)
+        if not file_content:
+            raise HTTPException(status_code=400, detail="Le document est vide")
+        if len(file_content) > max_upload_bytes:
+            raise HTTPException(status_code=413, detail="Document trop volumineux (maximum 15 Mo)")
+        if file_type == 'pdf' and not file_content.startswith(b'%PDF-'):
+            raise HTTPException(status_code=400, detail="Le fichier PDF est invalide")
+        if file_type == 'image' and not (
+            file_content.startswith((b'\xff\xd8\xff', b'\x89PNG\r\n\x1a\n', b'GIF87a', b'GIF89a', b'BM', b'II*\x00', b'MM\x00*'))
+            or (file_content.startswith(b'RIFF') and file_content[8:12] == b'WEBP')
+        ):
+            raise HTTPException(status_code=400, detail="Format image invalide ou non pris en charge")
+
         # Extraire le texte selon le type de fichier
         if file_type == 'pdf':
             print(f"📄 Processing PDF file: {file.filename}")
-            # Use Google Vision API for PDF extraction (superior accuracy)
-            texte_extrait = extract_text_from_pdf_google_vision(file_content)
+            # Les PDF numériques sont extraits localement : plus rapide et sans coût Vision.
+            # Pour les PDF scannés ou incomplets, Google Vision reste le recours.
+            try:
+                with pdfplumber.open(io.BytesIO(file_content)) as pdf:
+                    page_texts = [(page.extract_text() or '').strip() for page in pdf.pages]
+                digital_pdf = bool(page_texts) and all(len(t) >= 80 for t in page_texts)
+                texte_extrait = "\n\n".join(page_texts) if digital_pdf else ""
+            except Exception:
+                texte_extrait = ""
+            if not texte_extrait:
+                texte_extrait = extract_text_from_pdf_google_vision(file_content)
             # Pour les PDF, on stocke le contenu comme base64 mais avec prefix PDF
             content_base64 = base64.b64encode(file_content).decode('utf-8')
             data_uri = f"data:application/pdf;base64,{content_base64}"
