@@ -42,3 +42,13 @@
 .rt-workspace .rt-form-unsaved-warning button:last-child{background:#955040;border-color:#955040;color:#fff}
 .rt-workspace>.rt-action-notice{position:fixed;top:92px;right:22px;z-index:21000;max-width:min(440px,calc(100vw - 30px));box-shadow:0 14px 44px #36182421}
 @media(max-width:760px){.rt-workspace>.rt-action-notice{top:15px;right:15px}}
+
+.rt-workspace .rt-form-dialog-content .rt-ocr-import-steps{display:flex;align-items:center;flex-wrap:wrap;gap:10px;background:#fcf4f7;border:1px solid #efdde4;border-radius:9px;padding:12px;color:#9d8190;font-size:11px;margin-bottom:18px}
+.rt-workspace .rt-form-dialog-content .rt-ocr-import-steps strong{color:#681b32;font-weight:650}
+.rt-workspace .rt-form-dialog-content .rt-ocr-import-steps span{border-left:1px solid #e1c8d2;padding-left:10px}
+.rt-workspace .rt-form-dialog-content .rt-validation-help{padding:12px 14px;background:#fbf0f3;border:1px solid #ebcbd6;color:#6d4356;border-radius:9px;font-size:12px;line-height:1.6;margin:0 0 18px}
+.rt-workspace .rt-form-dialog-content .rt-dlc-hint,.rt-workspace .rt-form-dialog-content .rt-dlc-help{font-size:11px;line-height:1.6;color:#896f7b}
+.rt-workspace .rt-form-dialog-content .modal-body [style*="grid-template-columns: 1fr 1fr"]{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+@media(max-width:760px){.rt-workspace .rt-form-dialog-content .modal-body [style*="grid-template-columns: 1fr 1fr"]{grid-template-columns:1fr!important}.rt-workspace .rt-form-dialog-content .modal-body iframe{height:300px!important}}
+
+.rt-workspace .rt-form-dialog-content .rt-ocr-inline-error{font-size:12px;color:#893747;background:#fff0f0;border:1px solid #efc7cc;border-radius:8px;padding:11px 13px;line-height:1.5;margin:9px 0 0}

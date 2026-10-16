@@ -320,6 +320,7 @@ function App() {
   // États OCR
   const [ocrFile, setOcrFile] = useState(null);
   const [ocrPreview, setOcrPreview] = useState(null);
+  const [ocrFileError, setOcrFileError] = useState('');
   const [ocrType, setOcrType] = useState("z_report");
   const [ocrResult, setOcrResult] = useState(null);
   const [processingOcr, setProcessingOcr] = useState(false);
@@ -2086,9 +2087,15 @@ function App() {
   const handleOcrFileSelect = async (event) => {
     const file = event.target.files[0];
     if (file) {
+      if (file.size === 0 || file.size > 15 * 1024 * 1024) {
+        setOcrFile(null);setOcrPreview(null);event.target.value='';
+        setOcrFileError('Le fichier est vide ou dépasse 15 Mo. Choisissez un document plus léger.');
+        return;
+      }
       // Vérifier si c'est une image ou un PDF
       if (!file.type.startsWith('image/') && file.type !== 'application/pdf') {
-        alert('Veuillez sélectionner un fichier image ou PDF');
+        setOcrFileError('Formats autorisés : PDF, JPG, PNG ou WebP.');
+        setOcrFile(null);setOcrPreview(null);event.target.value='';
         return;
       }
       
@@ -2111,6 +2118,12 @@ function App() {
         }
       }
       
+      if (finalFile.size === 0 || finalFile.size > 15 * 1024 * 1024) {
+        setOcrFile(null);setOcrPreview(null);event.target.value='';
+        setOcrFileError('Après traitement, le document dépasse 15 Mo. Compressez-le avant import.');
+        return;
+      }
+      setOcrFileError('');
       setOcrFile(finalFile);
       
       // Créer un aperçu selon le type de fichier
@@ -2270,6 +2283,7 @@ function App() {
   const resetOcrModal = () => {
     setOcrFile(null);
     setOcrPreview(null);
+    setOcrFileError('');
     setOcrResult(null);
     // Ne pas réinitialiser ocrType pour garder le choix de l&apos;utilisateur
     setProcessingOcr(false);
@@ -4951,10 +4965,10 @@ function App() {
                       borderRadius: '8px',
                       border: '1px solid #3b82f6'
                     }}>
-                      <h4 style={{marginBottom: '12px', color: '#1e40af', fontSize: '16px', fontWeight: 'bold'}}>
+                      <h4 style={{marginBottom: '12px', color: '#681b32', fontSize: '16px', fontWeight: 'bold'}}>
                         Comment utiliser les Mercuriales
                       </h4>
-                      <div style={{fontSize: '14px', color: '#1e40af', lineHeight: '1.5'}}>
+                      <div style={{fontSize: '14px', color: '#681b32', lineHeight: '1.5'}}>
                         <div style={{marginBottom: '8px'}}>
                           <strong>1. Uploadez</strong> la liste de prix PDF/image de votre fournisseur
                         </div>
@@ -6730,8 +6744,7 @@ function App() {
 
       {/* Modal Mouvement Préparation */}
       {showMovementPreparationModal && (
-        <div className="modal-overlay">
-          <div className="modal-content">
+        <FormModal title={'Mouvement de stock — préparation'} onClose={()=>{setShowMovementPreparationModal(false);setMovementPreparationForm({preparation_id:'',type:'entree',quantite:'',reference:'',commentaire:'',dlc:''});}}>
             <h3 className="modal-header">
               Mouvement de stock - Préparation
             </h3>
@@ -6839,14 +6852,12 @@ function App() {
                 </button>
               </div>
             </form>
-          </div>
-        </div>
+        </FormModal>
       )}
 
       {/* Modal Création Mission */}
       {showMissionModal && (
-        <div className="modal-overlay">
-          <div className="modal-content" style={{maxWidth: '700px'}}>
+        <FormModal title={'Créer une mission'} onClose={()=>{setShowMissionModal(false);resetMissionForm();}} wide>
             <h3 className="modal-header">
               Créer une Nouvelle Mission
             </h3>
@@ -7061,23 +7072,21 @@ function App() {
                 </button>
               </div>
             </form>
-          </div>
-        </div>
+        </FormModal>
       )}
 
       {/* Modal Validation Mercuriale */}
       {showMercurialeValidation && (
-        <div className="modal-overlay">
-          <div className="modal-content" style={{maxWidth: '900px', maxHeight: '90vh', overflow: 'auto'}}>
+        <FormModal title={`Validation mercuriale — ${mercurialeToValidate?.nom_fichier || 'fichier'}`} onClose={()=>{setShowMercurialeValidation(false);setMercurialeToValidate(null);setSelectedMercurialeProducts([]);}} wide>
             <h3 className="modal-header">
               Validation Mercuriale - {mercurialeToValidate?.nom_fichier}
             </h3>
             
-            <div style={{marginBottom: '20px', padding: '16px', background: '#f0f9ff', borderRadius: '8px', border: '1px solid #3b82f6'}}>
-              <div style={{fontSize: '16px', fontWeight: 'bold', color: '#1e40af', marginBottom: '8px'}}>
+            <div style={{marginBottom: '20px', padding: '16px', background: '#faf0f4', borderRadius: '8px', border: '1px solid #e2b8c7'}}>
+              <div style={{fontSize: '16px', fontWeight: 'bold', color: '#681b32', marginBottom: '8px'}}>
                 Résumé de l'import
               </div>
-              <div style={{fontSize: '14px', color: '#1e40af'}}>
+              <div style={{fontSize: '14px', color: '#681b32'}}>
                 🏪 <strong>Fournisseur détecté:</strong> {mercurialeToValidate?.donnees_parsees?.fournisseur_detecte || 'Non détecté'}
                 <br />
                 📦 <strong>Produits trouvés:</strong> {mercurialeToValidate?.donnees_parsees?.total_produits || 0}
@@ -7086,6 +7095,7 @@ function App() {
               </div>
             </div>
 
+            <p className="rt-validation-help">Contrôlez les prix et unités avant de créer les produits. Les éléments cochés seront ajoutés à votre catalogue ; aucune création automatique n'a lieu avant confirmation.</p>
             {/* Sélection fournisseur pour liaison */}
             <div className="form-group" style={{marginBottom: '20px'}}>
               <label className="form-label">Associer à ce fournisseur :</label>
@@ -7119,7 +7129,7 @@ function App() {
                   <div key={index} style={{
                     padding: '12px',
                     borderBottom: index < selectedMercurialeProducts.length - 1 ? '1px solid #e5e7eb' : 'none',
-                    background: produit.selected ? '#f0fdf4' : '#f9fafb',
+                    background: produit.selected ? '#faeef2' : '#fdfafa',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'space-between'
@@ -7189,13 +7199,12 @@ function App() {
                 type="button"
                 className="button btn-primary"
                 onClick={handleCreateProductsFromMercuriale}
-                disabled={loading || selectedMercurialeProducts.filter(p => p.selected).length === 0}
+                disabled={loading || !mercurialeSelectedSupplier || selectedMercurialeProducts.filter(p => p.selected).length === 0}
               >
-                {loading ? 'Création...' : `Créer ${selectedMercurialeProducts.filter(p => p.selected).length} Produit(s)`}
+                {loading ? 'Création...' : `Créer ${selectedMercurialeProducts.filter(p => p.selected).length} produit(s)`}
               </button>
             </div>
-          </div>
-        </div>
+        </FormModal>
       )}
 
       {/* Modal Validation Facture */}
@@ -7377,7 +7386,7 @@ function App() {
 
               {/* Portions */}
               <div style={{background: '#dbeafe', padding: '16px', borderRadius: '8px', marginBottom: '16px'}}>
-                <div style={{fontWeight: 'bold', marginBottom: '12px', color: '#1e40af'}}>Portions</div>
+                <div style={{fontWeight: 'bold', marginBottom: '12px', color: '#681b32'}}>Portions</div>
                 <div style={{display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '16px'}}>
                   <div className="form-group">
                     <label className="form-label">Taille portion *</label>
@@ -7698,8 +7707,7 @@ function App() {
 
       {/* Modal OCR */}
       {showOcrModal && (
-        <div className="modal-overlay">
-          <div className="modal-content">
+        <FormModal title={activeOcrTab === 'tickets-z' ? 'Importer un rapport Z' : 'Importer une facture'} onClose={()=>{if(!processingOcr){setShowOcrModal(false);resetOcrModal();}}} warnUnsavedOnClose={false}>
             <h3 className="modal-header">
               Upload {activeOcrTab === 'tickets-z' ? 'Ticket Z' : 'Facture(s)'}
             </h3>
@@ -7732,17 +7740,19 @@ function App() {
               </div>
             </div>
 
+            <div className="rt-ocr-import-steps" aria-label="Étapes de lecture de document"><strong>01 · Import</strong><span>02 · Lecture OCR</span><span>03 · Vérification</span></div>
             <div className="form-group">
               <label className="form-label">Fichier (Image ou PDF)</label>
               <input
                 type="file"
-                accept=".pdf,.jpg,.jpeg,.png,.gif,.bmp,.tiff,.webp,application/pdf,image/*"
+                accept=".pdf,.jpg,.jpeg,.png,.webp,application/pdf,image/jpeg,image/png,image/webp"
                 className="form-input"
                 onChange={handleOcrFileSelect}
               />
               <p className="form-help">
-                Images: JPG, PNG, GIF, etc. • PDF: Factures et rapports Z
+                PDF, JPG, PNG et WebP · 15 Mo maximum · Vérification humaine avant entrée en stock.
               </p>
+              {ocrFileError && <p className="rt-ocr-inline-error" role="alert">{ocrFileError}</p>}
             </div>
 
             {ocrPreview && (
@@ -7803,8 +7813,7 @@ function App() {
                 {processingOcr ? "Traitement..." : "Traiter"}
               </button>
             </div>
-          </div>
-        </div>
+        </FormModal>
       )}
 
 
@@ -7824,11 +7833,10 @@ function App() {
       {/* Modal d'Aperçu des Documents OCR */}
       {/* Modal Aperçu Document */}
       {showPreviewModal && previewDocFull && (
-        <div className="modal-overlay" onClick={() => setShowPreviewModal(false)}>
-          <div className="modal-content large" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '900px', width: '95%' }}>
+        <FormModal title={`Aperçu OCR — ${previewDocFull.nom_fichier || 'document'}`} onClose={()=>setShowPreviewModal(false)} wide>
             <div className="modal-header">
               <h3>Aperçu - {previewDocFull.nom_fichier}</h3>
-              <button className="modal-close" onClick={() => setShowPreviewModal(false)}>×</button>
+
             </div>
             
             <div className="modal-body" style={{ maxHeight: '80vh', overflowY: 'auto' }}>
@@ -7929,17 +7937,15 @@ function App() {
                 Fermer
               </button>
             </div>
-          </div>
-        </div>
+        </FormModal>
       )}
 
       {/* Modal Détails des Lots DLC */}
       {showBatchModal && selectedProductBatches && (
-        <div className="modal-overlay" onClick={() => setShowBatchModal(false)}>
-          <div className="modal-content large" onClick={(e) => e.stopPropagation()}>
+        <FormModal title={`Lots & DLC — ${selectedProductBatches.product_name || 'produit'}`} onClose={()=>setShowBatchModal(false)} wide>
             <div className="modal-header">
               <h3>Lots & DLC - {selectedProductBatches.product_name}</h3>
-              <button className="modal-close" onClick={() => setShowBatchModal(false)}>×</button>
+
             </div>
             
             <div className="modal-body">
@@ -8005,7 +8011,7 @@ function App() {
                             <span className={`status-badge ${statusClass}`}>
                               {statusText}
                             </span>
-                            <button className="button small">Consommer</button>
+                            <span className="rt-dlc-hint">Consommation via un mouvement de stock</span>
                           </div>
                         </div>
                       );
@@ -8024,12 +8030,9 @@ function App() {
               <button className="button secondary" onClick={() => setShowBatchModal(false)}>
                 Fermer
               </button>
-              <button className="button" onClick={() => alert('Fonctionnalité à implémenter: Ajouter nouveau lot')}>
-                Nouveau Lot
-              </button>
+              <span className="rt-dlc-help">Les lots sont créés lors de la réception de produits.</span>
             </div>
-          </div>
-        </div>
+        </FormModal>
       )}
             </div>
       )}
