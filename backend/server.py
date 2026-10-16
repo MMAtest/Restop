@@ -3045,7 +3045,8 @@ async def get_cost_analysis():
     )
 
 # Configuration OCR
-pytesseract.pytesseract.tesseract_cmd = '/usr/bin/tesseract'
+import shutil
+pytesseract.pytesseract.tesseract_cmd = shutil.which('tesseract') or '/usr/bin/tesseract'
 
 # Configuration de la base de données (déjà fait au début du fichier)
 # La connexion MongoDB et db sont déjà initialisés au début du fichier
@@ -9887,10 +9888,12 @@ async def process_mercuriale_to_real_data(document_id: str):
 from tenant_stock_api import build_tenant_router, ensure_tenant_indexes
 from tenant_workflows_api import build_tenant_workflow_router, ensure_workflow_indexes
 from tenant_receiving_api import build_receiving_router, ensure_receiving_indexes
+from tenant_invoice_api import build_invoice_router, ensure_invoice_indexes
 if os.getenv("RESTOP_ENABLE_TENANT_V2") == "1":
     api_router.include_router(build_tenant_router(db, require_active_user))
     api_router.include_router(build_tenant_workflow_router(db, require_active_user))
     api_router.include_router(build_receiving_router(db, require_active_user))
+    api_router.include_router(build_invoice_router(db, require_active_user))
 
 # Include the router in the main app
 @app.on_event("startup")
@@ -9899,6 +9902,7 @@ async def startup_db_client():
         await ensure_tenant_indexes(db)
         await ensure_workflow_indexes(db)
         await ensure_receiving_indexes(db)
+        await ensure_invoice_indexes(db)
     try:
         # Vérifier si la base est vide (pas d'utilisateurs)
         user_count = await db.users.count_documents({})

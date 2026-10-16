@@ -1,0 +1,33 @@
+import React,{act,useState} from 'react';
+import {createRoot} from 'react-dom/client';
+import axios from 'axios';
+import TenantInvoicePanel from './TenantInvoicePanel';
+jest.mock('axios',()=>({get:jest.fn(),post:jest.fn(),defaults:{}}));
+let root,host,onReviewed;
+const lines=[{product_id:'p1',included:true,invoiced:'3.000',price:'2.00'}];
+const click=async(re)=>{const b=[...host.querySelectorAll('button')].find(x=>re.test(x.textContent));if(!b)throw Error('missing button '+re);await act(async()=>b.click())};
+const change=(el,value)=>{const setter=Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype,'value').set;setter.call(el,value);el.dispatchEvent(new Event('input',{bubbles:true}))};
+beforeEach(()=>{global.IS_REACT_ACT_ENVIRONMENT=true;host=document.createElement('div');document.body.appendChild(host);root=createRoot(host);onReviewed=jest.fn();axios.post.mockReset();axios.get.mockReset();});
+afterEach(async()=>{await act(async()=>root.unmount());host.remove()});
+test('upload, suggested OCR text and review explicitly bind a document without stock request',async()=>{
+ const uploaded={id:'invoice-document-123',status:'needs_review',size_bytes:200,sha256:'a'.repeat(64),extension:'pdf',extraction_engine:'pdf_embedded_text'};
+ axios.post.mockImplementation((url)=>Promise.resolve({data:url.includes('/upload')?uploaded:{...uploaded,status:'reviewed'}}));
+ axios.get.mockResolvedValue({data:{...uploaded,extracted_text:'FACTURE N INV-123',suggestions:{invoice_reference:'INV-123'}}});
+ function Wrapper(){const [invoice,setInvoice]=useState('');return <TenantInvoicePanel orderId="order-a" lines={lines} invoice={invoice} onInvoiceChange={setInvoice} onReviewed={onReviewed}/>}
+ await act(async()=>root.render(<Wrapper/>));
+ const input=host.querySelector('input[type=file]');
+ const f=new File([new Uint8Array([37,80,68,70,45])],'facture.pdf',{type:'application/pdf'});
+ await act(async()=>{Object.defineProperty(input,'files',{value:[f],configurable:true});input.dispatchEvent(new Event('change',{bubbles:true}))});
+ await click(/Importer et analyser/);
+ expect(axios.post).toHaveBeenCalledTimes(1);
+ expect(axios.post.mock.calls[0][0]).toContain('order_id=order-a');
+ expect(onReviewed).toHaveBeenCalledWith('pending');
+ expect(host.textContent).toContain('INV-123');
+ await act(async()=>change(host.querySelector('textarea'),'Facture vérifiée sur le document original'));
+ await click(/Valider les données/);
+ expect(axios.post.mock.calls[1][0]).toContain('/invoices/invoice-document-123/review');
+ expect(axios.post.mock.calls[1][1].invoice_reference).toBe('INV-123');
+ expect(axios.post.mock.calls[1][1].lines).toEqual([{product_id:'p1',invoiced_milliunits:3000,invoiced_unit_price_cents:200}]);
+ expect(onReviewed).toHaveBeenLastCalledWith('invoice-document-123');
+ expect(axios.post.mock.calls.every(call=>!call[0].includes('/receipts/confirm'))).toBe(true);
+});

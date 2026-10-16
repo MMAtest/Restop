@@ -6,10 +6,13 @@ on:
       - feat/restop-ui-security-integration-20261016
       - feat/restop-tenant-workflows-20261016
       - feat/restop-tenant-receiving-20261016
+      - feat/restop-tenant-invoice-ocr-20261016
     paths:
       - backend/tenant_stock_api.py
       - backend/tenant_workflows_api.py
       - backend/tenant_receiving_api.py
+      - backend/tenant_invoice_api.py
+      - backend/test_tenant_invoice_contract.py
       - backend/test_tenant_receiving_contract.py
       - backend/test_tenant_workflows_mongo_integration.py
       - backend/test_tenant_workflows_contract.py
@@ -23,6 +26,8 @@ on:
       - backend/tenant_stock_api.py
       - backend/tenant_workflows_api.py
       - backend/tenant_receiving_api.py
+      - backend/tenant_invoice_api.py
+      - backend/test_tenant_invoice_contract.py
       - backend/test_tenant_receiving_contract.py
       - backend/test_tenant_workflows_mongo_integration.py
       - backend/test_tenant_workflows_contract.py
@@ -45,9 +50,10 @@ jobs:
       - uses: actions/checkout@v4
       - name: Validate Python syntax and structural gates
         run: |
-          python3 -m py_compile backend/tenant_stock_api.py backend/tenant_workflows_api.py backend/tenant_receiving_api.py backend/server.py backend/test_tenant_mongo_integration.py backend/test_tenant_workflows_mongo_integration.py
+          python3 -m py_compile backend/tenant_stock_api.py backend/tenant_workflows_api.py backend/tenant_receiving_api.py backend/tenant_invoice_api.py backend/server.py backend/test_tenant_mongo_integration.py backend/test_tenant_workflows_mongo_integration.py
           python3 -m unittest discover -s backend -p 'test_tenant_contract.py' -v
           python3 -m unittest discover -s backend -p 'test_tenant_workflows_contract.py' -v
           python3 -m unittest discover -s backend -p 'test_tenant_receiving_contract.py' -v
+          python3 -m unittest discover -s backend -p 'test_tenant_invoice_contract.py' -v
       - name: Real isolated MongoDB QA (no production credentials)
         run: bash scripts/test-restop-tenant-mongo.sh
