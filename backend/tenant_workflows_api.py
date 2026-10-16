@@ -14,7 +14,7 @@ from pydantic import BaseModel, ConfigDict, Field, StrictInt, field_validator, m
 from pymongo import ASCENDING
 from pymongo.errors import DuplicateKeyError
 
-from tenant_stock_api import _READ_ROLES, _WRITE_ROLES
+from tenant_stock_api import _WRITE_ROLES
 
 
 class TenantInput(BaseModel):
@@ -161,7 +161,7 @@ def build_tenant_workflow_router(db, session_guard):
                "name": body.name, "yield_portions": body.yield_portions,
                "sale_price_cents": body.sale_price_cents, "ingredients": priced,
                "cost_snapshot_cents": cost_cents,
-               "cost_per_portion_snapshot_cents": cents_for_quantity(cost_cents, 1000) // body.yield_portions,
+               "cost_per_portion_snapshot_cents": int((Decimal(cost_cents) / Decimal(body.yield_portions)).quantize(Decimal("1"), rounding=ROUND_HALF_UP)),
                "created_by": user["id"], "created_at": datetime.utcnow()}
         # A cost snapshot is not silently refreshed when purchase prices change.
         await db.tenant_recipes.insert_one(dict(row))
