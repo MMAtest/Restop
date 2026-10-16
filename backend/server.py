@@ -9882,9 +9882,17 @@ async def process_mercuriale_to_real_data(document_id: str):
         raise HTTPException(status_code=500, detail=f"Erreur lors du traitement de la mercuriale: {str(e)}")
 
 
+# Tenant-v2 is opt-in. Legacy unscoped collections remain inaccessible to
+# tenant-linked accounts until every affected route has been migrated.
+from tenant_stock_api import build_tenant_router, ensure_tenant_indexes
+if os.getenv("RESTOP_ENABLE_TENANT_V2") == "1":
+    api_router.include_router(build_tenant_router(db, require_active_user))
+
 # Include the router in the main app
 @app.on_event("startup")
 async def startup_db_client():
+    if os.getenv("RESTOP_ENABLE_TENANT_V2") == "1":
+        await ensure_tenant_indexes(db)
     try:
         # Vérifier si la base est vide (pas d'utilisateurs)
         user_count = await db.users.count_documents({})
