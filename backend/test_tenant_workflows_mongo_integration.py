@@ -162,7 +162,8 @@ class WorkflowTenantTests(unittest.TestCase):
         self.assertEqual(first.status_code, 201, first.text)
         self.assertFalse(first.json()["replayed"])
         rid = first.json()["report"]["id"]
-        again = self.call("cashier", "POST", "/z-reports", body)
+        again = self.call("cashier", "POST", "/z-reports", {**body,
+                          "report_reference": " z-2026-10-16-caisse1  "})
         self.assertEqual(again.status_code, 201, again.text)
         self.assertTrue(again.json()["replayed"])
         self.assertEqual(first.json()["report"]["id"], again.json()["report"]["id"])

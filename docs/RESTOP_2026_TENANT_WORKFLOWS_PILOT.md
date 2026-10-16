@@ -44,3 +44,12 @@ Le workflow `.github/workflows/restop-tenant-mongo-qa.yml` déclenche cette comm
 - La suite d'intégration ne simule pas une charge concurrente élevée et n'est pas un audit de sécurité tiers.
 
 **La production, la branche `main` et les données utilisateurs restent inchangées.** La PR est destinée uniquement à la revue de code et aux essais sur MongoDB jetable avant de poursuivre la migration du SaaS.
+
+## Revalidation locale après reconnexion Desktop Commander (16 octobre 2026)
+
+- QA MongoDB (deux établissements) reproduite sur Mac avec connexion persistée et base jetable ; 8 tests réels Stocks + Workflows.
+- Script `scripts/test-restop-tenant-mongo.sh` rendu indépendant de `mongosh` pour contourner un binaire corrompu dans l’image Docker locale : l’initialisation du replica set se fait par `PyMongo` depuis le conteneur Python éphémère.
+- **Normalisation des références Z en majuscules** : une réimportation avec variation de casse ou espaces est identifiée comme le même rapport au lieu de créer un doublon. L’unicité reste propre à chaque établissement.
+- `backend/test_tenant_workflows_contract.py` ajoute quatre contrôles structurels : flag opt-in, gardes d'accès sur chaque route, interdiction des collections historiques globales et immutabilité des rapports Z.
+- Aucun déclenchement de commande fournisseur externe ; les achats restent des brouillons internes et les rapports Z n’ajustent pas les stocks.
+- `RESTOP_ENABLE_TENANT_V2` **reste désactivé par défaut**, préproduction seulement. L’OCR, la réception fournisseurs et la caisse réelle restent des intégrations futures.

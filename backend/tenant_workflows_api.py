@@ -82,7 +82,7 @@ class ZReportInput(TenantInput):
         v = v.strip()
         if len(v) < 2:
             raise ValueError("Référence Z requise")
-        return v
+        return v.upper()
 
     @model_validator(mode="after")
     def check_payment_total(self):
