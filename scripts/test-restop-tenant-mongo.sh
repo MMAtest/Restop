@@ -28,6 +28,6 @@ docker run --rm --network "container:$name" \
   -e 'RESTOP_TEST_TENANT_MONGO_URL=mongodb://localhost:27017/?directConnection=true&replicaSet=rsrestopQA' \
   python:3.11-slim sh -ec '
     pip -q install --disable-pip-version-check motor==3.3.1 pymongo==4.5.0 fastapi==0.110.1 pydantic==2.11.7 httpx==0.27.2
-    python -m unittest test_tenant_mongo_integration -v
+    python -m unittest test_tenant_mongo_integration test_tenant_workflows_mongo_integration -v
   '
 printf '%s\n' '[RESTOP QA] Passed. QA container automatically removed on exit.'
