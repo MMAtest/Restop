@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import AppNavigation from './components/restop/AppNavigation';
 import ModuleTabs from './components/restop/ModuleTabs';
 import StockKpiBar from './components/restop/StockKpiBar';
+import TenantReceivingWizard from './components/restop/TenantReceivingWizard';
 import ActionDialog from './components/restop/ActionDialog';
 import FormModal from './components/restop/FormModal';
 import ActionNotice from './components/restop/ActionNotice';
@@ -3497,7 +3498,8 @@ function App() {
             <ModuleTabs label="Rubriques des stocks" value={activeStockTab} onChange={setActiveStockTab} items={[
               {id:'stocks',label:'Stocks & DLC'},
               {id:'repartition',label:'Répartition',hidden:!canAccessRepartition()},
-              {id:'ocr',label:'OCR'}
+              {id:'ocr',label:'OCR'},
+              ...(process.env.REACT_APP_ENABLE_TENANT_V2 === 'true' && ['super_admin','patron','gerant','chef_cuisine'].includes(currentUser?.role) ? [{id:'tenant-receiving',label:'Réceptions · pilote'}] : [])
             ]}/>
 
             {/* ONGLET STOCKS */}
@@ -5188,6 +5190,11 @@ function App() {
                 )}
               </div>
             </div>
+
+            {process.env.REACT_APP_ENABLE_TENANT_V2 === 'true' && ['super_admin','patron','gerant','chef_cuisine'].includes(currentUser?.role) &&
+              <div className={`production-tab ${activeStockTab === 'tenant-receiving' ? 'active' : ''}`}>
+                {activeStockTab === 'tenant-receiving' && <TenantReceivingWizard/>}
+              </div>}
 
             {/* ONGLET RÉPARTITION */}
             <div className={`production-tab ${activeStockTab === 'repartition' ? 'active' : ''}`}>
