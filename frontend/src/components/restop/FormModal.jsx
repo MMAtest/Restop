@@ -5,14 +5,16 @@ import './dialog-system.css';
 /** Progressive enhancement for the four legacy CRUD forms.
  * Scope labels, focus and scroll; keep their existing form submit handlers intact.
  */
-export default function FormModal({title,onClose,children,wide=false}) {
+export default function FormModal({title,onClose,children,wide=false,warnUnsavedOnClose=true}) {
  const panel=useRef(null),close=useRef(null);
+ const onCloseRef=useRef(onClose);
+ onCloseRef.current=onClose;
  const changed=useRef(false);
  const [discard,setDiscard]=useState(false);
  const discardRef=useRef(false);
  const requestClose=()=>{
   if(discardRef.current){setDiscard(false);discardRef.current=false;return;}
-  if(changed.current){setDiscard(true);discardRef.current=true;return;}
+  if(warnUnsavedOnClose&&changed.current){setDiscard(true);discardRef.current=true;return;}
   onClose();
  };
  useEffect(()=>{
@@ -25,7 +27,7 @@ export default function FormModal({title,onClose,children,wide=false}) {
   });
   (panel.current?.querySelector('input:not([type=hidden]),select,textarea')||close.current)?.focus();
   const keydown=event=>{
-   if(event.key==='Escape'){event.preventDefault();if(discardRef.current){discardRef.current=false;setDiscard(false)}else if(changed.current){discardRef.current=true;setDiscard(true)}else onClose();}
+   if(event.key==='Escape'){event.preventDefault();if(discardRef.current){discardRef.current=false;setDiscard(false)}else if(warnUnsavedOnClose&&changed.current){discardRef.current=true;setDiscard(true)}else onCloseRef.current();}
    if(event.key==='Tab'){
     const enabled=[...panel.current.querySelectorAll('input:not(:disabled),select:not(:disabled),textarea:not(:disabled),button:not(:disabled)')].filter(e=>e.getClientRects().length||process.env.NODE_ENV==='test');
     if(!enabled.length)return;

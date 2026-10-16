@@ -1,0 +1,39 @@
+name: Restop tenant-v2 isolated MongoDB QA
+
+on:
+  push:
+    branches:
+      - feat/restop-ui-security-integration-20261016
+    paths:
+      - backend/tenant_stock_api.py
+      - backend/test_tenant_mongo_integration.py
+      - backend/test_tenant_contract.py
+      - backend/server.py
+      - scripts/test-restop-tenant-mongo.sh
+      - .github/workflows/restop-tenant-mongo-qa.yml
+  pull_request:
+    paths:
+      - backend/tenant_stock_api.py
+      - backend/test_tenant_mongo_integration.py
+      - backend/test_tenant_contract.py
+      - backend/server.py
+      - scripts/test-restop-tenant-mongo.sh
+      - .github/workflows/restop-tenant-mongo-qa.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  real-isolation:
+    name: Real two-restaurant MongoDB + transaction tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate Python syntax and structural gates
+        run: |
+          python3 -m py_compile backend/tenant_stock_api.py backend/server.py backend/test_tenant_mongo_integration.py
+          python3 -m unittest discover -s backend -p 'test_tenant_contract.py' -v
+      - name: Real isolated MongoDB QA (no production credentials)
+        run: bash scripts/test-restop-tenant-mongo.sh
