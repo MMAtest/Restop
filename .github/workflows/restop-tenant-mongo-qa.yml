@@ -4,8 +4,11 @@ on:
   push:
     branches:
       - feat/restop-ui-security-integration-20261016
+      - feat/restop-tenant-workflows-20261016
     paths:
       - backend/tenant_stock_api.py
+      - backend/tenant_workflows_api.py
+      - backend/test_tenant_workflows_mongo_integration.py
       - backend/test_tenant_mongo_integration.py
       - backend/test_tenant_contract.py
       - backend/server.py
@@ -14,6 +17,8 @@ on:
   pull_request:
     paths:
       - backend/tenant_stock_api.py
+      - backend/tenant_workflows_api.py
+      - backend/test_tenant_workflows_mongo_integration.py
       - backend/test_tenant_mongo_integration.py
       - backend/test_tenant_contract.py
       - backend/server.py
