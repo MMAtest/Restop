@@ -25,6 +25,7 @@ class WorkflowTenantTests(unittest.TestCase):
         from tenant_stock_api import build_tenant_router
         from tenant_workflows_api import build_tenant_workflow_router
         from tenant_receiving_api import build_receiving_router
+        from tenant_invoice_api import build_invoice_router, ensure_invoice_indexes
         from pymongo.errors import PyMongoError
 
         cls.db_name = "restop_tenant_qa_" + uuid4().hex[:16]
@@ -62,6 +63,7 @@ class WorkflowTenantTests(unittest.TestCase):
         cls.api.include_router(build_tenant_router(cls.async_db, ns["require_active_user"]), prefix="/api")
         cls.api.include_router(build_tenant_workflow_router(cls.async_db, ns["require_active_user"]), prefix="/api")
         cls.api.include_router(build_receiving_router(cls.async_db, ns["require_active_user"]), prefix="/api")
+        cls.api.include_router(build_invoice_router(cls.async_db, ns["require_active_user"]), prefix="/api")
         class BrokenMovements:
             async def insert_one(self, *args, **kwargs):
                 raise PyMongoError("injected failure after stock change")
@@ -70,6 +72,7 @@ class WorkflowTenantTests(unittest.TestCase):
                 return BrokenMovements() if key == "tenant_stock_movements" else getattr(cls.async_db, key)
         cls.api.include_router(build_receiving_router(BrokenDB(), ns["require_active_user"]), prefix="/api/broken")
         cls.sync_db.tenant_receipts.create_index([("restaurant_id", ASCENDING), ("supplier_id", ASCENDING), ("invoice_reference", ASCENDING)], unique=True)
+        cls.sync_db.tenant_invoice_documents.create_index([("restaurant_id", ASCENDING), ("supplier_id", ASCENDING), ("sha256", ASCENDING)], unique=True)
         cls.http = TestClient(cls.api)
         cls.http.__enter__()
 
@@ -309,6 +312,134 @@ class WorkflowTenantTests(unittest.TestCase):
         self.assertEqual(self.sync_db.tenant_receipts.count_documents({'restaurant_id':'restaurant_A','order_id':oid}),1)
         self.assertEqual(self.sync_db.tenant_stock_movements.count_documents({'restaurant_id':'restaurant_A','product_id':pid,'source':'supplier_receipt'}),1)
         self.assertEqual(self.sync_db.tenant_purchase_orders.find_one({'id':oid})['receipt_version'],1)
+
+    def qa_pdf(self, reference='INV-PDF-001'):
+        from io import BytesIO
+        from reportlab.pdfgen import canvas
+        data=BytesIO()
+        pdf=canvas.Canvas(data)
+        pdf.drawString(80,760, 'FACTURE N '+reference)
+        pdf.drawString(80,734, 'Tomates Provence quantite 3 kg prix 2 euros')
+        pdf.showPage()
+        pdf.save()
+        return data.getvalue()
+
+    def invoice_upload(self,identity,order_id,content=None,filename='facture.pdf'):
+        return self.http.post('/api/tenant/invoices/upload',
+            params={'order_id':order_id},
+            headers={'Authorization':'Bearer '+identity+'-token'},
+            files={'file':(filename,content if content is not None else self.qa_pdf(),'application/pdf')})
+
+    def test_i_invoice_pdf_extraction_isolation_and_tamper_guards(self):
+        import hashlib
+        oid,pid,sup=self.receipt_fixture()
+        self.assertEqual(self.call('a','POST','/purchase-orders/'+oid+'/approve').status_code,200)
+        pdf=self.qa_pdf('INV-PDF-001')
+        uploaded=self.invoice_upload('a',oid,pdf)
+        self.assertEqual(uploaded.status_code,201,uploaded.text)
+        doc=uploaded.json()
+        did=doc['id']
+        self.assertEqual(doc['status'],'needs_review')
+        self.assertEqual(doc['sha256'],hashlib.sha256(pdf).hexdigest())
+        self.assertEqual(doc['extraction_engine'],'pdf_embedded_text')
+        self.assertTrue(doc['extracted_chars']>0)
+        self.assertEqual(doc['suggestions'].get('invoice_reference'),'INV-PDF-001')
+        self.assertNotIn('extracted_text',doc)
+        detail=self.call('a','GET','/invoices/'+did)
+        self.assertEqual(detail.status_code,200)
+        self.assertIn('INV-PDF-001',detail.json()['extracted_text'])
+        self.assertEqual(self.call('b','GET','/invoices/'+did).status_code,404)
+        self.assertEqual(self.call('b','GET','/invoices/'+did+'/file').status_code,404)
+        self.assertEqual(self.call('cashier','GET','/invoices/'+did).status_code,403)
+        self.assertEqual(self.http.get('/api/tenant/invoices/'+did).status_code,401)
+        original=self.call('a','GET','/invoices/'+did+'/file')
+        self.assertEqual(original.status_code,200)
+        self.assertEqual(original.content,pdf)
+        self.assertEqual(original.headers['cache-control'],'no-store')
+        self.assertEqual(self.http.get('/api/tenant/invoices',params={'order_id':oid},headers={'Authorization':'Bearer a-token'}).status_code,200)
+        listed=self.http.get('/api/tenant/invoices',params={'order_id':oid},headers={'Authorization':'Bearer a-token'}).json()
+        self.assertNotIn('extracted_text',listed[0])
+        self.assertEqual(self.invoice_upload('a',oid,pdf).status_code,409)
+        self.assertEqual(self.invoice_upload('b',oid,pdf).status_code,404)
+        self.assertEqual(self.invoice_upload('a',oid,b'plain text that is not a PDF').status_code,422)
+        self.assertEqual(self.invoice_upload('a',oid,b'%PDF-'+b'A'*(8*1024*1024),filename='oversize.pdf').status_code,413)
+        body=self.receipt_body(pid,invoice='INV-PDF-001',key='invoice-doc-001')
+        body['invoice_document_id']=did
+        self.assertEqual(self.call('a','POST','/purchase-orders/'+oid+'/receipts/preview',body).status_code,409)
+        wrong={'invoice_reference':'INV-PDF-001','lines':[{'product_id':'other-product','invoiced_milliunits':3000,'invoiced_unit_price_cents':200}],
+               'review_note':'Vérification de la facture'}
+        self.assertEqual(self.call('a','POST','/invoices/'+did+'/review',wrong).status_code,422)
+        review={'invoice_reference':'INV-PDF-001','lines':[{'product_id':pid,'invoiced_milliunits':3000,'invoiced_unit_price_cents':200}],
+                'review_note':'Toutes les données contrôlées manuellement'}
+        check=self.call('chef','POST','/invoices/'+did+'/review',review)
+        self.assertEqual(check.status_code,200,check.text)
+        self.assertEqual(check.json()['status'],'reviewed')
+        self.assertEqual(self.call('chef','POST','/invoices/'+did+'/review',review).status_code,409)
+        mismatch={**body,'lines':[dict(body['lines'][0],invoiced_unit_price_cents=240)]}
+        self.assertEqual(self.call('a','POST','/purchase-orders/'+oid+'/receipts/confirm',mismatch).status_code,409)
+        self.assertEqual(self.sync_db.tenant_stocks.count_documents({'restaurant_id':'restaurant_A','product_id':pid}),0)
+        ok=self.call('a','POST','/purchase-orders/'+oid+'/receipts/confirm',body)
+        self.assertEqual(ok.status_code,201,ok.text)
+        self.assertEqual(ok.json()['invoice_document_id'],did)
+        self.assertEqual(ok.json()['invoice_sha256'],hashlib.sha256(pdf).hexdigest())
+        doc_after=self.call('a','GET','/invoices/'+did)
+        self.assertEqual(doc_after.json()['status'],'received')
+        self.assertEqual(doc_after.json()['receipt_id'],ok.json()['id'])
+        replay=self.call('a','POST','/purchase-orders/'+oid+'/receipts/confirm',body)
+        self.assertEqual(replay.status_code,201,replay.text)
+        self.assertTrue(replay.json()['replayed'])
+        self.assertEqual(self.sync_db.tenant_stock_movements.count_documents({'restaurant_id':'restaurant_A','product_id':pid,'source':'supplier_receipt'}),1)
+
+    def test_j_invoice_document_claim_rolls_back_with_stock(self):
+        oid,pid,_=self.receipt_fixture(qty=1000)
+        self.assertEqual(self.call('a','POST','/purchase-orders/'+oid+'/approve').status_code,200)
+        doc=self.invoice_upload('a',oid,self.qa_pdf('INV-ROLLBACK-01'))
+        self.assertEqual(doc.status_code,201,doc.text)
+        did=doc.json()['id']
+        review={'invoice_reference':'INV-ROLLBACK-01','lines':[{'product_id':pid,'invoiced_milliunits':1000,'invoiced_unit_price_cents':200}],
+            'review_note':'Quantité, prix et référence vérifiés'}
+        self.assertEqual(self.call('a','POST','/invoices/'+did+'/review',review).status_code,200)
+        body=self.receipt_body(pid,qty=1000,invoice='INV-ROLLBACK-01',key='doc-rollback-key-01')
+        body['invoice_document_id']=did
+        failure=self.http.post('/api/broken/tenant/purchase-orders/'+oid+'/receipts/confirm',
+            headers={'Authorization':'Bearer a-token'},json=body)
+        self.assertEqual(failure.status_code,503,failure.text)
+        self.assertEqual(self.call('a','GET','/invoices/'+did).json()['status'],'reviewed')
+        self.assertEqual(self.sync_db.tenant_receipts.count_documents({'order_id':oid}),0)
+        self.assertEqual(self.sync_db.tenant_stocks.count_documents({'product_id':pid}),0)
+        self.assertEqual(self.call('a','POST','/purchase-orders/'+oid+'/receipts/confirm',body).status_code,201)
+
+    def test_k_png_and_scanned_pdf_are_retained_for_review(self):
+        from io import BytesIO
+        from PIL import Image, ImageDraw, ImageFont
+        from reportlab.pdfgen import canvas
+        from reportlab.lib.utils import ImageReader
+        oid,pid,_=self.receipt_fixture(qty=1000)
+        self.assertEqual(self.call('a','POST','/purchase-orders/'+oid+'/approve').status_code,200)
+        img=Image.new('RGB',(1180,300),'white')
+        paint=ImageDraw.Draw(img)
+        try:font=ImageFont.truetype('/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf',42)
+        except OSError:font=ImageFont.load_default()
+        paint.text((50,90),'FACTURE N IMAGE-4242',fill='black',font=font)
+        out=BytesIO();img.save(out,format='PNG');png=out.getvalue()
+        uploaded=self.invoice_upload('a',oid,png,filename='facture-image.png')
+        self.assertEqual(uploaded.status_code,201,uploaded.text)
+        doc=uploaded.json()
+        self.assertEqual(doc['media_type'],'image/png')
+        self.assertIn(doc['extraction_engine'],('tesseract_image','ocr_engine_unavailable'))
+        self.assertEqual(doc['status'],'needs_review')
+        self.assertEqual(self.call('a','GET','/invoices/'+doc['id']+'/file').content,png)
+        self.assertEqual(self.call('b','GET','/invoices/'+doc['id']).status_code,404)
+        # An image-only PDF should never be treated as a validated invoice.
+        pdf_bytes=BytesIO();pdf=canvas.Canvas(pdf_bytes)
+        pdf.drawImage(ImageReader(img),20,570,width=590,height=150)
+        pdf.showPage();pdf.save()
+        scanned=self.invoice_upload('a',oid,pdf_bytes.getvalue())
+        self.assertEqual(scanned.status_code,201,scanned.text)
+        self.assertIn(scanned.json()['extraction_engine'],('pdf_scanned_tesseract','ocr_engine_unavailable','pdf_no_text','pdf_scanned_ocr_unavailable'))
+        self.assertEqual(scanned.json()['status'],'needs_review')
+        self.assertEqual(self.sync_db.tenant_receipts.count_documents({'order_id':oid}),0)
+        self.assertEqual(self.sync_db.tenant_stocks.count_documents({'product_id':pid}),0)
 
 if __name__ == "__main__":
     unittest.main()

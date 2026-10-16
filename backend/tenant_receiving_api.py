@@ -34,6 +34,7 @@ class ReceiptInput(_StrictPayload):
     delivery_note_reference: str = Field(min_length=3, max_length=90)
     invoice_reference: str = Field(min_length=3, max_length=90)
     invoice_source: Literal['human_verified']
+    invoice_document_id: Optional[str] = Field(default=None, min_length=32, max_length=64)
     lines: List[ReceivedLine] = Field(min_length=1, max_length=100)
     idempotency_key: str = Field(min_length=12, max_length=128)
     acknowledge_variances: StrictBool = False
@@ -107,6 +108,28 @@ def build_receiving_router(db, session_guard):
         return order
 
     async def evaluate(order, body, session=None):
+        # Uploaded documents are only suggestions until explicitly reviewed by a
+        # responsible user. The reviewed bill must match the confirmation exactly.
+        checked_document = None
+        if body.invoice_document_id:
+            checked_document = await db.tenant_invoice_documents.find_one({
+                'restaurant_id': order['restaurant_id'], 'id': body.invoice_document_id,
+                'order_id': order['id'], 'supplier_id': order['supplier_id']}, session=session)
+            if checked_document is None:
+                raise HTTPException(status_code=404, detail='Facture étrangère ou introuvable')
+            if checked_document.get('status') != 'reviewed':
+                raise HTTPException(status_code=409, detail='La facture doit être vérifiée avant réception')
+            if checked_document.get('reviewed_reference') != body.invoice_reference:
+                raise HTTPException(status_code=409, detail='Référence différente du document vérifié')
+            reviewed_lines = {line['product_id']: line for line in checked_document['reviewed_lines']}
+            supplied_lines = {line.product_id: line for line in body.lines}
+            if set(reviewed_lines) != set(supplied_lines):
+                raise HTTPException(status_code=409, detail='Lignes différentes de la facture vérifiée')
+            for pid, reviewed in reviewed_lines.items():
+                claimed = supplied_lines[pid]
+                if (reviewed['invoiced_milliunits'] != claimed.invoiced_milliunits or
+                    reviewed['invoiced_unit_price_cents'] != claimed.invoiced_unit_price_cents):
+                    raise HTTPException(status_code=409, detail='Montant ou quantité différent de la facture vérifiée')
         order_lines = {line['product_id']: line for line in order['lines']}
         rid = order['restaurant_id']
         issues = []
@@ -150,6 +173,8 @@ def build_receiving_router(db, session_guard):
             'delivery_note_reference': body.delivery_note_reference, 'invoice_reference': body.invoice_reference,
             'lines': preview_lines, 'issues': issues,
             'invoice_total_cents': sum(line['invoiced_line_total_cents'] for line in preview_lines),
+            'invoice_document_id': body.invoice_document_id,
+            'invoice_sha256': checked_document['sha256'] if checked_document else None,
             'can_confirm': not issues or (body.acknowledge_variances and bool(body.variance_reason and len(body.variance_reason.strip()) >= 8))}
 
     @router.post('/purchase-orders/{order_id}/approve')
@@ -252,10 +277,22 @@ def build_receiving_router(db, session_guard):
                          '$inc': {'receipt_version': 1}}, session=session)
                     if result.modified_count != 1:
                         raise HTTPException(status_code=409, detail='Commande modifiée par un autre utilisateur')
+                    # Document claim commits in the SAME transaction as stock.
+                    # A second receipt cannot claim the same reviewed original.
+                    if body.invoice_document_id:
+                        document_claim = await db.tenant_invoice_documents.update_one({
+                            'restaurant_id': rid, 'id': body.invoice_document_id,
+                            'order_id': order_id, 'status': 'reviewed'},
+                            {'$set': {'status': 'received', 'receipt_id': receipt_id,
+                                      'received_at': now}}, session=session)
+                        if document_claim.modified_count != 1:
+                            raise HTTPException(status_code=409, detail='Facture déjà liée à une réception')
                     row = {'_id': receipt_id, 'id': receipt_id, 'restaurant_id': rid,
                         'order_id': order_id, 'supplier_id': order['supplier_id'],
                         'delivery_note_reference': body.delivery_note_reference,
                         'invoice_reference': body.invoice_reference, 'invoice_source': body.invoice_source,
+                        'invoice_document_id': body.invoice_document_id,
+                        'invoice_sha256': preview.get('invoice_sha256'),
                         'request_fingerprint': fingerprint, 'lines': preview['lines'],
                         'issues': preview['issues'], 'variance_reason': body.variance_reason,
                         'invoice_total_cents': preview['invoice_total_cents'],

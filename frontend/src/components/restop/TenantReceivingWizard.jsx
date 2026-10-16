@@ -1,5 +1,6 @@
 import React, {useCallback, useEffect, useState} from 'react';
 import axios from 'axios';
+import TenantInvoicePanel from './TenantInvoicePanel';
 import {API} from '../../utils/api';
 import {ArrowLeft, ArrowRight, CheckCircle, WarningCircle, Truck, FileText, ShieldCheck} from '@phosphor-icons/react';
 import './tenant-receiving.css';
@@ -28,6 +29,7 @@ export default function TenantReceivingWizard(){
   const [preview,setPreview]=useState(null),[result,setResult]=useState(null);
   const [accept,setAccept]=useState(false),[reason,setReason]=useState(''),[error,setError]=useState('');
   const [confirmReady,setConfirmReady]=useState(false);
+  const [invoiceDocumentId,setInvoiceDocumentId]=useState(null);
   const load=useCallback(async()=>{
     setLoading(true);setError('');
     try{const [response,catalog]=await Promise.all([
@@ -40,7 +42,7 @@ export default function TenantReceivingWizard(){
 
   const choose=order=>{
     setSelected(order);setPreview(null);setResult(null);setError('');setInvoice('');setDelivery('');
-    setKey(makeKey());setAccept(false);setReason('');setConfirmReady(false);
+    setKey(makeKey());setAccept(false);setReason('');setConfirmReady(false);setInvoiceDocumentId(null);
     setLines((order.lines||[]).filter(line=>line.quantity_milliunits>((order.received_milliunits_by_product||{})[line.product_id]||0))
       .map(line=>{
         const previously=(order.received_milliunits_by_product||{})[line.product_id]||0;
@@ -52,6 +54,7 @@ export default function TenantReceivingWizard(){
   };
   const editLine=(id,field,value)=>{setLines(old=>old.map(line=>line.product_id===id?{...line,[field]:value}:line));setPreview(null);setConfirmReady(false)};
   const buildPayload=()=>{
+    if(invoiceDocumentId==='pending')throw Error('Vérifiez les informations de la facture importée avant de poursuivre.');
     const included=lines.filter(x=>x.included);
     if(!invoice.trim()||!delivery.trim())throw Error('Renseignez la référence du bon de livraison et celle de la facture vérifiée.');
     if(!included.length)throw Error('Sélectionnez au moins un produit livré.');
@@ -61,6 +64,7 @@ export default function TenantReceivingWizard(){
       return {product_id:x.product_id,received_milliunits:delivered,invoiced_milliunits:billed,invoiced_unit_price_cents:price};
     });
     return {delivery_note_reference:delivery,invoice_reference:invoice,
+      ...(invoiceDocumentId?{invoice_document_id:invoiceDocumentId}:{}),
       invoice_source:'human_verified',idempotency_key:key,lines:items,
       acknowledge_variances:accept,variance_reason:accept?reason.trim():null};
   };
@@ -112,14 +116,15 @@ export default function TenantReceivingWizard(){
       {selected.status==='draft'?<div className="rt-receiving-approval"><h4>Approbation interne nécessaire</h4><p>Cette étape ne transmet aucun message au fournisseur et n’ajoute rien en stock. Seule la direction peut approuver.</p><button onClick={approve} disabled={busy}>Approuver la commande</button></div>:
       <>
         <div className="rt-receiving-steps"><span>01 · Documents vérifiés</span><span>02 · Écarts</span><span>03 · Validation</span></div>
+        <TenantInvoicePanel key={selected.id} orderId={selected.id} invoice={invoice} lines={lines} onInvoiceChange={value=>{setInvoice(value);setPreview(null)}} onReviewed={id=>{setInvoiceDocumentId(id);setPreview(null)}}/>
         <div className="rt-receiving-fields"><label>Référence bon de livraison<input value={delivery} onChange={e=>{setDelivery(e.target.value);setPreview(null)}} placeholder="BL-2026-…"/></label>
-          <label>Référence facture vérifiée<input value={invoice} onChange={e=>{setInvoice(e.target.value);setPreview(null)}} placeholder="FAC-2026-…"/></label></div>
+          <label>Référence facture vérifiée<input value={invoice} disabled={Boolean(invoiceDocumentId&&invoiceDocumentId!=='pending')} onChange={e=>{setInvoice(e.target.value);setPreview(null)}} placeholder="FAC-2026-…"/></label></div>
         <div className="rt-receiving-sectionhead"><h3>Produits et quantités</h3><small>Quantités dans l’unité fournisseur, prix en €</small></div>
         <div className="rt-receiving-lines">{lines.map(item=><div key={item.product_id} className="rt-receiving-line">
           <label className="rt-receiving-included"><input type="checkbox" checked={item.included} onChange={e=>editLine(item.product_id,'included',e.target.checked)}/><strong>{item.name}</strong><small>Reste à recevoir : {fromMilliunits(item.ordered)} {item.unit}</small></label>
           <div className="rt-receiving-linefields"><label>Livré ({item.unit})<input type="text" inputMode="decimal" value={item.received} disabled={!item.included} onChange={e=>editLine(item.product_id,'received',e.target.value)}/></label>
-            <label>Facturé ({item.unit})<input type="text" inputMode="decimal" value={item.invoiced} disabled={!item.included} onChange={e=>editLine(item.product_id,'invoiced',e.target.value)}/></label>
-            <label>PU facture (€)<input type="text" inputMode="decimal" value={item.price} disabled={!item.included} onChange={e=>editLine(item.product_id,'price',e.target.value)}/></label></div></div>)}</div>
+            <label>Facturé ({item.unit})<input type="text" inputMode="decimal" value={item.invoiced} disabled={!item.included||Boolean(invoiceDocumentId&&invoiceDocumentId!=='pending')} onChange={e=>editLine(item.product_id,'invoiced',e.target.value)}/></label>
+            <label>PU facture (€)<input type="text" inputMode="decimal" value={item.price} disabled={!item.included||Boolean(invoiceDocumentId&&invoiceDocumentId!=='pending')} onChange={e=>editLine(item.product_id,'price',e.target.value)}/></label></div></div>)}</div>
         {preview&&<div className="rt-receiving-review" role="status"><h3><FileText size={19}/> Résultat du rapprochement</h3>
           <strong>Montant facturé sur les lignes reçues : {euros(preview.invoice_total_cents)}</strong>
           {preview.issues.length?<><p>{preview.issues.length} écart(s) à examiner :</p><ul>{preview.issues.map((issue,index)=><li key={`${issue.product_id}-${index}`}>{issue.product_id.slice(0,8)} — {issue.code.replaceAll('_',' ')}</li>)}</ul>

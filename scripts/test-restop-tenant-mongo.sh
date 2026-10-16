@@ -14,7 +14,7 @@ docker run --rm --network "container:$name" \
   --mount "type=bind,source=${ROOT}/backend,target=/app,readonly" -w /app \
   -e 'RESTOP_TEST_TENANT_MONGO_URL=mongodb://localhost:27017/?directConnection=true&replicaSet=rsrestopQA' \
   python:3.11-slim sh -ec '
-    pip -q install --disable-pip-version-check motor==3.3.1 pymongo==4.5.0 fastapi==0.110.1 pydantic==2.11.7 httpx==0.27.2
+    pip -q install --disable-pip-version-check motor==3.3.1 pymongo==4.5.0 fastapi==0.110.1 pydantic==2.11.7 httpx==0.27.2 python-multipart==0.0.20 PyPDF2==3.0.1 reportlab==4.4.3 Pillow==11.3.0 pytesseract==0.3.13 pypdfium2==4.30.0
     python - <<"PY"
 import time
 from pymongo import MongoClient
