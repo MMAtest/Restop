@@ -24,6 +24,8 @@ class WorkflowTenantTests(unittest.TestCase):
         from pymongo import ASCENDING, MongoClient
         from tenant_stock_api import build_tenant_router
         from tenant_workflows_api import build_tenant_workflow_router
+        from tenant_receiving_api import build_receiving_router
+        from pymongo.errors import PyMongoError
 
         cls.db_name = "restop_tenant_qa_" + uuid4().hex[:16]
         assert cls.db_name.startswith("restop_tenant_qa_")
@@ -59,6 +61,15 @@ class WorkflowTenantTests(unittest.TestCase):
         cls.api = FastAPI()
         cls.api.include_router(build_tenant_router(cls.async_db, ns["require_active_user"]), prefix="/api")
         cls.api.include_router(build_tenant_workflow_router(cls.async_db, ns["require_active_user"]), prefix="/api")
+        cls.api.include_router(build_receiving_router(cls.async_db, ns["require_active_user"]), prefix="/api")
+        class BrokenMovements:
+            async def insert_one(self, *args, **kwargs):
+                raise PyMongoError("injected failure after stock change")
+        class BrokenDB:
+            def __getattr__(self, key):
+                return BrokenMovements() if key == "tenant_stock_movements" else getattr(cls.async_db, key)
+        cls.api.include_router(build_receiving_router(BrokenDB(), ns["require_active_user"]), prefix="/api/broken")
+        cls.sync_db.tenant_receipts.create_index([("restaurant_id", ASCENDING), ("supplier_id", ASCENDING), ("invoice_reference", ASCENDING)], unique=True)
         cls.http = TestClient(cls.api)
         cls.http.__enter__()
 
@@ -175,6 +186,129 @@ class WorkflowTenantTests(unittest.TestCase):
         self.assertEqual(self.call("b", "POST", "/z-reports", body).status_code, 201)
         self.assertEqual(self.sync_db.tenant_z_reports.count_documents({}), 2)
         self.assertEqual(self.sync_db.rapports_z.count_documents({}), 0)
+
+    def receipt_fixture(self, user='a', qty=3000):
+        sup=self.supplier(user,'Primeur réception')
+        pid=self.product(user,'Tomates livraison',sup,200)
+        response=self.call(user,'POST','/purchase-orders',{'supplier_id':sup,'lines':[
+            {'product_id':pid,'quantity_milliunits':qty,'unit_price_cents':200}]})
+        self.assertEqual(response.status_code,201,response.text)
+        return response.json()['id'],pid,sup
+
+    def receipt_body(self,pid,qty=3000,invoice='FAC-TEST-001',key='receipt-unique-001'):
+        return {'delivery_note_reference':'BL-TEST-001','invoice_reference':invoice,
+            'invoice_source':'human_verified','idempotency_key':key,'lines':[
+                {'product_id':pid,'received_milliunits':qty,
+                 'invoiced_milliunits':qty,'invoiced_unit_price_cents':200}]}
+
+    def test_e_receiving_preview_guards_and_manual_approval(self):
+        oid,pid,_=self.receipt_fixture()
+        path='/purchase-orders/'+oid
+        body=self.receipt_body(pid,key='preview-only-0001')
+        self.assertEqual(self.http.post('/api/tenant'+path+'/receipts/preview',json=body).status_code,401)
+        self.assertEqual(self.call('a','POST',path+'/receipts/preview',body).status_code,409)
+        self.assertEqual(self.call('b','POST',path+'/approve').status_code,404)
+        self.assertEqual(self.call('chef','POST',path+'/approve').status_code,403)
+        self.assertEqual(self.call('cashier','POST',path+'/approve').status_code,403)
+        self.assertEqual(self.call('a','POST',path+'/approve').status_code,200)
+        self.assertEqual(self.call('a','POST',path+'/approve').status_code,409)
+        self.assertEqual(self.call('cashier','POST',path+'/receipts/preview',body).status_code,403)
+        self.assertEqual(self.call('employee','POST',path+'/receipts/confirm',body).status_code,403)
+        self.assertEqual(self.call('b','POST',path+'/receipts/confirm',body).status_code,404)
+        res=self.call('chef','POST',path+'/receipts/preview',body)
+        self.assertEqual(res.status_code,200,res.text)
+        self.assertTrue(res.json()['can_confirm'])
+        self.assertEqual(res.json()['invoice_total_cents'],600)
+        self.assertEqual(self.sync_db.tenant_stocks.count_documents({'restaurant_id':'restaurant_A','product_id':pid}),0)
+        self.assertEqual(self.sync_db.tenant_receipts.count_documents({'restaurant_id':'restaurant_A','order_id':oid}),0)
+        for invalid in [
+            {**body,'restaurant_id':'restaurant_B'},
+            {**body,'invoice_source':'ocr_unchecked'},
+            {**body,'lines':body['lines']*2},
+            {**body,'lines':[{**body['lines'][0],'received_milliunits':0}]},
+        ]:
+            self.assertEqual(self.call('a','POST',path+'/receipts/preview',invalid).status_code,422)
+        over=self.receipt_body(pid,qty=4000,invoice='FAC-OVER-1',key='overreceipt-0001')
+        self.assertEqual(self.call('a','POST',path+'/receipts/confirm',over).status_code,409)
+
+    def test_f_receiving_three_way_variances_idempotency_and_stock(self):
+        oid,pid,_=self.receipt_fixture()
+        path='/purchase-orders/'+oid
+        self.assertEqual(self.call('a','POST',path+'/approve').status_code,200)
+        body=self.receipt_body(pid,qty=1200,invoice='FAC-PART-1',key='part-receipt-001')
+        body['lines'][0]['invoiced_milliunits']=1500
+        body['lines'][0]['invoiced_unit_price_cents']=240
+        preview=self.call('a','POST',path+'/receipts/preview',body)
+        self.assertEqual(preview.status_code,200,preview.text)
+        codes={issue['code'] for issue in preview.json()['issues']}
+        self.assertEqual(codes,{'livraison_partielle','quantite_facturee_differente','prix_facture_different'})
+        self.assertEqual(preview.json()['invoice_total_cents'],360)
+        self.assertFalse(preview.json()['can_confirm'])
+        self.assertEqual(self.call('a','POST',path+'/receipts/confirm',body).status_code,409)
+        ack={**body,'acknowledge_variances':True,
+            'variance_reason':'Contrôle physique effectué par le responsable'}
+        receipt=self.call('chef','POST',path+'/receipts/confirm',ack)
+        self.assertEqual(receipt.status_code,201,receipt.text)
+        rid=receipt.json()['id']
+        self.assertEqual(receipt.json()['order_status_after'],'receiving')
+        self.assertEqual(self.call('a','GET','/receipts/by-key/part-receipt-001').json()['id'],rid)
+        self.assertEqual(self.call('b','GET','/receipts/'+rid).status_code,404)
+        self.assertEqual(self.call('b','GET','/receipts').json(),[])
+        replay=self.call('a','POST',path+'/receipts/confirm',ack)
+        self.assertEqual(replay.status_code,201,replay.text)
+        self.assertTrue(replay.json()['replayed'])
+        self.assertEqual(self.call('a','POST',path+'/receipts/confirm',
+            {**ack,'variance_reason':'justification contradictoire'}).status_code,409)
+        self.assertEqual(self.call('a','POST',path+'/receipts/confirm',
+            self.receipt_body(pid,qty=100,invoice=' fac-part-1 ',key='duplicate-invoice-01')).status_code,409)
+        self.assertEqual(self.call('a','GET','/stock').json()[0]['quantity_milliunits'],1200)
+        finish=self.call('a','POST',path+'/receipts/confirm',self.receipt_body(
+            pid,qty=1800,invoice='FAC-FIN-1',key='final-receipt-001'))
+        self.assertEqual(finish.status_code,201,finish.text)
+        self.assertEqual(finish.json()['order_status_after'],'received')
+        self.assertEqual(self.call('a','GET','/stock').json()[0]['quantity_milliunits'],3000)
+        self.assertEqual(self.sync_db.tenant_stock_movements.count_documents({'source':'supplier_receipt','restaurant_id':'restaurant_A','product_id':pid}),2)
+        self.assertEqual(self.sync_db.tenant_receipts.count_documents({'restaurant_id':'restaurant_A','order_id':oid}),2)
+        self.assertEqual(self.sync_db.tenant_purchase_orders.find_one({'id':oid})['receipt_version'],2)
+        self.assertEqual(self.call('a','POST',path+'/receipts/confirm',self.receipt_body(
+            pid,qty=100,invoice='FAC-LATE-1',key='late-receipt-001')).status_code,409)
+        self.assertEqual(self.sync_db.stocks.count_documents({}),0)
+        self.assertEqual(self.sync_db.orders.count_documents({}),0)
+
+    def test_g_receiving_rollback_injected_after_stock_write(self):
+        oid,pid,_=self.receipt_fixture(qty=1000)
+        path='/purchase-orders/'+oid
+        self.assertEqual(self.call('a','POST',path+'/approve').status_code,200)
+        body=self.receipt_body(pid,qty=1000,invoice='FAC-FAIL-001',key='rollback-key-001')
+        failed=self.http.post('/api/broken/tenant'+path+'/receipts/confirm',
+            headers={'Authorization':'Bearer a-token'},json=body)
+        self.assertEqual(failed.status_code,503,failed.text)
+        self.assertEqual(self.sync_db.tenant_stocks.count_documents({'restaurant_id':'restaurant_A','product_id':pid}),0)
+        self.assertEqual(self.sync_db.tenant_receipts.count_documents({'restaurant_id':'restaurant_A','order_id':oid}),0)
+        self.assertEqual(self.sync_db.tenant_stock_movements.count_documents({'restaurant_id':'restaurant_A','product_id':pid}),0)
+        latest=self.sync_db.tenant_purchase_orders.find_one({'id':oid})
+        self.assertEqual(latest['status'],'approved')
+        self.assertEqual(latest['receipt_version'],0)
+        recovered=self.call('a','POST',path+'/receipts/confirm',body)
+        self.assertEqual(recovered.status_code,201,recovered.text)
+        self.assertEqual(self.call('a','GET','/stock').json()[-1]['quantity_milliunits'],1000)
+
+    def test_h_concurrent_identical_receipts_never_duplicate_stock(self):
+        from concurrent.futures import ThreadPoolExecutor
+        oid,pid,_=self.receipt_fixture(qty=1000)
+        path='/purchase-orders/'+oid
+        self.assertEqual(self.call('a','POST',path+'/approve').status_code,200)
+        body=self.receipt_body(pid,qty=1000,invoice='FAC-CONCURRENT-001',key='concurrent-key-0001')
+        with ThreadPoolExecutor(max_workers=2) as pool:
+            calls=[pool.submit(self.call,'a','POST',path+'/receipts/confirm',body) for _ in range(2)]
+            results=[f.result() for f in calls]
+        self.assertTrue(all(r.status_code in (201,409) for r in results),[(r.status_code,r.text) for r in results])
+        self.assertTrue(any(r.status_code==201 for r in results))
+        db_stock=self.sync_db.tenant_stocks.find_one({'restaurant_id':'restaurant_A','product_id':pid})
+        self.assertEqual(db_stock['quantity_milliunits'],1000)
+        self.assertEqual(self.sync_db.tenant_receipts.count_documents({'restaurant_id':'restaurant_A','order_id':oid}),1)
+        self.assertEqual(self.sync_db.tenant_stock_movements.count_documents({'restaurant_id':'restaurant_A','product_id':pid,'source':'supplier_receipt'}),1)
+        self.assertEqual(self.sync_db.tenant_purchase_orders.find_one({'id':oid})['receipt_version'],1)
 
 if __name__ == "__main__":
     unittest.main()
