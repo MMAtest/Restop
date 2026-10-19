@@ -7,7 +7,7 @@ const code=babel.transformSync(source,{filename:'index.ts',configFile:false,babe
 let handler,role='employe_cuisine',rpcCalls=0;
 const chain=new Proxy({}, {get:(_,key)=>key==='then'? (resolve)=>resolve({data:{user_id:'u',restaurant_id:'r',role,is_active:true},error:null}):()=>chain});
 const client={auth:{getUser:async()=>({data:{user:{id:'u'}}})},from:()=>chain,rpc:async()=>{rpcCalls++;return {error:{message:'Transactional validation failed'}};}};
-vm.runInNewContext(code,{exports:{},require:name=>name.includes('supabase')?{createClient:()=>client}:{},Deno:{env:{get:()=>''},serve:fn=>handler=fn},Response,Request,URL,console,crypto});
+vm.runInNewContext(code,{exports:{},require:name=>name.includes('supabase')?{createClient:()=>client}:name.includes('einvoice-contract')?require('../einvoice-contract.mjs'):{},Deno:{env:{get:()=>''},serve:fn=>handler=fn},Response,Request,URL,console,crypto});
 const call=(path,method='GET',data,token='restop-demo-public-v1')=>handler(new Request('https://example.test/api'+path,{method,headers:{...(token?{authorization:'Bearer '+token}:{}),'content-type':'application/json'},...(data?{body:JSON.stringify(data)}:{})}));
 (async()=>{
  assert.equal((await call('/produits','GET',null,null)).status,401);
@@ -22,6 +22,21 @@ const call=(path,method='GET',data,token='restop-demo-public-v1')=>handler(new R
  assert.equal((await call('/recettes/10000000-0000-4000-8000-000000000003','PUT',{nom:'x',portions:1,ingredients:[]})).status,400);
  assert.equal(rpcCalls,1); // PUT reaches the same atomic service path as POST
  role='gerant';assert.equal((await call('/orders','POST',{items:[]},'user-token')).status,400);
+ const capabilities=await call('/e-invoice/capabilities','GET',null,'user-token');
+ assert.equal(capabilities.status,200);
+ assert.equal((await capabilities.json()).autoSendEnabled,false);
+ const prepared=await call('/e-invoice/preview','POST',{
+   documentType:'invoice',number:'R-2026-1',issueDate:'2026-10-19',currency:'EUR',
+   seller:{name:'Fournisseur',siret:'12345678901234'},
+   buyer:{name:'Restaurant',siret:'98765432109876'},
+   lines:[{description:'Fournitures',quantity:1,unitPriceExclTax:'12.00',vatRate:10}]
+ },'user-token');
+ assert.equal(prepared.status,200);
+ assert.equal((await prepared.json()).preview.totals.gross,13.2);
+ assert.equal((await call('/e-invoice/preview','POST',{number:'bad'},'user-token')).status,422);
+ assert.equal((await call('/e-invoice/preview-supplier','POST',{documentId:'bad'},'user-token')).status,422);
+ role='caissier';assert.equal((await call('/e-invoice/capabilities','GET',null,'user-token')).status,403);
+
  role='employe_cuisine';assert.equal((await call('/mouvements','POST',{type:'sortie',quantite:-1},'user-token')).status,400);
  role='caissier';assert.equal((await call('/orders','POST',{items:[]},'user-token')).status,403);
  console.log('13 backend route/security checks passed');
