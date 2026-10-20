@@ -17,3 +17,12 @@
 .rt-invoice-copy h2{font-size:42px;letter-spacing:-1.2px}.rt-invoice-section{grid-template-columns:1.05fr 1.1fr;gap:48px}
 }
 @media(max-width:760px){.rt-sidebar{visibility:hidden}.rt-sidebar.is-open{visibility:visible}}
+
+/* New RESTOP identity; inherits each location's original responsive font size */
+.rt-brand{display:inline-flex;align-items:center;gap:.28em;white-space:nowrap;vertical-align:middle;line-height:1;font-weight:800;letter-spacing:.015em}
+.rt-brand .rt-brand-symbol{display:block;width:1.25em;height:1.25em;flex:0 0 1.25em;object-fit:contain}
+.rt-brand .rt-brand-word{display:inline-block;color:#331524;letter-spacing:.005em;font:inherit}
+.rt-brand .rt-brand-word>span{color:#d71b49}
+.rt-brand-light .rt-brand-word{color:#fff}
+.rt-brand-light .rt-brand-word>span{color:#ff6883}
+@media(max-width:420px){.rt-site-header .rt-brand{font-size:24px;gap:5px}}
