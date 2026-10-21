@@ -1059,3 +1059,12 @@ iframe[src*="emergent"],
 [data-emergent-badge] {
   display: none !important;
 }
+:root{--color-primary-blue:#a10c32;--color-primary-blue-light:#bd0d37;--color-accent-gold:#a10c32;--color-accent-yellow:#f32954;--color-text-accent:#a10c32;--color-background-card:#fff8f9;--color-border:#ebdce0;--brand-focus:#bd0d37;--primary:345 86% 34%;--ring:345 86% 34%}
+:root[data-theme="dark"]{--color-primary-blue:#ff6e82;--color-primary-blue-light:#ff9a9f;--color-accent-gold:#ff9a9f;--color-text-accent:#ff9a9f;--color-background-dark:#160c11;--color-background-card:#24141c;--color-background-card-light:#321d27;--color-border:#50303e}
+
+/* Identity 2026 — mobile first, derived from the approved symbol. */
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
+button,a,input,select,textarea{touch-action:manipulation}
+:focus-visible{outline:3px solid var(--brand-focus,#1474d4);outline-offset:4px}
+@media(max-width:640px){input,select,textarea{font-size:16px;max-width:100%}button{min-height:44px}h1{overflow-wrap:break-word}dialog,[role="dialog"]{max-height:90dvh;overflow-y:auto}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}}
