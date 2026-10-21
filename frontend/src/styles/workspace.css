@@ -20,3 +20,9 @@ body{background:var(--rt-paper);font-family:Inter,sans-serif;font-size:14px}.App
  .rt-mobile-menu{width:44px;height:44px;}
  .rt-auth input,.rt-auth select,.rt-auth textarea{font-size:16px;}
 }
+
+
+/* Workspace consumes the same Restop identity as the public pages. */
+:root,:root[data-theme=dark]{--color-primary-blue:#a10c32;--color-primary-blue-light:#bd0d37;--color-background-dark:#fcf7f8;--color-background-card:#fff;--color-background-card-light:#fff1f3;--color-accent-gold:#a10c32;--color-accent-yellow:#ff9a9f;--color-text-primary:#321c25;--color-text-secondary:#76616a;--color-text-muted:#76616a;--color-text-accent:#a10c32;--color-border:#eadce0;--color-border-light:#f1e6e9}
+.rt-workspace .button.secondary{background:#fff1f3;color:#8f1233;border-color:#eadce0}.rt-workspace .item-row:hover{background:#fff8f9}
+@media(max-width:640px){.rt-workspace button{min-height:44px}.rt-workspace .form-input,.rt-workspace .form-select,.rt-workspace .form-textarea{font-size:16px;min-height:48px}}
