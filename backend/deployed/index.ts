@@ -1,6 +1,7 @@
 
 import { createClient } from "npm:@supabase/supabase-js@2.117.2";
 import * as XLSX from "npm:xlsx@0.18.5";
+import {validateDraft,providerCapabilities} from "./einvoice-contract.mjs";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY")!;
@@ -398,6 +399,44 @@ Deno.serve(async (req) => {
     const cashierAction=role==='caissier' && req.method==='POST' && (path==='/api/ocr/upload-document' || /^\/api\/ocr\/(process-z-report|analyze-ticket-z-ai)\//.test(path) || path==='/api/missions');
     const barOrder=role==='barman' && path==='/api/orders' && req.method==='POST';
     if (!['GET','OPTIONS'].includes(req.method) && !managers.includes(role) && !staffStock && !cashierAction && !barOrder && !path.startsWith('/api/missions/') && !path.startsWith('/api/notifications/')) return fail('Action non autorisée pour ce rôle',403);
+    // This offline module never sends to Tiime or incurs usage-based API charges.
+    if (path.startsWith('/api/e-invoice/')) {
+      if (!['patron','super_admin','gerant'].includes(role)) return fail('Accès réservé à la direction',403);
+      if (path==='/api/e-invoice/capabilities' && req.method==='GET')
+        return json({...providerCapabilities(),restaurantScoped:true,demo:c.demo});
+      if (path==='/api/e-invoice/preview' && req.method==='POST') {
+        const result=validateDraft(await body(req));
+        return json(result,result.ok?200:422);
+      }
+      if (path==='/api/e-invoice/preview-supplier' && req.method==='POST') {
+        const b:any=await body(req);
+        const documentId=String(b.documentId||'');
+        if (!/^[0-9a-f-]{36}$/i.test(documentId)) return fail('Identifiant de document invalide',422);
+        const document=await service.from('restop_documents').select('*')
+          .eq('restaurant_id',rid).eq('id',documentId).maybeSingle();
+        if(document.error) return fail('Lecture impossible',502);
+        if(!document.data || document.data.document_type!=='facture_fournisseur')
+          return fail('Facture fournisseur non trouvée',404);
+        const o:any=document.data.ocr_data||{};
+        const rawLines=Array.isArray(o.produits)?o.produits:[];
+        const invoice={
+          documentType:'invoice',number:String(o.numero_facture||''),
+          issueDate:String(o.date||document.data.document_date||'').slice(0,10),
+          currency:'EUR',
+          seller:{name:String(o.fournisseur||''),siret:String(o.siret_fournisseur||'')},
+          buyer:{name:String(b.buyer?.name||''),siret:String(b.buyer?.siret||'')},
+          lines:rawLines.map((line:any)=>({
+            description:String(line.nom||line.description||''),
+            quantity:Number(line.quantite),
+            unitPriceExclTax:line.prix_unitaire,
+            vatRate:line.taux_tva
+          }))
+        };
+        const result=validateDraft(invoice);
+        return json({...result,sourceDocumentId:documentId,sourceType:'RESTOP_OCR',demo:c.demo},result.ok?200:422);
+      }
+      return fail('Route facturation électronique inconnue',404);
+    }
     if(role==='barman' && stockAction) {
       const b:any=await body(req.clone()),id=b.produit_id || b.target_id;
       const product=await service.from('restop_products').select('category').eq('restaurant_id',rid).eq('id',id).maybeSingle();if(product.error)throw product.error;
